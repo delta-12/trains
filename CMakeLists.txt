@@ -73,9 +73,24 @@ target_include_directories(train_controller_tests PRIVATE ${TRAIN_CONTROLLER_INC
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 src/main.cpp)
+    add_executable(trains
+      WIN32
+      src/main.cpp
+      ${CTC_SRCS}
+      ${WAYSIDE_CONTROLLER_SRCS}
+      ${TRACK_MODEL_SRCS}
+      ${TRAIN_MODEL_SRCS}
+      ${TRAIN_CONTROLLER_SRCS}
+    )
 else()
-    add_executable(trains src/main.cpp)
+    add_executable(trains
+      src/main.cpp
+      ${CTC_SRCS}
+      ${WAYSIDE_CONTROLLER_SRCS}
+      ${TRACK_MODEL_SRCS}
+      ${TRAIN_MODEL_SRCS}
+      ${TRAIN_CONTROLLER_SRCS}
+    )
 endif()
 target_include_directories(trains
     PRIVATE
