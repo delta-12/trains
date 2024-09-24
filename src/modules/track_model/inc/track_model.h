@@ -14,6 +14,9 @@ namespace track_model
 class TrackModel
 {
 public:
+    types::LineId GetLineId(void);
+    types::Error NewTrain(const types::TrainId train);
+    types::Error RemoveTrain(const types::TrainId train);
     types::Error SetSwitchState(const types::BlockId block, const bool switched);
     types::Error SetCrossingState(const types::BlockId block, const bool closed);
     types::Error SetRedTrafficLight(const types::BlockId block, const bool on);
@@ -30,6 +33,8 @@ public:
     types::Error GetPassengersBoarding(const types::TrainId train, uint16_t &passengers) const;
     types::Error GetTrackPolarity(const types::TrainId train, types::Polarity &polarity) const;
     types::Error GetBeaconData(const types::TrainId train, types::BeaconData &data, std::size_t &size);
+    types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
+    types::Error SetDistanceTraveled(const types::TrainId train, const types::Meters distance);
 };
 
 } // namespace track_model

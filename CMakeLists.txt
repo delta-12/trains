@@ -5,6 +5,7 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
+set(COMMON_DIR ${CMAKE_SOURCE_DIR}/src/common)
 set(MODULES_DIR ${CMAKE_SOURCE_DIR}/src/modules)
 set(CTC_DIR ${MODULES_DIR}/ctc)
 set(WAYSIDE_CONTROLLER_DIR ${MODULES_DIR}/wayside_controller)
@@ -13,6 +14,7 @@ set(TRAIN_MODEL_DIR ${MODULES_DIR}/train_model)
 set(TRAIN_CONTROLLER_DIR ${MODULES_DIR}/train_controller)
 set(TESTS_DIR ${CMAKE_SOURCE_DIR}/tests)
 
+set(COMMON_INC_DIR ${COMMON_DIR}/inc)
 set(CTC_INC_DIR ${CTC_DIR}/inc)
 set(WAYSIDE_CONTROLLER_INC_DIR ${WAYSIDE_CONTROLLER_DIR}/inc)
 set(TRACK_MODEL_INC_DIR ${TRACK_MODEL_DIR}/inc)
@@ -42,32 +44,66 @@ find_package(Slint REQUIRED)
 ################################################################################
 # CTC test build
 ################################################################################
-add_executable(ctc_tests ${TESTS_DIR}/ctc/ctc_tests.cc ${CTC_SRCS})
-target_include_directories(ctc_tests PRIVATE ${CTC_INC_DIR})
+add_executable(ctc_tests
+  ${TESTS_DIR}/ctc/ctc_tests.cc
+  ${CTC_SRCS}
+)
+target_include_directories(ctc_tests
+  PRIVATE
+    ${CTC_INC_DIR}
+)
 
 ################################################################################
 # Wayside Controller test build
 ################################################################################
-add_executable(wayside_controller_tests ${TESTS_DIR}/wayside_controller/wayside_controller_tests.cc ${WAYSIDE_CONTROLLER_SRCS})
-target_include_directories(wayside_controller_tests PRIVATE ${WAYSIDE_CONTROLLER_INC_DIR})
+add_executable(wayside_controller_tests
+  ${TESTS_DIR}/wayside_controller/wayside_controller_tests.cc
+  ${WAYSIDE_CONTROLLER_SRCS})
+target_include_directories(wayside_controller_tests
+  PRIVATE
+    ${COMMON_INC_DIR}
+    ${WAYSIDE_CONTROLLER_INC_DIR}
+)
 
 ################################################################################
 # Track Model test build
 ################################################################################
-add_executable(track_model_tests ${TESTS_DIR}/track_model/track_model_tests.cc ${TRACK_MODEL_SRCS})
-target_include_directories(track_model_tests PRIVATE ${TRACK_MODEL_INC_DIR})
+add_executable(track_model_tests
+  ${TESTS_DIR}/track_model/track_model_tests.cc
+  ${TRACK_MODEL_SRCS}
+)
+target_include_directories(track_model_tests
+  PRIVATE
+    ${COMMON_INC_DIR}
+    ${TRACK_MODEL_INC_DIR}
+)
 
 ################################################################################
 # Train Model test build
 ################################################################################
-add_executable(train_model_tests ${TESTS_DIR}/train_model/train_model_tests.cc ${TRAIN_MODEL_SRCS})
-target_include_directories(train_model_tests PRIVATE ${TRAIN_MODEL_INC_DIR})
+add_executable(train_model_tests
+  ${TESTS_DIR}/train_model/train_model_tests.cc
+  ${TRAIN_MODEL_SRCS}
+)
+target_include_directories(train_model_tests
+  PRIVATE
+    ${COMMON_INC_DIR}
+    ${TRACK_MODEL_INC_DIR}
+    ${TRAIN_MODEL_INC_DIR}
+)
 
 ################################################################################
 # Train Controller test build
 ################################################################################
-add_executable(train_controller_tests ${TESTS_DIR}/train_controller/train_controller_tests.cc ${TRAIN_CONTROLLER_SRCS})
-target_include_directories(train_controller_tests PRIVATE ${TRAIN_CONTROLLER_INC_DIR})
+add_executable(train_controller_tests
+  ${TESTS_DIR}/train_controller/train_controller_tests.cc
+  ${TRAIN_CONTROLLER_SRCS}
+)
+target_include_directories(train_controller_tests
+  PRIVATE
+    ${COMMON_INC_DIR}
+    ${TRAIN_CONTROLLER_INC_DIR}
+)
 
 ################################################################################
 # Trains build
@@ -94,11 +130,12 @@ else()
 endif()
 target_include_directories(trains
     PRIVATE
-        ${CTC_DIR}/inc
-        ${WAYSIDE_CONTROLLER_DIR}/inc
-        ${TRACK_MODEL_DIR}/inc
-        ${TRAIN_MODEL_DIR}/inc
-        ${TRAIN_CONTROLLER_DIR}/inc
+        ${COMMON_INC_DIR}
+        ${CTC_INC_DIR}
+        ${WAYSIDE_CONTROLLER_INC_DIR}
+        ${TRACK_MODEL_INC_DIR}
+        ${TRAIN_MODEL_INC_DIR}
+        ${TRAIN_CONTROLLER_INC_DIR}
 )
 target_link_libraries(trains PRIVATE Slint::Slint)
 slint_target_sources(trains ui/launcher.slint)

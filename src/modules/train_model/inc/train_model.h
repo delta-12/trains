@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 
+#include "track_model.h"
 #include "types.h"
 
 namespace train_model
@@ -18,8 +19,7 @@ class TrainModel
 {
 public:
     TrainModel(const types::TrainId train);
-    uint16_t GetPassengersDeboarding(void) const;
-    types::Meters GetDistanceTraveled(void) const;
+    void Update(track_model::TrackModel *const track_model);
     void SetEmergencyBrake(const bool emergency_brake);
     void SetEngineFailure(const bool engine_failure);
     void SetBrakeFailure(const bool brake_failure);

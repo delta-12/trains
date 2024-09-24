@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
 
 #define TYPES_BEACON_DATA_SIZE 128U
 
@@ -19,6 +20,7 @@ typedef enum {
     ERROR_INVALID_LINE,
     ERROR_INVALID_BLOCK,
     ERROR_INVALID_TRAIN,
+    ERROR_INVALID_MODE,
     ERROR_INVALID_SIZE
 } Error;
 
@@ -35,6 +37,15 @@ typedef uint8_t LineId;
 typedef uint16_t BlockId;
 typedef uint16_t TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
+
+class Port
+{
+public:
+    virtual void Send(const std::vector<uint8_t> &buffer) = 0;
+    virtual void Receive(std::vector<uint8_t> &buffer) = 0;
+};
+
+
 
 } // namespace types
 
