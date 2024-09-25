@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <string>
 
-#include "track_model.h"
 #include "types.h"
 
 namespace train_model
@@ -19,7 +18,7 @@ class TrainModel
 {
 public:
     TrainModel(const types::TrainId train);
-    void Update(track_model::TrackModel *const track_model);
+    types::TrainId GetTrainId(void) const;
     void SetEmergencyBrake(const bool emergency_brake);
     void SetEngineFailure(const bool engine_failure);
     void SetBrakeFailure(const bool brake_failure);
@@ -33,6 +32,7 @@ public:
     bool GetSignalPickupFailure(void) const;
     types::Watts GetActualPower(void) const;
     types::DegreesFahrenheit GetActualInternalTemperature(void) const;
+    types::Polarity GetTrackPolarity(void) const;
     void SetStationAnnouncement(const std::string &announcement);
     void SetGrade(const float grade);
     void SetBrake(const float brake);
@@ -43,6 +43,13 @@ public:
     void SetCommandedPower(const types::Watts power);
     void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees);
     void SetDistanceTraveled(const types::Meters distance);
+    uint16_t GetPassengersDeboarding(void);
+    types::Meters GetDistanceTraveled(void);
+    void SetCommandedSpeed(const types::MetersPerSecond speed);
+    void SetAuthority(const types::Meters meters);
+    void SetPassengersBoarding(const uint16_t passegners);
+    void SetTrackPolarity(const types::Polarity polarity);
+    void SetBeaconData(const types::BeaconData &data, std::size_t &size);
 };
 
 } // namespace train_model
