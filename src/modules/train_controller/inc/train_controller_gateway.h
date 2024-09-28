@@ -19,7 +19,8 @@ class Gateway
 {
 public:
     void UpdateControllers(void);
-    types::Error UpdateTrainModel(std::shared_ptr<train_model::TrainModel> train_model);
+    types::Error UpdateTrainModel(std::shared_ptr<train_model::TrainModel> train);
+    types::Error UpdateTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains);
     void SetSimulationMode(const bool simulation);
     bool GetSimulationMode(void) const;
     void AttachPort(std::shared_ptr<types::Port> port);
