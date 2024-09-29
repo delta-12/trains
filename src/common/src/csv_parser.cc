@@ -3,7 +3,7 @@
 #define CSVPARSER_VALUE_DELIMITER ","
 #define CSVPARSER_ROW_DELIMITER "\n"
 
-std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter);
+static std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter);
 
 CsvParser::CsvParser(void) {}
 
@@ -67,7 +67,7 @@ void CsvParser::Reset(void)
     records_.clear();
 }
 
-std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter)
+static std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter)
 {
     std::vector<std::string> tokens;
     size_t index = 0;
