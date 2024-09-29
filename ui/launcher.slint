@@ -1,0 +1,72 @@
+import { Button, VerticalBox } from "std-widgets.slint";
+
+import { CtcUi } from "ctc_ui.slint";
+import { WaysideControllerUi } from "wayside_controller_ui.slint";
+import { TrackModelUi } from "track_model_ui.slint";
+import { TrainModelUi } from "train_model_ui.slint";
+import { TrainControllerUi } from "train_controller_ui.slint";
+
+export component Launcher inherits Window {
+
+    callback launch-ctc-window();
+    callback launch-wayside-controller-window();
+    callback launch-track-model-window();
+    callback launch-train-model-window();
+    callback launch-train-controller-window();
+
+    title: "Orient Express Launcher";
+    width: 400px;
+    height: 400px;
+    VerticalBox {
+        padding: 20px;
+        Text {
+            text: "Orient Express Launcher";
+            padding: 10px;
+        }
+
+        Button {
+            text: "CTC";
+            clicked => {
+                root.launch-ctc-window();
+            }
+        }
+
+        Button {
+            text: "Wayside Controller";
+            clicked => {
+                root.launch-wayside-controller-window();
+            }
+        }
+
+        Button {
+            text: "Track Model";
+            clicked => {
+                root.launch-track-model-window();
+            }
+        }
+
+        Button {
+            text: "Train Model";
+            clicked => {
+                root.launch-train-model-window();
+            }
+        }
+
+        Button {
+            text: "Train Controller";
+            clicked => {
+                root.launch-train-controller-window();
+            }
+        }
+    }
+}
+
+export component CtcWindow inherits CtcUi { }
+
+export component WaysideControllerWindow inherits WaysideControllerUi { }
+
+export component TrackModelWindow inherits TrackModelUi { }
+
+export component TrainModelWindow inherits TrainModelUi { }
+
+export component TrainControllerWindow inherits TrainControllerUi { }
