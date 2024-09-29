@@ -15,9 +15,11 @@ void Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> track)
 
 void Simulator::DeleteTrackModel(const types::TrackId track)
 {
-    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model){
+    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
+        {
             return model->GetTrackId() == track;
-        }), tracks_.end());
+        }),
+                  tracks_.end());
 }
 
 void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel> > &tracks) const
@@ -28,7 +30,8 @@ void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackMod
 types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train)
 {
     types::Error                                                     error = types::ERROR_NONE;
-    std::vector<std::shared_ptr<track_model::TrackModel> >::iterator i     = std::find_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model){
+    std::vector<std::shared_ptr<track_model::TrackModel> >::iterator i     = std::find_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
+        {
             return model->GetTrackId() == track;
         });
 
@@ -48,7 +51,7 @@ void Simulator::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainMod
 {
     std::vector<std::shared_ptr<train_model::TrainModel> > track_trains;
 
-    for (std::vector<std::shared_ptr<track_model::TrackModel> >::const_iterator i = tracks_.begin(); i != tracks_.end(); i++)
+    for (std::vector<std::shared_ptr<track_model::TrackModel> >::const_iterator i = tracks_.begin(); i != tracks_.end(); ++i)
     {
         i->get()->GetTrainModels(track_trains);
 
@@ -69,7 +72,8 @@ types::Error Simulator::Update(wayside_controller::Gateway &wayside_controller_g
 
     if (types::ERROR_NONE == error)
     {
-        std::for_each(tracks_.begin(), tracks_.end(), [](std::shared_ptr<track_model::TrackModel> track){
+        std::for_each(tracks_.begin(), tracks_.end(), [](std::shared_ptr<track_model::TrackModel> track)
+            {
                 track->Update();
             });
     }

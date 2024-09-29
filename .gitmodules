@@ -1,3 +1,6 @@
 [submodule "tools/uncrustify/uncrustify"]
 	path = tools/uncrustify/uncrustify
 	url = git@github.com:uncrustify/uncrustify.git
+[submodule "tools/cppcheck/cppcheck"]
+	path = tools/cppcheck/cppcheck
+	url = git@github.com:danmar/cppcheck.git
