@@ -5,8 +5,13 @@
  *****************************************************************************/
 
 #include "train_model.h"
+#include "train_model_ui.h"
 
 int main(void)
 {
+    auto train_model_ui = ui::TrainModelUi::create();
+
+    train_model_ui->run();
+
     return 0;
 }

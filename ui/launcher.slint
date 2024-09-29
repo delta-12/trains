@@ -1,10 +1,10 @@
 import { Button, VerticalBox } from "std-widgets.slint";
 
-import { CtcUi } from "ctc.slint";
-import { WaysideControllerUi } from "waysidecontroller.slint";
-import { TrackModelUi } from "trackmodel.slint";
-import { TrainModelUi } from "trainmodel.slint";
-import { TrainControllerUi } from "traincontroller.slint";
+import { CtcUi } from "ctc_ui.slint";
+import { WaysideControllerUi } from "wayside_controller_ui.slint";
+import { TrackModelUi } from "track_model_ui.slint";
+import { TrainModelUi } from "train_model_ui.slint";
+import { TrainControllerUi } from "train_controller_ui.slint";
 
 export component Launcher inherits Window {
 
@@ -61,27 +61,12 @@ export component Launcher inherits Window {
     }
 }
 
-export component CtcWindow inherits Dialog {
-    title: "CTC";
-    CtcUi { }
-}
+export component CtcWindow inherits CtcUi { }
 
-export component WaysideControllerWindow inherits Dialog {
-    title: "Wayside Controller";
-    WaysideControllerUi { }
-}
+export component WaysideControllerWindow inherits WaysideControllerUi { }
 
-export component TrackModelWindow inherits Dialog {
-    title: "Track Model";
-    TrackModelUi { }
-}
+export component TrackModelWindow inherits TrackModelUi { }
 
-export component TrainModelWindow inherits Dialog {
-    title: "Train Model";
-    TrainModelUi { }
-}
+export component TrainModelWindow inherits TrainModelUi { }
 
-export component TrainControllerWindow inherits Dialog {
-    title: "Train Controller";
-    TrainControllerUi { }
-}
+export component TrainControllerWindow inherits TrainControllerUi { }

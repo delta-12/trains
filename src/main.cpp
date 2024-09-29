@@ -5,15 +5,17 @@
 #include <slint.h>
 
 #include "launcher.h"
+#include "simulator.h"
 
-int main(int argc, char **argv)
+int main(void)
 {
-    auto launcher_ui = Launcher::create();
-    auto ctc_ui = CtcWindow::create();
-    auto wayside_controller_ui = WaysideControllerWindow::create();
-    auto track_model_ui = TrackModelWindow::create();
-    auto train_model_ui = TrainModelWindow::create();
-    auto train_controller_ui = TrainControllerWindow::create();
+    simulator::Simulator world;
+    auto launcher_ui = ui::Launcher::create();
+    auto ctc_ui = ui::CtcWindow::create();
+    auto wayside_controller_ui = ui::WaysideControllerWindow::create();
+    auto track_model_ui = ui::TrackModelWindow::create();
+    auto train_model_ui = ui::TrainModelWindow::create();
+    auto train_controller_ui = ui::TrainControllerWindow::create();
 
     launcher_ui->on_launch_ctc_window([&]{
         ctc_ui->show();
