@@ -3,7 +3,7 @@
 namespace train_controller
 {
 
-types::Error Gateway::UpdateTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains)
+types::Error Gateway::UpdateTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains)
 {
     types::Error error = types::ERROR_NONE;
 

@@ -13,8 +13,8 @@ namespace ctc
 
 class Ctc
 {
-public:
-    types::Error UpdateWaysideControllers(wayside_controller::Gateway &gateway);
+    public:
+        types::Error UpdateWaysideControllers(wayside_controller::Gateway &gateway);
 };
 
 } // namespace ctc
