@@ -17,7 +17,7 @@ namespace types
 
 typedef enum {
     ERROR_NONE,
-    ERROR_INVALID_LINE,
+    ERROR_INVALID_TRACK,
     ERROR_INVALID_BLOCK,
     ERROR_INVALID_TRAIN,
     ERROR_INVALID_MODE,
