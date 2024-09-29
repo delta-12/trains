@@ -1,0 +1,3 @@
+[submodule "tools/uncrustify/uncrustify"]
+	path = tools/uncrustify/uncrustify
+	url = git@github.com:uncrustify/uncrustify.git

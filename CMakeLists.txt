@@ -5,16 +5,18 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
-set(COMMON_DIR ${CMAKE_SOURCE_DIR}/src/common)
-set(MODULES_DIR ${CMAKE_SOURCE_DIR}/src/modules)
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(COMMON_DIR ${SRC_DIR}/common)
+set(MODULES_DIR ${SRC_DIR}/modules)
 set(CTC_DIR ${MODULES_DIR}/ctc)
 set(WAYSIDE_CONTROLLER_DIR ${MODULES_DIR}/wayside_controller)
 set(TRACK_MODEL_DIR ${MODULES_DIR}/track_model)
 set(TRAIN_MODEL_DIR ${MODULES_DIR}/train_model)
 set(TRAIN_CONTROLLER_DIR ${MODULES_DIR}/train_controller)
-set(SIMULATOR_DIR ${CMAKE_SOURCE_DIR}/src/simulator)
+set(SIMULATOR_DIR ${SRC_DIR}/simulator)
 set(TESTS_DIR ${CMAKE_SOURCE_DIR}/tests)
 set(UI_DIR ${CMAKE_SOURCE_DIR}/ui)
+set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/tools)
 
 set(COMMON_INC_DIR ${COMMON_DIR}/inc)
 set(CTC_INC_DIR ${CTC_DIR}/inc)
@@ -53,6 +55,7 @@ file(GLOB SIMULATOR_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
 )
 
 set(TRAINS_SRCS
+  ${SRC_DIR}/main.cpp
   ${CTC_SRCS}
   ${WAYSIDE_CONTROLLER_SRCS}
   ${TRACK_MODEL_SRCS}
@@ -64,6 +67,8 @@ set(TRAINS_SRCS
 set(SLINT_STYLE cosmic-dark)
 
 find_package(Slint REQUIRED)
+
+include(${TOOLS_DIR}/uncrustify/uncrustify.cmake)
 
 ################################################################################
 # CTC test build
@@ -123,16 +128,9 @@ slint_target_sources(train_controller_tests ${UI_DIR}/train_controller_ui.slint 
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains
-      WIN32
-      src/main.cpp
-      ${TRAINS_SRCS}
-    )
+    add_executable(trains WIN32 ${TRAINS_SRCS})
 else()
-    add_executable(trains
-      src/main.cpp
-      ${TRAINS_SRCS}
-    )
+    add_executable(trains ${TRAINS_SRCS})
 endif()
 target_include_directories(trains PRIVATE ${INC_DIRS})
 target_link_libraries(trains PRIVATE Slint::Slint)
