@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Cppcheck
+echo "pre-commit: Running cppcheck..."
+if ! cmake --build build -t cppcheck
+then
+    echo "pre-commit: Aborting commit due to failed cppcheck"
+    exit 1
+else
+    echo "pre-commit: Cppcheck passed"
+    exit 0
+fi
+
+# Uncrustify
+echo "pre-commit: Running uncrustify check..."
+if ! cmake --build build -t uncrustify-check
+then
+    echo "pre-commit: Aborting commit due to failed uncrustify check"
+    exit 1
+else
+    echo "pre-commit: Uncrustify check passed"
+    exit 0
+fi
