@@ -1,30 +1,69 @@
 #include "csv_parser.h"
 
+#include <fstream>
+
 #define CSVPARSER_VALUE_DELIMITER ","
-#define CSVPARSER_ROW_DELIMITER "\n"
+#define CSVPARSER_ROW_DELIMITER   "\n"
 
 static std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter);
 
-CsvParser::CsvParser(void) {}
+CsvParser::CsvParser(void)
+{
+}
+
+CsvParser::CsvParser(const std::filesystem::path &file_path)
+{
+    Parse(file_path);
+}
+
+CsvParser::CsvParser(const std::stringstream &string_stream)
+{
+    Parse(string_stream);
+}
 
 CsvParser::CsvParser(const std::string &input_string)
 {
     Parse(input_string);
 }
 
+bool CsvParser::Parse(const std::filesystem::path &file_path)
+{
+    bool parsed = false;
+
+    std::ifstream file(file_path);
+
+    if (file.is_open())
+    {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        file.close();
+
+        parsed = Parse(buffer);
+    }
+
+    return parsed;
+}
+
+bool CsvParser::Parse(const std::stringstream &string_stream)
+{
+    return Parse(string_stream.str());
+}
+
 bool CsvParser::Parse(const std::string &input_string)
 {
     bool parsed = true;
 
+    Reset();
+
     std::vector<std::string> lines = Split(input_string, CSVPARSER_ROW_DELIMITER);
 
-    for (std::string line : lines)
+    for (const std::string &line : lines)
     {
         records_.push_back(Split(line, CSVPARSER_VALUE_DELIMITER));
     }
 
     const std::size_t size = records_[0].size();
-    for (std::vector<std::string> record : records_)
+    for (const std::vector<std::string> &record : records_)
     {
         if (record.size() != size)
         {
@@ -57,7 +96,7 @@ std::vector<std::string> CsvParser::GetRecord(const std::size_t index) const
     return record;
 }
 
-std::vector<std::vector<std::string>> CsvParser::GetRecords(void) const
+std::vector<std::vector<std::string> > CsvParser::GetRecords(void) const
 {
     return records_;
 }
@@ -70,15 +109,15 @@ void CsvParser::Reset(void)
 static std::vector<std::string> Split(const std::string &input_string, const std::string &delimiter)
 {
     std::vector<std::string> tokens;
-    size_t index = 0;
-    size_t end = input_string.find(delimiter, index);
+    size_t                   index = 0;
+    size_t                   end   = input_string.find(delimiter, index);
 
     while (std::string::npos != end)
     {
         tokens.push_back(input_string.substr(index, end - index));
 
         index = end + 1;
-        end = input_string.find(delimiter, index);
+        end   = input_string.find(delimiter, index);
     }
     tokens.push_back(input_string.substr(index, input_string.length() - index));
 
