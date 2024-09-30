@@ -11,6 +11,8 @@
 #include <sstream>
 #include <vector>
 
+#include "types.h"
+
 class CsvParser
 {
     public:
@@ -18,9 +20,9 @@ class CsvParser
         CsvParser(const std::filesystem::path &file_path);
         CsvParser(const std::stringstream &string_stream);
         CsvParser(const std::string &input_string);
-        bool Parse(const std::filesystem::path &file_path);
-        bool Parse(const std::stringstream &string_stream);
-        bool Parse(const std::string &input_string);
+        types::Error Parse(const std::filesystem::path &file_path);
+        types::Error Parse(const std::stringstream &string_stream);
+        types::Error Parse(const std::string &input_string);
         std::size_t GetSize(void) const;
         std::vector<std::string> GetRecord(const std::size_t index) const;
         std::vector<std::vector<std::string> > GetRecords(void) const;
