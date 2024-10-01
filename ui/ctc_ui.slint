@@ -1,11 +1,65 @@
 import { HorizontalBox } from "std-widgets.slint";
 
-export component CtcUi inherits Window {
-    title: "CTC";
-    HorizontalBox {
-        padding: 50px;
-        Text {
-            text: "This is the CTC UI.";
+export component TransitSystem inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    VerticalLayout {
+        HorizontalLayout {
+            padding-top: 5px;
+            padding-left: 10px;
+            Text { 
+                text: "Transit System";
+            }
         }
     }
 }
+
+export component TrainSchedule inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    VerticalLayout {
+        HorizontalLayout {
+            padding-top: 5px;
+            padding-left: 10px;
+            Text { 
+                text: "Train Schedule";
+            }
+        }
+    }
+}
+
+export component Dispatch inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    VerticalLayout {
+        HorizontalLayout {
+            padding-top: 5px;
+            padding-left: 10px;
+            Text { 
+                text: "Dispatch";
+            }
+        }
+    }
+}
+
+export component CtcUi inherits Window {
+    title: "CTC Office";
+    min-width: 700px;
+    min-height: 500px;
+    VerticalLayout {
+        padding: 15px;
+        spacing: 15px;
+        alignment: stretch;
+        TransitSystem {
+
+        }
+        HorizontalLayout {
+            spacing: 15px;
+            TrainSchedule {}
+            Dispatch {}
+        }
+        
+    }
+}
+
+
