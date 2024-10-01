@@ -33,11 +33,11 @@ typedef enum
     POLARITY_NEGATIVE
 } Polarity;
 
-typedef uint8_t                                     MetersPerSecond;
-typedef uint32_t                                    Meters;
-typedef uint32_t                                    Watts;
+typedef double                                      MetersPerSecond;
+typedef double                                      Meters;
+typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
-typedef uint64_t                                    Tick;
+typedef int64_t                                     Tick;
 typedef uint8_t                                     TrackId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    TrainId;
