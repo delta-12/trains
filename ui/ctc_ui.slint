@@ -1,4 +1,4 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, Button } from "std-widgets.slint";
 
 export component TransitSystem inherits Rectangle {
     background: #252525;
@@ -32,13 +32,17 @@ export component Dispatch inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     VerticalLayout {
-        HorizontalLayout {
-            padding-top: 7px;
-            padding-left: 10px;
-            Text { 
-                text: "Dispatch";
-            }
+        padding: 10px;
+        spacing: 2px;
+        Text { 
+            text: "Dispatch";
         }
+        Button { 
+            text: "Dispatch";
+        }
+
+        
+        
     }
 }
 
