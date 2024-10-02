@@ -66,5 +66,14 @@ TEST(TickSourceTests, SetTime)
 
 TEST(TickSourceTests, GetElapsedTime)
 {
-    // TODO
+    TickSource tick_source;
+
+    tick_source.Start();
+    usleep(1e4);
+    types::Tick start = tick_source.GetTick();
+    usleep(3e4);
+    ASSERT_EQ(30, tick_source.GetElapsedTime(start).count());
+    usleep(1e4);
+    types::Tick end = tick_source.GetTick();
+    ASSERT_EQ(40, tick_source.GetElapsedTime(start, end).count());
 }
