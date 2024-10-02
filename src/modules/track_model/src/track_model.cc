@@ -2,7 +2,40 @@
 
 namespace track_model
 {
+
     //cmake --build build -t target
+    //BLUE LINE CONSTRUCTOR
+    track_model::SoftwareTrackModel::SoftwareTrackModel(){
+        //if nothing, blue line!
+        track_id=1;
+        std::vector<Block> newstuff = {
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block(),
+            Block()
+        };
+
+        newstuff[2].crossing=1;
+        newstuff[4].switches[0]=6;
+        newstuff[4].switches[1]=11;
+        newstuff[5].light=1;
+        newstuff[9].station='B';
+        newstuff[10].light=1;
+        newstuff[14].station='C';
+
+        line.insert(line.end(),newstuff.begin(),newstuff.end());
+    }
 
     /*types::TrackId SoftwareTrackModel::GetTrackId(void) {
     // Implementation logic to get the Track ID
@@ -65,12 +98,11 @@ namespace track_model
         //checking if block exists
         if (line.size()<block)
         {
-            occupied=0;
             return types::ERROR_INVALID_BLOCK;
         }
 
         //check occupancy
-        if (line[block].occupancy==1)
+        if (line[block-1].occupancy==1)
         {
             //set occupancy variable
             occupied=1;
@@ -93,10 +125,10 @@ namespace track_model
         }
 
         //setting broken rail
-        line[block].brail=broken;
+        line[block-1].brail=broken;
 
         //occupancy
-        line[block].occupancy=1;
+        line[block-1].occupancy=1;
 
         return types::ERROR_NONE;
     }
@@ -111,7 +143,7 @@ namespace track_model
         }
 
         //setting TC fail
-        line[block].tcfail=track_circuit_failure;
+        line[block-1].tcfail=track_circuit_failure;
 
         return types::ERROR_NONE;
     }
@@ -126,10 +158,10 @@ namespace track_model
         }
 
         //setting TC fail
-        line[block].pfail=power_failure;
+        line[block-1].pfail=power_failure;
 
         //occupancy
-        line[block].occupancy=1;
+        line[block-1].occupancy=1;
 
         return types::ERROR_NONE;
     }

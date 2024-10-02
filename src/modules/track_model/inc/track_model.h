@@ -37,6 +37,7 @@ class TrackModel
 
 class SoftwareTrackModel : public TrackModel {
     public:
+        SoftwareTrackModel();
         /*virtual types::TrackId GetTrackId(void)                                                                   = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const         = 0;
@@ -61,7 +62,7 @@ class SoftwareTrackModel : public TrackModel {
         struct Block
         {
             bool occupancy=0;
-            bool switches=0;
+            int switches[2]={0, 0};
             bool crossing=0;
             bool light=0;
             bool pfail=0;
@@ -73,6 +74,7 @@ class SoftwareTrackModel : public TrackModel {
             int elevation=0;
             char section='A';
             bool heater=0;
+            char station='Z';
         
         };
 

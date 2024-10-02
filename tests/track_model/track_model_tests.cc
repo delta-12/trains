@@ -5,7 +5,7 @@
  *****************************************************************************/
 
 //#include "track_model_ui.h"
-#include "train_model.h"
+//#include "train_model.h"
 #include "track_model.h"
 //#include <cstdint>
 #include <iostream>
@@ -21,12 +21,39 @@ int main(void)
     //track circuit fail
     types::BlockId blockID = 1;
     bool occu;
+    bool occu2;
+    bool occu3;
 
-    trackModel.SetTrackCircuitFailure(blockID, 1);
+    if (trackModel.SetPowerFailure(blockID, 1) == types::ERROR_INVALID_BLOCK)
+    {
+        std::cout << "TC ERROR" << std::endl;
+    }
 
-    trackModel.GetBlockOccupancy(blockID, occu);
+    if (trackModel.GetBlockOccupancy(blockID, occu) == types::ERROR_INVALID_BLOCK)
+    {
+        std::cout << "BO ERROR" << std::endl;
+    }
 
-    if (occu==1)
+    blockID=2;
+
+    if (trackModel.SetBrokenRail(blockID, 1) == types::ERROR_INVALID_BLOCK)
+    {
+        std::cout << "BR ERROR" << std::endl;
+    }
+
+    if (trackModel.GetBlockOccupancy(blockID, occu2) == types::ERROR_INVALID_BLOCK)
+    {
+        std::cout << "BO2 ERROR" << std::endl;
+    }
+
+    blockID=3;
+
+    if (trackModel.GetBlockOccupancy(blockID, occu3) == types::ERROR_INVALID_BLOCK)
+    {
+        std::cout << "BO2 ERROR" << std::endl;
+    }
+
+    if (occu==1 && occu2==1 && occu3==0)
     {
         std::cout << "Occupancy success" << std::endl;
     }
