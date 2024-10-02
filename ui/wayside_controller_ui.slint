@@ -1,11 +1,76 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch} from "std-widgets.slint";
+
+/*
+#include <iostream>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+
+export component FileFunction{
+
+    public pure function file-function(parameter:) -> string{
+        //windows api control
+
+
+        return "file uploaded"
+    }
+}
+*/
 
 export component WaysideControllerUi inherits Window {
     title: "Wayside Controller";
+    width: 600px;
+    height: 400px;
+
     HorizontalBox {
-        padding: 50px;
+        x: 390px;
+        y: -0px;
         Text {
-            text: "This is the Wayside Controller UI.";
+            //text: "This is the Wayside Controller UI.";
+        }
+        ComboBox {
+            y: 0px;
+            width: self.preferred-width;
+            height: self.preferred-height;
+            model: ["Software Wayside Controller", "Hardware Wayside Controller"];
+            current-value: "Software Wayside Controller";
+        }
+
+        Switch {
+            width: parent.width;
+            height: parent.height;
+
+            y: 152px;
+            text: "Hello World";
+        }
+    }
+    TabWidget {
+        Tab{
+            title: "PLC";
+            ComboBox {
+                model: ["PLC 1", "PLC 2", "PLC 3"];
+                x: 41px;
+                y: 96px;
+            }
+            Button {
+                accessible-role: AccessibleRole.checkbox;
+                text: "File Upload";
+                x: 82px;
+                y: 152px;
+                clicked => { self.text = "File Uploading";}
+            }
+            ProgressIndicator { 
+                width: 150px;
+                x: 41px;
+                y: 206px;
+                height: 20px;
+                progress: 50%;
+            }
+    
+        }
+        Tab{
+            title: "Block Status";
         }
     }
 }
