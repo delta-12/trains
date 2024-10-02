@@ -14,20 +14,27 @@
 TEST(TickSourceTests, Initialize)
 {
     TickSource tick_source("07:00:00", std::chrono::milliseconds(2));
+    ASSERT_STREQ("07:00:00", tick_source.GetTimeString().c_str());
 
     tick_source.Start();
     usleep(5e5);
     tick_source.Stop();
-
     ASSERT_EQ(std::chrono::milliseconds(2), tick_source.GetTickDuration());
     ASSERT_EQ(250, tick_source.GetTick());
     ASSERT_STREQ("07:00:01", tick_source.GetTimeString().c_str());
 
     tick_source.Start();
     usleep(5e5);
+    tick_source.Stop();
     ASSERT_EQ(500, tick_source.GetTick());
     ASSERT_STREQ("07:00:01", tick_source.GetTimeString().c_str());
+
+    usleep(1e4);
+    ASSERT_EQ(500, tick_source.GetTick());
+
+    tick_source.Start();
     usleep(1e6);
+    tick_source.Stop();
     ASSERT_EQ(1000, tick_source.GetTick());
     ASSERT_STREQ("07:00:02", tick_source.GetTimeString().c_str());
 }
@@ -61,7 +68,21 @@ TEST(TickSourceTests, MultiplierAndDuration)
 
 TEST(TickSourceTests, SetTime)
 {
-    // TODO
+    TickSource tick_source("07:00:00", std::chrono::milliseconds(1));
+
+    tick_source.SetMultiplier(100);
+    tick_source.Start();
+    usleep(1e4);
+    ASSERT_EQ(1000, tick_source.GetTick());
+    ASSERT_STREQ("07:00:01", tick_source.GetTimeString().c_str());
+    tick_source.SetTime("07:30:00");
+    usleep(2e4);
+    ASSERT_EQ(2000, tick_source.GetTick());
+    ASSERT_STREQ("07:30:02", tick_source.GetTimeString().c_str());
+    tick_source.SetTime("12:59:59");
+    usleep(1e4);
+    ASSERT_EQ(1000, tick_source.GetTick());
+    ASSERT_STREQ("13:00:00", tick_source.GetTimeString().c_str());
 }
 
 TEST(TickSourceTests, GetElapsedTime)
