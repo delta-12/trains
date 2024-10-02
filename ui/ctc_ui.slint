@@ -1,11 +1,138 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, Button } from "std-widgets.slint";
 
-export component CtcUi inherits Window {
-    title: "CTC";
-    HorizontalBox {
-        padding: 50px;
-        Text {
-            text: "This is the CTC UI.";
+export component TransitSystem inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    VerticalLayout {
+        HorizontalLayout {
+            padding-top: 7px;
+            padding-left: 10px;
+            Text { 
+                text: "Transit System";
+            }
         }
     }
 }
+
+export component TrainSchedule inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    VerticalLayout {
+        HorizontalLayout {
+            padding-top: 7px;
+            padding-left: 10px;
+            Text { 
+                text: "Train Schedule";
+            }
+        }
+    }
+}
+
+export component Dispatch inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+}
+
+export ToggleSwitch := Rectangle {
+    callback toggled;
+    property <string> text;
+    property <bool> checked;
+    property<bool> enabled <=> touch-area.enabled;
+    height: 25px;
+    horizontal-stretch: 0;
+    vertical-stretch: 0;
+
+    HorizontalLayout {
+        spacing: 5px;
+        indicator := Rectangle {
+            width: 50px;
+            border-width: 0px;
+            border-radius: root.height / 2;
+            border-color: background.darker(25%);
+            background: root.enabled ? (root.checked ? #353535 : white)  : white;
+            animate background { duration: 100ms; }
+
+            bubble := Rectangle {
+                width: root.height - 8px;
+                height: bubble.width;
+                border-radius: bubble.height / 2;
+                y: 4px;
+                x: 4px + a * (indicator.width - bubble.width - 8px);
+                property <float> a: root.checked ? 1 : 0;
+                background: root.checked ? white : (root.enabled ? #15ed81: white);
+                animate a, background { duration: 200ms; easing: ease;}
+            }
+        }
+
+        Text {
+            min-width: max(100px, preferred-width);
+            text: root.text;
+            vertical-alignment: center;
+            color: root.enabled ? black : gray;
+        }
+
+    }
+
+    touch-area := TouchArea {
+        width: root.width;
+        height: root.height;
+        clicked => {
+            if (root.enabled) {
+                root.checked = !root.checked;
+                root.toggled();
+            }
+        }
+    }
+}
+
+export component CtcUi inherits Window {
+    in-out property<string> fileName: "Choose File";
+    callback choose-file();
+
+    title: "CTC Office";
+    min-width: 700px;
+    min-height: 500px;
+    VerticalLayout {
+        padding: 15px;
+        spacing: 15px;
+        alignment: stretch;
+        TransitSystem {
+
+        }
+        HorizontalLayout {
+            spacing: 15px;
+            TrainSchedule {}
+            Dispatch {
+                VerticalLayout {
+                    alignment: start;
+                    padding: 10px;
+                    spacing: 10px;
+                    HorizontalLayout {
+                        alignment: start;
+                        Text { 
+                            horizontal-alignment: left;
+                            text: "Dispatch";
+                        }
+                    }
+                    
+                    HorizontalLayout {
+                        Button { 
+                            height: 50px;
+                            text: "Choose File";
+                            clicked => {root.choose-file()}
+                            
+                        }
+                    } 
+                    Button { 
+                        height: 50px;
+                        text: "Dispatch";
+                        
+                    } 
+                }
+            }
+        }
+        
+    }
+}
+
+
