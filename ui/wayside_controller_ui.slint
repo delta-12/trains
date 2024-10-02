@@ -17,60 +17,77 @@ export component FileFunction{
     }
 }
 */
+component Circle inherits Rectangle {
+    width: 30px;
+    height: 30px;
+    border-radius: root.width / 2;
+    animate x { duration: 250ms; easing: ease-in; }
+    animate y { duration: 250ms; easing: ease-in-out; }
+    animate background { duration: 250ms; }
+}
+
 
 export component WaysideControllerUi inherits Window {
     title: "Wayside Controller";
-    width: 600px;
-    height: 400px;
+    width: 650px;
+    height: 450px;
 
     HorizontalBox {
-        x: 390px;
-        y: -0px;
         Text {
             //text: "This is the Wayside Controller UI.";
         }
+        TabWidget {
+            Tab{
+                title: "PLC";
+                ComboBox {
+                    model: ["PLC 1", "PLC 2", "PLC 3"];
+                    x: 41px;
+                    y: 96px;
+                }
+                Button {
+                    accessible-role: AccessibleRole.checkbox;
+                    text: "File Upload";
+                    x: 82px;
+                    y: 152px;
+                    clicked => { self.text = "File Uploading";}
+                }
+                ProgressIndicator { 
+                    width: 150px;
+                    x: 41px;
+                    y: 206px;
+                    height: 20px;
+                    progress: 50%;
+                }
+
+            }
+            Tab{
+                title: "Block Status";
+                ComboBox {
+                    //text: "Selected Line";
+                    model: ["Red Line", "Green Line", "Blue Line"];
+                    x: 41px;
+                    y: 96px;
+                }
+                ComboBox {
+                    //text: "Selected Line";
+                    model: ["Block 1", "Block 2", "Block 3"];
+                    x: 82px;
+                    y: 152px;
+                }
+            }
+        }
+        Switch {
+            accessible-role: AccessibleRole.switch;
+            text: "Current PLC Status";
+        }
         ComboBox {
-            y: 0px;
             width: self.preferred-width;
             height: self.preferred-height;
             model: ["Software Wayside Controller", "Hardware Wayside Controller"];
             current-value: "Software Wayside Controller";
         }
 
-        Switch {
-            width: parent.width;
-            height: parent.height;
 
-            y: 152px;
-            text: "Hello World";
-        }
-    }
-    TabWidget {
-        Tab{
-            title: "PLC";
-            ComboBox {
-                model: ["PLC 1", "PLC 2", "PLC 3"];
-                x: 41px;
-                y: 96px;
-            }
-            Button {
-                accessible-role: AccessibleRole.checkbox;
-                text: "File Upload";
-                x: 82px;
-                y: 152px;
-                clicked => { self.text = "File Uploading";}
-            }
-            ProgressIndicator { 
-                width: 150px;
-                x: 41px;
-                y: 206px;
-                height: 20px;
-                progress: 50%;
-            }
-    
-        }
-        Tab{
-            title: "Block Status";
-        }
+        
     }
 }
