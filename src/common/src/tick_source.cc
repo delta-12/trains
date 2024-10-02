@@ -21,7 +21,7 @@ TickSource::TickSource(const std::chrono::milliseconds tick_duration) : TickSour
 
 TickSource::TickSource(const std::string &hours_minutes_seconds, const std::chrono::milliseconds tick_duration)
 {
-    std::chrono::system_clock::time_point time;
+    std::chrono::system_clock::time_point time = std::chrono::system_clock::now();
 
     if (types::ERROR_NONE == GetTimePoint(hours_minutes_seconds, time))
     {

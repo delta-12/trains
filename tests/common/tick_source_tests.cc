@@ -1,0 +1,70 @@
+/*****************************************************************************
+ * @file tick_source_tests.cc
+ *
+ * @brief Unit testing for TickSource.
+ *****************************************************************************/
+
+#include <unistd.h>
+#include <iostream>
+
+#include <gtest/gtest.h>
+
+#include "tick_source.h"
+
+TEST(TickSourceTests, Initialize)
+{
+    TickSource tick_source("07:00:00", std::chrono::milliseconds(2));
+
+    tick_source.Start();
+    usleep(5e5);
+    tick_source.Stop();
+
+    ASSERT_EQ(std::chrono::milliseconds(2), tick_source.GetTickDuration());
+    ASSERT_EQ(250, tick_source.GetTick());
+    ASSERT_STREQ("07:00:01", tick_source.GetTimeString().c_str());
+
+    tick_source.Start();
+    usleep(5e5);
+    ASSERT_EQ(500, tick_source.GetTick());
+    ASSERT_STREQ("07:00:01", tick_source.GetTimeString().c_str());
+    usleep(1e6);
+    ASSERT_EQ(1000, tick_source.GetTick());
+    ASSERT_STREQ("07:00:02", tick_source.GetTimeString().c_str());
+}
+
+TEST(TickSourceTests, MultiplierAndDuration)
+{
+    TickSource tick_source;
+
+    tick_source.Start();
+    usleep(1e4);
+    ASSERT_EQ(10, tick_source.GetTick());
+    tick_source.SetMultiplier(50);
+    usleep(1e4);
+    ASSERT_EQ(510, tick_source.GetTick());
+    tick_source.SetMultiplier(1);
+    usleep(1e4);
+    ASSERT_EQ(520, tick_source.GetTick());
+
+    tick_source.SetTickDuration(std::chrono::milliseconds(5));
+    usleep(1e4);
+    ASSERT_EQ(522, tick_source.GetTick());
+    tick_source.SetMultiplier(10);
+    usleep(1e4);
+    ASSERT_EQ(542, tick_source.GetTick());
+
+    tick_source.SetMultiplier(1);
+    tick_source.SetTickDuration(std::chrono::milliseconds(1));
+    usleep(1e4);
+    ASSERT_EQ(552, tick_source.GetTick());
+}
+
+TEST(TickSourceTests, SetTime)
+{
+    // TODO
+}
+
+TEST(TickSourceTests, GetElapsedTime)
+{
+    // TODO
+}
