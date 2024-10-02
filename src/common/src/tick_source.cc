@@ -23,10 +23,8 @@ TickSource::TickSource(const std::string &hours_minutes_seconds, const std::chro
 {
     std::chrono::system_clock::time_point time = std::chrono::system_clock::now();
 
-    if (types::ERROR_NONE == GetTimePoint(hours_minutes_seconds, time))
-    {
-        Initialize(time, tick_duration);
-    }
+    Initialize(time, tick_duration);
+    SetTime(hours_minutes_seconds);
 }
 
 TickSource::TickSource(const std::chrono::system_clock::time_point time, const std::chrono::milliseconds tick_duration)
@@ -187,7 +185,7 @@ types::Error TickSource::GetTimePoint(const std::string &hours_minutes_seconds, 
     }
     else
     {
-        time_point = std::chrono::system_clock::from_time_t(std::mktime(const_cast<std::tm *>(&time)));
+        time_point = std::chrono::system_clock::from_time_t(std::mktime(&time));
     }
 
     return error;

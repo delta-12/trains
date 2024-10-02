@@ -102,6 +102,7 @@ slint_target_sources(ctc_tests_ui ${UI_DIR}/ctc_ui.slint NAMESPACE ui)
 add_executable(wayside_controller_tests_ui
   ${TESTS_DIR}/modules/wayside_controller_tests_ui.cc
   ${WAYSIDE_CONTROLLER_SRCS}
+  ${COMMON_SRCS}
 )
 target_include_directories(wayside_controller_tests_ui PRIVATE ${INC_DIRS})
 target_link_libraries(wayside_controller_tests_ui PRIVATE Slint::Slint)
