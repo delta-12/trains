@@ -4,6 +4,8 @@
 namespace train_controller
 {
     types::Watts TrainController::CalculateCommandedPower(uint8_t speed){
+        //P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
+
 
         //Defining Vcmd and Actual speed in m/s
         types::MetersPerSecond Vcmd = speed*1.609344;
@@ -13,21 +15,21 @@ namespace train_controller
         float Verror = Vcmd - ActualSpeed;
 
         //Calculating Kp term
-        float firstTerm = Verror*Kp;
-
+        float KPterm = Verror*Kp;
 
         //This section is where the integral section of the equation will be calculated
-        //P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
-
-        // for (size_t i = 0; i < count; i++)
-        // {
-        //     /* code */
-        // }
-        
+        float currentTime = 1;
+        float integral = (Vcmd-ActualSpeed)*currentTime;
         
 
+        //Calculating Ki term
+        float KIterm = Ki*integral;
 
-        return types::Watts{/**/};
+        //Calculating Commanded Power
+        types::Watts CommandedPower = KPterm + KIterm;
+
+        //Returning Commanded Power
+        return CommandedPower;
     }
 
 
