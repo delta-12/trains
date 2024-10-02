@@ -18,7 +18,7 @@ namespace track_model
 class TrackModel
 {
     public:
-        virtual types::TrackId GetTrackId(void)                                                                   = 0;
+        /*virtual types::TrackId GetTrackId(void)                                                                   = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const         = 0;
         virtual void Update(void)                                                                                 = 0;
@@ -29,7 +29,7 @@ class TrackModel
         virtual types::Error SetGreenTrafficLight(const types::BlockId block, const bool on)                      = 0;
         virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)    = 0;
         virtual types::Error SetAuthority(const types::BlockId block, const types::Meters authority)              = 0;
-        virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const                  = 0;
+        */virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const                  = 0;
         virtual types::Error SetBrokenRail(const types::BlockId block, const bool broken)                         = 0;
         virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure) = 0;
         virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure)                = 0;
@@ -37,7 +37,7 @@ class TrackModel
 
 class SoftwareTrackModel : public TrackModel {
     public:
-        virtual types::TrackId GetTrackId(void)                                                                   = 0;
+        /*virtual types::TrackId GetTrackId(void)                                                                   = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const         = 0;
         virtual void Update(void)                                                                                 = 0;
@@ -48,10 +48,39 @@ class SoftwareTrackModel : public TrackModel {
         virtual types::Error SetGreenTrafficLight(const types::BlockId block, const bool on)                      = 0;
         virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)    = 0;
         virtual types::Error SetAuthority(const types::BlockId block, const types::Meters authority)              = 0;
-        virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const                  = 0;
-        virtual types::Error SetBrokenRail(const types::BlockId block, const bool broken)                         = 0;
-        virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure) = 0;
-        virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure)                = 0;
+        */virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const;
+        virtual types::Error SetBrokenRail(const types::BlockId block, const bool broken);
+        virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure);
+        virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
+
+    private:
+        types::TrackId track_id;
+        std::vector<std::shared_ptr<train_model::TrainModel>> trainsvec;
+        int temp;
+
+        struct Block
+        {
+            bool occupancy=0;
+            bool switches=0;
+            bool crossing=0;
+            bool light=0;
+            bool pfail=0;
+            bool tcfail=0;
+            bool brail=0;
+            int grade=0;
+            int length=0;
+            int slimit=50;
+            int elevation=0;
+            char section='A';
+            bool heater=0;
+        
+        };
+
+        std::vector<Block> line;
+
+        int maxpass=222;
+
+        //struct for the content, make a vector of them
 }; //hi
 } // namespace track_model
 
