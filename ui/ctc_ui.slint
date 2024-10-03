@@ -1,4 +1,4 @@
-import { HorizontalBox, Button } from "std-widgets.slint";
+import { HorizontalBox, Button, GroupBox, Switch } from "std-widgets.slint";
 
 export component TransitSystem inherits Rectangle {
     background: #252525;
@@ -33,65 +33,14 @@ export component Dispatch inherits Rectangle {
     border-radius: 10px;
 }
 
-export ToggleSwitch := Rectangle {
-    callback toggled;
-    property <string> text;
-    property <bool> checked;
-    property<bool> enabled <=> touch-area.enabled;
-    height: 25px;
-    horizontal-stretch: 0;
-    vertical-stretch: 0;
-
-    HorizontalLayout {
-        spacing: 5px;
-        indicator := Rectangle {
-            width: 50px;
-            border-width: 0px;
-            border-radius: root.height / 2;
-            border-color: background.darker(25%);
-            background: root.enabled ? (root.checked ? #353535 : white)  : white;
-            animate background { duration: 100ms; }
-
-            bubble := Rectangle {
-                width: root.height - 8px;
-                height: bubble.width;
-                border-radius: bubble.height / 2;
-                y: 4px;
-                x: 4px + a * (indicator.width - bubble.width - 8px);
-                property <float> a: root.checked ? 1 : 0;
-                background: root.checked ? white : (root.enabled ? #15ed81: white);
-                animate a, background { duration: 200ms; easing: ease;}
-            }
-        }
-
-        Text {
-            min-width: max(100px, preferred-width);
-            text: root.text;
-            vertical-alignment: center;
-            color: root.enabled ? black : gray;
-        }
-
-    }
-
-    touch-area := TouchArea {
-        width: root.width;
-        height: root.height;
-        clicked => {
-            if (root.enabled) {
-                root.checked = !root.checked;
-                root.toggled();
-            }
-        }
-    }
-}
-
 export component CtcUi inherits Window {
-    in-out property<string> fileName: "Choose File";
+    in-out property<string> fileName: "";
+    property <bool> automatic_mode: true;
     callback choose-file();
 
     title: "CTC Office";
-    min-width: 700px;
-    min-height: 500px;
+    min-width: 600px;
+    min-height: 400px;
     VerticalLayout {
         padding: 15px;
         spacing: 15px;
@@ -113,20 +62,43 @@ export component CtcUi inherits Window {
                             horizontal-alignment: left;
                             text: "Dispatch";
                         }
+                        
+                    }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Switch {
+                            checked: automatic_mode;
+                            toggled => {automatic_mode = !automatic_mode;}
+                        }
+                        Text {text: automatic_mode ? "Automatic Mode" : "Manual Mode";}
+                    }
+                    Rectangle {}
+                    HorizontalLayout {
+                        alignment: start;
+                        Text { text: "Choose File: ";}
+                        Rectangle {width: 10px;}
+                        Rectangle {
+                            border-radius: 5px;
+                            y: -3px;
+                            width: 150px;
+                            height: 25px;
+                            border-width: 2px;
+                            border-color: #4d4d4d;
+                            Text {text: fileName;}
+                        }
                     }
                     
-                    HorizontalLayout {
                         Button { 
-                            height: 50px;
-                            text: "Choose File";
+                            height: 30px;
+                            width: 100px;
+                            text: "Open File";
                             clicked => {root.choose-file()}
                             
                         }
-                    } 
                     Button { 
                         height: 50px;
+                        width: 250px;
                         text: "Dispatch";
-                        
                     } 
                 }
             }
