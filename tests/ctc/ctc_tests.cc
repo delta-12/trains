@@ -54,9 +54,15 @@ int main(void)
     });
 
     ctc_ui->on_parse_file([&]() {
-        CsvParser parser(input_file_path);
+        std::filesystem::path path(input_file_path);
+        CsvParser parser(path);
         std::cout << "File size: " + parser.GetSize() << std::endl;
-        std::vector<std::string> record = parser.GetRecord(3);
+        std::vector<std::string> fields = parser.GetRecord(0);
+        std::vector<std::string> record = parser.GetRecord(1);
+        for (const std::string& str : fields) {
+            std::cout << str << " ";  // Print each string followed by a space
+        }
+        std::cout << std::endl;
         for (const std::string& str : record) {
             std::cout << str << " ";  // Print each string followed by a space
         }

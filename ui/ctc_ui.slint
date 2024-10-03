@@ -71,37 +71,48 @@ export component CtcUi inherits Window {
                             checked: automatic_mode;
                             toggled => {automatic_mode = !automatic_mode;}
                         }
-                        Text {text: automatic_mode ? "Automatic Mode" : "Manual Mode";}
+                        Text {
+                            y: 3px;
+                            text: automatic_mode ? "Automatic Mode" : "Manual Mode";
+                        }
                     }
                     Rectangle {}
-                    HorizontalLayout {
-                        alignment: start;
-                        Text { text: "Choose File: ";}
-                        Rectangle {width: 10px;}
-                        Rectangle {
-                            border-radius: 5px;
-                            y: -3px;
-                            width: 150px;
-                            height: 25px;
-                            border-width: 2px;
-                            border-color: #4d4d4d;
-                            Text {text: fileName;}
-                        }
-                    }
-                    
-                        Button { 
-                            height: 30px;
-                            width: 100px;
-                            text: "Open File";
-                            clicked => {root.choose-file()}
+                    Rectangle { // Automatic Mode Panel
+                        background: gray;
+                        vertical-stretch: 1;
+                        VerticalLayout {
+                            padding: 10px;
+                            spacing: 10px;
+                            HorizontalLayout {
+                                alignment: start;
+                                Text { text: "Choose File: ";}
+                                Rectangle {width: 10px;}
+                                Rectangle {
+                                    border-radius: 5px;
+                                    y: -3px;
+                                    width: 150px;
+                                    height: 25px;
+                                    border-width: 2px;
+                                    border-color: #4d4d4d;
+                                    Text {text: fileName;}
+                                }
+                            }
                             
+                            Button { 
+                                height: 30px;
+                                width: 100px;
+                                text: "Open File";
+                                clicked => {root.choose-file()}
+                            }
+                            Button { 
+                                height: 50px;
+                                width: 250px;
+                                text: "Parse File";
+                                clicked => {root.parse-file()}
+                            } 
                         }
-                    Button { 
-                        height: 50px;
-                        width: 250px;
-                        text: "Parse File";
-                        clicked => {root.parse-file()}
-                    } 
+                        
+                    }
                 }
             }
         }
