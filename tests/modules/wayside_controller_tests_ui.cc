@@ -11,7 +11,8 @@
 int main(void)
 {
     auto wayside_controller_ui = ui::WaysideControllerUi::create();
-    TickSource tick_source("07:00:00");
+    TickSource tick_source("12:00:00");
+    wayside_controller_ui->set_time(tick_source.GetTimeString().c_str());
 
     wayside_controller_ui->on_get_time([&]{
         wayside_controller_ui->set_time(tick_source.GetTimeString().c_str());

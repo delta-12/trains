@@ -185,7 +185,14 @@ types::Error TickSource::GetTimePoint(const std::string &hours_minutes_seconds, 
     }
     else
     {
-        time_point = std::chrono::system_clock::from_time_t(std::mktime(&time));
+        // Windows uses a different epoch than Unix systems.  Modifying hours, minutes, seconds of current time ensures compatability across systems.
+        const std::time_t now       = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm           localtime = *std::localtime(&now);
+        localtime.tm_hour = time.tm_hour;
+        localtime.tm_min  = time.tm_min;
+        localtime.tm_sec  = time.tm_sec;
+
+        time_point = std::chrono::system_clock::from_time_t(std::mktime(&localtime));
     }
 
     return error;
