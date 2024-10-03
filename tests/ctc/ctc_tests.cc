@@ -8,6 +8,7 @@
 #include "ctc_ui.h"
 #include "windows.h"
 #include "commdlg.h"
+#include "csv_parser.h"
 
 std::string extractFileName(const std::string& fullPath) {
     // Find the last occurrence of backslash
@@ -22,6 +23,7 @@ std::string extractFileName(const std::string& fullPath) {
 int main(void)
 {
     auto ctc_ui = ui::CtcUi::create();
+    std::string input_file_path = "";
 
     ctc_ui->on_choose_file([&]() {
         OPENFILENAME ofn;       // Common dialog box structure
@@ -32,7 +34,7 @@ int main(void)
         ofn.lpstrFile = fileName;
         ofn.lpstrFile[0] = '\0';  // Initialize buffer to empty string
         ofn.nMaxFile = sizeof(fileName);
-        ofn.lpstrFilter = "Excel Files\0*.XLS;*.XLSX\0CSV Files\0*.CSV\0All Files\0*.*\0";
+        ofn.lpstrFilter = "CSV Files\0*.CSV\0";
         ofn.nFilterIndex = 1; // Default to the first filter (Excel)
         ofn.lpstrFileTitle = nullptr;
         ofn.nMaxFileTitle = 0;
@@ -42,10 +44,21 @@ int main(void)
         // Open the file dialog
         if (GetOpenFileName(&ofn)) {
             std::cout << "Selected file: " << ofn.lpstrFile << std::endl;
+            input_file_path = ofn.lpstrFile;
             ctc_ui->set_fileName(extractFileName(ofn.lpstrFile).c_str());
+            std::cout << "Input File Path: " + input_file_path << std::endl;
         } else {
             std::cout << "No file selected." << std::endl;
             ctc_ui->set_fileName("No file selected");
+        }
+    });
+
+    ctc_ui->on_parse_file([&]() {
+        CsvParser parser(input_file_path);
+        std::cout << "File size: " + parser.GetSize() << std::endl;
+        std::vector<std::string> record = parser.GetRecord(3);
+        for (const std::string& str : record) {
+            std::cout << str << " ";  // Print each string followed by a space
         }
     });
 

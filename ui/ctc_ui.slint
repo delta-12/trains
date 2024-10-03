@@ -37,6 +37,7 @@ export component CtcUi inherits Window {
     in-out property<string> fileName: "";
     property <bool> automatic_mode: true;
     callback choose-file();
+    callback parse-file();
 
     title: "CTC Office";
     min-width: 600px;
@@ -98,7 +99,8 @@ export component CtcUi inherits Window {
                     Button { 
                         height: 50px;
                         width: 250px;
-                        text: "Dispatch";
+                        text: "Parse File";
+                        clicked => {root.parse-file()}
                     } 
                 }
             }
