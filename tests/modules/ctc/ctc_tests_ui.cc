@@ -13,13 +13,13 @@
 #include "commdlg.h"
 #endif
 
-std::string extractFileName(const std::string& fullPath) {
+std::string ExtractFileName(const std::string& full_path) {
     // Find the last occurrence of backslash
-    size_t pos = fullPath.find_last_of("\\/");
+    size_t pos = full_path.find_last_of("\\/");
     if (pos != std::string::npos) {
-        return fullPath.substr(pos + 1); // Return everything after the last backslash
+        return full_path.substr(pos + 1); // Return everything after the last backslash
     } else {
-        return fullPath; // If no backslash is found, return the full string (it may already be a file name)
+        return full_path; // If no backslash is found, return the full string (it may already be a file name)
     }
 }
 
@@ -31,13 +31,13 @@ int main(void)
     ctc_ui->on_choose_file([&]() {
 #ifdef WIN32
         OPENFILENAME ofn;       // Common dialog box structure
-        char fileName[MAX_PATH]; // Buffer for the file name
+        char file_name[MAX_PATH]; // Buffer for the file name
         ZeroMemory(&ofn, sizeof(ofn)); // Clear the structure
         ofn.lStructSize = sizeof(ofn);
         ofn.hwndOwner = nullptr; // If using in a GUI, set to the parent window handle
-        ofn.lpstrFile = fileName;
+        ofn.lpstrFile = file_name;
         ofn.lpstrFile[0] = '\0';  // Initialize buffer to empty string
-        ofn.nMaxFile = sizeof(fileName);
+        ofn.nMaxFile = sizeof(file_name);
         ofn.lpstrFilter = "CSV Files\0*.CSV\0";
         ofn.nFilterIndex = 1; // Default to the first filter (Excel)
         ofn.lpstrFileTitle = nullptr;
@@ -61,6 +61,10 @@ int main(void)
     });
 
     ctc_ui->on_on_test_clicked([&]() {
+        std::cout << "Button Pressed" << std::endl;
+    });
+
+    ctc_ui->on_parse_file([&]() {
         std::cout << "Button Pressed" << std::endl;
     });
 

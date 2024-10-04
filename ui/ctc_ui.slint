@@ -1,6 +1,6 @@
 import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
 
-export component TransitSystem inherits Rectangle {
+component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     callback on_button_clicked();
@@ -19,7 +19,7 @@ export component TransitSystem inherits Rectangle {
     }
 }
 
-export component TrainSchedule inherits Rectangle {
+component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
@@ -59,7 +59,7 @@ export component TrainSchedule inherits Rectangle {
     }
 }
 
-export component ManualMode {
+component ManualMode {
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -102,7 +102,7 @@ export component ManualMode {
     }
 }
 
-export component AutomaticMode inherits Rectangle {
+component AutomaticMode inherits Rectangle {
     in-out property<string> fileName: "";
     callback choose-file();
     callback parse-file();
@@ -143,8 +143,8 @@ export component AutomaticMode inherits Rectangle {
     }
 }
 
-export component Dispatch inherits Rectangle {
-    property <bool> automatic_mode: false;
+component Dispatch inherits Rectangle {
+    property <bool> automatic_mode: true;
     in-out property<string> fileName: "";
 
     callback choose-file();
@@ -183,24 +183,19 @@ export component Dispatch inherits Rectangle {
 
         if(automatic_mode == true) : AutomaticMode {
             choose-file => {root.choose-file()}
+            parse-file => {root.parse-file()}
             fileName: fileName;
         }
         if(automatic_mode == false) : ManualMode {}    
     }
 }
 
-
-
-
-
-export component TestBench inherits Rectangle {
+component TestBench inherits Rectangle {
     
 }
 
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
-    
-    
     callback choose-file();
     callback parse-file();
     callback on_test_clicked();
@@ -235,6 +230,7 @@ export component CtcUi inherits Window {
         }
         Tab {
             title: @tr("Test Bench");
+            TestBench {}
         }
     }
     
