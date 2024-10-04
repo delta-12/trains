@@ -6,9 +6,12 @@
 
 #include "ctc.h"
 #include "ctc_ui.h"
+#include "csv_parser.h"
+
+#ifdef WIN32
 #include "windows.h"
 #include "commdlg.h"
-#include "csv_parser.h"
+#endif
 
 std::string extractFileName(const std::string& fullPath) {
     // Find the last occurrence of backslash
@@ -26,6 +29,7 @@ int main(void)
     std::string input_file_path = "";
 
     ctc_ui->on_choose_file([&]() {
+#ifdef WIN32
         OPENFILENAME ofn;       // Common dialog box structure
         char fileName[MAX_PATH]; // Buffer for the file name
         ZeroMemory(&ofn, sizeof(ofn)); // Clear the structure
@@ -51,6 +55,9 @@ int main(void)
             std::cout << "No file selected." << std::endl;
             ctc_ui->set_selected_fileName("No file selected");
         }
+#else
+            std::cout << "Operation not supported" << std::endl;
+#endif
     });
 
     ctc_ui->on_on_test_clicked([&]() {
