@@ -21,7 +21,7 @@ int main(void)
     slint::ComponentWeakHandle<ui::WaysideControllerUi> weak_ui_handle(wayside_controller_ui);
     std::thread worker_thread([&]
     {
-        TickSource tick_source("07:00:00");
+        TickSource tick_source("12:00:00");
         Channel<std::string> channel;
 
         tick_source.Start();
