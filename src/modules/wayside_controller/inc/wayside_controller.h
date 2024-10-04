@@ -12,14 +12,14 @@
 
 class WaysideController
 {
-    public:
+public:
         //primary variables
         bool switch_state, crossing_state, signal_light;
         double commanded_speed;
         int authority;
 
         //identifiers
-        int switch_id, crossing_id, signal_id;
+    int switch_id, crossing_id, signal_id;
 
         //incoming from CTC
         float CTC_suggestedspd;
