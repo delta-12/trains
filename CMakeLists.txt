@@ -89,7 +89,7 @@ FetchContent_MakeAvailable(googletest)
 # CTC UI test build
 ################################################################################
 add_executable(ctc_tests_ui
-  ${TESTS_DIR}/modules/ctc_tests_ui.cc
+  ${TESTS_DIR}/modules/ctc/ctc_tests_ui.cc
   ${CTC_SRCS}
 )
 target_include_directories(ctc_tests_ui PRIVATE ${INC_DIRS})

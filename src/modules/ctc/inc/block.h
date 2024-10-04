@@ -29,6 +29,7 @@ class Block
         int total_time_;
         int dwell_time_;
         double total_time_to_station_with_dwell_;
+
     public:
         Block(
             types::BlockId block_id,
@@ -48,7 +49,7 @@ class Block
             int total_time,
             int dwell_time,
             double total_time_to_station_with_dwell
-        );
+            );
 
         types::BlockId getBlockId(void) const;
         int getBlockNumber(void) const;

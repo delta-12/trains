@@ -17,13 +17,14 @@ class Route
         types::TrainId train_id_;
         std::string train_name_;
         std::map<std::string, std::string> destination_and_time_;
+
     public:
         Route();
         Route(
             const types::TrainId &train_id,
             const std::string &train_name,
             std::map<std::string, std::string> destination_and_time
-        );
+            );
 
         types::TrainId getTrainId(void) const;
         std::string getTrainName(void) const;
