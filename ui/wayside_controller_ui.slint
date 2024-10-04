@@ -1,11 +1,26 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, VerticalBox, Button } from "std-widgets.slint";
 
 export component WaysideControllerUi inherits Window {
+    callback get-time();
+    in-out property <string> time: "00:00:00";
     title: "Wayside Controller";
     HorizontalBox {
         padding: 50px;
-        Text {
-            text: "This is the Wayside Controller UI.";
+        VerticalBox {
+            Text {
+                text: "This is the Wayside Controller UI.";
+            }
+
+            Button {
+                text: "Get Time";
+                clicked => {
+                    root.get-time();
+                }
+            }
+
+            Text {
+                text: "Time: \{root.time}";
+            }
         }
     }
 }

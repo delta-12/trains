@@ -8,7 +8,6 @@ then
     exit 1
 else
     echo "pre-commit: Cppcheck passed"
-    exit 0
 fi
 
 # Uncrustify
@@ -19,5 +18,6 @@ then
     exit 1
 else
     echo "pre-commit: Uncrustify check passed"
-    exit 0
 fi
+
+exit 0
