@@ -33,6 +33,8 @@ typedef enum
 
 typedef uint8_t                                     MetersPerSecond;
 typedef uint32_t                                    Meters;
+typedef uint8_t                                     MilesPerHour;
+typedef uint32_t                                    Miles;
 typedef uint32_t                                    Watts;
 typedef int16_t                                     DegreesFahrenheit;
 typedef uint8_t                                     TrackId;
