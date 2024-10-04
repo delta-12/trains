@@ -8,8 +8,10 @@
 
 
 #include "types.h"
+#include <array>
 #include <string>
 #include <cstdint>
+#include <unordered_map>
 
 namespace train_controller
 {
@@ -20,6 +22,56 @@ class TrainController
         uint8_t Kp = 2;
         uint8_t Ki = 4;
 
+        /*
+        *
+        *** BLUE LINE MAP IMPLEMENTATION ***
+        *
+        */ 
+
+        // map for block data --> 
+        // key: 
+        //          block number
+        // values:
+        //          index 0: block length           (m)
+        //          index 1: block grade            (%)
+        //          index 2: speed limit            (Km/Hr)
+        //          index 3: elevation              (m)
+        //          index 4: cumulative elevation   (m)
+
+        std::unordered_map<int, std::array<float, 5>> blockDataMap = {
+            {1, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {2, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {3, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {4, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {5, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {6, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {7, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {8, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {9, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {10, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {11, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {12, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {13, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {14, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            {15, {50.0, 0.0, 50.0, 0.00, 0.00}},
+        };
+
+        // map for block data --> 
+        // key: 
+        //          block number
+        // values:
+        //          infrastructure string
+
+        std::unordered_map<int, std::string> blockIfrastructureMap = {
+            {3, "RAILWAY CROSSING"},
+            {5, "Switch ( 5 to 6) or (5 to 11)"},
+            {6, "Switch ( 5 to 6); Light"},
+            {9, "Transponder"},
+            {10, "Station B"},
+            {11, "Switch (5 to 11); Light"},
+            {14, "Transponder"},
+            {15, "Station C"},
+        };
 
 
         virtual types::Watts CalculateCommandedPower(uint8_t speed);
