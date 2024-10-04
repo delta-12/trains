@@ -1,11 +1,373 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { TabWidget, Button, HorizontalBox, VerticalBox, ComboBox, ProgressIndicator, TextEdit, StandardTableView } from "std-widgets.slint";
 
-export component TrainModelUi inherits Window {
-    title: "Train Model";
-    HorizontalBox {
-        padding: 50px;
-        Text {
-            text: "This is the Train Model UI.";
+export component TrainModel inherits Window {
+    in-out property<string> ebrake-status: "PASS";
+    in-out property<string> engine-status: "PASS";
+    in-out property<string> signal-status: "PASS";
+    in-out property<string> brake-status: "PASS";
+    in-out property<string> station-banner: "Steel Plaza Station";
+    in-out property<float> comm-speed: 0.0;
+    in-out property<float> act-speed: 0.0;
+    in-out property<float> acceleration: 0.0;
+    in-out property<int> crew-count: 14;
+    in-out property<int> pass-count: 100;
+    in property<int> train-width: 10;
+    in property<int> train-length: 85;
+    in property<int> train-height: 15;
+    in property<int> train-mass: 4094;
+    in property<int> cabin-temp: 72;
+    in property<string> time: "12:00:00";
+    in-out property<bool> int-lights;
+    in-out property<bool> ext-lights;
+    in-out property<bool> right-doors;
+    in-out property<bool> left-doors;
+    in-out property<bool> beacon-recieved;//will be only an in
+    callback request_ebrake();
+    callback request-engine_fail();
+    callback request_brake_fail();
+    callback request_signal_fail();
+    callback clicked;
+
+    preferred-height:400px;
+    min-height:650px;
+    preferred-width:300px;
+    min-width:1000px;
+
+    //add cycle for ads
+    //add testbench pop-up
+    //implement add-train for tabs - variable miust line up
+    
+
+TabWidget{
+    Tab{
+        title:"Train 1";
+        VerticalBox{
+            Rectangle{
+                max-height: 80px;
+                min-height: 80px;
+                max-width: 10px;
+            min-width: 10px;
+                Image {
+                    //ADD CODE TO CYCLE THRU ADS HERE
+                    source: @image-url("icons/image1.png");
+                    width: parent.width;
+                    height: parent.height;
+                }
+            }
+            Rectangle{
+                background: #FFFFFF;
+                border-color: #3357ac;
+                min-height: 40px;
+                max-height: 40px;
+                min-width:parent.width;
+                max-width:parent.width;
+                border-width: 5px;
+                TextInput {
+                    y: parent.height/4;
+                    text: station-banner + " • " + station-banner + " • " + station-banner + " • " + station-banner;
+                    font-size: parent.height/2;
+                    read-only: true;
+                    color: #000000;
+                    horizontal-alignment: TextHorizontalAlignment.center;
+                }
+            }
+            HorizontalBox {
+                VerticalBox{
+                    Button {
+                        text: "Emergency Brake";
+                        min_width: 10px;
+                        min_height: 100px;
+                        max-height: 100px;
+                        clicked => {
+                            root.request_ebrake();
+                        }
+                    }
+                    Text {
+                        horizontal-alignment: center;
+                        text: "EBrake Status: \{root.ebrake-status}";
+                    }
+                }
+                VerticalBox{
+                    Button {
+                        min_height: 60px;
+                        max-height: 60px;
+                        text: "Engine Failure";
+                        clicked => {
+                            root.request_engine_fail();
+                        }
+                    }
+                    Text {
+                        horizontal-alignment: center;
+                        text: "Engine Status: \{root.engine-status}";
+                    }
+                    popup := PopupWindow {
+                        Rectangle { height:100%; width: 100%; background: yellow; }
+                        x: 20px; y: 20px; height: 50px; width: 50px;
+                    }
+                    Button{
+                        text: "Testbench";
+                        clicked => {
+                        popup.show();
+                        }
+                    }
+                }
+                VerticalBox{
+                    Button {
+                        min_height: 60px;
+                        max-height: 60px;
+                        text: "Signal Pickup Failure";
+                        clicked => {
+                            root.request_signal_fail();
+                        }
+                    }
+                    Text {
+                        horizontal-alignment: center;
+                        text: "Signal Pickup Status: \{root.signal-status}";
+                    }
+                    Rectangle{
+                        background:#3357ac;
+                        border-radius: 20px;
+                        Text{
+                            font-size:25px;
+                            horizontal-alignment: center;
+                            text: time;
+                        }
+                    }
+                }
+                VerticalBox{
+                    Button {
+                        min_height: 60px;
+                        max-height: 60px;
+                        text: "Brake Failure";
+                        clicked => {
+                            root.request_brake_fail();
+                        }
+                    }
+                    Text {
+                        horizontal-alignment: center;
+                        text: "Brake Status: \{root.brake-status}";
+                    }
+                    TextEdit{
+                        text: "Cabin Temp: " + cabin-temp + "°";
+                        read-only:true;
+                    }
+                }
+                Button {
+                    text: "Add Train";
+                    min_height: 100px;
+                    max-height: 100px;
+                    clicked => {
+                        //IMPLEMENT ADDING TAB HERE
+                    }
+
+                }
+            }
+            Rectangle{
+                //background: #000000;
+                border-color: #3357ac;
+                border-radius: 20px;
+                border-width: 5px;
+                preferred-height: 200px;
+                preferred-width: 50px;
+                min-height:150px;
+                max-height:180px;
+                VerticalBox{
+                    HorizontalBox{
+                        Text {
+                            text: "Suggested Speed";
+                            font-size:20px;
+                            color: #FFFFFF;
+                            horizontal-alignment: center;
+                        }
+                        Text {
+                            text: "Actual Speed";
+                            font-size:20px;
+                            color: #FFFFFF;
+                            horizontal-alignment: center;
+                        }
+                        Text {
+                            text: "Acceleration";
+                            font-size:20px;
+                            color: #FFFFFF;
+                            horizontal-alignment: center;
+                        }
+                    }
+                    HorizontalBox{
+                        Rectangle{
+                        background: #000000;
+                        border-color: #FFFFFF;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 50px;
+                        preferred-width: 50px;
+                            TextInput {
+                                text: comm-speed + " mph";
+                                y: parent.height/4;
+                                font-size: parent.height/2;
+                                read-only: true;
+                                horizontal-alignment: center;
+                            }
+                        }
+                        Rectangle{
+                        background: #000000;
+                        border-color: #FFFFFF;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 50px;
+                        preferred-width: 50px;
+                            TextInput {
+                                text: act-speed + " mph";
+                                y: parent.height/4;
+                                font-size: parent.height/2;
+                                read-only: true;
+                                horizontal-alignment: center;
+                            }
+                        }      
+                        Rectangle{
+                        background: #000000;
+                        border-color: #FFFFFF;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 50px;
+                        preferred-width: 50px;
+                        min-height:50px;
+                        max-height:80px;
+                            TextInput {
+                                text: acceleration + " ft/sec²";
+                                y: parent.height/4;
+                                font-size: parent.height/2;
+                                read-only: true;
+                                horizontal-alignment: center;
+                            }
+                        }              
+                    }
+                }
+            }
+            HorizontalBox{
+                StandardTableView {
+                    max-height:80px;
+                    min-height:80px;
+                    columns: [
+                        { title: "Unit" },
+                        { title: "Value" },
+                    ];
+                    rows: [
+                        [
+                            { text: "Length" }, { text: train-length + " ft" },
+                        ],
+                        [
+                            { text: "Width" }, { text: train-width + " ft" },
+                        ],
+                        [
+                            { text: "Height" }, { text: train-height + " ft" },
+                        ],
+                        [
+                            { text: "Mass" }, { text: train-mass + " lbs" },
+                        ]
+                    ];
+                }
+                VerticalLayout {
+                    max-height:80px;
+                    min-height:80px;
+                    spacing: 5px;
+                    HorizontalLayout {
+                        Rectangle { 
+                            area1 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    left-doors = !left-doors;
+                                }
+                            }
+                            Text{
+                                text: "Left\nDoors";
+                            }
+                            background: left-doors ? green : red; 
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;}
+                        Rectangle { 
+                            area2 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    right-doors = !right-doors;
+                                }
+                            }
+                            Text{
+                                text: "Right\nDoors";
+                            }
+                            background: right-doors ? green : red; 
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;}
+                    }
+                    HorizontalLayout {
+                        Rectangle { 
+                            area3 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    ext-lights = !ext-lights;
+                                }
+                            }
+                            Text{
+                                text: "Exterior\nLights";
+                            }
+                            background: ext-lights ? green : red; 
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;}
+                        Rectangle { 
+                            area4 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    int-lights = !int-lights;
+                                }
+                            }
+                            Text{
+                                text: "Interior\nLights";
+                            }
+                            background: int-lights ? green : red;
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;}
+                    }
+                    HorizontalLayout{
+                        Rectangle { 
+                            area5 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    beacon-recieved = !beacon-recieved;
+                                }
+                            }
+                                border-radius:30px;
+                                Text{
+                                    text: "Beacon\nRecieved";
+                                }
+                                background: beacon-recieved ? green : red; 
+                            }
+                    }
+                }
+                StandardTableView {
+                    max-height:120px;
+                    min-height:120px;
+                    columns: [
+                        { title: "Title" },
+                        { title: "Count" },
+                    ];
+                    rows: [
+                        [
+                            { text: "Crew Count" }, { text: crew-count},
+                        ],
+                        [
+                            { text: "Passenger Count" }, { text: pass-count},
+                        ]
+                    ];
+                }
+            }
         }
     }
-}
+}}
