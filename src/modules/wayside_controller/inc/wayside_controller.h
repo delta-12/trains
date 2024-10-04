@@ -10,6 +10,25 @@
 
 #include <vector>
 
+//block information
+struct Block
+{
+    int blocknum;
+    bool fail_state;
+    bool occupancy;
+
+    bool switch_state;
+    bool signal_state;
+    bool crossing_state;
+
+    std::vector<int, int> switchnum;
+    int signalnum;
+    int crossingnum;
+
+    float spd_suggested;
+    std::vector<int, int> auth_suggested;
+};
+
 class WaysideController
 {
 public:
@@ -19,17 +38,17 @@ public:
         int authority;
 
         //identifiers
-    int switch_id, crossing_id, signal_id;
+        int switch_id, crossing_id, signal_id;
 
         //incoming from CTC
         float CTC_suggestedspd;
         std::vector<int, int> CTC_authority;
 
-        //base level functions
+        //base level control functions
         WaysideController();
-        void setSwitch(bool);
-        void setCrossing(bool);
-        void setSignal(bool);
+        void setSwitch(int switch_id);
+        void setCrossing(int crossing_id);
+        void setSignal(int signal_id);
 
         void getSwitch(bool);
         void getCrossing(bool);
@@ -37,16 +56,17 @@ public:
 
         void getTrackFailures(bool);
 
+        //block handling functions
+        void blockInit(int block_num);
+        void setOccupancy(); //this information comes from TKM and is sent to CTC
+        void setSpeed(int CTC_speed);
+        void setAuth(int CTC_auth);
 
 
-        //block information
-        struct Block
-        {
-            bool occupancy;
-            bool failure_state;
-            //int block number;
 
-        }
+
+
+
 
 
 };
@@ -55,10 +75,11 @@ class PLC
 {
     public:
 
-        /*struct PLCpacket{
-
-
-           }*/
+        struct PLCpacket{
+            bool currentOccupancy;
+            bool nextOccupancy;
+          
+        }
 
         //plc processing functions
         void PLCget(int[]);
