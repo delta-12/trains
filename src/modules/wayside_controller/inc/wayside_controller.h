@@ -15,9 +15,10 @@
 namespace wayside_controller
 {
 
-typedef struct BlockState BlockState;
-typedef uint16_t          InputId;
-typedef uint16_t          OutputId;
+typedef struct BlockState       BlockState;
+typedef struct TrackCircuitData TrackCircuitData;
+typedef uint16_t                InputId;
+typedef uint16_t                OutputId;
 
 struct BlockState
 {
