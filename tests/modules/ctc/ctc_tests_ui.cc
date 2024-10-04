@@ -49,7 +49,7 @@ int main(void)
         if (GetOpenFileName(&ofn)) {
             std::cout << "Selected file: " << ofn.lpstrFile << std::endl;
             input_file_path = ofn.lpstrFile;
-            ctc_ui->set_selected_fileName(extractFileName(ofn.lpstrFile).c_str());
+            ctc_ui->set_selected_fileName(ExtractFileName(ofn.lpstrFile).c_str());
             std::cout << "Input File Path: " + input_file_path << std::endl;
         } else {
             std::cout << "No file selected." << std::endl;
