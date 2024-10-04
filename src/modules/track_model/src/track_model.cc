@@ -85,28 +85,31 @@ namespace track_model
         //loop through all trains on the line
         for (int i=0;i<trainmodels.size();i++)
         {
-            //get the distance traveled to get the location
-            types::Meters dtraveled=trainmodels[i]->GetDistanceTraveled();
+            //get the BlockId of the train
+            types::BlockId trainblock;
 
-            //find which block the train is on
-            types::Meters totaldistance=0;
-            for (int j=currblock[i]-1;j<line.size();j++)
+            //set block occupancy
+            line[trainblock-1].occupancy=1;
+
+            //calculate which blocks the train is currently taking up
+            //check the length of the block the train is occupying, and see if the train is longer
+            if (line[trainblock-1].length<tlength)
             {
-                //increment total distance
-                totaldistance+=line[j].length;
-
-                //check if total distance is greater than the distance traveled yet
-                if (dtraveled<totaldistance)
+                //looping until the full length of the train is accounted for
+                auto sizeofblocks=line[trainblock-1].length;
+                int j=1;
+                while (sizeofblocks<tlength)
                 {
-                    //set the current block of this train
-                    currblock[i]=j+1;
-                    break;
+                    //adding the size of the block behind it
+                    sizeofblocks+=line[trainblock-1-j].length;
+
+                    //adding this block to the vector of occupancies
+                    line[trainblock-1-j].occupancy=1;
+
+                    //increment
+                    j++;
                 }
             }
-
-            //set occupancy
-            types::BlockId thiscurrblock=currblock[i];
-            line[thiscurrblock].occupancy=1;
 
             //get the passengers deboarding
             uint16_t deboard=trainmodels[i]->GetPassengersDeboarding();

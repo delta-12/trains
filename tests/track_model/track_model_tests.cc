@@ -42,14 +42,23 @@ class MockTrainModel : public train_model::TrainModel {
         void SetRightDoorsState(const bool open);
         void SetCommandedPower(const types::Watts power);
         void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees);
-        void SetDistanceTraveled(const types::Meters distance);
+        void SetBlockId(const types::BlockId theblock)
+        {
+            currblock=theblock;
+        }
         uint16_t GetPassengersDeboarding(void);
-        types::Meters GetDistanceTraveled(void);
+        types::BlockId GetBlockId(void)
+        {
+            return currblock;
+        }
         void SetCommandedSpeed(const types::MetersPerSecond speed);
         void SetAuthority(const types::Meters meters);
         void SetPassengersBoarding(const uint16_t passegners);
         void SetTrackPolarity(const types::Polarity polarity);
         void SetBeaconData(const types::BeaconData &data, std::size_t &size);
+
+    private:
+        types::BlockId currblock;
 };
 
 
@@ -58,6 +67,9 @@ int main(void)
 {
     //initial testing
     track_model::SoftwareTrackModel trackModel;
+    MockTrainModel trainModel;
+    std::shared_ptr<train_model::TrainModel> trainModelPtr;
+    trainModelPtr=&trainModel;
 
     //track circuit fail
     types::BlockId blockID = 1;
@@ -102,6 +114,10 @@ int main(void)
     {
         std::cout << "Occupancy FAIL!!!" << std::endl;
     }
+
+    //TESTING THE TRAIN OCCUPANCY
+    trackModel.AddTrainModel(trainModelPtr);
+    trackModel.Update();
 
     //auto track_model_ui = ui::TrackModelUi::create();
 
