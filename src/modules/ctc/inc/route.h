@@ -13,9 +13,9 @@
 
 struct Route
 {
-    types::TrainId train_id_;
-    std::string train_name_;
-    std::map<std::string, std::string> destination_and_time_;
+    types::TrainId train_id;
+    std::string train_name;
+    std::map<std::string, std::string> destination_and_time;
 };
 
 #endif // TRAINS_SRC_MODULES_CTC_INC_ROUTE_H
