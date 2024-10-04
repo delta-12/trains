@@ -19,8 +19,6 @@ namespace train_controller
     class TrainController
     {
         public:
-            
-
             //Functions that will output from track controller
             virtual types::Watts GetCommandedPower(float speed)                             =0;
             virtual types::Watts GetBrake(float percent)                                    =0;
