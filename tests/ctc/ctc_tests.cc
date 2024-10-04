@@ -45,27 +45,16 @@ int main(void)
         if (GetOpenFileName(&ofn)) {
             std::cout << "Selected file: " << ofn.lpstrFile << std::endl;
             input_file_path = ofn.lpstrFile;
-            ctc_ui->set_fileName(extractFileName(ofn.lpstrFile).c_str());
+            ctc_ui->set_selected_fileName(extractFileName(ofn.lpstrFile).c_str());
             std::cout << "Input File Path: " + input_file_path << std::endl;
         } else {
             std::cout << "No file selected." << std::endl;
-            ctc_ui->set_fileName("No file selected");
+            ctc_ui->set_selected_fileName("No file selected");
         }
     });
 
-    ctc_ui->on_parse_file([&]() {
-        std::filesystem::path path(input_file_path);
-        CsvParser parser(path);
-        std::cout << "File size: " + parser.GetSize() << std::endl;
-        std::vector<std::string> fields = parser.GetRecord(0);
-        std::vector<std::string> record = parser.GetRecord(1);
-        for (const std::string& str : fields) {
-            std::cout << str << " ";  // Print each string followed by a space
-        }
-        std::cout << std::endl;
-        for (const std::string& str : record) {
-            std::cout << str << " ";  // Print each string followed by a space
-        }
+    ctc_ui->on_on_test_clicked([&]() {
+        std::cout << "Button Pressed" << std::endl;
     });
 
     ctc_ui->run();

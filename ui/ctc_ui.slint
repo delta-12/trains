@@ -1,14 +1,19 @@
-import { HorizontalBox, Button, GroupBox, Switch } from "std-widgets.slint";
+import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
 
 export component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
+    callback on_button_clicked();
     VerticalLayout {
         HorizontalLayout {
             padding-top: 7px;
             padding-left: 10px;
             Text { 
                 text: "Transit System";
+            }
+            Button {
+                text: "Print";
+                clicked => {root.on_button_clicked()}
             }
         }
     }
@@ -17,107 +22,222 @@ export component TransitSystem inherits Rectangle {
 export component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
+    preferred-width: 150px;
     VerticalLayout {
-        HorizontalLayout {
-            padding-top: 7px;
-            padding-left: 10px;
-            Text { 
-                text: "Train Schedule";
+        Rectangle {
+            HorizontalLayout {
+                padding-top: 7px;
+                padding-left: 10px;
+                Text { 
+                    text: "Train Schedule";
+                }
             }
         }
+        VerticalLayout {
+            padding: 10px;
+            StandardTableView {
+                width: 300px;
+                columns: [
+                    { title: @tr("Train") },
+                    { title: @tr("ETA") },
+                    { title: @tr("DST(s)") },
+                ];
+                rows: [
+                    [ { text: "Item 1.1" }, { text: "Item 1.2" }, { text: "Item 1.3" }, ],
+                    [ { text: "Item 2.1" }, { text: "Item 2.2" }, { text: "Item 2.3" }, ],
+                    [ { text: "Item 3.1" }, { text: "Item 3.2" }, { text: "Item 3.3" }, ],
+                    [ { text: "Item 4.1" }, { text: "Item 4.2" }, { text: "Item 4.3" }, ],
+                    [ { text: "Item 5.1" }, { text: "Item 5.2" }, { text: "Item 5.3" }, ],
+                    [ { text: "Item 6.1" }, { text: "Item 6.2" }, { text: "Item 6.3" }, ],
+                ];
+            }
+        }
+        HorizontalBox {
+            vertical-stretch: 1;
+            
+        }
+    }
+}
+
+export component ManualMode {
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Train Name: ";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                height: 30px;
+                placeholder-text: @tr("Train 1");
+            } 
+        }
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Destination: ";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                height: 30px;
+                placeholder-text: @tr("Downtown");
+            } 
+        }
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Arrival Time:";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                height: 30px;
+                placeholder-text: @tr("10:00:00");
+            } 
+        }
+        VerticalLayout {
+            alignment: end; 
+            Button { 
+                max-height: 30px;
+                preferred-width: 250px;
+                text: "DISPATCH";
+
+            } 
+        }
+    }
+}
+
+export component AutomaticMode inherits Rectangle {
+    in-out property<string> fileName: "";
+    callback choose-file();
+    callback parse-file();
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Choose File: ";}
+            Rectangle {width: 10px;}
+            Rectangle {
+                border-radius: 5px;
+                y: -3px;
+                width: 150px;
+                height: 25px;
+                border-width: 2px;
+                border-color: #4d4d4d;
+                Text {text: fileName;}
+            } 
+        }
+        HorizontalLayout {
+            Button { 
+                max-height: 30px;
+                text: "Open File";
+                clicked => {choose-file()}
+            }
+        }
+        
+        VerticalLayout {
+            alignment: end; 
+            Button { 
+                max-height: 30px;
+                preferred-width: 250px;
+                text: "DISPATCH";
+                clicked => {parse-file()}
+            } 
+        }       
     }
 }
 
 export component Dispatch inherits Rectangle {
-    background: #252525;
-    border-radius: 10px;
-}
-
-export component CtcUi inherits Window {
+    property <bool> automatic_mode: false;
     in-out property<string> fileName: "";
-    property <bool> automatic_mode: true;
+
     callback choose-file();
     callback parse-file();
 
-    title: "CTC Office";
-    min-width: 600px;
-    min-height: 400px;
+    background: #252525;
+    border-radius: 10px;
     VerticalLayout {
-        padding: 15px;
-        spacing: 15px;
+        padding: 10px;
+        spacing: 10px;
         alignment: stretch;
-        TransitSystem {
-
-        }
-        HorizontalLayout {
-            spacing: 15px;
-            TrainSchedule {}
-            Dispatch {
-                VerticalLayout {
-                    alignment: start;
-                    padding: 10px;
-                    spacing: 10px;
-                    HorizontalLayout {
-                        alignment: start;
-                        Text { 
-                            horizontal-alignment: left;
-                            text: "Dispatch";
-                        }
-                        
-                    }
-                    HorizontalLayout {
-                        spacing: 10px;
-                        Switch {
-                            checked: automatic_mode;
-                            toggled => {automatic_mode = !automatic_mode;}
-                        }
-                        Text {
-                            y: 3px;
-                            text: automatic_mode ? "Automatic Mode" : "Manual Mode";
-                        }
-                    }
-                    Rectangle {}
-                    Rectangle { // Automatic Mode Panel
-                        background: gray;
-                        vertical-stretch: 1;
-                        VerticalLayout {
-                            padding: 10px;
-                            spacing: 10px;
-                            HorizontalLayout {
-                                alignment: start;
-                                Text { text: "Choose File: ";}
-                                Rectangle {width: 10px;}
-                                Rectangle {
-                                    border-radius: 5px;
-                                    y: -3px;
-                                    width: 150px;
-                                    height: 25px;
-                                    border-width: 2px;
-                                    border-color: #4d4d4d;
-                                    Text {text: fileName;}
-                                }
-                            }
-                            
-                            Button { 
-                                height: 30px;
-                                width: 100px;
-                                text: "Open File";
-                                clicked => {root.choose-file()}
-                            }
-                            Button { 
-                                height: 50px;
-                                width: 250px;
-                                text: "Parse File";
-                                clicked => {root.parse-file()}
-                            } 
-                        }
-                        
-                    }
+        Rectangle {
+            // background: red;
+            height: 18px;
+            HorizontalLayout {
+                Text { 
+                    text: "Dispatch";
                 }
             }
         }
-        
+        Rectangle {
+            height: 20px;
+            // background: green;
+            HorizontalLayout {
+                spacing: 10px;
+                Switch {
+                    checked: automatic_mode;
+                    toggled => {automatic_mode = !automatic_mode;}
+                }
+                Text {
+                    y: 3px;
+                    text: automatic_mode ? "Automatic Mode" : "Manual Mode";
+                }
+            }
+        }
+
+        if(automatic_mode == true) : AutomaticMode {
+            choose-file => {root.choose-file()}
+            fileName: fileName;
+        }
+        if(automatic_mode == false) : ManualMode {}    
     }
+}
+
+
+
+
+
+export component TestBench inherits Rectangle {
+    
+}
+
+export component CtcUi inherits Window {
+    in-out property <string> selected_fileName;
+    
+    
+    callback choose-file();
+    callback parse-file();
+    callback on_test_clicked();
+
+    title: "CTC Office";
+    preferred-width: 600px;
+    preferred-height: 400px;
+    TabWidget {
+        Tab {
+            title: @tr("CTC Home");
+            
+            VerticalLayout {
+                padding: 15px;
+                spacing: 15px;
+                alignment: stretch;
+                TransitSystem {
+                    on_button_clicked => {
+                        root.on_test_clicked();
+                    }
+                } // Transit System Top Widget
+                HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
+                    spacing: 15px;
+                    alignment: stretch;
+                    TrainSchedule {}
+                    Dispatch { // Bottom Right Dispatch
+                        fileName: selected_fileName;
+                        choose-file => {root.choose-file();}
+                        parse-file => {root.parse-file()}
+                    }
+                }   
+            }
+        }
+        Tab {
+            title: @tr("Test Bench");
+        }
+    }
+    
 }
 
 
