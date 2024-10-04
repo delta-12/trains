@@ -33,6 +33,7 @@ class TrackModel
         virtual types::Error SetBrokenRail(const types::BlockId block, const bool broken)                         = 0;
         virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure) = 0;
         virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure)                = 0;
+        virtual types::Error SetExternalTemperature(const int temperature)                                        = 0;
 };
 
 } // namespace track_model
