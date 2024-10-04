@@ -1,4 +1,5 @@
 #include "track_model.h"
+#include "train_model.h"
 
 namespace track_model
 {
@@ -23,16 +24,27 @@ namespace track_model
             Block(),
             Block(),
             Block(),
+            Block(),
             Block()
         };
 
         newstuff[2].crossing=1;
-        newstuff[4].switches[0]=6;
-        newstuff[4].switches[1]=11;
+        newstuff[4].switches.push_back(6);
+        newstuff[4].switches.push_back(11);
         newstuff[5].light=1;
         newstuff[9].station='B';
         newstuff[10].light=1;
         newstuff[14].station='C';
+
+        for (int i=5;i<10;i++)
+        {
+            newstuff[i].section='B';
+        }
+
+        for (int i=11;i<15;i++)
+        {
+            newstuff[i].section='C';
+        }
 
         line.insert(line.end(),newstuff.begin(),newstuff.end());
     }
@@ -43,19 +55,78 @@ namespace track_model
     return types::TrackId{ };
     }
 
+    */
+
     types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::TrainModel> train) {
         // Implementation logic to add a train model
-        // Return an appropriate Error value based on the operation
-        return types::Error{  };
+
+        //TODO: ADD FAILURE STATES
+        
+        //add model
+        trainmodels.push_back(train);
+        currblock.push_back(1);
+        
+        return types::ERROR_NONE;
     }
 
+
     void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const {
-        // Populate the trains vector with current train models
+        // Populating the trains vector with current train models
+        for (int i=0;i<trainmodels.size();i++)
+        {
+            trains.push_back(trainmodels[i]);
+        }
     }
+    
 
     void SoftwareTrackModel::Update(void) {
         // Update the state of the track model
+
+        //loop through all trains on the line
+        for (int i=0;i<trainmodels.size();i++)
+        {
+            //get the distance traveled to get the location
+            types::Meters dtraveled=trainmodels[i]->GetDistanceTraveled();
+
+            //find which block the train is on
+            types::Meters totaldistance=0;
+            for (int j=currblock[i]-1;j<line.size();j++)
+            {
+                //increment total distance
+                totaldistance+=line[j].length;
+
+                //check if total distance is greater than the distance traveled yet
+                if (dtraveled<totaldistance)
+                {
+                    //set the current block of this train
+                    currblock[i]=j+1;
+                    break;
+                }
+            }
+
+            //set occupancy
+            types::BlockId thiscurrblock=currblock[i];
+            line[thiscurrblock].occupancy=1;
+
+            //get the passengers deboarding
+            uint16_t deboard=trainmodels[i]->GetPassengersDeboarding();
+
+            //subtract from total passengers
+            tpassengers[i]-=deboard;
+            uint16_t vacancy=maxpass-tpassengers[i];
+
+            //generate random number within bounds for boarding
+            srand((unsigned)time(0));
+            uint16_t board;
+            board=(rand()%vacancy);
+
+            //set passengers boarding
+            trainmodels[i]->SetPassengersBoarding(board);
+        }
+        
+
     }
+    /*
 
     types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, const bool switched) {
         // Logic to set the switch state for the specified block
@@ -83,12 +154,12 @@ namespace track_model
     }
 
     types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed) {
-        // Logic to set the commanded speed for the specified block
+        // Logic to set the commanded speed
         return types::Error{ };
     }
 
     types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Meters authority) {
-        // Logic to set authority for the specified block
+        // Logic to set authority
         return types::Error{  };
     }*/
 

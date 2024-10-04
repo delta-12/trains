@@ -104,8 +104,8 @@ add_executable(track_model_tests
   ${TRACK_MODEL_SRCS}
 )
 target_include_directories(track_model_tests PRIVATE ${INC_DIRS})
-# target_link_libraries(track_model_tests PRIVATE Slint::Slint)
-# slint_target_sources(track_model_tests ${UI_DIR}/track_model_ui.slint NAMESPACE ui)
+# target_link_libraries(track_model_tests PRIVATE Slint::Slint) COMMENTED
+# slint_target_sources(track_model_tests ${UI_DIR}/track_model_ui.slint NAMESPACE ui) COMMENTED
 
 ################################################################################
 # Train Model test build
