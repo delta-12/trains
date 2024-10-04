@@ -6,92 +6,88 @@
 #ifndef TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
 #define TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
 
-#endif // TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
-
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
-//block information
-struct Block
+#include "types.h"
+
+namespace wayside_controller
 {
-    int blocknum;
-    bool fail_state;
-    bool occupancy;
 
-    bool switch_state;
-    bool signal_state;
-    bool crossing_state;
+typedef struct BlockState BlockState;
+typedef uint16_t          InputId;
+typedef uint16_t          OutputId;
 
-    std::vector<int, int> switchnum;
-    int signalnum;
-    int crossingnum;
-
-    float spd_suggested;
-    std::vector<int, int> auth_suggested;
+struct BlockState
+{
+    public:
+        BlockState(const types::TrackId track, const types::BlockId block, const bool occupied, const bool track_failure);
+        types::TrackId track;
+        types::BlockId block;
+        bool occupied;
+        bool track_failure;
 };
+
+struct TrackCircuitData
+{
+    public:
+        TrackCircuitData(const types::TrackId track, const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
+        types::TrackId track;
+        types::BlockId block;
+        types::MetersPerSecond speed;
+        types::Meters authority;
+};
+
+// block information
+// struct Block
+// {
+//     int blocknum;
+//     bool fail_state;
+//     bool occupancy;
+
+//     bool switch_state;
+//     bool signal_state;
+//     bool crossing_state;
+
+//     std::vector<int, int> switchnum;
+//     int signalnum;
+//     int crossingnum;
+
+//     float spd_suggested;
+//     std::vector<int, int> auth_suggested;
+// };
 
 class WaysideController
 {
-public:
-        //primary variables
-        bool switch_state, crossing_state, signal_light;
-        double commanded_speed;
-        int authority;
-
-        //identifiers
-        int switch_id, crossing_id, signal_id;
-
-        //incoming from CTC
-        float CTC_suggestedspd;
-        std::vector<int, int> CTC_authority;
-
-        //base level control functions
-        WaysideController();
-        void setSwitch(int switch_id);
-        void setCrossing(int crossing_id);
-        void setSignal(int signal_id);
-
-        void getSwitch(bool);
-        void getCrossing(bool);
-        void getSignal(bool);
-
-        void getTrackFailures(bool);
-
-        //block handling functions
-        void blockInit(int block_num);
-        void setOccupancy(); //this information comes from TKM and is sent to CTC
-        void setSpeed(int CTC_speed);
-        void setAuth(int CTC_auth);
-
-
-
-
-
-
-
-
-};
-
-class PLC
-{
     public:
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs);
+        void SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
+        void GetInput(const InputId input, bool &state);
+        types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
+        void SetManualMode(const types::TrackId track, const types::BlockId block, const bool manual_mode);
+        void SetSwitch(const types::TrackId track, const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
+        std::vector<BlockState> GetBlockStates(const types::TrackId track);
 
-        struct PLCpacket{
-            bool currentOccupancy;
-            bool nextOccupancy;
-          
-        }
-
-        //plc processing functions
-        void PLCget(int[]);
-        void PLCset(int[]);
-
+    private:
+        std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
+        std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs_;
 };
 
+// class PLC
+// {
+//     public:
+//         struct PLCpacket
+//         {
+//             bool currentOccupancy;
+//             bool nextOccupancy;
 
+//         }
 
-
-
-
+//         // plc processing functions
+//         void PLCget(int[]);
+//         void PLCset(int[]);
+// };
 
 /*
         TrackController();
@@ -109,6 +105,8 @@ class PLC
         void getOccupancies();
         void updateData();
    };
+ */
 
- #endif /*TrackController_h*/
-* /
+} // namespace wayside_controller
+
+#endif // TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
