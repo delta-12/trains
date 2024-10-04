@@ -3,7 +3,7 @@
 
 namespace train_controller
 {
-    types::Watts TrainController::CalculateCommandedPower(uint8_t speed){
+    types::Watts SoftwareTrainController::GetCommandedPower(float speed){
         //P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
 
 
