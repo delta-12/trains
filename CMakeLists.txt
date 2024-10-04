@@ -91,6 +91,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(ctc_tests_ui
   ${TESTS_DIR}/modules/ctc/ctc_tests_ui.cc
   ${CTC_SRCS}
+  ${COMMON_SRCS}
 )
 target_include_directories(ctc_tests_ui PRIVATE ${INC_DIRS})
 target_link_libraries(ctc_tests_ui PRIVATE Slint::Slint)

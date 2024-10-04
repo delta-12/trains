@@ -1,6 +1,7 @@
 #include "csv_parser.h"
 
 #include <fstream>
+#include <iostream>
 
 #define CSVPARSER_VALUE_DELIMITER ","
 #define CSVPARSER_ROW_DELIMITER   "\n"
@@ -62,11 +63,19 @@ types::Error CsvParser::Parse(const std::string &input_string)
         records_.push_back(Split(line, CSVPARSER_VALUE_DELIMITER));
     }
 
+
+    // Restriction
     const std::size_t size = records_[0].size();
     for (const std::vector<std::string> &record : records_)
     {
         if (record.size() != size)
         {
+            std::cout << "Error at record: "; 
+            for(const std::string &value : record)
+            {
+                std::cout << value << ", ";
+            }
+            std::cout << std::endl;
             error = types::ERROR_INVALID_FORMAT;
         }
     }

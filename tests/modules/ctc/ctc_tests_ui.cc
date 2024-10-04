@@ -65,7 +65,22 @@ int main(void)
     });
 
     ctc_ui->on_parse_file([&]() {
-        std::cout << "Button Pressed" << std::endl;
+        std::cout << "Parsing File..." << std::endl;
+
+        std::filesystem::path path(input_file_path);
+        CsvParser parser(path);
+
+        std::vector<std::vector<std::string> > records = parser.GetRecords();
+        std::cout << "Schedule size: " << parser.GetSize() << std::endl;
+        for(const std::vector<std::string> &record : records)
+        {
+            for(const std::string &value : record)
+            {
+                std::cout << value << ", ";
+            }
+            std::cout << "Record Size: " << record.size();
+            std::cout << std::endl;
+        }
     });
 
     ctc_ui->run();
