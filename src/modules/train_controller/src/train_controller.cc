@@ -8,11 +8,16 @@ namespace train_controller
 
 
         //Defining Vcmd and Actual speed in m/s
-        types::MetersPerSecond Vcmd = speed*1.609344;
+        types::MetersPerSecond Vsetpoint = speed*1.609344;
         types::MetersPerSecond ActualSpeed = SetActualSpeedTB() * 1.609344;
 
+        if(Vsetpoint > 70000)
+        {
+            Vsetpoint = 70000;
+        }
+
         //Calculating Verror
-        float Verror = Vcmd - ActualSpeed;
+        float Verror = Vsetpoint - ActualSpeed;
 
         //Calculating Kp term
         float KPterm = Verror*Kp;
@@ -21,7 +26,7 @@ namespace train_controller
         float deltaTime = 0.5;
 
         //This section is where the integral section of the equation will be calculated
-        float integralSUM = (Vcmd-ActualSpeed)*  deltaTime;
+        float integralSUM = (Vsetpoint-ActualSpeed)*  deltaTime;
         
 
         //Calculating Ki term
