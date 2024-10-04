@@ -17,13 +17,15 @@ namespace train_controller
         //Calculating Kp term
         float KPterm = Verror*Kp;
 
+        //Temp variation
+        float deltaTime = 0.5;
+
         //This section is where the integral section of the equation will be calculated
-        float currentTime = 1;
-        float integral = (Vcmd-ActualSpeed)*currentTime;
+        float integralSUM = (Vcmd-ActualSpeed)*  deltaTime;
         
 
         //Calculating Ki term
-        float KIterm = Ki*integral;
+        float KIterm = Ki*integralSUM;
 
         //Calculating Commanded Power
         types::Watts CommandedPower = KPterm + KIterm;
