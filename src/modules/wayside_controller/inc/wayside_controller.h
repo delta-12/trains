@@ -73,8 +73,8 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs);
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs, const std::vector<BlockInput> &block_input_map);
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output);
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map);
         void SetBlockMap(const std::vector<BlockInput> &block_input_map);
         void SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         void GetInput(const InputId input, bool &state);
@@ -86,10 +86,9 @@ class WaysideController
 
     private:
         std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
-        std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs_;
+        std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output_;
         std::vector<BlockInput> block_input_map_;
         std::unordered_map<InputId, bool> inputs_;
-        std::unordered_map<OutputId, bool> outputs_;
 };
 
 class Plc
