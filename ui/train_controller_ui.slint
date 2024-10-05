@@ -3,9 +3,10 @@ import { HorizontalBox, VerticalBox, TabWidget, Button, LineEdit} from "std-widg
 export component TrainControllerUi inherits Window {
 
     in-out property <string> operation-mode-status: "Automatic";
-    in-out property <string> commanded_power: "0.0";
-    in-out property <string> authority: "0.0";
-    in-out property <string> current_speed: "0.0";
+    in-out property <string> operation-status-message: "";
+    in-out property <string> commanded_power: 0.0;
+    in-out property <string> authority: 0.0;
+    in-out property <string> current_speed: 0.0;
     in-out property <bool> emergency_brake: false;
     in-out property<bool> int-lights;
     in-out property<bool> ext-lights;
@@ -31,6 +32,13 @@ export component TrainControllerUi inherits Window {
             VerticalBox {
                 HorizontalBox {
                     VerticalBox {
+                        Text {
+                            text: root.operation-status-message;
+                            max-height: 10px;
+                            font-size: 13px;
+                            color: red;
+                            horizontal-alignment: center;
+                        }
                         Button {
                             text: "Automatic";
                             min-width: 10px;
@@ -53,6 +61,7 @@ export component TrainControllerUi inherits Window {
                             horizontal-alignment: center;
                             text: "Current Operation Mode: \{root.operation-mode-status}";
                             max-height: 10px;
+                            font-size: 13px;
                         }
                     }   
                 }
