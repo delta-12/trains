@@ -1,7 +1,5 @@
 #include "wayside_controller.h"
 
-#include <algorithm>
-
 namespace wayside_controller
 {
 
@@ -9,7 +7,11 @@ BlockState::BlockState(const types::BlockId block, const bool occupied, const bo
 {
 }
 
-BlockInput::BlockInput(const types::BlockId block, InputId input, const bool state, const bool maintenance_mode) : block(block), input(input), state(state), maintenance_mode(maintenance_mode)
+BlockInputs::BlockInputs(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false)
+{
+}
+
+BlockInputs::BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode) : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode)
 {
 }
 
@@ -25,33 +27,61 @@ PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const 
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output)
+WaysideController::WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}     // TODO verify registers are initialized to 0
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map) : get_inputs_(get_inputs), set_output_(set_output), block_input_map_(block_input_map)
+WaysideController::WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}
 {
+    // TODO NNF-174 error handling
+    SetBlockMap(block_inputs_map);
 }
 
-void WaysideController::SetBlockMap(const std::vector<BlockInput> &block_input_map)
+Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_inputs_map)
 {
-    block_input_map_ = block_input_map;
+    Error error = ERROR_NONE;
+
+    block_inputs_map_.clear();
+
+    for (const BlockInputs &block_inputs : block_inputs_map)
+    {
+        if (block_inputs.has_switch)
+        {
+            if (!IsSwitchInputValid(block_inputs.switch_input))
+            {
+                error = ERROR_INVALID_INPUT;
+            }
+        }
+
+        if ((ERROR_NONE == error) && (true == IsTrackCircuitInputValid(block_inputs.track_circuit_input)))
+        {
+            block_inputs_map_[block_inputs.block] = block_inputs;
+        }
+        else
+        {
+            error = ERROR_INVALID_INPUT;
+            block_inputs_map_.clear();
+            break;
+        }
+    }
+
+    return error;
 }
 
 Error WaysideController::SetOutput(const OutputId output, const bool state)
 {
     // TODO NNF-105 check outputs corresponding to switches to verify safety
+
     return (*set_output_)(output, state);
 }
 
 Error WaysideController::GetInput(const InputId input, bool &state)
 {
-    Error                                       error          = ERROR_INVALID_INPUT;
-    std::unordered_map<InputId, bool>::iterator input_iterator = inputs_.find(input);
+    Error error = ERROR_INVALID_INPUT;
 
-    if (inputs_.end() != input_iterator)
+    if (input < inputs_.size())
     {
-        state = input_iterator->second;
+        state = inputs_[input];
         error = ERROR_NONE;
     }
 
@@ -74,23 +104,32 @@ types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, c
 {
     types::Error error = types::ERROR_INVALID_BLOCK;
 
-    std::vector<BlockInput>::iterator block_input_iterator = std::find_if(block_input_map_.begin(), block_input_map_.end(), [block](const BlockInput &block_input)
-        {
-            return block_input.block == block;
-        });
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
 
-    if (block_input_map_.end() != block_input_iterator)
+    if (block_inputs_map_.end() != block_inputs)
     {
-        block_input_iterator->maintenance_mode = maintenance_mode;
-        error                                  = types::ERROR_NONE;
+        block_inputs->second.maintenance_mode = maintenance_mode;
+        error                                 = types::ERROR_NONE;
     }
 
     return error;
 }
 
-types::Error WaysideController::SetSwitch(const types::BlockId, const bool switch_state)
+types::Error WaysideController::SetSwitch(const types::BlockId block, const bool switch_state)
 {
     // TODO NNF-105 can be used in both auto and maintenance mode?
+
+    types::Error error = types::ERROR_INVALID_BLOCK;
+
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
+
+    if ((block_inputs_map_.end() != block_inputs) &&
+        (true == block_inputs->second.has_switch) &&
+        (true == IsSwitchInputValid(block_inputs->second.switch_input)))
+    {
+        inputs_[block_inputs->second.switch_input] = switch_state;
+        error                                      = types::ERROR_NONE;
+    }
 
     return types::ERROR_INVALID_BLOCK;
 }
@@ -102,7 +141,17 @@ std::vector<BlockState> WaysideController::GetBlockStates(void)
     return std::vector<BlockState>();
 }
 
-Plc::Plc(void) : program_counter_(0), registers_{} // TODO NNF-104 verify registers are initialized to 0
+bool WaysideController::IsTrackCircuitInputValid(const InputId input) const
+{
+    return (input < WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT);
+}
+
+bool WaysideController::IsSwitchInputValid(const InputId input) const
+{
+    return ((input >= WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT) && (input < WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT));
+}
+
+Plc::Plc(void) : program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
 {
 }
 
@@ -246,6 +295,5 @@ bool Plc::WriteSignal(WaysideController &wayside_controller, const PlcInstructio
 
     return success;
 }
-
 
 } // namespace wayside_controller

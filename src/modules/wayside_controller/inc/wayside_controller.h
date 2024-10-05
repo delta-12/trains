@@ -13,13 +13,21 @@
 
 #include "types.h"
 
-#define WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT 3
+#define WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT       75
+#define WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT        7
+#define WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT          (WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT + WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT)
+#define WAYSIDE_CONTROLLER_TRAFFIC_LIGHTS_PER_SWITCH  3
+#define WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT        7
+#define WAYSIDE_CONTROLLER_TRAFFIC_LIGHT_OUTPUT_COUNT (WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT * WAYSIDE_CONTROLLER_TRAFFIC_LIGHTS_PER_SWITCH)
+#define WAYSIDE_CONTROLLER_CROSSING_OUTPUT_COUNT      2
+#define WAYSIDE_CONTROLLER_TOTAL_OUTPUTS              (WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT + WAYSIDE_CONTROLLER_TRAFFIC_LIGHT_OUTPUT_COUNT + WAYSIDE_CONTROLLER_CROSSING_OUTPUT_COUNT)
+#define WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT         3
 
 namespace wayside_controller
 {
 
 typedef struct BlockState       BlockState;
-typedef struct BlockInput       BlockInput;
+typedef struct BlockInputs      BlockInputs;
 typedef struct TrackCircuitData TrackCircuitData;
 typedef struct PlcInstruction   PlcInstruction;
 typedef uint16_t                InputId;
@@ -54,13 +62,15 @@ struct BlockState
         bool track_failure;
 };
 
-struct BlockInput
+struct BlockInputs
 {
     public:
-        BlockInput(const types::BlockId block, InputId input, const bool state, const bool maintenance_mode);
+        BlockInputs(void);
+        BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode);
         types::BlockId block;
-        InputId input;
-        bool state;
+        InputId track_circuit_input;
+        InputId switch_input;
+        bool has_switch;
         bool maintenance_mode;
 };
 
@@ -87,22 +97,25 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output);
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map);
-        void SetBlockMap(const std::vector<BlockInput> &block_input_map);
+        WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output);
+        WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map);
+        Error SetBlockMap(const std::vector<BlockInputs> &block_inputs_map);
         Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         Error GetInput(const InputId input, bool &state);
         void ScanInputs(void);
         types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
         types::Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
-        types::Error SetSwitch(const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
+        types::Error SetSwitch(const types::BlockId block, const bool switch_state); // can be used in both auto and maintenance mode?
         std::vector<BlockState> GetBlockStates(void);
 
     private:
-        std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
+        bool IsTrackCircuitInputValid(const InputId input) const;
+        bool IsSwitchInputValid(const InputId input) const;
+
+        std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs_;
         std::shared_ptr<Error(const OutputId output, const bool state)> set_output_;
-        std::vector<BlockInput> block_input_map_;
-        std::unordered_map<InputId, bool> inputs_;
+        std::unordered_map<types::BlockId, BlockInputs> block_inputs_map_;
+        std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> inputs_;
 };
 
 class Plc
