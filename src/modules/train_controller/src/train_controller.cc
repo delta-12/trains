@@ -3,13 +3,41 @@
 
 namespace train_controller
 {
-    types::Watts SoftwareTrainController::GetCommandedPower(float speed){
+    types::Watts SoftwareTrainController::GetCommandedPower(void) const{
+
+        //Returning Commanded Power
+        return CommandedPower_;
+    }
+
+
+
+    void SoftwareTrainController::SetKP(uint16_t){
+        
+    }
+
+
+    void SoftwareTrainController::setKI(uint16_t){
+
+    }
+
+
+    void SoftwareTrainController::SetCommandedSpeedTB(types::MilesPerHour CommandedSpeedTB){
+        CommandedSpeedWS_ = CommandedSpeedTB;
+    }
+
+    void SoftwareTrainController::SetCurrentVelocityTB(types::MilesPerHour CurrentVelocityTB)
+    {
+        CurrentVelocity_ = CurrentVelocityTB *0.44704;
+    }
+
+
+    void SoftwareTrainController::CalculateCommandedPower(types::MilesPerHour SetPointSpeed)
+    {
+
         //P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
 
-
         //Defining Vcmd and Actual speed in m/s
-        types::MetersPerSecond Vsetpoint = speed*1.609344;
-        types::MetersPerSecond ActualSpeed = SetActualSpeedTB() * 1.609344;
+        types::MetersPerSecond Vsetpoint = SetPointSpeed*0.44704;
 
         if(Vsetpoint > 70000)
         {
@@ -17,40 +45,22 @@ namespace train_controller
         }
 
         //Calculating Verror
-        float Verror = Vsetpoint - ActualSpeed;
+        float Verror = Vsetpoint - CurrentVelocity_;
 
         //Calculating Kp term
-        float KPterm = Verror*Kp;
+        float KPterm = Verror*Kp_;
 
-        //Temp variation
+        //Temp time passed since last update
         float deltaTime = 0.5;
 
         //This section is where the integral section of the equation will be calculated
-        float integralSUM = (Vsetpoint-ActualSpeed)*  deltaTime;
+        IntegralSUM  += Verror * deltaTime; 
         
-
         //Calculating Ki term
-        float KIterm = Ki*integralSUM;
+        float KIterm = Ki_*IntegralSUM;
 
         //Calculating Commanded Power
-        types::Watts CommandedPower = KPterm + KIterm;
-
-        //Returning Commanded Power
-        return CommandedPower;
-    }
-
-
-
-    void SetKP(uint16_t){
-        
-    }
-
-
-    void setKI(uint16_t){
+        types::Watts CommandedPower_ = KPterm + KIterm;
 
     }
-
-
-
-
 }

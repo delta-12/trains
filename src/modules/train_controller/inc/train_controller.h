@@ -20,27 +20,25 @@ namespace train_controller
     {
         public:
             //Functions that will output from track controller
-            virtual types::Watts GetCommandedPower(float speed)                             =0;
-            virtual types::Watts GetBrake(float percent)                                    =0;
-            virtual void GetEmergencyBrake(void)                                            =0;
-            virtual bool GetHeadLights(void)                                                =0;
-            virtual bool GetInteriorLights(void)                                            =0;
-            virtual bool GetLeftDoors(void)                                                 =0;
-            virtual bool GetRightDoors(void)                                                =0;
+            virtual types::Watts GetCommandedPower(void) const                              =0;
+            virtual uint16_t GetServiceBrake(void) const                                    =0;
+            virtual bool GetEmergencyBrake(void) const                                      =0;
+            virtual bool GetHeadLights(void) const                                          =0;
+            virtual bool GetInteriorLights(void) const                                      =0;
+            virtual bool GetLeftDoors(void) const                                           =0;
+            virtual bool GetRightDoors(void) const                                          =0;
             virtual std::string GetStationAnnouncement(void) const                          =0;
             virtual types::Meters GetDistanceTravelled(void) const                          =0;
-            virtual void GetInternalTemperature(types::DegreesFahrenheit temp)              =0;
-            virtual std::uint16_t GetInternalTemperature(void) const                        =0;
+            virtual types::DegreesFahrenheit GetInternalTemperature(void) const             =0;
 
             // inputs from train model
-            virtual types::MetersPerSecond SetCommandedSpeed(void) const                    =0;
-            virtual types::MetersPerSecond SetActualSpeed(void) const                       =0;
-            virtual std::size_t SetBeaconData(types::BeaconData &data) const                =0;
-            virtual types::Meters SetAuthority(void) const                                  =0;
-            virtual types::Watts SetActualPower(void) const                                 =0;
-            virtual bool SetEngineFailure(void) const                                       =0;
-            virtual bool SetSignalPickupFailure(void) const                                 =0;
-            virtual bool SetBrakeFailure(void) const;
+            virtual void SetCommandedSpeedWS(types::MetersPerSecond)                        =0;
+            virtual void SetCurrentVelocity(types::MetersPerSecond)                         =0;
+            virtual void SetBeaconData(types::BeaconData &data)                             =0;
+            virtual void SetAuthority(types::BlockId)                                       =0;
+            virtual bool SetEngineFailure(bool)                                             =0;
+            virtual bool SetSignalPickupFailure(bool)                                       =0;
+            virtual bool SetBrakeFailure(bool)=0;
             
             // inputs from driver
             virtual void SetDriverSpeed(uint16_t)                                           =0;
@@ -54,84 +52,87 @@ namespace train_controller
     };
 
 
-    class SoftwareTrainController : public TrainController {
-    public:
-            uint8_t Kp = 2;
-            uint8_t Ki = 4;
+    class SoftwareTrainController : public TrainController
+    {
+        public:
+                uint8_t Kp_ = 2;
+                uint8_t Ki_ = 4;
 
-        /*
-        *
-        *** BLUE LINE MAP IMPLEMENTATION ***
-        *
-        */ 
+                types::MetersPerSecond CommandedSpeedWS_;
+                types::MetersPerSecond CurrentVelocity_;
+                types::Watts CommandedPower_;
 
-        // map for block data --> 
-        // key: 
-        //          block number
-        // values:
-        //          index 0: block length           (m)
-        //          index 1: block grade            (%)
-        //          index 2: speed limit            (Km/Hr)
-        //          index 3: elevation              (m)
-        //          index 4: cumulative elevation   (m)
+            /*
+            *
+            *** BLUE LINE MAP IMPLEMENTATION ***
+            *
+            */ 
 
-        std::unordered_map<int, std::array<float, 5>> blockDataMap = {
-            {1, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {2, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {3, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {4, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {5, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {6, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {7, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {8, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {9, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {10, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {11, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {12, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {13, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {14, {50.0, 0.0, 50.0, 0.00, 0.00}},
-            {15, {50.0, 0.0, 50.0, 0.00, 0.00}},
-        };
+            // map for block data --> 
+            // key: 
+            //          block number
+            // values:
+            //          index 0: block length           (m)
+            //          index 1: block grade            (%)
+            //          index 2: speed limit            (Km/Hr)
+            //          index 3: elevation              (m)
+            //          index 4: cumulative elevation   (m)
 
-        // map for block data --> 
-        // key: 
-        //          block number
-        // values:
-        //          infrastructure string
+            std::unordered_map<types::BlockId, std::array<float, 5>> blockDataMap = {
+                {1, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {2, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {3, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {4, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {5, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {6, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {7, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {8, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {9, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {10, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {11, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {12, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {13, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {14, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {15, {50.0, 0.0, 50.0, 0.00, 0.00}},
+            };
 
-        std::unordered_map<int, std::string> blockIfrastructureMap = {
-            {3, "RAILWAY CROSSING"},
-            {5, "Switch ( 5 to 6) or (5 to 11)"},
-            {6, "Switch ( 5 to 6); Light"},
-            {9, "Transponder"},
-            {10, "Station B"},
-            {11, "Switch (5 to 11); Light"},
-            {14, "Transponder"},
-            {15, "Station C"},
-        };
+            // map for block data --> 
+            // key: 
+            //          block number
+            // values:
+            //          infrastructure string
+
+            std::unordered_map<types::BlockId, std::string> blockIfrastructureMap = {
+                {3, "RAILWAY CROSSING"},
+                {5, "Switch ( 5 to 6) or (5 to 11)"},
+                {6, "Switch ( 5 to 6); Light"},
+                {9, "Transponder"},
+                {10, "Station B"},
+                {11, "Switch (5 to 11); Light"},
+                {14, "Transponder"},
+                {15, "Station C"},
+            };
 
             //Functions that will output from track controller
-            virtual types::Watts GetCommandedPower(float speed);
-            virtual types::Watts GetBrake(float percent);
-            virtual void GetEmergencyBrake(void);
-            virtual bool GetHeadLights(void);
-            virtual bool GetInteriorLights(void);
-            virtual bool GetLeftDoors(void);
-            virtual bool GetRightDoors(void);
+            virtual types::Watts GetCommandedPower(void) const;
+            virtual uint16_t GetServiceBrake(void) const;
+            virtual bool GetEmergencyBrake(void) const;
+            virtual bool GetHeadLights(void) const;
+            virtual bool GetInteriorLights(void) const;
+            virtual bool GetLeftDoors(void) const;
+            virtual bool GetRightDoors(void) const;
             virtual std::string GetStationAnnouncement(void) const;
             virtual types::Meters GetDistanceTravelled(void) const;
-            virtual void GetInternalTemperature(types::DegreesFahrenheit temp);
-            virtual std::uint16_t GetInternalTemperature(void) const;
+            virtual types::DegreesFahrenheit GetInternalTemperature(void) const;
 
             // inputs from train model
-            virtual types::MetersPerSecond SetCommandedSpeed(void) const;
-            virtual types::MetersPerSecond SetActualSpeed(void) const;
-            virtual std::size_t SetBeaconData(types::BeaconData &data) const;
-            virtual types::Meters SetAuthority(void) const;
-            virtual types::Watts SetActualPower(void) const;
-            virtual bool SetEngineFailure(void) const;
-            virtual bool SetSignalPickupFailure(void) const;
-            virtual bool SetBrakeFailure(void) const;
+            virtual void SetCommandedSpeedWS(types::MetersPerSecond);
+            virtual void SetCurrentVelocity(types::MetersPerSecond);
+            virtual void SetBeaconData(types::BeaconData &data);
+            virtual void SetAuthority(types::BlockId);
+            virtual bool SetEngineFailure(bool);
+            virtual bool SetSignalPickupFailure(bool);
+            virtual bool SetBrakeFailure(bool);
             
             // inputs from driver
             virtual void SetDriverSpeed(uint16_t);
@@ -143,15 +144,29 @@ namespace train_controller
             virtual void SetKP(uint16_t);
             virtual void setKI(uint16_t);
 
+
+            /////////////////////////////
+            //FINISH ADDING UI FUNCTIONS//
+            /////////////////////////////
+
+
+            
             //TestBench Functions. These will be tied to the testbench UI
-            virtual types::MetersPerSecond SetCommandedSpeedTB(void) const;
-            virtual types::MetersPerSecond SetActualSpeedTB(void) const;
-            virtual std::size_t SetBeaconDataTB(types::BeaconData &data) const;
-            virtual types::Meters SetAuthorityTB(void) const;
-            virtual types::Watts SetActualPowerTB(void) const;
-            virtual bool SetEngineFailureTB(void) const;
-            virtual bool SetSignalPickupFailureTB(void) const;
-            virtual bool SetBrakeFailureTB(void) const;
+            virtual void SetCommandedSpeedTB(types::MetersPerSecond);
+            virtual void SetCurrentVelocityTB(types::MetersPerSecond);
+            virtual std::size_t SetBeaconDataTB(types::BeaconData &data);
+            virtual types::Meters SetAuthorityTB(void);
+            virtual types::Watts SetActualPowerTB(void);
+            virtual bool SetEngineFailureTB(void);
+            virtual bool SetSignalPickupFailureTB(void);
+            virtual bool SetBrakeFailureTB(void);
+
+
+            //local functions
+            virtual void CalculateCommandedPower(types::MilesPerHour);
+
+        private:
+            float IntegralSUM = 0;
     };
 
 } // namespace train_controller
