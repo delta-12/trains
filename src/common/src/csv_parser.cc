@@ -26,9 +26,9 @@ CsvParser::CsvParser(const std::string &input_string)
     Parse(input_string);
 }
 
-bool CsvParser::Parse(const std::filesystem::path &file_path)
+types::Error CsvParser::Parse(const std::filesystem::path &file_path)
 {
-    bool parsed = false;
+    types::Error error = types::ERROR_IO;
 
     std::ifstream file(file_path);
 
@@ -38,20 +38,20 @@ bool CsvParser::Parse(const std::filesystem::path &file_path)
         buffer << file.rdbuf();
         file.close();
 
-        parsed = Parse(buffer);
+        error = Parse(buffer);
     }
 
-    return parsed;
+    return error;
 }
 
-bool CsvParser::Parse(const std::stringstream &string_stream)
+types::Error CsvParser::Parse(const std::stringstream &string_stream)
 {
     return Parse(string_stream.str());
 }
 
-bool CsvParser::Parse(const std::string &input_string)
+types::Error CsvParser::Parse(const std::string &input_string)
 {
-    bool parsed = true;
+    types::Error error = types::ERROR_NONE;
 
     Reset();
 
@@ -67,16 +67,16 @@ bool CsvParser::Parse(const std::string &input_string)
     {
         if (record.size() != size)
         {
-            parsed = false;
+            error = types::ERROR_INVALID_FORMAT;
         }
     }
 
-    if (!parsed)
+    if (types::ERROR_NONE != error)
     {
         Reset();
     }
 
-    return parsed;
+    return error;
 }
 
 std::size_t CsvParser::GetSize(void) const

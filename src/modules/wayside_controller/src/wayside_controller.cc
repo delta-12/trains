@@ -67,7 +67,7 @@ types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &
 types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
 {
     types::Error error = types::ERROR_INVALID_BLOCK;
-    
+
     std::vector<BlockInput>::iterator block_input_iterator = std::find_if(block_input_map_.begin(), block_input_map_.end(), [block](const BlockInput &block_input)
         {
             return block_input.block == block;
@@ -76,7 +76,7 @@ types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, c
     if (block_input_map_.end() != block_input_iterator)
     {
         block_input_iterator->maintenance_mode = maintenance_mode;
-        error = types::ERROR_NONE;
+        error                                  = types::ERROR_NONE;
     }
 
     return error;

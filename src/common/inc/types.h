@@ -22,7 +22,9 @@ typedef enum
     ERROR_INVALID_BLOCK,
     ERROR_INVALID_TRAIN,
     ERROR_INVALID_MODE,
-    ERROR_INVALID_SIZE
+    ERROR_INVALID_SIZE,
+    ERROR_INVALID_FORMAT,
+    ERROR_IO
 } Error;
 
 typedef enum
@@ -31,10 +33,11 @@ typedef enum
     POLARITY_NEGATIVE
 } Polarity;
 
-typedef uint8_t                                     MetersPerSecond;
-typedef uint32_t                                    Meters;
-typedef uint32_t                                    Watts;
+typedef double                                      MetersPerSecond;
+typedef double                                      Meters;
+typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
+typedef int64_t                                     Tick;
 typedef uint8_t                                     TrackId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    TrainId;
@@ -45,9 +48,6 @@ class Port
     public:
         virtual void Send(const std::vector<uint8_t> &buffer) = 0;
         virtual void Receive(std::vector<uint8_t> &buffer)    = 0;
-
-    private:
-        void testprive();
 };
 
 } // namespace types
