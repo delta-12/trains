@@ -1,4 +1,4 @@
-import { HorizontalBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch} from "std-widgets.slint";
+import { GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView} from "std-widgets.slint";
 
 /*
 #include <iostream>
@@ -26,13 +26,158 @@ component Circle inherits Rectangle {
     animate background { duration: 250ms; }
 }
 
+component TableView inherits Rectangle {
+    in property <[string]> columns;
+    in property <[[string]]> values;
+
+    private property <length> e: self.width / root.columns.length;
+    private property <[length]> column_sizes: [
+        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
+        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
+        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
+    ];
+
+    VerticalBox {
+        padding: 5px;
+        HorizontalLayout {
+            padding: 5px; spacing: 5px;
+            vertical-stretch: 0;
+            for title[idx] in root.columns : HorizontalLayout {
+                width: root.column_sizes[idx];
+                Text { overflow: elide; text: title; }
+                Rectangle {
+                    width: 1px;
+                    background: gray;
+                    TouchArea {
+                        width: 10px;
+                        x: (parent.width - self.width) / 2;
+                        property <length> cached;
+                        pointer-event(event) => {
+                            if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                                self.cached = root.column_sizes[idx];
+                            }
+                        }
+                        moved => {
+                            if (self.pressed) {
+                                root.column_sizes[idx] += (self.mouse-x - self.pressed-x);
+                                if (root.column_sizes[idx] < 0) {
+                                    root.column_sizes[idx] = 0;
+                                }
+                            }
+                        }
+                        mouse-cursor: ew-resize;
+                    }
+                }
+            }
+        }
+        ListView {
+            for r in root.values : HorizontalLayout {
+                padding: 5px;
+                spacing: 5px;
+                for t[idx] in r : HorizontalLayout {
+                    width: root.column_sizes[idx];
+                    Text { overflow: elide; text: t; }
+                }
+            }
+        }
+    }
+}
+
+export component TrafficLight inherits Rectangle {
+    // Define the states for the traffic light
+    in-out property <int> state; // 0: Red, 1: Yellow, 2: Green
+
+    // Define the size of the traffic light
+    preferred-width: 100px;
+    preferred-height: 300px;
+
+    // Layout for the traffic light
+    VerticalBox {
+        spacing: 5px;
+        padding: 10px;
+        
+        // Red light
+        Rectangle {
+            width: 80px;
+            height: 80px;
+            border-radius: root.width;// Circular
+            background: red;
+            //brush: state == 0 ? red : darkgray; // Red light
+        }
+       
+        // Green light
+        Rectangle {
+            width: 80px;
+            height: 80px;
+            border-radius: root.width;// Circular
+            background: green;
+            //brush: state == 2 ? green : darkgray; // Green light
+        }
+    }
+}
+
+
+
+// main window
+export component Recipe inherits Window {
+    preferred-height: 500px;
+    preferred-width: 600px;
+    in-out property <int> active-tab;
+    VerticalLayout {
+        tab_bar := HorizontalLayout {
+            spacing: 3px;
+            Button {
+                text: "PLC";
+                clicked => { root.active-tab = 0; }
+            }
+            Button {
+                text: "Block Status";
+                clicked => { root.active-tab = 1; }
+            }
+
+        }
+        Rectangle {
+            clip: true;
+            Rectangle {
+                background: bisque;
+                x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
+                animate x { duration: 125ms; easing: ease; }
+            }
+            Rectangle {
+                background: beige;
+                x: root.active-tab == 1 ? 0 : root.active-tab < 1 ? - self.width - 1px : parent.width + 1px;
+                animate x { duration: 125ms; easing: ease; }
+
+                TableView {
+                    columns: ["Device", "Mount Point", "Total", "Free", "Track Number", "Test"];
+                    values: [
+                         ["/dev/sda1", "/", "255GB", "82.2GB"] ,
+                         ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
+                         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+                         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+                    ];
+                }
+                
+            }
+
+        }
+    }
+}
+
+
+/*export component TrackTable inherits Window {
+
+}*/
+
+
+/*
 
 export component WaysideControllerUi inherits Window {
     title: "Wayside Controller";
     width: 650px;
     height: 450px;
 
-    HorizontalBox {
+    GridBox {
         Text {
             //text: "This is the Wayside Controller UI.";
         }
@@ -58,6 +203,16 @@ export component WaysideControllerUi inherits Window {
                     height: 20px;
                     progress: 50%;
                 }
+                Switch {
+                    accessible-role: AccessibleRole.switch;
+                    text: "Current PLC Status";
+                }
+                ComboBox {
+                    width: self.preferred-width;
+                    height: self.preferred-height;
+                    model: ["Software Wayside Controller", "Hardware Wayside Controller"];
+                    current-value: "Software Wayside Controller";
+                }
 
             }
             Tab{
@@ -71,23 +226,29 @@ export component WaysideControllerUi inherits Window {
                 ComboBox {
                     //text: "Selected Line";
                     model: ["Block 1", "Block 2", "Block 3"];
-                    x: 82px;
-                    y: 152px;
+                    x: 42px;
+                    y: 154px;
+                }
+                Switch {
+                    accessible-role: AccessibleRole.switch;
+                    text: "Current PLC Status";
+                    x: 184px;
+                    y: 194px;
+                }
+                ComboBox {
+                    width: self.preferred-width;
+                    height: self.preferred-height;
+                    model: ["Software Wayside Controller", "Hardware Wayside Controller"];
+                    current-value: "Software Wayside Controller";
+                    x: 184px;
+                    y: 0px;
                 }
             }
         }
-        Switch {
-            accessible-role: AccessibleRole.switch;
-            text: "Current PLC Status";
-        }
-        ComboBox {
-            width: self.preferred-width;
-            height: self.preferred-height;
-            model: ["Software Wayside Controller", "Hardware Wayside Controller"];
-            current-value: "Software Wayside Controller";
-        }
+
 
 
         
     }
 }
+*/
