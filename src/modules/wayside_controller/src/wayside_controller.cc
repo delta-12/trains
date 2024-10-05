@@ -19,11 +19,11 @@ PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const 
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output)
+WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output)
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map) : get_inputs_(get_inputs), set_output_(set_output), block_input_map_(block_input_map)
+WaysideController::WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map) : get_inputs_(get_inputs), set_output_(set_output), block_input_map_(block_input_map)
 {
 }
 
@@ -34,24 +34,34 @@ void WaysideController::SetBlockMap(const std::vector<BlockInput> &block_input_m
 
 void WaysideController::SetOutput(const OutputId output, const bool state)
 {
+    // TODO check outputs corresponding to switches to verify safety
     (*set_output_)(output, state);
 }
-// check outputs corresponding to switches to verify safety
-void WaysideController::GetInput(const InputId input, bool &state)
+
+Error WaysideController::GetInput(const InputId input, bool &state)
 {
-    // TODO
+    Error                                       error          = ERROR_INVALID_INPUT;
+    std::unordered_map<InputId, bool>::iterator input_iterator = inputs_.find(input);
+
+    if (inputs_.end() != input_iterator)
+    {
+        state = input_iterator->second;
+        error = ERROR_NONE;
+    }
+
+    return error;
 }
 
 void WaysideController::ScanInputs(void)
 {
-    // TODO
+    (*get_inputs_)(inputs_);
 }
 
 types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
 {
-    // TODO
+    // TODO check for safe speed and authority
 }
-// check for safe speed and authority
+
 void WaysideController::SetManualMode(const types::BlockId block, const bool manual_mode)
 {
     // TODO
@@ -59,9 +69,9 @@ void WaysideController::SetManualMode(const types::BlockId block, const bool man
 
 void WaysideController::SetSwitch(const types::BlockId, const bool switch_state)
 {
-    // TODO
+    // TODO can be used in both auto and maintenance mode?
 }
-// can be used in both auto and maintenance mode?
+
 std::vector<BlockState> WaysideController::GetBlockStates(void)
 {
     // TODO

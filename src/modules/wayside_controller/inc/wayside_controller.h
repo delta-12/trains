@@ -25,6 +25,13 @@ typedef uint32_t                PlcInstructionArgument;
 
 typedef enum
 {
+    ERROR_NONE,
+    ERROR_INVALID_INPUT,
+    ERROR_INVALID_OUTPUT
+} Error;
+
+typedef enum
+{
     PLCINSTRUCTIONCODE_READ,
     PLCINSTRUCTIONCODE_WRITE,
     PLCINSTRUCTIONCODE_EQUALS,
@@ -73,11 +80,11 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output);
-        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map);
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output);
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map);
         void SetBlockMap(const std::vector<BlockInput> &block_input_map);
         void SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
-        void GetInput(const InputId input, bool &state);
+        Error GetInput(const InputId input, bool &state);
         void ScanInputs(void);
         types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
         void SetManualMode(const types::BlockId block, const bool manual_mode);
@@ -86,7 +93,7 @@ class WaysideController
 
     private:
         std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
-        std::shared_ptr<types::Error(const OutputId output, const bool state)> set_output_;
+        std::shared_ptr<Error(const OutputId output, const bool state)> set_output_;
         std::vector<BlockInput> block_input_map_;
         std::unordered_map<InputId, bool> inputs_;
 };
