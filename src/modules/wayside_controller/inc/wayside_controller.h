@@ -6,11 +6,14 @@
 #ifndef TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
 #define TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
 
+#include <array>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "types.h"
+
+#define WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT 3
 
 namespace wayside_controller
 {
@@ -18,7 +21,7 @@ namespace wayside_controller
 typedef struct BlockState       BlockState;
 typedef struct BlockInput       BlockInput;
 typedef struct TrackCircuitData TrackCircuitData;
-typedef struct PlcInstrction    PlcInstrction;
+typedef struct PlcInstruction   PlcInstruction;
 typedef uint16_t                InputId;
 typedef uint16_t                OutputId;
 typedef uint32_t                PlcInstructionArgument;
@@ -32,8 +35,10 @@ typedef enum
 
 typedef enum
 {
-    PLCINSTRUCTIONCODE_READ,
-    PLCINSTRUCTIONCODE_WRITE,
+    PLCINSTRUCTIONCODE_NOOP,
+    PLCINSTRUCTIONCODE_READ_IMMEDIATE,
+    PLCINSTRUCTIONCODE_READ_SIGNAL,
+    PLCINSTRUCTIONCODE_WRITE_SIGNAL,
     PLCINSTRUCTIONCODE_EQUALS,
     PLCINSTRUCTIONCODE_OR,
     PLCINSTRUCTIONCODE_BRANCH_IF,
@@ -71,6 +76,7 @@ struct TrackCircuitData
 struct PlcInstruction
 {
     public:
+        PlcInstruction(void);
         PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2);
         PlcInstructionCode instruction_code;
         PlcInstructionArgument argument_0;
@@ -102,15 +108,19 @@ class WaysideController
 class Plc
 {
     public:
-        Plc(std::shared_ptr<WaysideController> wayside_controller);
-        Plc(std::shared_ptr<WaysideController> wayside_controller, const std::vector<PlcInstruction> &instructions);
+        Plc(void);
+        Plc(const std::vector<PlcInstruction> &instructions);
         void SetInstructions(const std::vector<PlcInstruction> &instructions);
-        void Update(void);
+        uint32_t GetProgramCounter(void) const;
+        PlcInstruction GetInstruction(void) const;
+        bool Run(WaysideController &wayside_controller);
 
     private:
-        uint32_t register_0_;
-        uint32_t register_1_;
-        uint32_t register_2_;
+        bool ReadSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument input);
+        bool WriteSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument output);
+        std::vector<PlcInstruction> instructions_;
+        uint32_t program_counter_;
+        std::array<PlcInstructionArgument, WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT> registers_;
 };
 
 } // namespace wayside_controller
