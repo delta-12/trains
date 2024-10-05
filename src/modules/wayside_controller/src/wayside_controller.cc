@@ -38,10 +38,10 @@ void WaysideController::SetBlockMap(const std::vector<BlockInput> &block_input_m
     block_input_map_ = block_input_map;
 }
 
-void WaysideController::SetOutput(const OutputId output, const bool state)
+Error WaysideController::SetOutput(const OutputId output, const bool state)
 {
     // TODO NNF-105 check outputs corresponding to switches to verify safety
-    (*set_output_)(output, state);
+    return (*set_output_)(output, state);
 }
 
 Error WaysideController::GetInput(const InputId input, bool &state)
@@ -209,18 +209,40 @@ bool Plc::Run(WaysideController &wayside_controller)
 
 bool Plc::ReadSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument input)
 {
-    bool success = false;
+    bool success        = false;
+    bool register_value = false;
 
-    // TODO NNF-160
+    if (ERROR_NONE == wayside_controller.GetInput(input, register_value))
+    {
+        if (register_value)
+        {
+            registers_[register_number] = 1;
+        }
+        else
+        {
+            registers_[register_number] = 0;
+        }
+
+        success = true;
+    }
 
     return success;
 }
 
 bool Plc::WriteSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument output)
 {
-    bool success = false;
+    bool success      = false;
+    bool output_value = false;
 
-    // TODO NNF-160
+    if (0 != registers_[register_number])
+    {
+        output_value = true;
+    }
+
+    if (ERROR_NONE == wayside_controller.SetOutput(output, output_value))
+    {
+        success = true;
+    }
 
     return success;
 }

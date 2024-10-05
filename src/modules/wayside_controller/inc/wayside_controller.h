@@ -90,7 +90,7 @@ class WaysideController
         WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output);
         WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInput> &block_input_map);
         void SetBlockMap(const std::vector<BlockInput> &block_input_map);
-        void SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
+        Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         Error GetInput(const InputId input, bool &state);
         void ScanInputs(void);
         types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
