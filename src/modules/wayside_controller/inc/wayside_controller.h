@@ -16,6 +16,7 @@ namespace wayside_controller
 {
 
 typedef struct BlockState       BlockState;
+typedef struct BlockInput       BlockInput;
 typedef struct TrackCircuitData TrackCircuitData;
 typedef struct PlcInstrction    PlcInstrction;
 typedef uint16_t                InputId;
@@ -35,18 +36,25 @@ typedef enum
 struct BlockState
 {
     public:
-        BlockState(const types::TrackId track, const types::BlockId block, const bool occupied, const bool track_failure);
-        types::TrackId track;
+        BlockState(const types::BlockId block, const bool occupied, const bool track_failure);
         types::BlockId block;
         bool occupied;
         bool track_failure;
 };
 
+struct BlockInput
+{
+    public:
+        BlockInput(const types::BlockId block, InputId input, const bool state);
+        types::BlockId block;
+        InputId input;
+        bool state;
+};
+
 struct TrackCircuitData
 {
     public:
-        TrackCircuitData(const types::TrackId track, const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
-        types::TrackId track;
+        TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
         types::BlockId block;
         types::MetersPerSecond speed;
         types::Meters authority;
@@ -66,16 +74,20 @@ class WaysideController
 {
     public:
         WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs);
+        WaysideController(std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs, std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs, const std::vector<BlockInput> &block_input_map);
+        void SetBlockMap(const std::vector<BlockInput> &block_input_map);
         void SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         void GetInput(const InputId input, bool &state);
+        void ScanInputs(void);
         types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
-        void SetManualMode(const types::TrackId track, const types::BlockId block, const bool manual_mode);
-        void SetSwitch(const types::TrackId track, const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
-        std::vector<BlockState> GetBlockStates(const types::TrackId track);
+        void SetManualMode(const types::BlockId block, const bool manual_mode);
+        void SetSwitch(const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
+        std::vector<BlockState> GetBlockStates(void);
 
     private:
         std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
         std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs_;
+        std::vector<BlockInput> block_input_map_;
         std::unordered_map<InputId, bool> inputs_;
         std::unordered_map<OutputId, bool> outputs_;
 };
