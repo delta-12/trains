@@ -4,14 +4,23 @@ export component TrainControllerUi inherits Window {
 
     in-out property <string> operation-mode-status: "Automatic";
     in-out property <string> operation-status-message: "";
-    in-out property <string> commanded_power: 0.0;
-    in-out property <string> authority: 0.0;
-    in-out property <string> current_speed: 0.0;
+    in-out property <float> commanded_power: 0.0;
+    in-out property <float> authority: 0.0;
+    in-out property <float> current_speed: 0.0;
     in-out property <bool> emergency_brake: false;
-    in-out property<bool> int-lights;
-    in-out property<bool> ext-lights;
-    in-out property<bool> right-doors;
-    in-out property<bool> left-doors;
+
+    // false = operating
+    // true  = failing
+    in-out property <bool> engine_status: false;
+    in-out property <bool> brake_status: false;
+    in-out property <bool> signal_status: false;
+
+    // false = off
+    // true  = on
+    in-out property<bool> int-lights: false;
+    in-out property<bool> ext-lights: false;
+    in-out property<bool> right-doors: false;
+    in-out property<bool> left-doors: false;
 
 
     callback request_automatic_mode();
@@ -129,36 +138,55 @@ export component TrainControllerUi inherits Window {
                     }
                 }
 
-                // Middle: Buttons for Engine Failure, Brake Failure, Signal Pickup Failure
-            VerticalBox {
-                spacing: 10px;
-
-                Button {
-                    text: "Engine Failure";
-                    clicked => {
-                        root.request_engine_fail();
+            // buttons for engine failure, brake failure, signal pickup failure
+            HorizontalBox {
+                VerticalBox {
+                    spacing: 10px;
+    
+                    Button {
+                        text: "Engine Failure";
+                        clicked => {
+                            root.request_engine_fail();
+                        }
+                        width: 150px;
                     }
-                    width: 150px;
-                }
-
-                Button {
-                    text: "Brake Failure";
-                    clicked => {
-                        root.request_brake_fail();
+                    Text {
+                        horizontal-alignment: center;
+                        text: root.engine_status ? "Engine Status: FAILING" : "Engine Status: OPERATIONAL";
+                        max-height: 10px;
                     }
-                    width: 150px;
                 }
-
-                Button {
-                    text: "Signal Pickup Failure";
-                    clicked => {
-                        root.request_signal_fail();
+                VerticalBox {
+                    Button {
+                        text: "Brake Failure";
+                        clicked => {
+                            root.request_brake_fail();
+                        }
+                        width: 150px;
                     }
-                    width: 150px;
+                    Text {
+                        horizontal-alignment: center;
+                        text: root.brake_status ? "Brake Status: FAILING" : "Brake Status: OPERATIONAL";
+                        max-height: 10px;
+                    }
                 }
-            }
+                VerticalBox {
+                    Button {
+                        text: "Signal Pickup Failure";
+                        clicked => {
+                            root.request_signal_fail();
+                        }
+                        width: 150px;
+                    }
+                    Text {
+                        horizontal-alignment: center;
+                        text: root.signal_status ? "Signal Pickup Status: FAILING" : "Signal Pickup Status: OPERATIONAL";
+                        max-height: 10px;
+                    }
+                }   
+            }  
 
-                // Right side: Buttons for lights and doors
+            // buttons for lights and doors
             VerticalBox {
                 spacing: 10px;
 

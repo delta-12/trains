@@ -33,11 +33,28 @@ int main(void)
         train_controller_ui->set_operation_mode_status("Manual");
         });
 
-    train_controller_ui->run();
-
     // failures
 
-    //train_controller_ui->on
+    train_controller_ui->on_request_engine_fail([&] {
+        if (train_controller_ui->get_engine_status() == 0)
+            train_controller_ui->set_engine_status(1);
+        else
+            train_controller_ui->set_engine_status(0);
+    });
+    train_controller_ui->on_request_brake_fail([&] {
+        if (train_controller_ui->get_brake_status() == 0)
+            train_controller_ui->set_brake_status(1);
+        else
+            train_controller_ui->set_brake_status(0);
+    });
+    train_controller_ui->on_request_signal_fail([&] {
+        if (train_controller_ui->get_signal_status() == 0)
+            train_controller_ui->set_signal_status(1);
+        else
+            train_controller_ui->set_signal_status(0);
+    });
+
+    train_controller_ui->run();
 
     return 0;
 }
