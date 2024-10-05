@@ -1,7 +1,78 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
 
+component TestBench inherits Rectangle {
+
+}
+
+component TrackInput inherits Rectangle {
+    in-out property<string> fileName: "";
+    callback choose-file();
+    callback parse-file();
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Choose File: ";}
+            Rectangle {width: 10px;}
+            Rectangle {
+                border-radius: 5px;
+                y: -3px;
+                width: 150px;
+                height: 25px;
+                border-width: 2px;
+                border-color: #4d4d4d;
+                Text {text: fileName;}
+            } 
+        }
+        HorizontalLayout {
+            Button { 
+                max-height: 30px;
+                text: "Open File";
+                clicked => {choose-file()}
+            }
+        }
+        
+        VerticalLayout {
+            Button { 
+                max-height: 30px;
+                text: "Execute";
+                clicked => {parse-file()}
+            } 
+        }       
+    }
+}
 export component TrackModelUi inherits Window {
+    Image {
+        source: @image-url("/Users/ibrah/Downloads/redgreenlines.png");
+        height: 500px;
+        width: 400px;
+        x: 0px;
+    }
+    TrackInput{
+    }
+    popup:= PopupWindow {
+        Rectangle {
+            height:100%; width: 100%; background: white;
+        } 
+        height: 300px;
+        width: 300px;
+        x: 600px;
+    }
+
+    HorizontalBox {
+        alignment: end;
+            Button{
+                text: "TestBench";
+                clicked => {
+                    popup.show();
+                }
+        }
+    }
+
     title: "Track Model";
+    preferred-height: 800px;
+    preferred-width: 800px;
     HorizontalBox {
         padding: 50px;
         Text {
