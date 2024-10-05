@@ -11,6 +11,14 @@ int main(void)
 {
     auto train_controller_ui = ui::TrainControllerUi::create();
 
+    train_controller_ui->on_request_automatic_mode([&]{
+        if (train_controller_ui->get_operation_mode_status() == "Manual")
+            train_controller_ui->set_operation_mode_status("In Manual, cannot switch to Automatic");
+    });
+    train_controller_ui->on_request_manual_mode([&]{
+        train_controller_ui->set_operation_mode_status("Manual");
+        });
+
     train_controller_ui->run();
 
     return 0;
