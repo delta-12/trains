@@ -27,11 +27,11 @@ PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const 
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}     // TODO verify registers are initialized to 0
+WaysideController::WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}     // TODO verify registers are initialized to 0
 {
 }
 
-WaysideController::WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}
+WaysideController::WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}
 {
     // TODO NNF-174 error handling
     SetBlockMap(block_inputs_map);
@@ -72,7 +72,7 @@ Error WaysideController::SetOutput(const OutputId output, const bool state)
 {
     // TODO NNF-105 check outputs corresponding to switches to verify safety
 
-    return (*set_output_)(output, state);
+    return set_output_(output, state);
 }
 
 Error WaysideController::GetInput(const InputId input, bool &state)
@@ -90,7 +90,7 @@ Error WaysideController::GetInput(const InputId input, bool &state)
 
 void WaysideController::ScanInputs(void)
 {
-    (*get_inputs_)(inputs_);
+    get_inputs_(inputs_);
 }
 
 types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)

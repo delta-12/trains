@@ -7,7 +7,7 @@
 #define TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_WAYSIDE_CONTROLLER_H
 
 #include <array>
-#include <memory>
+#include <functional>
 #include <unordered_map>
 #include <vector>
 
@@ -97,8 +97,8 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output);
-        WaysideController(std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::shared_ptr<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map);
+        WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output);
+        WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map);
         Error SetBlockMap(const std::vector<BlockInputs> &block_inputs_map);
         Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         Error GetInput(const InputId input, bool &state);
@@ -112,8 +112,8 @@ class WaysideController
         bool IsTrackCircuitInputValid(const InputId input) const;
         bool IsSwitchInputValid(const InputId input) const;
 
-        std::shared_ptr<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs_;
-        std::shared_ptr<Error(const OutputId output, const bool state)> set_output_;
+        std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT>&inputs)> get_inputs_;
+        std::function<Error(const OutputId output, const bool state)> set_output_;
         std::unordered_map<types::BlockId, BlockInputs> block_inputs_map_;
         std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> inputs_;
 };
