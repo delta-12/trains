@@ -17,8 +17,20 @@ namespace wayside_controller
 
 typedef struct BlockState       BlockState;
 typedef struct TrackCircuitData TrackCircuitData;
+typedef struct PlcInstrction    PlcInstrction;
 typedef uint16_t                InputId;
 typedef uint16_t                OutputId;
+typedef uint32_t                PlcInstructionArgument;
+
+typedef enum
+{
+    PLCINSTRUCTIONCODE_READ,
+    PLCINSTRUCTIONCODE_WRITE,
+    PLCINSTRUCTIONCODE_EQUALS,
+    PLCINSTRUCTIONCODE_OR,
+    PLCINSTRUCTIONCODE_BRANCH_IF,
+    PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL
+} PlcInstructionCode;
 
 struct BlockState
 {
@@ -40,24 +52,15 @@ struct TrackCircuitData
         types::Meters authority;
 };
 
-// block information
-// struct Block
-// {
-//     int blocknum;
-//     bool fail_state;
-//     bool occupancy;
-
-//     bool switch_state;
-//     bool signal_state;
-//     bool crossing_state;
-
-//     std::vector<int, int> switchnum;
-//     int signalnum;
-//     int crossingnum;
-
-//     float spd_suggested;
-//     std::vector<int, int> auth_suggested;
-// };
+struct PlcInstruction
+{
+    public:
+        PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2);
+        PlcInstructionCode instruction_code;
+        PlcInstructionArgument argument_0;
+        PlcInstructionArgument argument_1;
+        PlcInstructionArgument argument_2;
+};
 
 class WaysideController
 {
@@ -73,40 +76,23 @@ class WaysideController
     private:
         std::shared_ptr<void(std::unordered_map<InputId, bool> &inputs)> get_inputs_;
         std::shared_ptr<void(std::unordered_map<OutputId, bool> &inputs)> set_outputs_;
+        std::unordered_map<InputId, bool> inputs_;
+        std::unordered_map<OutputId, bool> outputs_;
 };
 
-// class PLC
-// {
-//     public:
-//         struct PLCpacket
-//         {
-//             bool currentOccupancy;
-//             bool nextOccupancy;
+class Plc
+{
+    public:
+        Plc(std::shared_ptr<WaysideController> wayside_controller);
+        Plc(std::shared_ptr<WaysideController> wayside_controller, const std::vector<PlcInstruction> &instructions);
+        void SetInstructions(const std::vector<PlcInstruction> &instructions);
+        void Update(void);
 
-//         }
-
-//         // plc processing functions
-//         void PLCget(int[]);
-//         void PLCset(int[]);
-// };
-
-/*
-        TrackController();
-        void setUpController(int, std::string &, std::vector<char> &, std::vector<int> &, int[], int, int[]);
-        void setSignalsInstance(CTCSignals &);
-        void setSwitch(bool);
-        void setSwitchAuto();
-        void addBlockObj(int);
-        void setTrackSA();
-        void setRoute();
-                int getResult();
-        void setCross();
-        void manSetCross(bool);
-        void getFaults();
-        void getOccupancies();
-        void updateData();
-   };
- */
+    private:
+        uint32_t register_0_;
+        uint32_t register_1_;
+        uint32_t register_2_;
+};
 
 } // namespace wayside_controller
 

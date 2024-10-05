@@ -11,4 +11,8 @@ TrackCircuitData::TrackCircuitData(const types::TrackId track, const types::Bloc
 {
 }
 
+PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2) : instruction_code(instruction_code), argument_0(argument_0), argument_1(argument_1), argument_2(argument_2)
+{
+}
+
 } // namespace wayside_controller
