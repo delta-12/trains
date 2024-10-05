@@ -11,6 +11,7 @@
 #ifdef WIN32
 #include "windows.h"
 #include "commdlg.h"
+#include "block.h"
 #endif
 
 std::string ExtractFileName(const std::string& full_path) {
@@ -78,7 +79,6 @@ int main(void)
             {
                 std::cout << value << ", ";
             }
-            std::cout << "Record Size: " << record.size();
             std::cout << std::endl;
         }
     });
