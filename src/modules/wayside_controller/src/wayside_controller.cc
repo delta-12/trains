@@ -40,7 +40,7 @@ void WaysideController::SetBlockMap(const std::vector<BlockInput> &block_input_m
 
 void WaysideController::SetOutput(const OutputId output, const bool state)
 {
-    // TODO check outputs corresponding to switches to verify safety
+    // TODO NNF-105 check outputs corresponding to switches to verify safety
     (*set_output_)(output, state);
 }
 
@@ -65,7 +65,7 @@ void WaysideController::ScanInputs(void)
 
 types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
 {
-    // TODO check for safe speed and authority
+    // TODO NNF-144, NNF-145 check for safe speed and authority
 
     return types::ERROR_INVALID_BLOCK;
 }
@@ -90,19 +90,19 @@ types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, c
 
 types::Error WaysideController::SetSwitch(const types::BlockId, const bool switch_state)
 {
-    // TODO can be used in both auto and maintenance mode?
+    // TODO NNF-105 can be used in both auto and maintenance mode?
 
     return types::ERROR_INVALID_BLOCK;
 }
 
 std::vector<BlockState> WaysideController::GetBlockStates(void)
 {
-    // TODO
+    // TODO NNF-168
 
     return std::vector<BlockState>();
 }
 
-Plc::Plc(void) : program_counter_(0), registers_{} // TODO verify registers are initialized to 0
+Plc::Plc(void) : program_counter_(0), registers_{} // TODO NNF-104 verify registers are initialized to 0
 {
 }
 
@@ -211,7 +211,7 @@ bool Plc::ReadSignal(WaysideController &wayside_controller, const PlcInstruction
 {
     bool success = false;
 
-    // TODO
+    // TODO NNF-160
 
     return success;
 }
@@ -220,7 +220,7 @@ bool Plc::WriteSignal(WaysideController &wayside_controller, const PlcInstructio
 {
     bool success = false;
 
-    // TODO
+    // TODO NNF-160
 
     return success;
 }
