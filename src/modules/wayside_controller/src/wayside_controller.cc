@@ -95,9 +95,18 @@ void WaysideController::ScanInputs(void)
 
 types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
 {
-    // TODO NNF-144, NNF-145 check for safe speed and authority
+    types::Error error = types::ERROR_INVALID_BLOCK;
 
-    return types::ERROR_INVALID_BLOCK;
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(track_circuit_data.block);
+
+    if (block_inputs_map_.end() != block_inputs)
+    {
+        // TODO NNF-144, NNF-145 check for safe speed and authority
+
+        error = types::ERROR_NONE;
+    }
+
+    return error;
 }
 
 types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
@@ -131,7 +140,7 @@ types::Error WaysideController::SetSwitch(const types::BlockId block, const bool
         error                                      = types::ERROR_NONE;
     }
 
-    return types::ERROR_INVALID_BLOCK;
+    return error;
 }
 
 std::vector<BlockState> WaysideController::GetBlockStates(void)

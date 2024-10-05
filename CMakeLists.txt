@@ -100,7 +100,7 @@ slint_target_sources(ctc_tests_ui ${UI_DIR}/ctc_ui.slint NAMESPACE ui)
 # Wayside Controller UI test build
 ################################################################################
 add_executable(wayside_controller_tests_ui
-  ${TESTS_DIR}/modules/wayside_controller_tests_ui.cc
+  ${TESTS_DIR}/modules/wayside_controller/wayside_controller_tests_ui.cc
   ${WAYSIDE_CONTROLLER_SRCS}
   ${COMMON_SRCS}
 )
