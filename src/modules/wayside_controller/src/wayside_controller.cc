@@ -1,5 +1,7 @@
 #include "wayside_controller.h"
 
+#include <algorithm>
+
 namespace wayside_controller
 {
 
@@ -7,7 +9,7 @@ BlockState::BlockState(const types::BlockId block, const bool occupied, const bo
 {
 }
 
-BlockInput::BlockInput(const types::BlockId block, InputId input, const bool state) : block(block), input(input), state(state)
+BlockInput::BlockInput(const types::BlockId block, InputId input, const bool state, const bool maintenance_mode) : block(block), input(input), state(state), maintenance_mode(maintenance_mode)
 {
 }
 
@@ -62,12 +64,25 @@ types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &
     // TODO check for safe speed and authority
 }
 
-void WaysideController::SetManualMode(const types::BlockId block, const bool manual_mode)
+types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
 {
-    // TODO
+    types::Error error = types::ERROR_INVALID_BLOCK;
+    
+    std::vector<BlockInput>::iterator block_input_iterator = std::find_if(block_input_map_.begin(), block_input_map_.end(), [block](const BlockInput &block_input)
+        {
+            return block_input.block == block;
+        });
+
+    if (block_input_map_.end() != block_input_iterator)
+    {
+        block_input_iterator->maintenance_mode = maintenance_mode;
+        error = types::ERROR_NONE;
+    }
+
+    return error;
 }
 
-void WaysideController::SetSwitch(const types::BlockId, const bool switch_state)
+types::Error WaysideController::SetSwitch(const types::BlockId, const bool switch_state)
 {
     // TODO can be used in both auto and maintenance mode?
 }

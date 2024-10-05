@@ -52,10 +52,11 @@ struct BlockState
 struct BlockInput
 {
     public:
-        BlockInput(const types::BlockId block, InputId input, const bool state);
+        BlockInput(const types::BlockId block, InputId input, const bool state, const bool maintenance_mode);
         types::BlockId block;
         InputId input;
         bool state;
+        bool maintenance_mode;
 };
 
 struct TrackCircuitData
@@ -87,8 +88,8 @@ class WaysideController
         Error GetInput(const InputId input, bool &state);
         void ScanInputs(void);
         types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
-        void SetManualMode(const types::BlockId block, const bool manual_mode);
-        void SetSwitch(const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
+        types::Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
+        types::Error SetSwitch(const types::BlockId, const bool switch_state); // can be used in both auto and maintenance mode?
         std::vector<BlockState> GetBlockStates(void);
 
     private:
