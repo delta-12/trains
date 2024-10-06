@@ -34,6 +34,7 @@ typedef enum
 } Polarity;
 
 typedef double                                      MetersPerSecond;
+typedef double                                      MetersPerSecondSquared;
 typedef double                                      Meters;
 typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;

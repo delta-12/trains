@@ -6,28 +6,29 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_BLOCK_H
 #define TRAINS_SRC_MODULES_CTC_INC_BLOCK_H
 
+#include <chrono>
 #include <string>
+
 #include "types.h"
 
 struct Block
 {
-    types::BlockId block_id;
-    int block_number;
-    int block_length;
-    double block_grade;
-    int speed_limit;
-    bool station_;
+    types::BlockId id;
+    types::Meters length;
+    double grade;
+    types::MetersPerSecond speed_limit;
+    bool has_station;
     std::string station_name;
     bool rail_switch;
     bool underground;
-    double elevation;
-    double cum_elevation;
-    int time_to_travel_block;
-    int accel_and_decell;
-    int constant_speed_time;
-    int total_time;
-    int dwell_time;
-    double total_time_to_station_with_dwell;
+    types::Meters elevation;
+    types::Meters cum_elevation;
+    std::chrono::seconds time_to_travel_block;
+    types::MetersPerSecondSquared acceleration;
+    std::chrono::seconds constant_speed_time;
+    std::chrono::seconds total_time;
+    std::chrono::seconds dwell_time;
+    std::chrono::seconds total_time_to_station_with_dwell;
 };
 
 #endif // TRAINS_SRC_MODULES_CTC_INC_BLOCK_H
