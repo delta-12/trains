@@ -7,23 +7,16 @@ import { GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, Vertic
 #endif
 #include <windows.h>
 
-export component FileFunction{
 
-    public pure function file-function(parameter:) -> string{
-        //windows api control
-
-
-        return "file uploaded"
-    }
-}
 */
-component Circle inherits Rectangle {
+export component Circle inherits Rectangle {
     width: 30px;
     height: 30px;
     border-radius: root.width / 2;
-    animate x { duration: 250ms; easing: ease-in; }
-    animate y { duration: 250ms; easing: ease-in-out; }
+    animate x { duration: 2500ms; easing: ease-in-expo; }
+    animate y { duration: 2500ms; easing: ease-in-out; }
     animate background { duration: 250ms; }
+    background: red;
 }
 
 component TableView inherits Rectangle {
@@ -83,6 +76,7 @@ component TableView inherits Rectangle {
     }
 }
 
+// signal light component
 export component TrafficLight inherits Rectangle {
     // Define the states for the traffic light
     in-out property <int> state; // 0: Red, 1: Yellow, 2: Green
