@@ -6,7 +6,7 @@ export component TrainControllerUi inherits Window {
     in-out property <string> operation-status-message: "";
     in-out property <float> commanded_power: 0.0;
     in-out property <float> authority: 0.0;
-    in-out property <float> current_speed: 0.0;
+    in-out property <float> current_velocity: 0.0;
     in-out property <bool> emergency_brake: false;
 
     // false = operating
@@ -44,7 +44,7 @@ export component TrainControllerUi inherits Window {
                         Text {
                             text: root.operation-status-message;
                             max-height: 10px;
-                            font-size: 13px;
+                            font-size: 18px;
                             color: red;
                             horizontal-alignment: center;
                         }
@@ -70,242 +70,229 @@ export component TrainControllerUi inherits Window {
                             horizontal-alignment: center;
                             text: "Current Operation Mode: \{root.operation-mode-status}";
                             max-height: 10px;
-                            font-size: 13px;
+                            font-size: 20px;
                         }
                     }   
                 }
-                VerticalBox {
-                    spacing: 10px; // Adjust spacing as needed
-        
-                    // Commanded Power
-                    HorizontalBox {
-                        Text {
-                            text: "Commanded Power:";
-                            vertical-alignment: center;
-                        }
-                        TextInput {
-                            text: root.commanded_power;
-                            /*on text-changed: {
-                                root.commanded_power = self.text;
-                            }*/
-                            width: 100px;
-                        }
-                    }
-        
-                    // Authority
-                    HorizontalBox {
-                        Text {
-                            text: "Authority:";
-                            vertical-alignment: center;
-                        }
-                        TextInput {
-                            text: root.authority;
-                            /*on text-changed: {
-                                root.authority = self.text;
-                            }*/
-                            width: 100px;
-                        }
-                    }
-        
-                    // Current Speed
-                    HorizontalBox {
-                        Text {
-                            text: "Current Speed:";
-                            vertical-alignment: center;
-                        }
-                        TextInput {
-                            text: root.current_speed;
-                            /*on text-changed: {
-                                root.current_speed = self.text;
-                            }*/
-                            width: 100px;
-                        }
-                    }
-        
-                    // Emergency Brake
-                    HorizontalBox {
-                        Text {
-                            text: "Emergency Brake:";
-                            vertical-alignment: center;
-                        }
-                        Button {
-                            text: root.emergency_brake ? "ON" : "OFF";
-                            clicked => {
-                                root.emergency_brake = !root.emergency_brake;
-                            }
-                            width: 60px;
-                        }
-                    }
-                }
-
-            // buttons for engine failure, brake failure, signal pickup failure
-            HorizontalBox {
-                VerticalBox {
-                    spacing: 10px;
-    
-                    Button {
-                        text: "Engine Failure";
-                        clicked => {
-                            root.request_engine_fail();
-                        }
-                        width: 150px;
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: root.engine_status ? "Engine Status: FAILING" : "Engine Status: OPERATIONAL";
-                        max-height: 10px;
-                    }
-                }
-                VerticalBox {
-                    Button {
-                        text: "Brake Failure";
-                        clicked => {
-                            root.request_brake_fail();
-                        }
-                        width: 150px;
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: root.brake_status ? "Brake Status: FAILING" : "Brake Status: OPERATIONAL";
-                        max-height: 10px;
-                    }
-                }
-                VerticalBox {
-                    Button {
-                        text: "Signal Pickup Failure";
-                        clicked => {
-                            root.request_signal_fail();
-                        }
-                        width: 150px;
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: root.signal_status ? "Signal Pickup Status: FAILING" : "Signal Pickup Status: OPERATIONAL";
-                        max-height: 10px;
-                    }
-                }   
-            }  
-
-            // buttons for lights and doors
-            VerticalBox {
-                spacing: 10px;
-
-                // Interior Lights
-                Rectangle {
-                    area1 := TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => {
-                            root.int-lights = !root.int-lights;
-                        }
-                    }
-                    Text {
-                        text: root.int-lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
-                    }
-                    background: root.int-lights ? green : red;
-                    preferred-height: 20px;
-                    max-height: 50px;
-                    preferred-width: 60px;
-                }
-
-                Rectangle {
-                    area2 := TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => {
-                            root.ext-lights = !root.ext-lights;
-                        }
-                    }
-                    Text {
-                        text: root.ext-lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
-                    }
-                    background: root.ext-lights ? green : red;
-                    preferred-height: 20px;
-                    max-height: 50px;
-                    preferred-width: 60px;
-                }
-
-                Rectangle {
-                    area3 := TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => {
-                            root.right-doors = !root.right-doors;
-                        }
-                    }
-                    Text {
-                        text: root.right-doors ? "Close Right Doors" : "Open Right Doors";
-                    }
-                    background: root.right-doors ? green : red;
-                    preferred-height: 20px;
-                    max-height: 50px;
-                    preferred-width: 60px;
-                }
-
-                Rectangle {
-                    area4 := TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => {
-                            root.left-doors = !root.left-doors;
-                        }
-                    }
-                    Text {
-                        text: root.left-doors ? "Close Left Doors" : "Open Left Doors";
-                    }
-                    background: root.left-doors ? green : red;
-                    preferred-height: 20px;
-                    max-height: 50px;
-                    preferred-width: 60px;
-                }
-            }
-        
-
-                /*VerticalBox {
-                    Text {
-                        //text: "Vital Train Parameters";
-                        font-size: 30px;
-                        color: white;
-                        horizontal-alignment: center;
-                        Rectangle {
-                            border-color: blue;
-                            border-radius: 20px;
-                            border-width: 5px;
-                            preferred-height: 300px;
-                            width: parent.width / 2;
-                            min-height: 150px;
-                            max-height: 400px;
-                            VerticalBox {
+                HorizontalBox {
+                    Rectangle {
+                        border-color: red;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        min-height:250px;
+                        max-height:250px;
+                        max-width: 400px;
+                        VerticalBox {
+                            spacing: 5px; 
+                            // Commanded Power
+                            HorizontalBox {
                                 Text {
                                     text: "Commanded Power:";
+                                    vertical-alignment: center;
                                     font-size: 20px;
-                                    color: white;
-                                    horizontal-alignment: left;
+                                    width: 250px;
                                 }
-                                VerticalBox {
-                                    LineEdit {
-                                        input-type: text;
-
-                                    }
+                                TextInput {
+                                    vertical-alignment: center;
+                                    text: root.commanded_power;
+                                    font-size: 20px;
                                 }
                             }
+                
+                            // Authority
                             HorizontalBox {
                                 Text {
                                     text: "Authority:";
+                                    vertical-alignment: center;
                                     font-size: 20px;
-                                    color: white;
-                                    horizontal-alignment: left;
+                                    width: 250px;
                                 }
-                                VerticalBox {
-                                    LineEdit {
-                                        input-type: text;
-                                        max-height: 40px;
+                                TextInput {
+                                    vertical-alignment: center;
+                                    text: root.authority;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // Current Speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Current Velocity:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 250px;
+                                }
+                                TextInput {
+                                    vertical-alignment: center;
+                                    text: root.current_velocity;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // Emergency Brake
+                            HorizontalBox {
+                                Text {
+                                    text: "Emergency Brake:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 250px;
+                                }
+                                Button {
+                                    text: root.emergency_brake ? "ON" : "OFF";
+                                    clicked => {
+                                        root.emergency_brake = !root.emergency_brake;
                                     }
+                                    width: 100px;
+                                    
                                 }
                             }
                         }
-                    } 
-                }*/
+                    }
+                    // buttons for engine failure, brake failure, signal pickup failure
+                    HorizontalBox {
+                        spacing: 10px;
+                        max-height: 200px;
+                        VerticalBox {
+                            spacing: 10px;
+                            Button {
+                                height: 230px;
+                                text: "Engine Failure";
+                                clicked => {
+                                    root.request_engine_fail();
+                                }
+                                width: 160px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                horizontal-alignment: center;
+                                text:"Engine Status:";
+                                max-height: 10px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                text: root.engine_status ? "FAILING" : "OPERATIONAL";
+                                horizontal-alignment: center;
+                            }
+                        }
+                        VerticalBox {
+                            Button {
+                                height: 230px;
+                                text: "Brake Failure";
+                                clicked => {
+                                    root.request_brake_fail();
+                                }
+                                width: 160px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                horizontal-alignment: center;
+                                text:"Brake Status:";
+                                max-height: 10px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                text: root.brake_status ? "FAILING" : "OPERATIONAL";
+                                horizontal-alignment: center;
+                            }
+                        }
+                        VerticalBox {
+                            Button {
+                                height: 230px;
+                                text: "Signal Pickup Failure";
+                                clicked => {
+                                    root.request_signal_fail();
+                                }
+                                width: 160px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                horizontal-alignment: center;
+                                text:"Signal Pickup Status:";
+                                max-height: 10px;
+                            }
+                            Text {
+                                font-size: 17px;
+                                text: root.signal_status ? "FAILING" : "OPERATIONAL";
+                                horizontal-alignment: center;
+                            }
+                        }   
+                    }  
+                }
+                // buttons for lights and doors
+                VerticalBox {
+                    spacing: 10px;
+
+                    // Interior Lights
+                    Rectangle {
+                        area1 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                root.int-lights = !root.int-lights;
+                            }
+                        }
+                        Text {
+                            text: root.int-lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
+                        }
+                        background: root.int-lights ? green : red;
+                        preferred-height: 20px;
+                        max-height: 50px;
+                        preferred-width: 60px;
+                    }
+
+                    Rectangle {
+                        area2 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                root.ext-lights = !root.ext-lights;
+                            }
+                        }
+                        Text {
+                            text: root.ext-lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
+                        }
+                        background: root.ext-lights ? green : red;
+                        preferred-height: 20px;
+                        max-height: 50px;
+                        preferred-width: 60px;
+                    }
+
+                    Rectangle {
+                        area3 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                root.right-doors = !root.right-doors;
+                            }
+                        }
+                        Text {
+                            text: root.right-doors ? "Close Right Doors" : "Open Right Doors";
+                        }
+                        background: root.right-doors ? green : red;
+                        preferred-height: 20px;
+                        max-height: 50px;
+                        preferred-width: 60px;
+                    }
+
+                    Rectangle {
+                        area4 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                root.left-doors = !root.left-doors;
+                            }
+                        }
+                        Text {
+                            text: root.left-doors ? "Close Left Doors" : "Open Left Doors";
+                        }
+                        background: root.left-doors ? green : red;
+                        preferred-height: 20px;
+                        max-height: 50px;
+                        preferred-width: 60px;
+                    }
+                }
             }
         }
         Tab {
