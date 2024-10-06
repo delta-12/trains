@@ -1,5 +1,7 @@
 #include "wayside_controller.h"
 
+#include <unordered_set>
+
 namespace wayside_controller
 {
 
@@ -39,27 +41,53 @@ WaysideController::WaysideController(std::function<void(std::array<bool, WAYSIDE
 
 Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_inputs_map)
 {
-    Error error = ERROR_NONE;
+    Error                       error = ERROR_NONE;
+    std::unordered_set<InputId> mapped_inputs;
 
     block_inputs_map_.clear();
 
     for (const BlockInputs &block_inputs : block_inputs_map)
     {
-        if (block_inputs.has_switch)
+        if (block_inputs_map_.end() != block_inputs_map_.find(block_inputs.block))
+        {
+            error = ERROR_DUPLICATE_BLOCK;
+        }
+        else
+        if (!IsTrackCircuitInputValid(block_inputs.track_circuit_input))
+        {
+            error = ERROR_INVALID_INPUT;
+        }
+        else
+        if (mapped_inputs.end() != mapped_inputs.find(block_inputs.track_circuit_input))
+        {
+            error = ERROR_DUPLICATE_INPUT;
+        }
+
+        if ((ERROR_NONE == error) && (true == block_inputs.has_switch))
         {
             if (!IsSwitchInputValid(block_inputs.switch_input))
             {
                 error = ERROR_INVALID_INPUT;
             }
+            else
+            if (mapped_inputs.end() != mapped_inputs.find(block_inputs.switch_input))
+            {
+                error = ERROR_DUPLICATE_INPUT;
+            }
         }
 
-        if ((ERROR_NONE == error) && (true == IsTrackCircuitInputValid(block_inputs.track_circuit_input)))
+        if (ERROR_NONE == error)
         {
             block_inputs_map_[block_inputs.block] = block_inputs;
+            mapped_inputs.insert(block_inputs.track_circuit_input);
+
+            if (block_inputs.has_switch)
+            {
+                mapped_inputs.insert(block_inputs.switch_input);
+            }
         }
         else
         {
-            error = ERROR_INVALID_INPUT;
             block_inputs_map_.clear();
             break;
         }
@@ -93,51 +121,63 @@ void WaysideController::ScanInputs(void)
     get_inputs_(inputs_);
 }
 
-types::Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
+Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
 {
-    types::Error error = types::ERROR_INVALID_BLOCK;
+    Error error = ERROR_NONE;
 
     std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(track_circuit_data.block);
 
-    if (block_inputs_map_.end() != block_inputs)
+    if (block_inputs_map_.end() == block_inputs)
+    {
+        error = ERROR_INVALID_BLOCK;
+    }
+    else
     {
         // TODO NNF-144, NNF-145 check for safe speed and authority
-
-        error = types::ERROR_NONE;
     }
 
     return error;
 }
 
-types::Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
+Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
 {
-    types::Error error = types::ERROR_INVALID_BLOCK;
+    Error error = ERROR_NONE;
 
     std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
 
-    if (block_inputs_map_.end() != block_inputs)
+    if (block_inputs_map_.end() == block_inputs)
     {
+        error = ERROR_INVALID_BLOCK;
+    }
+    else
+    {
+        // TODO NNF-105 can only be set if block has switch?
         block_inputs->second.maintenance_mode = maintenance_mode;
-        error                                 = types::ERROR_NONE;
     }
 
     return error;
 }
 
-types::Error WaysideController::SetSwitch(const types::BlockId block, const bool switch_state)
+Error WaysideController::SetSwitch(const types::BlockId block, const bool switch_state)
 {
     // TODO NNF-105 can be used in both auto and maintenance mode?
 
-    types::Error error = types::ERROR_INVALID_BLOCK;
+    Error error = ERROR_NONE;
 
     std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
 
-    if ((block_inputs_map_.end() != block_inputs) &&
-        (true == block_inputs->second.has_switch) &&
-        (true == IsSwitchInputValid(block_inputs->second.switch_input)))
+    if ((block_inputs_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
+    {
+        error = ERROR_INVALID_BLOCK;
+    }
+    else
+    if (!IsSwitchInputValid(block_inputs->second.switch_input))
+    {
+        error = ERROR_INVALID_INPUT;
+    }
+    else
     {
         inputs_[block_inputs->second.switch_input] = switch_state;
-        error                                      = types::ERROR_NONE;
     }
 
     return error;

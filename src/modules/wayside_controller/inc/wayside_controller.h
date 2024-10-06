@@ -37,7 +37,10 @@ typedef uint32_t                PlcInstructionArgument;
 typedef enum
 {
     ERROR_NONE,
+    ERROR_INVALID_BLOCK,
+    ERROR_DUPLICATE_BLOCK,
     ERROR_INVALID_INPUT,
+    ERROR_DUPLICATE_INPUT,
     ERROR_INVALID_OUTPUT
 } Error;
 
@@ -103,9 +106,9 @@ class WaysideController
         Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         Error GetInput(const InputId input, bool &state);
         void ScanInputs(void);
-        types::Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
-        types::Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
-        types::Error SetSwitch(const types::BlockId block, const bool switch_state); // can be used in both auto and maintenance mode?
+        Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
+        Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
+        Error SetSwitch(const types::BlockId block, const bool switch_state); // can be used in both auto and maintenance mode?
         std::vector<BlockState> GetBlockStates(void);
 
     private:
