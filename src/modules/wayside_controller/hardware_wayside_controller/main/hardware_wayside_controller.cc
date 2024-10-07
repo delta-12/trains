@@ -5,11 +5,20 @@
 
 #include "gpio_esp.h"
 
+#include "display.h"
+
 static void ButtonCallback(const bsp::GpioPin pin);
+
+static const char *test_block = "Block: 1\n"
+                                "Commanded Speed: 6mph\n"
+                                "Authority: 100m";
 
 extern "C" void app_main(void)
 {
     printf("foobar\n");
+
+    DisplayInit();
+    DisplayWriteString(test_block);
 
     bsp_esp::EspGpioHandler gpio_handler;
 
@@ -62,5 +71,4 @@ static void ButtonCallback(const bsp::GpioPin pin)
     {
         printf("Right button\n");
     }
-
 }
