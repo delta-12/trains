@@ -40,14 +40,14 @@ export component TrainControllerUi inherits Window {
     callback request_update_service_brake();
     callback request_update_actual_internal_temperature();
     callback request_update_power();
-    callback request_update_authority();
+
+    // unique to test bench
     callback request_update_current_velocity();
     callback request_update_commanded_speed();
+    callback request_update_authority();
     
 
-    //preferred-height: 400px;
-    min-height: 1000px;
-    //preferred-width: 300px;
+    min-height: 950px;
     min-width: 1200px;
 
     TabWidget {
@@ -59,33 +59,50 @@ export component TrainControllerUi inherits Window {
                         Text {
                             text: root.operation-status-message;
                             max-height: 10px;
-                            font-size: 18px;
+                            font-size: 25px;
                             color: red;
                             horizontal-alignment: center;
                         }
-                        Button {
-                            text: "Automatic";
-                            min-width: 10px;
-                            min-height: 30px;
-                            max-height: 30px;
-                            clicked => {
-                                root.request_automatic_mode();
+                        Rectangle {
+                            area9 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    root.request_automatic_mode();
+                                }
                             }
-                        }
-                        Button {
-                            text: "Manual";
-                            min-width: 10px;
-                            min-height: 30px;
-                            max-height: 30px;
-                            clicked => {
-                                root.request_manual_mode();
+                            Text {
+                                text: "Automatic";
+                                font-size: 30px;
+                                horizontal-alignment: center;
                             }
+                            background: root.operation-mode-status == "Automatic" ? green : #3b3b3b;
+                            preferred-height: 30px;
+                            preferred-width: 60px;
                         }
+                        Rectangle {
+                            area10 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    root.request_manual_mode();
+                                }
+                            }
+                            Text {
+                                text: "Manual";
+                                font-size: 30px;
+                                horizontal-alignment: center;
+                            }
+                            background: root.operation-mode-status == "Manual" ? green : #3b3b3b;
+                            preferred-height: 30px;
+                            preferred-width: 60px;
+                        }
+
                         Text {
                             horizontal-alignment: center;
                             text: "Current Operation Mode: \{root.operation-mode-status}";
                             max-height: 10px;
-                            font-size: 20px;
+                            font-size: 30px;
                         }
                     }   
                 }
@@ -106,19 +123,19 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Commanded Power:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     width: 250px;
                                 }
                                 Text {
                                     text: root.commanded_power;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "W";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                 }
                             }
                 
@@ -127,19 +144,19 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Authority:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     width: 250px;
                                 }
                                 Text {
                                     text: root.authority;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "ft";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                 }
                             }
                 
@@ -148,19 +165,19 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Current Velocity:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     width: 250px;
                                 }
                                 Text {
                                     text: root.current_velocity;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "mph";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                 }
                             }
                 
@@ -169,12 +186,12 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Emergency Brake:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     width: 200px;
                                 }
                                 Text {
                                     text: root.emergency_brake ? "ON" : "OFF";
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     vertical-alignment: center;
                                     horizontal-alignment: center;
 
@@ -187,69 +204,71 @@ export component TrainControllerUi inherits Window {
                         spacing: 10px;
                         max-height: 200px;
                         VerticalBox {
-                            spacing: 10px;
-                            Button {
-                                height: 230px;
-                                text: "Engine Failure";
-                                clicked => {
-                                    root.request_engine_fail();
+                            Rectangle {
+                                area6 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
                                 }
-                                min-width: 160px;
+                                Text {
+                                    text: "Engine Failure";
+                                    font-size: 30px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.engine_status ? red : #3b3b3b;
+                                preferred-height: 25px;
+                                preferred-width: 60px;
                             }
                             Text {
-                                font-size: 17px;
-                                horizontal-alignment: center;
-                                text:"Engine Status:";
-                                max-height: 10px;
-                            }
-                            Text {
-                                font-size: 17px;
                                 text: root.engine_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 30px;
+                                max-height: 20px;
                                 horizontal-alignment: center;
                             }
                         }
                         VerticalBox {
-                            Button {
-                                height: 230px;
-                                text: "Brake Failure";
-                                clicked => {
-                                    root.request_brake_fail();
+                            Rectangle {
+                                area7 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
                                 }
-                                min-width: 160px;
+                                Text {
+                                    text: "Brake Failure";
+                                    font-size: 30px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.brake_status ? red : #3b3b3b;
+                                preferred-height: 25px;
+                                preferred-width: 60px;
                             }
                             Text {
-                                font-size: 17px;
-                                horizontal-alignment: center;
-                                text:"Brake Status:";
-                                max-height: 10px;
-                            }
-                            Text {
-                                font-size: 17px;
                                 text: root.brake_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 30px;
+                                max-height: 20px;
                                 horizontal-alignment: center;
                             }
                         }
                         VerticalBox {
-                            Button {
-                                height: 230px;
-                                text: "Signal Pickup Failure";
-                                clicked => {
-                                    root.request_signal_fail();
+                            Rectangle {
+                                area8 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
                                 }
-                                min-width: 160px;
+                                Text {
+                                    text: "Signal Pickup\nFailure";
+                                    font-size: 30px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.signal_status ? red : #3b3b3b;
+                                preferred-height: 25px;
+                                preferred-width: 60px;
                             }
                             Text {
-                                font-size: 17px;
-                                horizontal-alignment: center;
-                                text:"Signal Pickup Status:";
-                                max-height: 10px;
-                            }
-                            Text {
-                                font-size: 17px;
                                 text: root.signal_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 30px;
+                                max-height: 20px;
                                 horizontal-alignment: center;
                             }
-                        }   
+                        }  
                     }  
                 }
 
@@ -270,45 +289,48 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Commanded Speed:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     width: 250px;
                                 }
                                 Text {
                                     text: root.commanded_speed;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "mph";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                 }
                             }
                 
                             // Authority
                             HorizontalBox {
                                 Text {
-                                    text: "Set Driver Speed:";
+                                    text: "Set Driver\nSpeed:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     preferred-width: 250px;
+                                    horizontal-alignment: center;
                                 }
                                 LineEdit {
                                     text: root.driver_speed;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                     placeholder-text: "Enter Value";
                                     horizontal-alignment: center;
                                 }
                                 Text {
                                     text: "mph";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 25px;
                                 }
                                 Button {
                                     text: "Accept\nValue";
                                     clicked => {
-                                        root.request_update_authority();
+                                        if (operation-mode-status == "Manual") {
+                                            root.request_update_authority();
+                                        }
                                     }
                                     min-width: 100px;
                                 }
@@ -327,7 +349,7 @@ export component TrainControllerUi inherits Window {
                             VerticalBox {
                                 Text {
                                     text: "Service Brake (%):";
-                                    font-size: 20px;
+                                    font-size: 30px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
@@ -335,13 +357,15 @@ export component TrainControllerUi inherits Window {
                                     LineEdit{
                                         horizontal-alignment: center;
                                         text: root.service_brake;
-                                        font-size: 20px;
+                                        font-size: 25px;
                                         placeholder-text: "Enter Value";
                                     }
                                     Button {
                                         text: "Accept\nValue";
                                         clicked => {
-                                            root.request_update_service_brake();
+                                            if (operation-mode-status == "Manual") {
+                                                root.request_update_service_brake();
+                                            }
                                         }
                                         min-width: 100px;
                                     }
@@ -360,8 +384,8 @@ export component TrainControllerUi inherits Window {
                             max-height:250px;
                             VerticalBox {
                                 Text {
-                                    text: "Actual Internal Temperature (F):";
-                                    font-size: 20px;
+                                    text: "Actual Internal\nTemperature (F):";
+                                    font-size: 25px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
@@ -370,18 +394,20 @@ export component TrainControllerUi inherits Window {
                                         input-type: text;
                                         horizontal-alignment: center;
                                         text: root.actual_internal_temperature;
-                                        font-size: 20px;
+                                        font-size: 25px;
                                         placeholder-text: "Enter Value";
                                     }
                                     Text {
                                         text: "F";
                                         vertical-alignment: center;
-                                        font-size: 20px;
+                                        font-size: 25px;
                                     }
                                     Button {
                                         text: "Accept\nValue";
                                         clicked => {
-                                            root.request_update_actual_internal_temperature();
+                                            if (operation-mode-status == "Manual") {
+                                                root.request_update_actual_internal_temperature();
+                                            }
                                         }
                                         min-width: 100px;
                                     }
@@ -401,14 +427,16 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    root.int-lights = !root.int-lights;
+                                    if (operation-mode-status == "Manual") {
+                                        root.int-lights = !root.int-lights;
+                                    }
                                 }
                             }
                             Text {
                                 text: root.int-lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
-                                font-size: 20px;
+                                font-size: 25px;
                             }
-                            background: root.int-lights ? green : red;
+                            background: root.int-lights ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -419,14 +447,16 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    root.ext-lights = !root.ext-lights;
+                                    if (operation-mode-status == "Manual") {
+                                        root.ext-lights = !root.ext-lights;
+                                    }
                                 }
                             }
                             Text {
                                 text: root.ext-lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
-                                font-size: 20px;
+                                font-size: 25px;
                             }
-                            background: root.ext-lights ? green : red;
+                            background: root.ext-lights ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -437,14 +467,16 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    root.right-doors = !root.right-doors;
+                                    if (operation-mode-status == "Manual"){
+                                        root.right-doors = !root.right-doors;
+                                    }
                                 }
                             }
                             Text {
                                 text: root.right-doors ? "Close Right Doors" : "Open Right Doors";
-                                font-size: 20px;
+                                font-size: 25px;
                             }
-                            background: root.right-doors ? green : red;
+                            background: root.right-doors ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -456,14 +488,16 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    root.left-doors = !root.left-doors;
+                                    if (operation-mode-status == "Manual") {
+                                        root.left-doors = !root.left-doors;
+                                    }
                                 }
                             }
                             Text {
                                 text: root.left-doors ? "Close Left Doors" : "Open Left Doors";
-                                font-size: 20px;
+                                font-size: 25px;
                             }
-                            background: root.left-doors ? green : red;
+                            background: root.left-doors ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -481,13 +515,13 @@ export component TrainControllerUi inherits Window {
                         VerticalBox {
                             Text {
                                 text: "Kp: \{root.kp}";
-                                font-size: 20px;
+                                font-size: 30px;
                                 horizontal-alignment: center;
                                 vertical-alignment: center;
                             }
                             Text {
                                 text: "Ki: \{root.ki}";
-                                font-size: 20px;
+                                font-size: 30px;
                                 horizontal-alignment: center;
                                 vertical-alignment: center;
                             }
@@ -548,6 +582,7 @@ export component TrainControllerUi inherits Window {
                                     font-size: 20px;
                                     placeholder-text: "Enter Value";
                                     horizontal-alignment: center;
+                                    
                                 }
                                 Text {
                                     text: "mph";

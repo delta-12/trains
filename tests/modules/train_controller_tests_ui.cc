@@ -54,12 +54,30 @@ int main(void)
             train_controller_ui->set_signal_status(0);
     });
 
-    // vital parameters
+    // Manual - UI input parameters
 
     train_controller_ui->on_request_update_driver_speed([&] {
         // assign driver speed variable to text input
     });
-    
+    train_controller_ui->on_request_update_service_brake([&] {
+        // assign service brake variable to text input
+    });
+    train_controller_ui->on_request_update_actual_internal_temperature([&]{
+        // assign actual internal temperature variable to text input
+    });
+    // maybe emergency brake
+
+    // Test Bench input parameters
+
+    train_controller_ui->on_request_update_current_velocity([&]{
+        // assign current velocity variable to text input
+    });
+    train_controller_ui->on_request_update_commanded_speed([&]{
+        // assign commanded speed variable to text input
+    });
+    train_controller_ui->on_request_update_authority([&]{
+        // assign authority variable to text input
+    });
 
     train_controller_ui->run();
 
