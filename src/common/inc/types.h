@@ -34,8 +34,12 @@ typedef enum
 } Polarity;
 
 typedef double                                      MetersPerSecond;
+typedef double                                      MilesPerHour;
 typedef double                                      MetersPerSecondSquared;
+typedef double                                      FeetPerSecondSquared;
 typedef double                                      Meters;
+typedef double                                      Feet;
+typedef double                                      Miles;
 typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
 typedef int64_t                                     Tick;
