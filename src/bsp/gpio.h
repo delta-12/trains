@@ -12,7 +12,7 @@
 namespace bsp
 {
 
-typedef uint16_t GpioPin;
+typedef uint32_t GpioPin;
 
 typedef enum
 {
@@ -56,7 +56,7 @@ class GpioHandler
         virtual void ConfigurePin(const GpioPin pin, const GpioConfiguration configuration)               = 0;
         virtual void RegisterCallback(const GpioPin pin, std::function<void(const GpioPin pin)> callback) = 0;
         virtual void SetLevel(const GpioPin pin, const GpioLevel level)                                   = 0;
-        virtual GpioLevel GetLevel(const GpioPin pin)                                                      = 0;
+        virtual GpioLevel GetLevel(const GpioPin pin)                                                     = 0;
 };
 
 } // namespace bsp
