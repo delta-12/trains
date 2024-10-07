@@ -1,22 +1,11 @@
-/*****************************************************************************
-* @file ctc.h
-*
-* @brief Implements the CTC backend.
-*****************************************************************************/
-#ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_H
-#define TRAINS_SRC_MODULES_CTC_INC_CTC_H
-
-#include "wayside_controller_gateway.h"
+#include "ctc.h"
 
 namespace ctc
 {
 
-class Ctc
+types::Error Ctc::UpdateWaysideControllers(wayside_controller::Gateway &gateway)
 {
-    public:
-        types::Error UpdateWaysideControllers(wayside_controller::Gateway &gateway);
-};
+    return types::ERROR_INVALID_TRACK;
+}
 
 } // namespace ctc
-
-#endif // TRAINS_SRC_MODULES_CTC_INC_CTC_H

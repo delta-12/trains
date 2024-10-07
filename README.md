@@ -4,9 +4,10 @@
 
 - C++ compiler that supports C++20
 - Rust
-- CMake
+- CMake >= 3.30
 - Ninja
 - Slint
+- Gcovr (optional)
 
 ## Quick Start
 
