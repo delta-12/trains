@@ -1,25 +1,8 @@
-import { GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView} from "std-widgets.slint";
-
-/*
-#include <iostream>
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
+import { GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
 
 
-*/
-export component Circle inherits Rectangle {
-    width: 30px;
-    height: 30px;
-    border-radius: root.width / 2;
-    animate x { duration: 2500ms; easing: ease-in-expo; }
-    animate y { duration: 2500ms; easing: ease-in-out; }
-    animate background { duration: 250ms; }
-    background: red;
-}
-
-component TableView inherits Rectangle {
+//database view component
+export component TableView inherits Rectangle {
     in property <[string]> columns;
     in property <[[string]]> values;
 
@@ -76,173 +59,371 @@ component TableView inherits Rectangle {
     }
 }
 
+//generic track component
+export component StraightTrack inherits Path {
+    width: 75px;
+    height: 25px;
+    commands: "M 0 0 L 100 0";  // A straight line from (0, 0) to (100, 0)
+    stroke: black;
+    stroke-width: 2px;
+}
+
+
+//enter filename field for custom PLC
+export component EnterFilename inherits Window {
+    width: 200px;
+    height: 25px;
+    LineEdit {
+        font-size: 14px;
+        width: parent.width;
+        height: parent.height;
+        placeholder-text: "Enter Filename here";
+    }
+}
+
 // signal light component
 export component TrafficLight inherits Rectangle {
     // Define the states for the traffic light
-    in-out property <int> state; // 0: Red, 1: Yellow, 2: Green
 
     // Define the size of the traffic light
     preferred-width: 100px;
-    preferred-height: 300px;
+    preferred-height: 250px;
+    border-width:1px;
+    border-color: black;
 
     // Layout for the traffic light
     VerticalBox {
         spacing: 5px;
         padding: 10px;
-        
+    
         // Red light
         Rectangle {
+            property<bool> active: true;
+            TouchArea {
+                clicked=> {active = !active}
+            }
             width: 80px;
             height: 80px;
             border-radius: root.width;// Circular
-            background: red;
+            //background: red;
             //brush: state == 0 ? red : darkgray; // Red light
-        }
-       
-        // Green light
-        Rectangle {
-            width: 80px;
-            height: 80px;
-            border-radius: root.width;// Circular
-            background: green;
-            //brush: state == 2 ? green : darkgray; // Green light
-        }
-    }
-}
-
-
-
-// main window
-export component Recipe inherits Window {
-    preferred-height: 500px;
-    preferred-width: 600px;
-    in-out property <int> active-tab;
-    VerticalLayout {
-        tab_bar := HorizontalLayout {
-            spacing: 3px;
-            Button {
-                text: "PLC";
-                clicked => { root.active-tab = 0; }
-            }
-            Button {
-                text: "Block Status";
-                clicked => { root.active-tab = 1; }
-            }
-
-        }
-        Rectangle {
-            clip: true;
-            Rectangle {
-                background: bisque;
-                x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
-                animate x { duration: 125ms; easing: ease; }
-            }
-            Rectangle {
-                background: beige;
-                x: root.active-tab == 1 ? 0 : root.active-tab < 1 ? - self.width - 1px : parent.width + 1px;
-                animate x { duration: 125ms; easing: ease; }
-
-                TableView {
-                    columns: ["Device", "Mount Point", "Total", "Free", "Track Number", "Test"];
-                    values: [
-                         ["/dev/sda1", "/", "255GB", "82.2GB"] ,
-                         ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
-                         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-                         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-                    ];
+            states [
+                on when active : {
+                    background: red;
                 }
                 
+                off when !active : {
+                    background: gray;
+                }
+            ]
+        }
+    
+        // Green light
+        Rectangle {
+            property<bool> active: true;
+            TouchArea {
+                clicked=> {active = !active}
+            }
+            states [
+                on when active : {
+                    background: green;
+                }
+                
+                off when !active : {
+                    background: gray;
+                }
+            ]
+            width: 80px;
+            height: 80px;
+            border-radius: root.width;// Circular
+            //background: green;
+            //brush: state == 2 ? green : darkgray; // Green light
+        }
+
+
+    }
+}
+
+//baseline track switch component
+export component TrackSwitch inherits Rectangle {
+    property<bool> active: false;
+
+    VerticalBox {
+        Rectangle {
+            property<int> y_val: 25;
+            animate y_val {
+                duration: 500ms;
             }
 
+            height: 100px;
+            width: 250px;
+
+            StraightTrack {
+                x:19px;
+                y: 44px; 
+             }
+             StraightTrack {
+                x:154px;
+                y: 60px;
+             }
+             StraightTrack {
+                x:154px;
+                y: 24px;
+             }
+
+            TouchArea {
+                clicked => { active = !active }
+
+                Path {
+                    viewbox-height: parent.height / 1px;
+                    viewbox-width: parent.width / 1px;
+                    x: 116px;
+                    y: 3px;
+                    width: 206px;
+                    fill-rule: FillRule.nonzero;
+                    height: 180px;
+                    stroke: red;
+                    stroke-width: 2px;
+
+                    mt := MoveTo {
+                        x: 50;
+                        y: y_val;
+                    }
+                    lt := LineTo {
+                        x: -30;
+                        y: 5;
+                    }
+                    Close {}
+                }
+            }
+
+            states [
+                on when active : {
+                    background: lightyellow;
+                    y_val: -20;
+                }
+
+                off when !active : {
+                    background: lightblue;
+                    y_val: 25;
+                }
+            ]
+        }
+
+        // Text caption outside the rectangle
+        txt := Text {
+            horizontal-alignment: center;
+            vertical-alignment: top;  // Adjust to position above the rectangle
+            text: "switch";  // Default text
+
+            states [
+                on when active: {
+                    text: "switch open";  // Change text when active
+                }
+                off when !active: {
+                    text: "switch closed";  // Change text back when inactive
+                }
+            ]
         }
     }
 }
 
 
-/*export component TrackTable inherits Window {
 
-}*/
+//shows block occupancy, crossing status and station name
+export component BlockInfo inherits Rectangle {
+    // Define the states for the traffic light
+
+    // Define the size of the traffic light
+    preferred-width: 200px;
+    preferred-height: 300px;
+    
+    VerticalLayout {
+        // Layout for the traffic light
+            HorizontalBox {
+                spacing: 105px;
+                padding: 10px;
+
+                // Red light
+                Rectangle {
+                    property<bool> active: true;
+                    TouchArea {
+                        clicked=> {active = !active}
+                        Text {
+                            horizontal-alignment: TextHorizontalAlignment.left;
+                            text: "crossing state";
+                        }
+                    }
+                    width: 80px;
+                    height: 80px;
+                    border-radius: root.width;// Circular
+                    //background: red;
+                    //brush: state == 0 ? red : darkgray; // Red light
+                    states [
+                        on when active : {
+                            background: red;
+                        }
+                        
+                        off when !active : {
+                            background: green;
+                        }
+                    ]
+                }
+            
+                // Green light
+                Rectangle {
+                    property<bool> active: true;
+                    TouchArea {
+                        clicked=> {active = !active}
+                        Text {
+                            horizontal-alignment: TextHorizontalAlignment.right;
+                            text: "block occ";
+                        }
+                    }
+                    states [
+                        on when active : {
+                            background: red;
+                        }
+                        
+                        off when !active : {
+                            background: green;
+                        }
+                    ]
+                    width: 80px;
+                    height: 80px;
+                    border-radius: root.width;// Circular
+                    //background: green;
+                    //brush: state == 2 ? green : darkgray; // Green light
+                }
+
+                //Station Name
+                Rectangle {
+                    width: 100px;
+                    height: 50px;
+                    y: 10px;
+                    background: lightgray;
+                    padding: 5px;
+                    
+                    Text{
+                        text: "Station Name";
+                    }
+                }
 
 
-/*
 
-export component WaysideControllerUi inherits Window {
-    title: "Wayside Controller";
-    width: 650px;
-    height: 450px;
-
-    GridBox {
-        Text {
-            //text: "This is the Wayside Controller UI.";
+            }
         }
-        TabWidget {
-            Tab{
-                title: "PLC";
-                ComboBox {
-                    model: ["PLC 1", "PLC 2", "PLC 3"];
-                    x: 41px;
-                    y: 96px;
+}
+
+
+
+
+
+
+////////////////////////////////////////////////
+
+// main window
+export component WaysideControllerUi inherits Window {
+        title: "Wayside Controller";
+        min-height: 500px;
+        min-width: 700px;
+        in-out property <int> active-tab;
+        VerticalLayout {
+            tab_bar := HorizontalLayout {
+                spacing: 3px;
+                Button {
+                    text: "PLC";
+                    clicked => { root.active-tab = 0; }
                 }
                 Button {
-                    accessible-role: AccessibleRole.checkbox;
-                    text: "File Upload";
-                    x: 82px;
-                    y: 152px;
-                    clicked => { self.text = "File Uploading";}
+                    text: "Block Status";
+                    clicked => { root.active-tab = 1; }
                 }
-                ProgressIndicator { 
-                    width: 150px;
-                    x: 41px;
-                    y: 206px;
-                    height: 20px;
-                    progress: 50%;
-                }
-                Switch {
-                    accessible-role: AccessibleRole.switch;
-                    text: "Current PLC Status";
+                Button {
+                    text: "TESTBENCH";
+                    clicked => { root.active-tab = 2; }
                 }
                 ComboBox {
                     width: self.preferred-width;
-                    height: self.preferred-height;
+                    height: self.preferred-height * 2;
                     model: ["Software Wayside Controller", "Hardware Wayside Controller"];
                     current-value: "Software Wayside Controller";
+                }
+            }
+            Rectangle {
+                Rectangle {
+
+                    //animations to enter page
+                    background: whitesmoke;
+                    drop-shadow-blur: 0cm;
+                    x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+
+                    //page contents
+                    ComboBox {
+                        model: ["PLC 1", "PLC 2", "PLC 3"];
+                        x: 57px;
+                        y: 120px;
+                    }
+                    EnterFilename {
+                        //accessible-role: AccessibleRole.checkbox;
+                        //text: "File Upload";
+                        x: 52px;
+                        y: 196px;
+                        //clicked => { self.text = "File Uploading";}
+                    }
+                    ProgressIndicator { 
+                        width: 150px;
+                        x: 61px;
+                        y: 273px;
+                        height: 20px;
+                        progress: 50%;
+                    }
+                    Spinner {
+                        progress: 50%;
+                        x: 449px;
+                        y: 193px;
+                    }
+                }
+                Rectangle {
+                    background: whitesmoke;
+                    x: root.active-tab == 1 ? 0 : root.active-tab < 1 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+
+                    TrafficLight {
+                        width: self.preferred-width;
+                        height: self.preferred-height / 1.35;
+                        x: 57px;
+                        y: 120px;
+                           
+                        }
+                    TrackSwitch {
+                        x: 263px;
+                        y: 120px;
+                    }
+                    BlockInfo {
+                        x: 61px;
+                        y: 350px;
+                        
+                    }
+                    
                 }
 
-            }
-            Tab{
-                title: "Block Status";
-                ComboBox {
-                    //text: "Selected Line";
-                    model: ["Red Line", "Green Line", "Blue Line"];
-                    x: 41px;
-                    y: 96px;
-                }
-                ComboBox {
-                    //text: "Selected Line";
-                    model: ["Block 1", "Block 2", "Block 3"];
-                    x: 42px;
-                    y: 154px;
-                }
-                Switch {
-                    accessible-role: AccessibleRole.switch;
-                    text: "Current PLC Status";
-                    x: 184px;
-                    y: 194px;
-                }
-                ComboBox {
-                    width: self.preferred-width;
-                    height: self.preferred-height;
-                    model: ["Software Wayside Controller", "Hardware Wayside Controller"];
-                    current-value: "Software Wayside Controller";
-                    x: 184px;
-                    y: 0px;
-                }
+                Rectangle {
+                    background: whitesmoke;
+                    x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+
+                    TableView {
+                        columns: ["Device", "Mount Point", "Total", "Free", "Track Number", "Test"];
+                        values: [
+                            ["/dev/sda1", "/", "255GB", "82.2GB"] ,
+                            ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
+                            ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+                            ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+                        ];
+                    }
             }
         }
-
-
-
-        
     }
 }
-*/
