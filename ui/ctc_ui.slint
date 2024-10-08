@@ -1,22 +1,28 @@
-import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
+import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox, StandardListView, ScrollView, ComboBox } from "std-widgets.slint";
 
 component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
-    callback on_button_clicked();
+    min-height: 200px;
     VerticalLayout {
         HorizontalLayout {
             padding-top: 7px;
             padding-left: 10px;
             Text { 
-                text: "Transit System";
-            }
-            Button {
-                text: "Print";
-                clicked => {root.on_button_clicked()}
+                text: "Train Schedule";
             }
         }
+        ScrollView {
+            Text { text: "Line"; } 
+            Text { text: "Line"; }
+            Text { text: "Line"; }
+            Text { text: "Line"; }
+            Text { text: "Line"; }
+            Text { text: "Line"; }
+        }
+        
     }
+    
 }
 
 component TrainSchedule inherits Rectangle {
@@ -191,7 +197,110 @@ component Dispatch inherits Rectangle {
 }
 
 component TestBench inherits Rectangle {
-    
+    HorizontalLayout {
+        padding: 15px;
+        spacing: 20px;
+        Rectangle {
+            background: #252525;
+            border-radius: 10px;
+            VerticalLayout {
+                alignment: start;
+                padding: 10px;
+                padding-left: 15px;
+                Text {text: "Inputs";}
+                Rectangle {}
+                SetOccupancy := VerticalLayout {
+                    alignment: start;
+                    padding: 10px;
+                    spacing: 10px;
+                    Text {text: "Track ID:";}
+                    ComboBox {
+                        model: [@tr("Select Section"), @tr("A"), @tr("B")];
+                    }
+                    ComboBox {
+                        model: [@tr("Select Block Number"), @tr("A"), @tr("B")];
+                    }
+                    Button {
+                        text: "Send Occupancy Signal";
+                    }
+                }
+                Failure := VerticalLayout {
+                    alignment: start;
+                    padding: 10px;
+                    spacing: 10px;
+                    Text {text: "Track ID:";}
+                    ComboBox {
+                        model: [@tr("Select Section"), @tr("A"), @tr("B")];
+                    }
+                    ComboBox {
+                        model: [@tr("Select Block Number"), @tr("A"), @tr("B")];
+                    }
+                    Button {
+                        text: "Send Failure Signal";
+                    }
+                }
+            }
+            
+        } 
+        Rectangle {
+            background: #252525;
+            border-radius: 10px;
+            VerticalLayout {
+                alignment: start;
+                padding: 10px;
+                padding-left: 15px;
+                Text {text: "Outputs";}
+                SpeedAndAuthority := VerticalLayout {
+                    alignment: start;
+                    padding: 10px;
+                    spacing: 10px;
+                    HorizontalLayout {
+                        alignment: start;
+                        spacing: 10px;
+                        Text {text: "Suggested Speed:";}
+                        LineEdit {
+                            placeholder-text: @tr("m/s");
+                        }
+                    }
+                    HorizontalLayout {
+                        alignment: start;
+                        spacing: 10px;
+                        Text {text: "Authority:";}
+                        LineEdit {
+                            placeholder-text: @tr("m/s");
+                        }
+                    }
+                    HorizontalLayout {
+                        alignment: start;
+                        spacing: 10px;
+                        Text {text: "Dwell Time:";}
+                        LineEdit {
+                            placeholder-text: @tr("m/s");
+                        }
+                    }
+                }
+                MaintenanceModeAndSwitchState := VerticalLayout {
+                    alignment: start;
+                    padding: 10px;
+                    spacing: 10px;
+                    Text {text: "Track ID:";}
+                    ComboBox {
+                        model: [@tr("Select Section"), @tr("A"), @tr("B")];
+                    }
+                    Text {text: "Track Block:";}
+                    ComboBox {
+                        model: [@tr("Select Block Number"), @tr("A"), @tr("B")];
+                    }
+                    Button {
+                        text: "Send Maintenance Mode Signal";
+                    }
+                    Button {
+                        text: "Send Switch State Signal";
+                    }
+                }
+            }
+        }    
+    }
 }
 
 export component CtcUi inherits Window {
@@ -202,7 +311,7 @@ export component CtcUi inherits Window {
 
     title: "CTC Office";
     preferred-width: 600px;
-    preferred-height: 400px;
+    preferred-height: 500px;
     TabWidget {
         Tab {
             title: @tr("CTC Home");
@@ -212,9 +321,7 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
-                    on_button_clicked => {
-                        root.on_test_clicked();
-                    }
+
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -230,7 +337,8 @@ export component CtcUi inherits Window {
         }
         Tab {
             title: @tr("Test Bench");
-            TestBench {}
+            TestBench {
+            }
         }
     }
     
