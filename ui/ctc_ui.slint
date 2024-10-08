@@ -125,15 +125,16 @@ component TrainSchedule inherits Rectangle {
     }
 }
 
-component ManualMode {
+component ManualMode inherits Rectangle {
     VerticalLayout {
         padding: 10px;
-        spacing: 10px;
+        spacing: 5px;
         HorizontalLayout {
             alignment: start;
             Text { text: "Train Name: ";}
             Rectangle {width: 10px;}
             LineEdit {
+                width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Train 1");
             } 
@@ -143,6 +144,7 @@ component ManualMode {
             Text { text: "Destination: ";}
             Rectangle {width: 10px;}
             LineEdit {
+                width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Downtown");
             } 
@@ -152,6 +154,7 @@ component ManualMode {
             Text { text: "Arrival Time:";}
             Rectangle {width: 10px;}
             LineEdit {
+                width: 120px;
                 height: 30px;
                 placeholder-text: @tr("10:00:00");
             } 
