@@ -8,6 +8,7 @@
 #include "track_model_ui.h"
 #include "csv_parser.h"
 #include "types.h"
+#include "channel.h"
 #include <iostream>
 #include <fstream>
 
@@ -29,8 +30,10 @@ std::string ExtractFileName(const std::string& full_path) {
 
 int main(void)
 {
+    track_model::SoftwareTrackModel trackModel;
     auto track_model_ui = ui::TrackModelUi::create();
     std::string input_file_path="";
+    //slint::ComponentWeakHandle<ui::TrackModelUi> weak_tkm_handle(track_model_ui);
 
     track_model_ui->on_choose_file([&]() {
         // For other platforms
@@ -69,7 +72,32 @@ int main(void)
             track_model::SoftwareTrackModel trackModel(records);
         });    
     });
+
+     /*std::thread worker_thread([&]
+    {
+        Channel<int> blockidchannel;
+        Channel<int> tempchannel;
+
+        track_model_ui->on_request_update_external_temp([&]()
+            {
+                tempchannel.Send(track_model_ui->external_temp);
+                trackModel.SetExternalTemperature(tempchannel.Receive());
+            });
+
+        /*channel.Send(tick_source.GetTimeString());
+        slint::invoke_from_event_loop([weak_tkm_handle, &blockidchannel, &tempchannel]() {
+        if (auto ui = weak_tkm_handle.lock()) {
+            if (ui.has_value())
+            {
+                //ui.value()->set_external_temp(tempchannel.Receive());
+            }
+        }
+        });
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
+    });*/
+
     track_model_ui->run();
+   // worker_thread.join();
 
     return 0;
 }

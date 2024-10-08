@@ -42,7 +42,7 @@ class SoftwareTrackModel : public TrackModel
 {
     public:
         SoftwareTrackModel();
-        SoftwareTrackModel(const std::vector<std::vector<std::string>> records);
+        SoftwareTrackModel(const std::vector<std::vector<std::string> > records);
         virtual types::TrackId GetTrackId(void);
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const;
@@ -61,34 +61,34 @@ class SoftwareTrackModel : public TrackModel
         virtual types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
 
     private:
-        types::TrackId track_id=1;
+        types::TrackId track_id = 1;
         std::vector<std::shared_ptr<train_model::TrainModel> > trainsvec;
-        std::vector<std::vector<types::BlockId>> trainblockvec;
+        std::vector<std::vector<types::BlockId> > trainblockvec;
         std::vector<uint16_t> tpassengers;
-        int externaltemp;
+        types::DegreesFahrenheit externaltemp=50;
 
         struct Block
         {
             types::BlockId blocknum;
             bool occupancy = 0;
             types::BlockId Switch;
-            bool crossing          = 0;
-            bool light             = 0;
-            std::string lightcolor = "GREEN";
-            bool pfail             = 0;
-            bool tcfail            = 0;
-            bool brail             = 0;
-            float grade              = 0;
-            types::Meters length   = 50;
-            int slimit             = 50;
-            float elevation          = 0;
-            std::string section           = "A";
-            bool heater            = 0;
-            char station           = 'Z';
-            int direction          = 0;
-            types::BlockId connection=0;
-            bool underground       = 0;
-            float cumelevation = 0;
+            bool crossing             = 0;
+            bool light                = 0;
+            std::string lightcolor    = "GREEN";
+            bool pfail                = 0;
+            bool tcfail               = 0;
+            bool brail                = 0;
+            float grade               = 0;
+            types::Meters length      = 50;
+            int slimit                = 50;
+            float elevation           = 0;
+            std::string section       = "A";
+            bool heater               = 0;
+            char station              = 'Z';
+            int direction             = 0;
+            types::BlockId connection = 0;
+            bool underground          = 0;
+            float cumelevation        = 0;
             float sectotraverse;
 
         };

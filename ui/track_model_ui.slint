@@ -1,9 +1,5 @@
 import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
 
-//component TestBench inherits Rectangle {
-
-//}
-
 component TrackInput inherits Rectangle {
     in-out property<string> fileName: "";
     callback choose-file();
@@ -13,7 +9,7 @@ component TrackInput inherits Rectangle {
         spacing: 10px;
         HorizontalLayout {
             alignment: start;
-            Text { text: "Choose File: ";}
+            Text { text: "Choose Track Layout File: ";}
             Rectangle {width: 10px;}
             Rectangle {
                 border-radius: 5px;
@@ -26,7 +22,8 @@ component TrackInput inherits Rectangle {
             } 
         }
         HorizontalLayout {
-            Button { 
+            Button {
+                preferred-width: 250px;
                 max-height: 30px;
                 text: "Open File";
                 clicked => {choose-file()}
@@ -35,6 +32,7 @@ component TrackInput inherits Rectangle {
         
         VerticalLayout {
             Button { 
+                preferred-width: 250px;
                 max-height: 30px;
                 text: "Execute";
                 clicked => {parse-file()}
@@ -43,47 +41,484 @@ component TrackInput inherits Rectangle {
     }
 }
 export component TrackModelUi inherits Window {
+    min-height: 950px;
+    min-width: 1200px;
     in-out property <string> selected_fileName;
+    in-out property <int> train_block;
+    in-out property <int> external_temp;
+    in-out property <int> passengers_deboarding;
+    in-out property <int> switch_block;
+    in-out property <int> crossing_block;
+    in-out property <int> green_block;
+    in-out property <int> yellow_block;
+    in-out property <int> red_block;
+    in-out property <int> brail_block;
+    in-out property <int> tcfail_block;
+    in-out property <int> pfail_block;
+    in-out property <string> blocks_occupied;
+    in-out property <int> passengers_boarding;
+
+    callback request_update_train_block();
+    callback request_update_external_temp();
+    callback request_update_passengers_deboarding;
+    callback request_update_switch_block();
+    callback request_update_crossing_block();
+    callback request_update_green_block();
+    callback request_update_yellow_block();
+    callback request_update_red_block();
+    callback request_update_brail_block();
+    callback request_update_tcfail_block();
+    callback request_update_pfail_block();
+    
     callback choose-file();
     callback parse-file();
     
-    Image {
-        source: @image-url("/Users/ibrah/Downloads/redgreenlines.png");
-        height: 500px;
-        width: 400px;
-        x: 0px;
-    }
-    TrackInput{
-        fileName: selected_fileName;
-        choose-file=>{root.choose-file()}
-        parse-file=>{root.parse-file()}
-    }
-    popup:= PopupWindow {
-        Rectangle {
-            height:100%; width: 100%; background: white;
-        } 
-        height: 300px;
-        width: 300px;
-        x: 600px;
-    }
+    TabWidget{
+        Tab{
+        title: "Track Model Home";
+            Image {
+                source: @image-url("/Users/ibrah/Downloads/redgreenlines.png");
+                height: 500px;
+                width: 400px;
+                x: 0px;
+            }
+            TrackInput{
+                fileName: selected_fileName;
+                choose-file=>{root.choose-file()}
+                parse-file=>{root.parse-file()}
+            }
+            popup:= PopupWindow {
+                Rectangle {
+                    height:100%; width: 100%; background: white;
+                } 
+                height: 300px;
+                width: 300px;
+                x: 600px;
+            }
 
-    HorizontalBox {
-        alignment: end;
-            Button{
-                text: "TestBench";
-                clicked => {
-                    popup.show();
+            // HorizontalBox {
+            //     alignment: end;
+            //         Button{
+            //             text: "TestBench";
+            //             clicked => {
+            //                 popup.show();
+            //             }
+            //     }
+            // }
+
+            preferred-height: 800px;
+            preferred-width: 800px;
+        }
+        Tab{
+            title: "Track Model Test Bench";
+            HorizontalBox {
+
+                VerticalBox {
+                    Text{
+                    text: "INPUTS";
+                    font-size: 30px;
+                    horizontal-alignment: center;
+                    }
+
+                    Rectangle {
+                        //border-color: white;
+                        //border-radius: 20px;
+                        //border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        min-height:700px;
+                        VerticalBox {
+                            spacing: 5px; 
+                            //Train BlockId
+                            HorizontalBox {
+                                Text {
+                                    text: "Current Train BlockID:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.current_velocity;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_train_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //External temp
+                            HorizontalBox {
+                                Text {
+                                    text: "External Temperature:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                Text {
+                                    text: "Degrees Fahrenheit";
+                                    vertical-alignment: center;
+                                    font-size: 25px;
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_external_temp();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Passengers deboarding
+                            HorizontalBox {
+                                Text {
+                                    text: "Passengers Deboarding:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: root.passengers_deboarding;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                Text {
+                                    text: "Passengers";
+                                    vertical-alignment: center;
+                                    font-size: 25px;
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_passengers_deboarding();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //External temp
+                            HorizontalBox {
+                                Text {
+                                    text: "External Temperature:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                Text {
+                                    text: "Degrees Fahrenheit";
+                                    vertical-alignment: center;
+                                    font-size: 25px;
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_external_temp();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Switch State
+                            HorizontalBox {
+                                Text {
+                                    text: "Switch Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_switch_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Crossing State Block
+                            HorizontalBox {
+                                Text {
+                                    text: "Crossing Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_crossing_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //GREEN LIGHT
+                            HorizontalBox {
+                                Text {
+                                    text: "Green Traffic Light Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_green_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Yellow Traffic Light
+                            HorizontalBox {
+                                Text {
+                                    text: "Yellow Traffic Light Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_yellow_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Red Traffic Light
+                            HorizontalBox {
+                                Text {
+                                    text: "Red Traffic Light Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_red_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                             //Broken Rail
+                             HorizontalBox {
+                                Text {
+                                    text: "Break Rail on Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_brail_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                             //TC Fail
+                             HorizontalBox {
+                                Text {
+                                    text: "Fail Track Circuit on Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_tcfail_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                             //Power fail
+                             HorizontalBox {
+                                Text {
+                                    text: "Fail Power on Block:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    //text: root.external_temp;
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    
+                                }
+                                // Text {
+                                //     text: "Degrees Fahrenheit";
+                                //     vertical-alignment: center;
+                                //     font-size: 25px;
+                                // }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_pfail_block();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                        }
+                    }
                 }
+                VerticalBox {
+                    Text{
+                    text: "SIMULATED OUTPUTS";
+                    font-size: 30px;
+                    horizontal-alignment: center;
+                    }
+                    Rectangle {
+                        //border-color: white;
+                        //border-radius: 20px;
+                        //border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        min-height:700px;
+                        VerticalBox {
+                            spacing: 5px; 
+                            //OCCUPANCY
+                            HorizontalBox {
+                                Text {
+                                    text: "Blocks Occupied:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.blocks_occupied;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            //Passengers boarding
+                            HorizontalBox {
+                                Text {
+                                    text: "Passengers Boarding:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.passengers_boarding;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "Passengers";
+                                    vertical-alignment: center;
+                                    horizontal-alignment: left;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-
-    title: "Track Model";
-    preferred-height: 800px;
-    preferred-width: 800px;
-    HorizontalBox {
-        padding: 50px;
-        Text {
-            text: "This is the Track Model UI.";
-        }
-    }
-}
+}    
