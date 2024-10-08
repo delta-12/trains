@@ -1,8 +1,8 @@
 import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, LineEdit, VerticalBox } from "std-widgets.slint";
 
-component TestBench inherits Rectangle {
+//component TestBench inherits Rectangle {
 
-}
+//}
 
 component TrackInput inherits Rectangle {
     in-out property<string> fileName: "";
@@ -43,6 +43,10 @@ component TrackInput inherits Rectangle {
     }
 }
 export component TrackModelUi inherits Window {
+    in-out property <string> selected_fileName;
+    callback choose-file();
+    callback parse-file();
+    
     Image {
         source: @image-url("/Users/ibrah/Downloads/redgreenlines.png");
         height: 500px;
@@ -50,6 +54,9 @@ export component TrackModelUi inherits Window {
         x: 0px;
     }
     TrackInput{
+        fileName: selected_fileName;
+        choose-file=>{root.choose-file()}
+        parse-file=>{root.parse-file()}
     }
     popup:= PopupWindow {
         Rectangle {
