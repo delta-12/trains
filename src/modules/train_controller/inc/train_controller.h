@@ -78,7 +78,7 @@ namespace train_controller
             //          index 3: elevation              (m)
             //          index 4: cumulative elevation   (m)
 
-            std::unordered_map<types::BlockId, std::array<float, 5>> blockDataMap = {
+            std::unordered_map<types::BlockId, std::array<float, 5>> blueBlockDataMap = {
                 {1, {50.0, 0.0, 50.0, 0.00, 0.00}},
                 {2, {50.0, 0.0, 50.0, 0.00, 0.00}},
                 {3, {50.0, 0.0, 50.0, 0.00, 0.00}},
@@ -94,6 +94,7 @@ namespace train_controller
                 {13, {50.0, 0.0, 50.0, 0.00, 0.00}},
                 {14, {50.0, 0.0, 50.0, 0.00, 0.00}},
                 {15, {50.0, 0.0, 50.0, 0.00, 0.00}},
+                {16, {50.0, 0.0, 50.0, 0.00, 0.00}}, // added 16th block
             };
 
             // map for block data --> 
@@ -102,7 +103,7 @@ namespace train_controller
             // values:
             //          infrastructure string
 
-            std::unordered_map<types::BlockId, std::string> blockIfrastructureMap = {
+            std::unordered_map<types::BlockId, std::string> blueBlockInfrastructureMap = {
                 {3, "RAILWAY CROSSING"},
                 {5, "Switch ( 5 to 6) or (5 to 11)"},
                 {6, "Switch ( 5 to 6); Light"},
@@ -164,6 +165,8 @@ namespace train_controller
 
             //local functions
             virtual void CalculateCommandedPower(types::MilesPerHour);
+            virtual types::Watts CalculateMaxPower();
+            virtual types::Meters CalculateDistanceTraveled(float);
 
         private:
             float IntegralSUM = 0;
