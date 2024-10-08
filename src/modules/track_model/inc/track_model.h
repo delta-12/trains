@@ -65,7 +65,7 @@ class SoftwareTrackModel : public TrackModel
         std::vector<std::shared_ptr<train_model::TrainModel> > trainsvec;
         std::vector<std::vector<types::BlockId> > trainblockvec;
         std::vector<uint16_t> tpassengers;
-        types::DegreesFahrenheit externaltemp=50;
+        types::DegreesFahrenheit externaltemp = 50;
 
         struct Block
         {

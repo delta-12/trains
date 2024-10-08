@@ -228,12 +228,12 @@ void SoftwareTrackModel::Update(void)
     // Update the state of the track model
 
     //check temperature for heaters
-    if (externaltemp<=32)
+    if (externaltemp <= 32)
     {
         //set all track heaters
-        for (int i=0;i<line.size();i++)
+        for (int i = 0; i < line.size(); i++)
         {
-            line[i].heater=1;
+            line[i].heater = 1;
         }
     }
 
