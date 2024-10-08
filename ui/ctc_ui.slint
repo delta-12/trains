@@ -3,26 +3,91 @@ import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, 
 component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
-    min-height: 200px;
+    preferred-height: 180px;
     VerticalLayout {
+        padding-top: 10px;
         HorizontalLayout {
             padding-top: 7px;
-            padding-left: 10px;
+            padding-left: 15px;
+            spacing: 20px;
             Text { 
                 text: "Train Schedule";
             }
+            HorizontalLayout {
+                Text {text: "Time: ";}
+                Rectangle {
+                    border-radius: 5px;
+                    y: -4px;
+                    width: 120px;
+                    height: 25px;
+                    border-width: 2px;
+                    border-color: #4d4d4d;
+                    Text {text: "hh:mm:ss";}
+                }
+            }
+            HorizontalLayout {
+                Text {text: "Throughput: ";}
+                Rectangle {
+                    border-radius: 5px;
+                    y: -4px;
+                    width: 120px;
+                    height: 25px;
+                    border-width: 2px;
+                    border-color: #4d4d4d;
+                    Text {text: "Train/hr/line";}
+                }
+            }
+            HorizontalLayout {
+                alignment: end;
+                padding-right: 15px;
+                ComboBox {
+                    y: -7px;
+                    model: [@tr("Simulation Speed"), @tr("A"), @tr("B")];
+                }
+            }
         }
-        ScrollView {
-            Text { text: "Line"; } 
-            Text { text: "Line"; }
-            Text { text: "Line"; }
-            Text { text: "Line"; }
-            Text { text: "Line"; }
-            Text { text: "Line"; }
+        VerticalLayout {
+            padding: 15px;
+            StandardTableView {
+                columns: [
+                    { title: @tr("Section") },
+                    { title: @tr("Block") },
+                    { title: @tr("Status") },
+                    { title: @tr("Occupany") },
+                    { title: @tr("Failure") },
+                ];
+                rows: [
+                    [ { text: "A" }, { text: "1" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
+                    [ { text: "A" }, { text: "2" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
+                    [ { text: "A" }, { text: "3" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
+                    [ { text: "B" }, { text: "4" }, { text: "Open" }, { text: "None" }, { text: "None" },],
+                    [ { text: "B" }, { text: "5" }, { text: "Open" }, { text: "None" }, { text: "None" },],
+                    [ { text: "B" }, { text: "6" }, { text: "Open" }, { text: "None" }, { text: "None" },],
+                ];
+            }
         }
-        
+        ManageBlock := HorizontalLayout {
+            alignment: start;
+            padding: 15px;
+            spacing: 10px;
+            ComboBox {
+                y: -7px;
+                model: [@tr("Section"), @tr("A"), @tr("B")];
+            }
+            ComboBox {
+                y: -7px;
+                model: [@tr("Block"), @tr("1"), @tr("2")];
+            }
+            HorizontalLayout {
+                Switch {}
+                Text {text:"  Maintenance Mode"; y: 7px;}
+            }
+            HorizontalLayout {
+                Switch {}
+                Text {text:" Switch"; y: 7px;}
+            }
+        }
     }
-    
 }
 
 component TrainSchedule inherits Rectangle {
@@ -42,7 +107,6 @@ component TrainSchedule inherits Rectangle {
         VerticalLayout {
             padding: 10px;
             StandardTableView {
-                width: 300px;
                 columns: [
                     { title: @tr("Train") },
                     { title: @tr("ETA") },
@@ -57,10 +121,6 @@ component TrainSchedule inherits Rectangle {
                     [ { text: "Item 6.1" }, { text: "Item 6.2" }, { text: "Item 6.3" }, ],
                 ];
             }
-        }
-        HorizontalBox {
-            vertical-stretch: 1;
-            
         }
     }
 }
@@ -158,6 +218,7 @@ component Dispatch inherits Rectangle {
 
     background: #252525;
     border-radius: 10px;
+    preferred-height: 150px;
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
