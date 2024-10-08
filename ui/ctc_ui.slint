@@ -261,7 +261,46 @@ component Dispatch inherits Rectangle {
 }
 
 component OutputTestBench inherits Rectangle {
-    Text {text: "OUTPUT:::::::";}
+    VerticalLayout {
+        spacing: 10px;
+        padding: 10px;
+        // Speed Authority Input
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Suggested Speed: ";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("m/s");
+            } 
+        }
+        // Authority Input 
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Authority: ";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("m");
+            } 
+        }
+        // Dwell Time Input
+        HorizontalLayout {
+            alignment: start;
+            Text { text: "Dwell Time: ";}
+            Rectangle {width: 10px;}
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("s");
+            } 
+        }
+        Button {
+            text: "Send Vital Signals";
+        }
+    }
 }
 
 component TestBench inherits Rectangle {
