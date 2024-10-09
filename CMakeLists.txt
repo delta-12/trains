@@ -73,8 +73,8 @@ set(SLINT_STYLE cosmic-dark)
 
 find_package(Slint REQUIRED)
 
-include(${TOOLS_DIR}/uncrustify/uncrustify.cmake)
-include(${TOOLS_DIR}/cppcheck/cppcheck.cmake)
+# include(${TOOLS_DIR}/uncrustify/uncrustify.cmake)
+# include(${TOOLS_DIR}/cppcheck/cppcheck.cmake)
 
 include(FetchContent)
 FetchContent_Declare(
