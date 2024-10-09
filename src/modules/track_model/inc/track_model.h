@@ -14,12 +14,40 @@
 #include <iostream>
 #include <string>
 
+struct Block
+{
+    types::BlockId blocknum;
+    bool occupancy = 0;
+    types::BlockId Switch;
+    bool crossing             = 0;
+    bool crossingstate        = 0;
+    bool light                = 0;
+    std::string lightcolor    = "NONE";
+    bool pfail                = 0;
+    bool tcfail               = 0;
+    bool brail                = 0;
+    float grade               = 0;
+    types::Meters length      = 50;
+    int slimit                = 50;
+    float elevation           = 0;
+    std::string section       = "A";
+    bool heater               = 0;
+    bool station              = 1;
+    int direction             = 0;
+    types::BlockId connection = 0;
+    bool underground          = 0;
+    float cumelevation        = 0;
+    float sectotraverse;
+
+};
+
 namespace track_model
 {
 
 class TrackModel
 {
     public:
+        virtual types::Error SetTrackLayout(const std::vector<std::vector<std::string> > records)                 = 0;
         virtual types::TrackId GetTrackId(void)                                                                   = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const         = 0;
@@ -36,13 +64,17 @@ class TrackModel
         virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure) = 0;
         virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure)                = 0;
         virtual types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature)                   = 0;
+        virtual types::Error SetTrainBlock(const types::BlockId block)                                            = 0;
+        virtual types::Error SetPassengersDeboarding(const uint16_t passengers)                                   = 0;
+        virtual uint16_t GetPassengersBoarding(void)                                                              = 0;
+        virtual struct ::Block GetSpecificBlock(const types::BlockId block)                                       = 0;
 };
 
 class SoftwareTrackModel : public TrackModel
 {
     public:
         SoftwareTrackModel();
-        SoftwareTrackModel(const std::vector<std::vector<std::string> > records);
+        virtual types::Error SetTrackLayout(const std::vector<std::vector<std::string> > records);
         virtual types::TrackId GetTrackId(void);
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
         virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const;
@@ -59,22 +91,29 @@ class SoftwareTrackModel : public TrackModel
         virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure);
         virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
         virtual types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
+        virtual types::Error SetTrainBlock(const types::BlockId block);
+        virtual types::Error SetPassengersDeboarding(const uint16_t passengers);
+        virtual uint16_t GetPassengersBoarding(void);
+        virtual struct ::Block GetSpecificBlock(const types::BlockId block);
 
     private:
         types::TrackId track_id = 1;
         std::vector<std::shared_ptr<train_model::TrainModel> > trainsvec;
-        std::vector<std::vector<types::BlockId> > trainblockvec;
-        std::vector<uint16_t> tpassengers;
+        std::vector<types::BlockId> trainblockvec;   //make vector for multiple trains
+        uint16_t tpassengers                  = 150; //make vector for multiple trains
+        uint16_t boarding                     = 0;   //make vector for multiple trains
+        uint16_t deboarding                   = 0;
         types::DegreesFahrenheit externaltemp = 50;
 
-        struct Block
-        {
+        /*struct Block
+           {
             types::BlockId blocknum;
             bool occupancy = 0;
             types::BlockId Switch;
             bool crossing             = 0;
+            bool crossingstate = 0;
             bool light                = 0;
-            std::string lightcolor    = "GREEN";
+            std::string lightcolor    = "NONE";
             bool pfail                = 0;
             bool tcfail               = 0;
             bool brail                = 0;
@@ -84,14 +123,14 @@ class SoftwareTrackModel : public TrackModel
             float elevation           = 0;
             std::string section       = "A";
             bool heater               = 0;
-            char station              = 'Z';
+            bool station              = 1;
             int direction             = 0;
             types::BlockId connection = 0;
             bool underground          = 0;
             float cumelevation        = 0;
             float sectotraverse;
 
-        };
+           };*/
 
         //initial vector with all blocks loaded from the csv (think of this as a database)
         std::vector<Block> allblocks;
@@ -105,7 +144,9 @@ class SoftwareTrackModel : public TrackModel
 
         types::Meters tlength = 32;
 
-        std::string linetype = "blue";
+        std::string linetype = "BLUE";
+
+        types::BlockId currblock = 0;
 };
 } // namespace track_model
 

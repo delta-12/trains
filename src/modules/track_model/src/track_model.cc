@@ -9,7 +9,7 @@ namespace track_model
 track_model::SoftwareTrackModel::SoftwareTrackModel()
 {
     track_id = 1;
-    std::vector<Block> newstuff = {
+    /*std::vector<Block> newstuff = {
         Block(),
         Block(),
         Block(),
@@ -46,7 +46,7 @@ track_model::SoftwareTrackModel::SoftwareTrackModel()
         newstuff[i].section = 'C';
     }
 
-    line.insert(line.end(), newstuff.begin(), newstuff.end());
+    line.insert(line.end(), newstuff.begin(), newstuff.end());*/
 }
 
 //constructor for when a track is passsed in
@@ -64,6 +64,9 @@ types::Error SoftwareTrackModel::SetTrackLayout(const std::vector<std::vector<st
     if (records[1][0] == "Red")
     {
         linetype = "RED";
+    }
+    else{
+        linetype = "BLUE";
     }
 
     //making the line the size of the track input
