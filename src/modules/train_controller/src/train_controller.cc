@@ -108,12 +108,15 @@ void SoftwareTrainController::SetInteriorLights(bool state) {
 }
 
 void SoftwareTrainController::SetLeftDoors(bool state) { 
-    if(DistanceTravelled == )
+    //if(DistanceTravelled == )
         LDoor = state; 
 }
 
 void SoftwareTrainController::SetRightDoors(bool state) { 
-    RDoor = state; 
+    if(CurrentVelocity_ == 0)
+    {
+        RDoor = state; 
+    }
 }
 
 void SoftwareTrainController::SetBrakeFailure(bool state) {

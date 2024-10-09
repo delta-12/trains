@@ -9,6 +9,7 @@
 #include <chrono>
 #include <memory>
 #include <slint_timer.h>
+#include <string>
 #include <thread>
 
 int main(void)
@@ -54,9 +55,19 @@ int main(void)
             train_controller_ui->set_signal_status(0);
     });
 
+
     // Manual - UI input parameters
 
-    train_controller_ui->on_request_update_driver_speed([&] {
+   
+    train_controller_ui->on_request_update_commanded_speed([&]{
+        float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_speed()));
+            train_controller_ui->set_commanded_speed(temp);
+    });
+    train_controller_ui->on_request_update_commanded_internal_temperature([&] {
+        float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_internal_temperature()));
+            train_controller_ui->set_commanded_internal_temperature(temp);
+    });
+     train_controller_ui->on_request_update_driver_speed([&] {
         // assign driver speed variable to text input
     });
     train_controller_ui->on_request_update_service_brake([&] {
@@ -71,9 +82,6 @@ int main(void)
 
     train_controller_ui->on_request_update_current_velocity([&]{
         // assign current velocity variable to text input
-    });
-    train_controller_ui->on_request_update_commanded_speed([&]{
-        // assign commanded speed variable to text input
     });
     train_controller_ui->on_request_update_authority([&]{
         // assign authority variable to text input

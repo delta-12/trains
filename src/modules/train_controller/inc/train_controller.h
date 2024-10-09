@@ -118,9 +118,9 @@ namespace train_controller
 
             public:
               // Implementations for getters
-                types::MetersPerSecond GetCurrentVelocity(void) const;
-                types::MetersPerSecond GetDriverSpeed(void) const;
-                types::MetersPerSecond GetCommandedSpeedWS(void) const;
+                types::MilesPerHour GetCurrentVelocity(void) const;
+                types::MilesPerHour GetDriverSpeed(void) const;
+                types::MilesPerHour GetCommandedSpeedWS(void) const;
                 types::Meters GetDistanceTravelled(void) const;
                 types::Watts GetCommandedPower(void) const;
                 uint16_t GetServiceBrake(void) const;
@@ -165,14 +165,14 @@ namespace train_controller
 
             
             //TestBench Functions. These will be tied to the testbench UI
-            virtual void SetCommandedSpeedTB(types::MetersPerSecond);
-            virtual void SetCurrentVelocityTB(types::MetersPerSecond);
-            virtual std::size_t SetBeaconDataTB(types::BeaconData &data);
-            virtual types::Meters SetAuthorityTB(void);
-            virtual types::Watts SetActualPowerTB(void);
-            virtual bool SetEngineFailureTB(void);
-            virtual bool SetSignalPickupFailureTB(void);
-            virtual bool SetBrakeFailureTB(void);
+            virtual void SetCommandedSpeedTB(types::MilesPerHour);
+            virtual void SetCurrentVelocityTB(types::MilesPerHour);
+            //virtual std::size_t SetBeaconDataTB(types::BeaconData &data);
+            //virtual types::Meters SetAuthorityTB(void);
+            //virtual types::Watts SetActualPowerTB(void);
+            //virtual bool SetEngineFailureTB(void);
+            //virtual bool SetSignalPickupFailureTB(void);
+            //virtual bool SetBrakeFailureTB(void);
 
 
             //local functions
