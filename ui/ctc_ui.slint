@@ -53,11 +53,18 @@ component TransitSystem inherits Rectangle {
                 columns: [
                     { title: @tr("Section") },
                     { title: @tr("Block") },
-                    { title: @tr("Status") },
+                    { title: @tr("Mode") },
                     { title: @tr("Occupany") },
                     { title: @tr("Failure") },
                 ];
-                rows: row_data;
+                rows: [
+                    [{text: "A"}, {text: "1"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "A"}, {text: "2"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "A"}, {text: "3"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "A"}, {text: "4"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "A"}, {text: "5"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "B"}, {text: "6"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                ];
             }
         }
         ManageBlock := HorizontalLayout {
@@ -88,14 +95,14 @@ component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
-    in-out property <string> train_name_1: "";
+    in-out property <string> train_name_1: "n/a";
     in-out property <string> train_name_2: "";
     in-out property <string> train_name_3: "";
     in-out property <string> train_name_4: "";
     in-out property <string> train_name_5: "";
     in-out property <string> train_name_6: "";
-    in-out property <string> train_1_arrival_time;
-    in-out property <string> train_1_dst;
+    in-out property <string> train_1_arrival_time: "n/a";
+    in-out property <string> train_1_dst: "n/a";
     
     VerticalLayout {
         Rectangle {
@@ -279,108 +286,6 @@ component Dispatch inherits Rectangle {
     }
 }
 
-component OutputTestBench inherits Rectangle {
-    VerticalLayout {
-        spacing: 10px;
-        padding: 10px;
-        // Speed Authority Input
-        // HorizontalLayout {
-        //     alignment: start;
-        //     Text { text: "Suggested Speed: ";}
-        //     Rectangle {width: 10px;}
-        //     LineEdit {
-        //         width: 120px;
-        //         height: 30px;
-        //         placeholder-text: @tr("m/s");
-        //     } 
-        // }
-        // // Authority Input 
-        // HorizontalLayout {
-        //     alignment: start;
-        //     Text { text: "Authority:       ";}
-        //     Rectangle {width: 10px;}
-        //     LineEdit {
-        //         width: 120px;
-        //         height: 30px;
-        //         placeholder-text: @tr("m");
-        //     } 
-        // }
-        // // Dwell Time Input
-        // HorizontalLayout {
-        //     alignment: start;
-        //     Text { text: "Dwell Time: ";}
-        //     Rectangle {width: 10px;}
-        //     LineEdit {
-        //         width: 120px;
-        //         height: 30px;
-        //         placeholder-text: @tr("s");
-        //     } 
-        // }
-        Button {
-            text: "Send Vital Signals";
-        }
-    }
-}
-
-component TestBench inherits Rectangle {
-    HorizontalLayout {
-        padding: 15px;
-        spacing: 20px;
-        Rectangle {
-            background: #252525;
-            border-radius: 10px;
-            VerticalLayout {
-                alignment: start;
-                padding: 10px;
-                padding-left: 15px;
-                Text {text: "Inputs";}
-                Rectangle {}
-                VerticalLayout {
-                    alignment: start;
-                    padding: 10px;
-                    spacing: 10px;
-                    Text {text: "Track ID:";}
-                    ComboBox {
-                        model: [@tr("Select Section"), @tr("A"), @tr("B")];
-                    }
-                    ComboBox {
-                        model: [@tr("Select Block Number"), @tr("A"), @tr("B")];
-                    }
-                    Button {
-                        text: "Send Occupancy Signal";
-                    }
-                }
-                VerticalLayout {
-                    alignment: start;
-                    padding: 10px;
-                    spacing: 10px;
-                    Text {text: "Track ID:";}
-                    ComboBox {
-                        model: [@tr("Select Section"), @tr("A"), @tr("B")];
-                    }
-                    ComboBox {
-                        model: [@tr("Select Block Number"), @tr("A"), @tr("B")];
-                    }
-                    Button {
-                        text: "Send Failure Signal";
-                    }
-                }
-            }
-        } 
-        Rectangle {
-            background: #252525;
-            border-radius: 10px;
-            VerticalLayout {
-                alignment: start;
-                padding: 10px;
-                padding-left: 15px;
-                Text {text: "Outputs";}
-                OutputTestBench {}
-            }
-        }    
-    }
-}
-
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
     in-out property <string> train_1: " ";
@@ -390,6 +295,26 @@ export component CtcUi inherits Window {
     in-out property <string> train_name;
     in-out property <string> destination;
     in-out property <string> arrival_time;
+
+    //TestBench
+    in-out property <string> section;
+    in-out property <string> block;
+    in-out property <string> suggested_speed;
+    in-out property <string> authority;
+    in-out property <string> dwell_time;
+    in-out property <string> confirm_occupancy_message;
+    in-out property <string> confirm_failure_message;
+    in-out property <string> confirm_output_message;
+    in-out property <string> confirm_maintenance_message;
+    in-out property <string> confirm_switch_message;
+    in-out property <string> confirm_automatic_dispatch;
+    callback print_occupancy_message();
+    callback print_failure_message();
+    callback print_output_to_wayside();
+    callback print_maintenance_message();
+    callback print_switch_message();
+    callback print_automatic_dispatch();
+
     callback choose-file();
     callback parse-file();
     callback on_test_clicked();
@@ -431,7 +356,120 @@ export component CtcUi inherits Window {
         }
         Tab {
             title: @tr("Test Bench");
-            // TestBench {}
+            HorizontalLayout {
+                padding: 15px;
+                spacing: 20px;
+                Rectangle {
+                    background: #252525;
+                    border-radius: 10px;
+                    VerticalLayout {
+                        alignment: start;
+                        padding: 10px;
+                        padding-left: 15px;
+                        Text {text: "Inputs";}
+                        Rectangle {}
+                        VerticalLayout {
+                            alignment: start;
+                            padding: 10px;
+                            spacing: 10px;
+                            Text {text: "Wayside Occupancy Signal:";}
+                            LineEdit {
+                                
+                                height: 30px;
+                                placeholder-text: @tr("Section");
+                                edited(input) => {section = input}
+                            }
+                            LineEdit {
+                                
+                                height: 30px;
+                                placeholder-text: @tr("Block Number");
+                                edited(input) => {block = input}
+                            }
+                            Button {
+                                text: "Send Occupancy Signal";
+                                clicked => {root.print_occupancy_message()}
+                            }
+                            Text {
+                                text: confirm_occupancy_message;
+                            }
+                        }
+                        VerticalLayout {
+                            alignment: start;
+                            padding: 10px;
+                            spacing: 10px;
+                            Text {text: "Wayside Failure Signal:";}
+                            LineEdit {
+                                
+                                height: 30px;
+                                placeholder-text: @tr("Section");
+                                edited(input) => {section = input}
+                            }
+                            LineEdit {
+                               
+                                height: 30px;
+                                placeholder-text: @tr("Block Number");
+                                edited(input) => {block = input}
+                            }
+                            Button {
+                                text: "Send Failure Signal";
+                                clicked => {root.print_failure_message()}
+                            }
+                            Text {
+                                text: confirm_failure_message;
+                            }
+                        }
+                    }
+                } 
+                Rectangle {
+                    background: #252525;
+                    border-radius: 10px;
+                    VerticalLayout {
+                        alignment: start;
+                        padding: 10px;
+                        padding-left: 15px;
+                        Text {text: "Outputs";}
+                        Rectangle {}
+                        VerticalLayout {
+                            alignment: start;
+                            padding: 10px;
+                            spacing: 10px;
+                            Text {text: "Manual Dispatch:";}
+                            LineEdit {
+                                
+                                height: 30px;
+                                placeholder-text: @tr("Suggested Speed (m/s)");
+                                edited(input) => {suggested_speed = input}
+                            }
+                            LineEdit {
+                                
+                                height: 30px;
+                                placeholder-text: @tr("Authority (m)");
+                                edited(input) => {authority = input}
+                            }
+                            LineEdit {
+                            
+                                height: 30px;
+                                placeholder-text: @tr("Dwell Time (s)");
+                                edited(input) => {dwell_time = input}
+                            }
+                            Button {
+                                text: "Send Signal:";
+                                clicked => {root.print_output_to_wayside()}
+                            }
+                            Text {
+                                text: confirm_output_message;
+                            }
+                            Button {
+                                text: "Automatic Dispatch:";
+                                clicked => {root.print_automatic_dispatch()}
+                            }
+                            Text {
+                                text: confirm_automatic_dispatch;
+                            }
+                        }
+                    }
+                }    
+            }
         }
     }
     
