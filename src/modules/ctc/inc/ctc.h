@@ -12,14 +12,14 @@
 namespace ctc
 {
 
-struct Infrastructure 
+struct Infrastructure
 {
-    bool station = false;
+    bool station             = false;
     std::string station_name = "";
-    bool railway_crossing = false;
-    bool rail_switch = false;
-    bool underground = false;
-    bool transponder = false;
+    bool railway_crossing    = false;
+    bool rail_switch         = false;
+    bool underground         = false;
+    bool transponder         = false;
 };
 
 struct Block
@@ -53,14 +53,14 @@ class Ctc
         void PrintAllBlockMap(void) const;
         void PrintBlockInfo(const ctc::Block& block) const;
         size_t PrintTrackMapSize(void) const;
-        void PopulateDataFromCsv(std::vector<std::vector<std::string>> records);
+        void PopulateDataFromCsv(std::vector<std::vector<std::string> > records);
         void AddTrainScheduleManual(std::string& train_name, std::string& destination, std::string& arrival_time);
 
         std::unordered_map<std::string, ctc::Block> block_map;
-        std::unordered_map<std::string, std::unordered_map<std::string, std::string>> train_schedule;
+        std::unordered_map<std::string, std::unordered_map<std::string, std::string> > train_schedule;
 
     private:
-        
+
 };
 
 int AssignInfrastructure(const std::string& input, ctc::Block& block);
