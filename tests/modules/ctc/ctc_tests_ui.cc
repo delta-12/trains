@@ -11,7 +11,6 @@
 #ifdef WIN32
 #include "windows.h"
 #include "commdlg.h"
-#include "block.h"
 #endif
 
 std::string ExtractFileName(const std::string& full_path) {
@@ -26,6 +25,7 @@ std::string ExtractFileName(const std::string& full_path) {
 
 int main(void)
 {
+    ctc::Ctc ctc;
     auto ctc_ui = ui::CtcUi::create();
     std::string input_file_path = "";
 
@@ -73,14 +73,8 @@ int main(void)
 
         std::vector<std::vector<std::string> > records = parser.GetRecords();
         std::cout << "Schedule size: " << parser.GetSize() << std::endl;
-        for(const std::vector<std::string> &record : records)
-        {
-            for(const std::string &value : record)
-            {
-                std::cout << value << ", ";
-            }
-            std::cout << std::endl;
-        }
+        ctc.PopulateDataFromCsv(records);
+        
     });
 
     ctc_ui->run();
