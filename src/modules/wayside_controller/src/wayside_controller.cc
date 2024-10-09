@@ -286,7 +286,7 @@ bool Plc::Run(WaysideController &wayside_controller)
         case PLCINSTRUCTIONCODE_BRANCH_IF:
             if (registers_[instruction.argument_0] == 0)
             {
-                program_counter_ = instruction.argument_2;
+                program_counter_++;
             }
             else
             {
