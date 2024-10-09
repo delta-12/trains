@@ -153,6 +153,11 @@ void SoftwareTrainController::SetCurrentVelocityTB(types::MilesPerHour CurrentVe
     CurrentVelocity_ = CurrentVelocityTB * 0.44704;
 }
 
+void SoftwareTrainController::SetArrived(bool x)
+{
+    Arrived = x;
+}
+
 void SoftwareTrainController::CalculateCommandedPower() {  
   // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
 
@@ -191,11 +196,12 @@ void SoftwareTrainController::CalculateCommandedPower() {
   float KIterm = Ki_ * IntegralSUM;
 
 
-  if(Ebrake == 1)
+  if(Ebrake == 1 || Arrived)
   {
     IntegralSUM = 0;
     CommandedPower_ = 0;
   }
+  else
   { 
     //Checking if Current Train Velocity is greater than Setpoint speed
     if (CurrentVelocity_ > DriverSpeed_) {
