@@ -5,7 +5,7 @@
 #include "esp_timer.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
-#include "driver/i2c.h"
+#include "driver/i2c.h" // TODO update to driver/i2c_master.h
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lvgl.h"
@@ -18,8 +18,6 @@ static const char *TAG = "OLED";
 #define I2C_HOST 0
 
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ (400 * 1000)
-#define EXAMPLE_PIN_NUM_SDA 21
-#define EXAMPLE_PIN_NUM_SCL 22
 #define EXAMPLE_PIN_NUM_RST -1
 #define EXAMPLE_I2C_HW_ADDR 0x3C
 
@@ -44,13 +42,13 @@ static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_
     return false;
 }
 
-void DisplayInit(void)
+void DisplayInit(const uint32_t sda, const uint32_t scl)
 {
     ESP_LOGI(TAG, "Initialize I2C bus");
     i2c_config_t i2c_conf = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = EXAMPLE_PIN_NUM_SDA,
-        .scl_io_num = EXAMPLE_PIN_NUM_SCL,
+        .sda_io_num = sda,
+        .scl_io_num = scl,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         .master.clk_speed = EXAMPLE_LCD_PIXEL_CLOCK_HZ,

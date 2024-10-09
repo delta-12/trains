@@ -1,0 +1,22 @@
+/*****************************************************************************
+ * @file pin_map.h
+ *
+ * @brief Hardware specific pin map.
+ *****************************************************************************/
+
+#define PIN_MAP_DISPLAY_I2C_SDA 21
+#define PIN_MAP_DISPLAY_I2C_SCL 22
+#define PIN_MAP_LEFT_BUTTON 23
+#define PIN_MAP_RIGHT_BUTTON 32
+#define PIN_MAP_OCCUPANCY_BUTTON 18
+#define PIN_MAP_SWITCH_BUTTON 5
+#define PIN_MAP_OCCUPANCY_LED 4
+#define PIN_MAP_SWITCH_0_LED 14
+#define PIN_MAP_SWITCH_1_LED 15
+#define PIN_MAP_RED_TRAFFIC_SIGNAL_LED 27
+#define PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED 26
+#define PIN_MAP_CROSSING_LED 25
+
+#define PIN_MAP_BIT 1ULL
+#define PIN_MAP_BUTTON_MASK ((PIN_MAP_BIT << PIN_MAP_LEFT_BUTTON) | (PIN_MAP_BIT << PIN_MAP_RIGHT_BUTTON) | (PIN_MAP_BIT << PIN_MAP_OCCUPANCY_BUTTON) | (PIN_MAP_BIT << PIN_MAP_SWITCH_BUTTON))
+#define PIN_MAP_LED_MASK ((PIN_MAP_BIT << PIN_MAP_OCCUPANCY_LED) | (PIN_MAP_BIT << PIN_MAP_SWITCH_0_LED) | (PIN_MAP_BIT << PIN_MAP_SWITCH_1_LED) | (PIN_MAP_BIT << PIN_MAP_RED_TRAFFIC_SIGNAL_LED) | (PIN_MAP_BIT << PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED) | (PIN_MAP_BIT << PIN_MAP_CROSSING_LED))

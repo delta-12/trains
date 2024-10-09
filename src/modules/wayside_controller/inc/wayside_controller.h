@@ -102,6 +102,8 @@ class WaysideController
     public:
         WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output);
         WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map);
+        WaysideController(const WaysideController &)            = delete;
+        WaysideController &operator=(const WaysideController &) = delete;
         Error SetBlockMap(const std::vector<BlockInputs> &block_inputs_map);
         Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
         Error GetInput(const InputId input, bool &state);
@@ -126,6 +128,8 @@ class Plc
     public:
         Plc(void);
         Plc(const std::vector<PlcInstruction> &instructions);
+        Plc(const Plc &)            = delete;
+        Plc &operator=(const Plc &) = delete;
         void SetInstructions(const std::vector<PlcInstruction> &instructions);
         uint32_t GetProgramCounter(void) const;
         PlcInstruction GetInstruction(void) const;

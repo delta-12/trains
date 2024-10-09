@@ -1,89 +1,102 @@
 #include <stdio.h>
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#include <array>
+#include <vector>
 
 #include "convert.h"
 #include "display.h"
 #include "gpio_esp.h"
+#include "pin_map.h"
 #include "types.h"
+#include "wayside_controller.h"
 
 #define DISPLAY_TEXT_BUFFER_SIZE 60
-#define LEFT_BUTTON 23
-#define RIGHT_BUTTON 32
 #define MIN_BLOCK_NUMBER 1
 #define MAX_BLOCK_NUMBER 16
 
 static char display_text_buffer[DISPLAY_TEXT_BUFFER_SIZE];
-static const char *block_text_format_string = "Block: %d\n"
-                                              "Commanded Speed: %dmph\n"
-                                              "Authority: %dft";
-static const char *block_text_format_string_no_command = "Block: %d\n"
-                                                         "Commanded Speed: --mph\n"
-                                                         "Authority: --ft";
-static types::BlockId selected_block = MIN_BLOCK_NUMBER;
+static const char *kBlockTextFormatString = "Block: %d\n"
+                                            "Commanded Speed: %dmph\n"
+                                            "Authority: %dft";
+static const char *kBlockTextFormatStringNoCommand = "Block: %d\n"
+                                                     "Commanded Speed: --mph\n"
+                                                     "Authority: --ft";
+static types::BlockId selected_block = MIN_BLOCK_NUMBER;  // TODO make thread safe
+static std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> input_values = {false};
+static std::array<bool, WAYSIDE_CONTROLLER_TOTAL_OUTPUTS> output_values = {false};
+static const std::vector<wayside_controller::BlockInputs> kBlueLineBlockInputs = {
+    wayside_controller::BlockInputs(1, 0, 0, false, false),
+    wayside_controller::BlockInputs(2, 1, 0, false, false),
+    wayside_controller::BlockInputs(3, 2, 0, false, false),
+    wayside_controller::BlockInputs(4, 3, 0, false, false),
+    wayside_controller::BlockInputs(5, 4, 75, true, false),
+    wayside_controller::BlockInputs(6, 5, 0, false, false),
+    wayside_controller::BlockInputs(7, 6, 0, false, false),
+    wayside_controller::BlockInputs(8, 7, 0, false, false),
+    wayside_controller::BlockInputs(9, 8, 0, false, false),
+    wayside_controller::BlockInputs(10, 9, 0, false, false),
+    wayside_controller::BlockInputs(11, 10, 0, false, false),
+    wayside_controller::BlockInputs(12, 11, 0, false, false),
+    wayside_controller::BlockInputs(13, 12, 0, false, false),
+    wayside_controller::BlockInputs(14, 13, 0, false, false),
+    wayside_controller::BlockInputs(15, 14, 0, false, false),
+    wayside_controller::BlockInputs(16, 15, 0, false, false)};
 
+static void GpioInit(bsp_esp::EspGpioHandler &handler);
 static void ButtonCallback(const bsp::GpioPin pin);
 static void DisplayBlock(const types::BlockId block, const types::MetersPerSecond commanded_speed, const types::Meters authority);
+void GetInputs(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs);
+wayside_controller::Error SetOutput(const wayside_controller::OutputId output, const bool state);
 
 extern "C" void app_main(void)
 {
-    printf("foobar\n");
-
-    DisplayInit();
-    DisplayBlock(selected_block, 20, 150);
+    wayside_controller::WaysideController hardware_wayside_controller(GetInputs, SetOutput, kBlueLineBlockInputs);
 
     bsp_esp::EspGpioHandler gpio_handler;
+    DisplayInit(PIN_MAP_DISPLAY_I2C_SDA, PIN_MAP_DISPLAY_I2C_SCL);
+    GpioInit(gpio_handler);
 
+    DisplayBlock(selected_block, -1, -1);
+}
+
+static void GpioInit(bsp_esp::EspGpioHandler &handler)
+{
     bsp::GpioConfiguration gpio_configuration = {
         .mode = bsp::GPIOMODE_INPUT,
         .bias = bsp::GPIOBIAS_NONE,
         .interrupt = bsp::GPIOINTERRUPT_FALLING,
     };
-    gpio_handler.ConfigurePin(23, gpio_configuration);
-    gpio_handler.RegisterCallback(23, ButtonCallback);
-    gpio_handler.ConfigurePin(32, gpio_configuration);
-    gpio_handler.RegisterCallback(32, ButtonCallback);
+    handler.ConfigurePins(PIN_MAP_BUTTON_MASK, gpio_configuration);
+    handler.RegisterCallback(PIN_MAP_LEFT_BUTTON, ButtonCallback);
+    handler.RegisterCallback(PIN_MAP_RIGHT_BUTTON, ButtonCallback);
+    handler.RegisterCallback(PIN_MAP_OCCUPANCY_BUTTON, ButtonCallback);
+    handler.RegisterCallback(PIN_MAP_SWITCH_BUTTON, ButtonCallback);
 
     gpio_configuration = {
         .mode = bsp::GPIOMODE_OUTPUT,
         .bias = bsp::GPIOBIAS_NONE,
         .interrupt = bsp::GPIOINTERRUPT_DISABLED,
     };
-    gpio_handler.ConfigurePin(4, gpio_configuration);
-    gpio_handler.ConfigurePin(14, gpio_configuration);
-    gpio_handler.ConfigurePin(15, gpio_configuration);
-    gpio_handler.ConfigurePin(27, gpio_configuration);
-    gpio_handler.ConfigurePin(26, gpio_configuration);
-    gpio_handler.ConfigurePin(25, gpio_configuration);
+    handler.ConfigurePins(PIN_MAP_LED_MASK, gpio_configuration);
 
-    gpio_handler.SetLevel(4, bsp::GPIOLEVEL_HIGH);
-    gpio_handler.SetLevel(14, bsp::GPIOLEVEL_HIGH);
-    gpio_handler.SetLevel(15, bsp::GPIOLEVEL_HIGH);
-    gpio_handler.SetLevel(27, bsp::GPIOLEVEL_HIGH);
-    gpio_handler.SetLevel(26, bsp::GPIOLEVEL_HIGH);
-    gpio_handler.SetLevel(25, bsp::GPIOLEVEL_HIGH);
-
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-
-    gpio_handler.SetLevel(4, bsp::GPIOLEVEL_LOW);
-    gpio_handler.SetLevel(14, bsp::GPIOLEVEL_LOW);
-    gpio_handler.SetLevel(15, bsp::GPIOLEVEL_LOW);
-    gpio_handler.SetLevel(27, bsp::GPIOLEVEL_LOW);
-    gpio_handler.SetLevel(26, bsp::GPIOLEVEL_LOW);
-    gpio_handler.SetLevel(25, bsp::GPIOLEVEL_LOW);
-
-    DisplayBlock(selected_block, 15, -10);
+    handler.SetLevel(PIN_MAP_OCCUPANCY_LED, bsp::GPIOLEVEL_LOW);
+    handler.SetLevel(PIN_MAP_SWITCH_0_LED, bsp::GPIOLEVEL_LOW);
+    handler.SetLevel(PIN_MAP_SWITCH_1_LED, bsp::GPIOLEVEL_LOW);
+    handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+    handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+    handler.SetLevel(PIN_MAP_CROSSING_LED, bsp::GPIOLEVEL_LOW);
 }
 
 static void ButtonCallback(const bsp::GpioPin pin)
 {
-    if ((LEFT_BUTTON == pin) && (selected_block > MIN_BLOCK_NUMBER))
+    if ((PIN_MAP_LEFT_BUTTON == pin) && (selected_block > MIN_BLOCK_NUMBER))
     {
         printf("Left button\n");
         selected_block--;
     }
-    if ((RIGHT_BUTTON == pin) && (selected_block < MAX_BLOCK_NUMBER))
+    if ((PIN_MAP_RIGHT_BUTTON == pin) && (selected_block < MAX_BLOCK_NUMBER))
     {
         printf("Right button\n");
         selected_block++;
@@ -106,12 +119,31 @@ static void DisplayBlock(const types::BlockId block, const types::MetersPerSecon
 
     if ((commanded_speed > 0.0) || (authority > 0.0))
     {
-        snprintf(display_text_buffer, DISPLAY_TEXT_BUFFER_SIZE, block_text_format_string, block, converted_speed, converted_authority);
+        snprintf(display_text_buffer, DISPLAY_TEXT_BUFFER_SIZE, kBlockTextFormatString, block, converted_speed, converted_authority);
     }
     else
     {
-        snprintf(display_text_buffer, DISPLAY_TEXT_BUFFER_SIZE, block_text_format_string_no_command, block);
+        snprintf(display_text_buffer, DISPLAY_TEXT_BUFFER_SIZE, kBlockTextFormatStringNoCommand, block);
     }
 
     DisplayWriteString(display_text_buffer);
+}
+
+void GetInputs(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)
+{
+    inputs = input_values;
+}
+
+wayside_controller::Error SetOutput(const wayside_controller::OutputId output, const bool state)
+{
+    wayside_controller::Error error = wayside_controller::ERROR_INVALID_OUTPUT;
+
+    if (output < output_values.size())
+    {
+        output_values[output] = state;
+
+        error = wayside_controller::ERROR_NONE;
+    }
+
+    return error;
 }
