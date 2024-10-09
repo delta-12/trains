@@ -18,6 +18,7 @@ class EspGpioHandler : public bsp::GpioHandler
 {
     public:
         void ConfigurePin(const bsp::GpioPin pin, const bsp::GpioConfiguration configuration);
+        void ConfigurePins(const bsp::GpioPinMask mask, const bsp::GpioConfiguration configuration);
         void RegisterCallback(const bsp::GpioPin pin, std::function<void(const bsp::GpioPin pin)> callback);
         void SetLevel(const bsp::GpioPin pin, const bsp::GpioLevel level);
         bsp::GpioLevel GetLevel(const bsp::GpioPin pin);       

@@ -54,6 +54,30 @@ void EspGpioHandler::ConfigurePin(const bsp::GpioPin pin, const bsp::GpioConfigu
     gpio_config(&esp_gpio_config);
 }
 
+void EspGpioHandler::ConfigurePins(const bsp::GpioPinMask mask, const bsp::GpioConfiguration configuration)
+{
+    gpio_config_t esp_gpio_config = {
+        .pin_bit_mask = mask,
+        .mode = ConvertGpioMode(configuration.mode),
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = ConvertGpioInterrupt(configuration.interrupt),
+    };
+
+    if (bsp::GPIOBIAS_PULLUP == configuration.bias)
+    {
+        esp_gpio_config.pull_up_en = GPIO_PULLUP_ENABLE;
+        esp_gpio_config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    }
+    else if(bsp::GPIOBIAS_PULLDOWN == configuration.bias)
+    {
+        esp_gpio_config.pull_up_en = GPIO_PULLUP_DISABLE;
+        esp_gpio_config.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    }
+
+    gpio_config(&esp_gpio_config);
+}
+
 void EspGpioHandler::RegisterCallback(const bsp::GpioPin pin, std::function<void(const bsp::GpioPin pin)> callback)
 {
     // Assign event handler
