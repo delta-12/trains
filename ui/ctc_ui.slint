@@ -442,37 +442,37 @@ export component CtcUi inherits Window {
                             padding: 10px;
                             spacing: 10px;
                             Text {text: "Manual Dispatch:";}
-                            LineEdit {
+                            // LineEdit {
                                 
-                                height: 30px;
-                                placeholder-text: @tr("Train Name");
-                                edited(input) => {train_name = input}
-                            }
-                            LineEdit {
+                            //     height: 30px;
+                            //     placeholder-text: @tr("Train Name");
+                            //     edited(input) => {train_name = input}
+                            // }
+                            // LineEdit {
                                 
-                                height: 30px;
-                                placeholder-text: @tr("Authority (m)");
-                                edited(input) => {authority = input}
-                            }
-                            LineEdit {
+                            //     height: 30px;
+                            //     placeholder-text: @tr("Authority (m)");
+                            //     edited(input) => {authority = input}
+                            // }
+                            // LineEdit {
                             
-                                height: 30px;
-                                placeholder-text: @tr("Dwell Time (s)");
-                                edited(input) => {dwell_time = input}
-                            }
-                            Button {
-                                text: "Send Signal:";
-                                clicked => {root.print_output_to_wayside()}
-                            }
-                            Text {
-                                text: confirm_output_message;
-                            }
-                            Text {
-                                text: "Automatic Dispatch Signal";
-                            }
-                            Text {
-                                text: confirm_automatic_dispatch;
-                            }
+                            //     height: 30px;
+                            //     placeholder-text: @tr("Dwell Time (s)");
+                            //     edited(input) => {dwell_time = input}
+                            // }
+                            // Button {
+                            //     text: "Send Signal:";
+                            //     clicked => {root.print_output_to_wayside()}
+                            // }
+                            // Text {
+                            //     text: confirm_output_message;
+                            // }
+                            // Text {
+                            //     text: "Automatic Dispatch Signal";
+                            // }
+                            // Text {
+                            //     text: confirm_automatic_dispatch;
+                            // }
                         }
                         
                     }
