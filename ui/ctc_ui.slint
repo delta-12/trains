@@ -401,31 +401,31 @@ export component CtcUi inherits Window {
                                 text: confirm_occupancy_message;
                             }
                         }
-                        // VerticalLayout {
-                        //     alignment: start;
-                        //     padding: 10px;
-                        //     spacing: 10px;
-                        //     Text {text: "Wayside Failure Signal:";}
-                        //     LineEdit {
+                        VerticalLayout {
+                            alignment: start;
+                            padding: 10px;
+                            spacing: 10px;
+                            Text {text: "Wayside Failure Signal:";}
+                            LineEdit {
                                 
-                        //         height: 30px;
-                        //         placeholder-text: @tr("Section");
-                        //         edited(input) => {section = input}
-                        //     }
-                        //     LineEdit {
+                                height: 30px;
+                                placeholder-text: @tr("Section");
+                                edited(input) => {section = input}
+                            }
+                            // LineEdit {
                                
-                        //         height: 30px;
-                        //         placeholder-text: @tr("Block Number");
-                        //         edited(input) => {block = input}
-                        //     }
-                        //     Button {
-                        //         text: "Send Failure Signal";
-                        //         clicked => {root.print_failure_message()}
-                        //     }
-                        //     Text {
-                        //         text: confirm_failure_message;
-                        //     }
-                        // }
+                            //     height: 30px;
+                            //     placeholder-text: @tr("Block Number");
+                            //     edited(input) => {block = input}
+                            // }
+                            // Button {
+                            //     text: "Send Failure Signal";
+                            //     clicked => {root.print_failure_message()}
+                            // }
+                            // Text {
+                            //     text: confirm_failure_message;
+                            // }
+                        }
                     }
                 } 
                 Rectangle {

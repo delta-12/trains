@@ -110,8 +110,8 @@ void ctc::Ctc::PrintAllTrainSchedule(void) const
     for (const auto& train_entry : train_schedule)
     {
         // The outer map has train names as keys, and another unordered_map as values
-        const std::string& train_name = train_entry.first;
-        const auto& station_schedule = train_entry.second;
+        const std::string& train_name       = train_entry.first;
+        const auto&        station_schedule = train_entry.second;
 
         std::cout << "Train: " << train_name << std::endl;
 

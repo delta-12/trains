@@ -125,27 +125,27 @@ int main(void)
         ctc_ui->set_confirm_failure_message(message.c_str());
     });
 
-    // ctc_ui->on_print_output_to_wayside([&]() {
-    //     std::string train_name = std::string(ctc_ui->get_train_name());
-    //     std::string authority = std::string(ctc_ui->get_authority());
-    //     std::string dwell_time = std::string(ctc_ui->get_dwell_time());
-    //     std::string message = "Signals Sent: \nTrain: " + train_name + "\nAuthority: " + authority + "\nDwell Time: " + dwell_time;
-    //     ctc_ui->set_confirm_output_message(message.c_str());
-    // });
+    ctc_ui->on_print_output_to_wayside([&]() {
+        std::string train_name = std::string(ctc_ui->get_train_name());
+        std::string authority = std::string(ctc_ui->get_authority());
+        std::string dwell_time = std::string(ctc_ui->get_dwell_time());
+        std::string message = "Signals Sent: \nTrain: " + train_name + "\nAuthority: " + authority + "\nDwell Time: " + dwell_time;
+        ctc_ui->set_confirm_output_message(message.c_str());
+    });
 
-    // ctc_ui->on_print_maintenance_message([&]() {
-    //     std::string block = std::string(ctc_ui->get_block());
-    //     std::string section = std::string(ctc_ui->get_section());
-    //     std::string message = "Maintenance Mode Set: Section " + section + " Block " + block;
-    //     ctc_ui->set_confirm_maintenance_message(message.c_str());
-    // });
+    ctc_ui->on_print_maintenance_message([&]() {
+        std::string block = std::string(ctc_ui->get_block());
+        std::string section = std::string(ctc_ui->get_section());
+        std::string message = "Maintenance Mode Set: Section " + section + " Block " + block;
+        ctc_ui->set_confirm_maintenance_message(message.c_str());
+    });
 
-    // ctc_ui->on_print_switch_message([&]() {
-    //     std::string block = std::string(ctc_ui->get_block());
-    //     std::string section = std::string(ctc_ui->get_section());
-    //     std::string message = "Switch Change Signal: Section " + section + " Block " + block;
-    //     ctc_ui->set_confirm_switch_message(message.c_str());
-    // });
+    ctc_ui->on_print_switch_message([&]() {
+        std::string block = std::string(ctc_ui->get_block());
+        std::string section = std::string(ctc_ui->get_section());
+        std::string message = "Switch Change Signal: Section " + section + " Block " + block;
+        ctc_ui->set_confirm_switch_message(message.c_str());
+    });
 
     ctc_ui->run();
 
