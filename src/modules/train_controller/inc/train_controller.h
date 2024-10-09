@@ -37,7 +37,7 @@ namespace train_controller
             virtual bool GetEngineFailure(void) const = 0;
             virtual types::DegreesFahrenheit GetInternalTemperature(void) const = 0;
             virtual types::DegreesFahrenheit GetActInternalTemperature(void) const = 0;
-            virtual types::Blocks GetAuthority(void) const = 0;  // Getter for Authority
+            virtual types::Meters GetAuthority(void) const = 0;  // Getter for Authority
 
             // Setter declarations
             virtual void SetCommandedSpeedWS(types::MilesPerHour speed) = 0;
@@ -54,7 +54,7 @@ namespace train_controller
             virtual void SetEngineFailure(bool state) = 0;
             virtual void SetInternalTemperature(types::DegreesFahrenheit temp) = 0;
             virtual void SetActInternalTemperature(types::DegreesFahrenheit temp) = 0;
-            virtual void SetAuthority(types::Blocks authority) = 0;
+            virtual void SetAuthority(types::Meters authority) = 0;
             virtual void SetKP(uint16_t) = 0;
             virtual void setKI(uint16_t) = 0;
     };
@@ -135,7 +135,7 @@ namespace train_controller
                 bool GetEngineFailure(void) const;
                 types::DegreesFahrenheit GetInternalTemperature(void) const;
                 types::DegreesFahrenheit GetActInternalTemperature(void) const;
-                types::Blocks GetAuthority(void) const;  // Getter for Authority
+                types::Meters GetAuthority(void) const;  // Getter for Authority
 
                 // Implementations for setters
                 void SetCommandedSpeedWS(types::MilesPerHour speed);
@@ -152,7 +152,7 @@ namespace train_controller
                 void SetEngineFailure(bool state);
                 void SetInternalTemperature(types::DegreesFahrenheit temp);
                 void SetActInternalTemperature(types::DegreesFahrenheit temp);
-                void SetAuthority(types::Blocks authority);
+                void SetAuthority(types::Meters authority);
                 void SetArrived(bool);
                 void SetKP(uint16_t);
                 void setKI(uint16_t);

@@ -8,7 +8,9 @@ uint16_t SoftwareTrainController::GetServiceBrake() const {
     return SBPercentage_; // Return the service brake percentage
 }
 
-uint16_t SoftwareTrainController::GetGrade(void) const { return 0; }
+uint16_t SoftwareTrainController::GetGrade(void) const { 
+    return 0; 
+}
 
 types::MilesPerHour SoftwareTrainController::GetDriverSpeed(void) const {
     return DriverSpeed_; // Return the current driver speed
@@ -72,7 +74,7 @@ types::MilesPerHour SoftwareTrainController::GetCurrentVelocity() const {
     return CurrentVelocity_; // Return the current velocity
 }
 
-types::Blocks SoftwareTrainController::GetAuthority() const {
+types::Meters SoftwareTrainController::GetAuthority() const {
     return Authority_; // Return the authority block
 }
 
@@ -134,7 +136,7 @@ void SoftwareTrainController::SetActInternalTemperature(types::DegreesFahrenheit
     ActualTemp_ = temp;
 }
 
-void SoftwareTrainController::SetAuthority(types::Blocks authority) {
+void SoftwareTrainController::SetAuthority(types::Meters authority) {
     Authority_ = authority;
 }
 
