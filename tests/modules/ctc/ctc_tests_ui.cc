@@ -77,8 +77,28 @@ int main(void)
         auto it = ctc.train_schedule.begin();
         ctc_ui->set_train_1(it->first.c_str());
         ctc_ui->set_train_1_at(it->second.begin()->second.c_str());
-        ctc.PrintAllTrainSchedule();
         ctc.PrintAllBlockMap();
+        ctc.PrintAllTrainSchedule();
+
+        std::string message;
+        for (auto& entry : ctc.train_schedule) {
+            message.append(entry.first);
+            message += "\n";
+            auto dst_at = entry.second;
+            for (const auto& schedule_entry : dst_at)
+            {
+                std::string station_name = schedule_entry.first;
+                std::string arrival_time = schedule_entry.second;
+                message.append("Suggested Speed: 100 m/s\n");
+                message.append("Authority: 4000m\n");
+                message.append("Dwell Time: 3s\n");
+                message.append(station_name);
+                message.append(": ");
+                message.append(arrival_time);
+                message.append("\n");
+            }
+        }
+        ctc_ui->set_confirm_automatic_dispatch(message.c_str());
     });
 
     ctc_ui->on_manual_dispatch([&]() {
@@ -106,10 +126,10 @@ int main(void)
     });
 
     ctc_ui->on_print_output_to_wayside([&]() {
-        std::string suggested_speed = std::string(ctc_ui->get_suggested_speed());
+        std::string train_name = std::string(ctc_ui->get_train_name());
         std::string authority = std::string(ctc_ui->get_authority());
         std::string dwell_time = std::string(ctc_ui->get_dwell_time());
-        std::string message = "Signals Sent: \nSpeed: " + suggested_speed + "\nAuthority: " + authority + "\nDwell Time: " + dwell_time;
+        std::string message = "Signals Sent: \nTrain: " + train_name + "\nAuthority: " + authority + "\nDwell Time: " + dwell_time;
         ctc_ui->set_confirm_output_message(message.c_str());
     });
 
@@ -125,11 +145,6 @@ int main(void)
         std::string section = std::string(ctc_ui->get_section());
         std::string message = "Switch Change Signal: Section " + section + " Block " + block;
         ctc_ui->set_confirm_switch_message(message.c_str());
-    });
-
-    ctc_ui->on_print_automatic_dispatch([&]() {
-        std::string message = ctc.PrintAllTrainSchedule();
-        ctc_ui->set_confirm_automatic_dispatch(message.c_str());
     });
 
     ctc_ui->run();

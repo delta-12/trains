@@ -49,7 +49,7 @@ class Ctc
         ctc::Block PopulateBlockFromRecord(std::vector<std::string> record);
 
         void PopulateTrainSchedule(std::vector<std::string> record);
-        std::string PrintAllTrainSchedule(void) const;
+        void PrintAllTrainSchedule(void) const;
         void PrintAllBlockMap(void) const;
         void PrintBlockInfo(const ctc::Block& block) const;
         size_t PrintTrackMapSize(void) const;

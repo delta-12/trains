@@ -5,6 +5,9 @@ component TransitSystem inherits Rectangle {
     border-radius: 10px;
     preferred-height: 180px;
     in-out property <[[StandardListViewItem]]> row_data;
+    in-out property <string> section;
+    in-out property <string> block;
+    in-out property <bool> mode: true;
     VerticalLayout {
         padding-top: 10px;
         HorizontalLayout {
@@ -58,12 +61,12 @@ component TransitSystem inherits Rectangle {
                     { title: @tr("Failure") },
                 ];
                 rows: [
-                    [{text: "A"}, {text: "1"}, {text: "Open"}, {text: "A"}, {text: ""},],
-                    [{text: "A"}, {text: "2"}, {text: "Open"}, {text: "A"}, {text: ""},],
-                    [{text: "A"}, {text: "3"}, {text: "Open"}, {text: "A"}, {text: ""},],
-                    [{text: "A"}, {text: "4"}, {text: "Open"}, {text: "A"}, {text: ""},],
-                    [{text: "A"}, {text: "5"}, {text: "Open"}, {text: "A"}, {text: ""},],
-                    [{text: "B"}, {text: "6"}, {text: "Open"}, {text: "A"}, {text: ""},],
+                    [{text: "A"}, {text: "1"}, {text: mode ? "Open" : "Maintenance"}, {text: "Occupied"}, {text: ""},],
+                    [{text: "A"}, {text: "2"}, {text: "Open"}, {text: "Occupied"}, {text: ""},],
+                    [{text: "A"}, {text: "3"}, {text: "Open"}, {text: "Occupied"}, {text: ""},],
+                    [{text: "A"}, {text: "4"}, {text: "Open"}, {text: ""}, {text: ""},],
+                    [{text: "A"}, {text: "5"}, {text: "Open"}, {text: ""}, {text: ""},],
+                    [{text: "B"}, {text: "6"}, {text: "Open"}, {text: ""}, {text: ""},],
                 ];
             }
         }
@@ -71,16 +74,22 @@ component TransitSystem inherits Rectangle {
             alignment: start;
             padding: 15px;
             spacing: 10px;
-            ComboBox {
-                y: -7px;
-                model: [@tr("Section"), @tr("A"), @tr("B")];
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("Section");
+                edited(input) => { section = input }
             }
-            ComboBox {
-                y: -7px;
-                model: [@tr("Block"), @tr("1"), @tr("2")];
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("Block");
+                edited(input) => { block = input }
             }
             HorizontalLayout {
-                Switch {}
+                Switch {
+                    toggled => {mode = !mode}
+                }
                 Text {text:"  Maintenance Mode"; y: 7px;}
             }
             HorizontalLayout {
@@ -299,7 +308,6 @@ export component CtcUi inherits Window {
     //TestBench
     in-out property <string> section;
     in-out property <string> block;
-    in-out property <string> suggested_speed;
     in-out property <string> authority;
     in-out property <string> dwell_time;
     in-out property <string> confirm_occupancy_message;
@@ -437,8 +445,8 @@ export component CtcUi inherits Window {
                             LineEdit {
                                 
                                 height: 30px;
-                                placeholder-text: @tr("Suggested Speed (m/s)");
-                                edited(input) => {suggested_speed = input}
+                                placeholder-text: @tr("Train Name");
+                                edited(input) => {train_name = input}
                             }
                             LineEdit {
                                 
@@ -459,14 +467,14 @@ export component CtcUi inherits Window {
                             Text {
                                 text: confirm_output_message;
                             }
-                            Button {
-                                text: "Automatic Dispatch:";
-                                clicked => {root.print_automatic_dispatch()}
+                            Text {
+                                text: "Automatic Dispatch Signal";
                             }
                             Text {
                                 text: confirm_automatic_dispatch;
                             }
                         }
+                        
                     }
                 }    
             }

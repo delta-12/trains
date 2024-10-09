@@ -105,31 +105,25 @@ void ctc::Ctc::AddTrainScheduleManual(std::string& train_name, std::string& dest
     }
 }
 
-std::string ctc::Ctc::PrintAllTrainSchedule(void) const
+void ctc::Ctc::PrintAllTrainSchedule(void) const
 {
     for (const auto& train_entry : train_schedule)
     {
         // The outer map has train names as keys, and another unordered_map as values
-        std::string message;
         const std::string& train_name = train_entry.first;
         const auto& station_schedule = train_entry.second;
 
         std::cout << "Train: " << train_name << std::endl;
-
-        message += "Train: " + train_name;
 
         // Now iterate through the station and arrival time map
         for (const auto& schedule_entry : station_schedule)
         {
             const std::string& station_name = schedule_entry.first;
             const std::string& arrival_time = schedule_entry.second;
-            message += "\nStation: " + station_name + "; Arrrival Time: " + arrival_time + "\n";
-
             std::cout << "  Station: " << station_name << ", Arrival Time: " << arrival_time << std::endl;
         }
 
         std::cout << std::endl; // Just to space out train entries
-        return message;
     }
 }
 
@@ -184,7 +178,7 @@ void ctc::Ctc::PrintAllBlockMap(void) const
     std::cout << "Block Map Information: \n";
     std::cout << "-----------------------\n";
 
-    for (auto& pair : block_map)
+    for (const auto& pair : block_map)
     {
         const std::string& key   = pair.first;  // The key in the map (e.g., block name or ID)
         const Block&       block = pair.second; // The Block object
