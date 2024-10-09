@@ -340,6 +340,7 @@ export component WaysideControllerUi inherits Window {
         //variables output
         in-out property <float> comm-spd;
         in-out property <int> comm-auth;
+        in-out property <string> str-plc-prog;
         in-out property <string> plc-prog;
 
         in-out property <string> str-block-main;
@@ -517,7 +518,7 @@ export component WaysideControllerUi inherits Window {
                                 padding: 10px;
                                 // Speed Input
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: start;
                                     Text { text: "Suggested Speed (CTC): ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
@@ -530,7 +531,7 @@ export component WaysideControllerUi inherits Window {
 
                                 // Authority Input 
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: start;
                                     Text { text: "Authority (CTC): ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
@@ -542,52 +543,57 @@ export component WaysideControllerUi inherits Window {
                                 }
                                 //Block Maintenance Mode
                                 HorizontalLayout {
-                                    alignment: left;
+                                    //alignment: start;
                                     Text { text: "Block Maintenance (CTC): ";}
                                     ComboBox {
                                         width: 150px;
                                         height: 30px;
-                                        model: [@tr("Under Maintenance"), @tr("Open Block")];
+                                        model: [@tr("In Maintenance"), @tr("Open Block")];
                                         selected(val) => {self.current-value=val}
                                     } 
                                 }
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: left;
                                     Text { text: "Switch State (CTC): ";}
                                     ComboBox {
                                         width: 150px;
                                         height: 30px;
                                         model: [@tr("Switch Open"), @tr("Switch Closed")];
+                                        selected(val) => {self.current-value=val}
                                     } 
                                 }
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: start;
                                     Text { text: "Block Occupancy (Track Model): ";}
                                     ComboBox {
                                         width: 122px;
                                         height: 30px;
                                         model: [@tr("Not Occupied"), @tr("Occupied")];
+                                        selected(val) => {self.current-value=val}
                                     } 
                                 }
 
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: start;
                                     Text { text: "PLC Program: ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
-                                        width: 155px;
+                                        text: plc-prog;
+                                        width: 120px;
                                         height: 30px;
-                                        placeholder-text: @tr("Enter Program Name....");
+                                        edited(val)=>{plc-prog=val}
                                     } 
                                 }
                                 HorizontalLayout {
-                                    alignment: start;
+                                    //alignment: start;
                                     Text { text: "Track Failure Simulated Input: ";}
                                     Rectangle {width: 10px;}
                                     ComboBox {
                                         width: 122px;
                                         height: 30px;
                                         model: [@tr("No Failure"), @tr("Failure")];
+                                        selected(val) => {self.current-value=val}
+
                                     } 
                                 }
                             }
@@ -611,7 +617,7 @@ export component WaysideControllerUi inherits Window {
                                         padding: 10px;
                                         // Speed Authority Input
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Commanded Speed: ";}
                                             LineEdit {
@@ -624,7 +630,7 @@ export component WaysideControllerUi inherits Window {
 
                                         // Authority Input 
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Authority: ";}
                                             LineEdit {
@@ -636,7 +642,7 @@ export component WaysideControllerUi inherits Window {
                                         }
                                         //Block Maintenance Mode
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Block Maintenance (CTC): ";}
                                             LineEdit {
@@ -647,7 +653,7 @@ export component WaysideControllerUi inherits Window {
                                             } 
                                         }
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Switch State: ";}
                                             LineEdit {
@@ -658,7 +664,7 @@ export component WaysideControllerUi inherits Window {
                                             }
                                         }
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Block Occupancy: ";}
                                             LineEdit {
@@ -670,18 +676,18 @@ export component WaysideControllerUi inherits Window {
                                         }
 
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "PLC Program: ";}
                                             LineEdit {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: plc-prog;
+                                                text: str-plc-prog;
                                             }
                                         }
                                         HorizontalLayout {
-                                            alignment: start;
+                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Track Failure: ";}
                                             LineEdit {
