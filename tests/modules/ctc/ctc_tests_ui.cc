@@ -74,7 +74,9 @@ int main(void)
         std::vector<std::vector<std::string> > records = parser.GetRecords();
         std::cout << "Schedule size: " << parser.GetSize() << std::endl;
         ctc.PopulateDataFromCsv(records);
-        
+        auto it = ctc.train_schedule.begin();
+        ctc_ui->set_train_1(it->first.c_str());
+        ctc_ui->set_train_1_at(it->second.begin()->second.c_str());
     });
 
     ctc_ui->run();

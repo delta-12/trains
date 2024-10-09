@@ -53,9 +53,11 @@ class Ctc
         size_t PrintTrackMapSize(void) const;
         void PopulateDataFromCsv(std::vector<std::vector<std::string>> records);
 
-    private:
         std::unordered_map<std::string, ctc::Block> block_map;
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> train_schedule;
+
+    private:
+        
 };
 
 int AssignInfrastructure(const std::string& input, ctc::Block& block);

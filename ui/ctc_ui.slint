@@ -42,7 +42,7 @@ component TransitSystem inherits Rectangle {
                 padding-right: 15px;
                 ComboBox {
                     y: -7px;
-                    model: [@tr("Simulation Speed"), @tr("A"), @tr("B")];
+                    model: [@tr("Simulation Speed"), @tr("x1"), @tr("x10"), @tr("x50")];
                 }
             }
         }
@@ -94,6 +94,14 @@ component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
+    in-out property <string> train_name_1: "n/a";
+    in-out property <string> train_name_2: "n/a";
+    in-out property <string> train_name_3: "n/a";
+    in-out property <string> train_name_4: "n/a";
+    in-out property <string> train_name_5: "n/a";
+    in-out property <string> train_name_6: "n/a";
+    in-out property <string> train_1_arrival_time;
+    
     VerticalLayout {
         Rectangle {
             HorizontalLayout {
@@ -113,12 +121,12 @@ component TrainSchedule inherits Rectangle {
                     { title: @tr("DST(s)") },
                 ];
                 rows: [
-                    [ { text: "Item 1.1" }, { text: "Item 1.2" }, { text: "Item 1.3" }, ],
-                    [ { text: "Item 2.1" }, { text: "Item 2.2" }, { text: "Item 2.3" }, ],
-                    [ { text: "Item 3.1" }, { text: "Item 3.2" }, { text: "Item 3.3" }, ],
-                    [ { text: "Item 4.1" }, { text: "Item 4.2" }, { text: "Item 4.3" }, ],
-                    [ { text: "Item 5.1" }, { text: "Item 5.2" }, { text: "Item 5.3" }, ],
-                    [ { text: "Item 6.1" }, { text: "Item 6.2" }, { text: "Item 6.3" }, ],
+                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: "" }, ],
+                    [ { text: train_name_2 }, { text: "" }, { text: "" }, ],
+                    [ { text: train_name_3 }, { text: "" }, { text: "" }, ],
+                    [ { text: train_name_4 }, { text: "" }, { text: "" }, ],
+                    [ { text: train_name_5 }, { text: "" }, { text: "" }, ],
+                    [ { text: train_name_6 }, { text: "" }, { text: "" }, ],
                 ];
             }
         }
@@ -364,6 +372,8 @@ component TestBench inherits Rectangle {
 
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
+    in-out property <string> train_1: " ";
+    in-out property <string> train_1_at: " ";
     callback choose-file();
     callback parse-file();
     callback on_test_clicked();
@@ -380,12 +390,15 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
-
+                    
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
                     alignment: stretch;
-                    TrainSchedule {}
+                    TrainSchedule {
+                        train_name_1: train_1;
+                        train_1_arrival_time: train_1_at;
+                    }
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
