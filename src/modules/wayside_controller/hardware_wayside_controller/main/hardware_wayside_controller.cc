@@ -163,6 +163,38 @@ extern "C" void app_main(void)
             gpio_handler.SetLevel(PIN_MAP_CROSSING_LED, bsp::GPIOLEVEL_LOW);
         }
 
+        if (selected_block == 6)
+        {
+            if (switched)
+            {
+                gpio_handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_HIGH);
+                gpio_handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+            }
+            else
+            {
+                gpio_handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+                gpio_handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_HIGH);
+            }
+        }
+        else if (selected_block == 11)
+        {
+            if (switched)
+            {
+                gpio_handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+                gpio_handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_HIGH);
+            }
+            else
+            {
+                gpio_handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_HIGH);
+                gpio_handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+            }
+        }
+        else
+        {
+            gpio_handler.SetLevel(PIN_MAP_RED_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+            gpio_handler.SetLevel(PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED, bsp::GPIOLEVEL_LOW);
+        }
+
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
