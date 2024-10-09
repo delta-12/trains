@@ -50,7 +50,7 @@ track_model::SoftwareTrackModel::SoftwareTrackModel()
 }
 
 //constructor for when a track is passsed in
-track_model::SoftwareTrackModel::SoftwareTrackModel(const std::vector<std::vector<std::string> > records)
+types::Error SoftwareTrackModel::SetTrackLayout(const std::vector<std::vector<std::string> > records)
 {
     //print records
     std::cout << "BACKEND READ A SIZE OF " << records.size() << std::endl;
@@ -162,7 +162,7 @@ track_model::SoftwareTrackModel::SoftwareTrackModel(const std::vector<std::vecto
                 else
                 {
                     std::string segment2 = temp.substr(dashpos + 1, closep - dashpos - 1);
-                    std::cout << "SEGMENT 2 IS " << segment2 << std::endl;
+                    //std::cout << "SEGMENT 2 IS " << segment2 << std::endl;
                     if (segment2 == records[i][2]) //second number is current block
                     {
                         line[i].Switch = (stoi(segment));
@@ -237,9 +237,19 @@ void SoftwareTrackModel::Update(void)
         }
     }
 
-    //loop through all trains on the line
-    for (int i = 0; i < trainmodels.size(); i++)
+    //check if train is at station
+    if (line[currblock].station == 1)
     {
+        //update the passengers on board!
+        tpassengers -= deboarding;
+        tpassengers += boarding;
+        boarding     = 0;
+        deboarding   = 0;
+    }
+
+    /*//loop through all trains on the line
+       for (int i = 0; i < trainmodels.size(); i++)
+       {
         //clear old occupancies
         for (int k = 0; k < trainblockvec.size(); k++)
         {
@@ -302,10 +312,57 @@ void SoftwareTrackModel::Update(void)
 
         //set passengers boarding
         trainmodels[i]->SetPassengersBoarding(board);
+       }*/
+
+    //clear old occupancies
+    for (int k = 0; k < trainblockvec.size(); k++)
+    {
+        int pos = trainblockvec[k];
+        line[pos].occupancy = 0;
     }
 
+    //get the BlockId of the train
+    types::BlockId trainblock = currblock;
 
+    //set block occupancy
+    line[trainblock].occupancy = 1;
+
+    trainblockvec.push_back(trainblock);
+
+    //calculate which blocks the train is currently taking up
+    //check the length of the block the train is occupying, and see if the train is longer
+    if (line[trainblock].length < tlength)
+    {
+        //looping until the full length of the train is accounted for
+        auto sizeofblocks = line[trainblock].length;
+        int  j            = trainblock - 1;
+        while (sizeofblocks < tlength)
+        {
+            //checking if the block behind this is connected to another block
+            if (line[j].connection != 0)
+            {
+                //adding size of block connected
+                types::BlockId blockcon = line[j].connection;
+
+                //adjust j
+                j = blockcon;
+            }
+            //adding the size of the block behind it
+            sizeofblocks += line[j - 1].length;
+
+            //adding this block to the vector of occupancies
+            line[j].occupancy = 1;
+
+            //adding to current train blocks
+            trainblockvec.push_back(j);
+
+            //increment
+            j--;
+            ;
+        }
+    }
 }
+
 
 
 types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, const bool Switched)
@@ -320,11 +377,9 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
         return types::ERROR_INVALID_BLOCK;
     }
 
-    if (Switched == 1)
+    if (line[block].connection != block + 1)
     {
-        //find Switch states
-        types::BlockId state = line[block - 1].Switch;
-        line[block].connection = state;
+        line[block].connection = line[block].Switch;
     }
     else
     {
@@ -337,6 +392,21 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
     // Logic to set the crossing state for the specified block
+    if (line.size() < block)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    if (line[block].crossing != 1)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    line[block].crossingstate = closed;
     return types::Error{ };
 }
 
@@ -352,7 +422,19 @@ types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, 
         return types::ERROR_INVALID_BLOCK;
     }
 
-    line[block].light = "RED";
+    if (line[block].light != 1)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    if (on == 1)
+    {
+        line[block].light = "RED";
+    }
+    else
+    {
+        line[block].light = "NONE";
+    }
 
     return types::ERROR_NONE;
 }
@@ -369,7 +451,19 @@ types::Error SoftwareTrackModel::SetYelloTrafficLight(const types::BlockId block
         return types::ERROR_INVALID_BLOCK;
     }
 
-    line[block].light = "YELLOW";
+    if (line[block].light != 1)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    if (on == 1)
+    {
+        line[block].light = "YELLOW";
+    }
+    else
+    {
+        line[block].light = "NONE";
+    }
 
     return types::ERROR_NONE;
 }
@@ -386,7 +480,19 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
         return types::ERROR_INVALID_BLOCK;
     }
 
-    line[block].light = "GREEN";
+    if (line[block].light != 1)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    if (on == 1)
+    {
+        line[block].light = "GREEN";
+    }
+    else
+    {
+        line[block].light = "NONE";
+    }
 
     return types::ERROR_NONE;
 }
@@ -438,7 +544,11 @@ types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const
     //checking if block exists
     if (line.size() < block)
     {
-        return (types::ERROR_INVALID_BLOCK);
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
     }
 
     //setting broken rail
@@ -457,7 +567,11 @@ types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId blo
     //checking if block exists
     if (line.size() < block)
     {
-        return (types::ERROR_INVALID_BLOCK);
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
     }
 
     //setting TC fail
@@ -473,7 +587,11 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
     //checking if block exists
     if (line.size() < block)
     {
-        return (types::ERROR_INVALID_BLOCK);
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
     }
 
     //setting TC fail
@@ -488,6 +606,57 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
 types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahrenheit temperature)
 {
     externaltemp = temperature;
+
+    return types::ERROR_NONE;
+}
+
+types::Error SoftwareTrackModel::SetTrainBlock(const types::BlockId block)
+{
+    //checking if block exists
+    if (line.size() < block)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    currblock = block;
+
+    return types::ERROR_NONE;
+}
+
+types::Error SoftwareTrackModel::SetPassengersDeboarding(const uint16_t passengers)
+{
+    //get the passengers deboarding
+    deboarding = passengers;
+
+    //subtract from total passengers
+    uint16_t vacancy = maxpass - tpassengers - deboarding;
+
+    //generate random number within bounds for boarding
+    srand((unsigned)time(0));
+    uint16_t board;
+    /*
+       board = (rand() % vacancy);*/
+
+    board = vacancy;
+
+    //set passengers boarding
+    boarding = board;
+
+    return types::ERROR_NONE;
+}
+
+uint16_t SoftwareTrackModel::GetPassengersBoarding(void)
+{
+    return boarding;
+}
+
+struct ::Block SoftwareTrackModel::GetSpecificBlock(const types::BlockId block)
+{
+    return line[block];
 }
 
 } // namespace track_model
