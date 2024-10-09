@@ -1,5 +1,4 @@
-import { GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
-
+import {Palette, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
 
 //database view component
 export component TableView inherits Rectangle {
@@ -16,11 +15,11 @@ export component TableView inherits Rectangle {
     VerticalBox {
         padding: 5px;
         HorizontalLayout {
-            padding: 5px; spacing: 5px;
+            padding: 3px; spacing: 3px;
             vertical-stretch: 0;
             for title[idx] in root.columns : HorizontalLayout {
                 width: root.column_sizes[idx];
-                Text { overflow: elide; text: title; }
+                Text { overflow: elide; text: title; color: black; }
                 Rectangle {
                     width: 1px;
                     background: gray;
@@ -48,8 +47,8 @@ export component TableView inherits Rectangle {
         }
         ListView {
             for r in root.values : HorizontalLayout {
-                padding: 5px;
-                spacing: 5px;
+                padding: 3px;
+                spacing: 3px;
                 for t[idx] in r : HorizontalLayout {
                     width: root.column_sizes[idx];
                     Text { overflow: elide; text: t; }
@@ -67,7 +66,6 @@ export component StraightTrack inherits Path {
     stroke: black;
     stroke-width: 2px;
 }
-
 
 //enter filename field for custom PLC
 export component EnterFilename inherits Window {
@@ -214,20 +212,22 @@ export component TrackSwitch inherits Rectangle {
         txt := Text {
             horizontal-alignment: left;
             vertical-alignment: top;  // Adjust to position above the rectangle
+            color: black;
             text: "switch";  // Default text
 
             states [
                 on when active: {
+                    color: black;
                     text: "switch open";  // Change text when active
                 }
                 off when !active: {
+                    color: black;
                     text: "switch closed";  // Change text back when inactive
                 }
             ]
         }
     }
 }
-
 
 
 //shows block occupancy, crossing status and station name
@@ -237,6 +237,7 @@ export component BlockInfo inherits Rectangle {
     // Define the size of the traffic light
     preferred-width: 200px;
     preferred-height: 300px;
+    
     
     VerticalLayout {
         // Layout for the traffic light
@@ -306,6 +307,7 @@ export component BlockInfo inherits Rectangle {
                     
                     Text{
                         text: "Station Name";
+                        color: black;
                     }
                 }
 
@@ -351,7 +353,7 @@ export component WaysideControllerUi inherits Window {
                 Rectangle {
 
                     //animations to enter page
-                    background: darkgrey;
+                    background: black;
                     drop-shadow-blur: 0cm;
                     x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
                     animate x { duration: 125ms; easing: ease; }
@@ -383,7 +385,7 @@ export component WaysideControllerUi inherits Window {
                     }
                 }
                 Rectangle {
-                    background: darkgrey;
+                    background: black;
                     x: root.active-tab == 1 ? 0 : root.active-tab < 1 ? - self.width - 1px : parent.width + 1px;
                     animate x { duration: 125ms; easing: ease; }
 
@@ -407,7 +409,7 @@ export component WaysideControllerUi inherits Window {
                 }
 
                 Rectangle {
-                    background: darkgrey;
+                    background: black;
                     x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
                     animate x { duration: 125ms; easing: ease; }
 
