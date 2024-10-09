@@ -33,12 +33,12 @@ struct Block
     double elevation;
     Infrastructure infra;
     double cum_elevation;
-    int time_to_travel_block;
-    int accel_and_decell;
-    int constant_speed_time;
-    int total_time;
-    int dwell_time;
-    double total_time_to_station_with_dwell;
+    // int time_to_travel_block;
+    // int accel_and_decell;
+    // int constant_speed_time;
+    // int total_time;
+    // int dwell_time;
+    // double total_time_to_station_with_dwell;
 };
 
 class Ctc
@@ -50,8 +50,11 @@ class Ctc
 
         void PopulateTrainSchedule(std::vector<std::string> record);
         void PrintAllTrainSchedule(void) const;
+        void PrintAllBlockMap(void) const;
+        void PrintBlockInfo(const ctc::Block& block) const;
         size_t PrintTrackMapSize(void) const;
         void PopulateDataFromCsv(std::vector<std::vector<std::string>> records);
+        void AddTrainScheduleManual(std::string& train_name, std::string& destination, std::string& arrival_time);
 
         std::unordered_map<std::string, ctc::Block> block_map;
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> train_schedule;

@@ -4,6 +4,7 @@ component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-height: 180px;
+    in-out property <[[StandardListViewItem]]> row_data;
     VerticalLayout {
         padding-top: 10px;
         HorizontalLayout {
@@ -56,14 +57,7 @@ component TransitSystem inherits Rectangle {
                     { title: @tr("Occupany") },
                     { title: @tr("Failure") },
                 ];
-                rows: [
-                    [ { text: "A" }, { text: "1" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
-                    [ { text: "A" }, { text: "2" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
-                    [ { text: "A" }, { text: "3" }, { text: "Open" }, { text: "Occupied" }, { text: "None" },],
-                    [ { text: "B" }, { text: "4" }, { text: "Open" }, { text: "None" }, { text: "None" },],
-                    [ { text: "B" }, { text: "5" }, { text: "Open" }, { text: "None" }, { text: "None" },],
-                    [ { text: "B" }, { text: "6" }, { text: "Open" }, { text: "None" }, { text: "None" },],
-                ];
+                rows: row_data;
             }
         }
         ManageBlock := HorizontalLayout {
@@ -94,13 +88,14 @@ component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
-    in-out property <string> train_name_1: "n/a";
-    in-out property <string> train_name_2: "n/a";
-    in-out property <string> train_name_3: "n/a";
-    in-out property <string> train_name_4: "n/a";
-    in-out property <string> train_name_5: "n/a";
-    in-out property <string> train_name_6: "n/a";
+    in-out property <string> train_name_1: "";
+    in-out property <string> train_name_2: "";
+    in-out property <string> train_name_3: "";
+    in-out property <string> train_name_4: "";
+    in-out property <string> train_name_5: "";
+    in-out property <string> train_name_6: "";
     in-out property <string> train_1_arrival_time;
+    in-out property <string> train_1_dst;
     
     VerticalLayout {
         Rectangle {
@@ -121,7 +116,7 @@ component TrainSchedule inherits Rectangle {
                     { title: @tr("DST(s)") },
                 ];
                 rows: [
-                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: "" }, ],
+                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: train_1_dst }, ],
                     [ { text: train_name_2 }, { text: "" }, { text: "" }, ],
                     [ { text: train_name_3 }, { text: "" }, { text: "" }, ],
                     [ { text: train_name_4 }, { text: "" }, { text: "" }, ],
@@ -134,6 +129,10 @@ component TrainSchedule inherits Rectangle {
 }
 
 component ManualMode inherits Rectangle {
+    in-out property <string> train_name;
+    in-out property <string> destination;
+    in-out property <string> arrival_time;
+    callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
         spacing: 5px;
@@ -145,6 +144,7 @@ component ManualMode inherits Rectangle {
                 width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Train 1");
+                edited(input) => {train_name = input}
             } 
         }
         HorizontalLayout {
@@ -155,6 +155,7 @@ component ManualMode inherits Rectangle {
                 width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Downtown");
+                edited(input) => {destination = input}
             } 
         }
         HorizontalLayout {
@@ -165,6 +166,7 @@ component ManualMode inherits Rectangle {
                 width: 120px;
                 height: 30px;
                 placeholder-text: @tr("10:00:00");
+                edited(input) => {arrival_time = input}
             } 
         }
         VerticalLayout {
@@ -173,7 +175,7 @@ component ManualMode inherits Rectangle {
                 max-height: 30px;
                 preferred-width: 250px;
                 text: "DISPATCH";
-
+                clicked => {manual-dispatch()}
             } 
         }
     }
@@ -223,9 +225,13 @@ component AutomaticMode inherits Rectangle {
 component Dispatch inherits Rectangle {
     property <bool> automatic_mode: true;
     in-out property<string> fileName: "";
+    in-out property <string> train_name;
+    in-out property <string> destination;
+    in-out property <string> arrival_time;
 
     callback choose-file();
     callback parse-file();
+    callback manual-dispatch();
 
     background: #252525;
     border-radius: 10px;
@@ -264,7 +270,12 @@ component Dispatch inherits Rectangle {
             parse-file => {root.parse-file()}
             fileName: fileName;
         }
-        if(automatic_mode == false) : ManualMode {}    
+        if(automatic_mode == false) : ManualMode {
+            train_name <=> train_name;
+            destination <=> destination;
+            arrival_time <=> arrival_time;
+            manual-dispatch => {manual-dispatch()}
+        }    
     }
 }
 
@@ -374,9 +385,15 @@ export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
     in-out property <string> train_1: " ";
     in-out property <string> train_1_at: " ";
+    in-out property <string> train_1_dst;
+    in-out property <[[StandardListViewItem]]> row_data;
+    in-out property <string> train_name;
+    in-out property <string> destination;
+    in-out property <string> arrival_time;
     callback choose-file();
     callback parse-file();
     callback on_test_clicked();
+    callback manual-dispatch();
 
     title: "CTC Office";
     preferred-width: 600px;
@@ -390,7 +407,7 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
-                    
+                    row_data: row_data;
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -398,11 +415,16 @@ export component CtcUi inherits Window {
                     TrainSchedule {
                         train_name_1: train_1;
                         train_1_arrival_time: train_1_at;
+                        train_1_dst: train_1_dst;
                     }
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
                         parse-file => {root.parse-file()}
+                        train_name <=> train_name;
+                        destination <=> destination;
+                        arrival_time <=> arrival_time;
+                        manual-dispatch => {root.manual-dispatch()}
                     }
                 }   
             }

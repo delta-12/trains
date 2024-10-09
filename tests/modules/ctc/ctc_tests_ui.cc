@@ -77,6 +77,18 @@ int main(void)
         auto it = ctc.train_schedule.begin();
         ctc_ui->set_train_1(it->first.c_str());
         ctc_ui->set_train_1_at(it->second.begin()->second.c_str());
+        ctc.PrintAllTrainSchedule();
+        ctc.PrintAllBlockMap();
+    });
+
+    ctc_ui->on_manual_dispatch([&]() {
+        std::string train_name = std::string(ctc_ui->get_train_name());
+        std::string destination = std::string(ctc_ui->get_destination());
+        std::string arrival_time = std::string(ctc_ui->get_arrival_time());
+        ctc.AddTrainScheduleManual(train_name, destination, arrival_time);
+        ctc_ui->set_train_1(train_name.c_str());
+        ctc_ui->set_train_1_at(arrival_time.c_str());
+        ctc_ui->set_train_1_dst(destination.c_str());
     });
 
     ctc_ui->run();
