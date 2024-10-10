@@ -132,9 +132,6 @@ class SoftwareTrackModel : public TrackModel
 
            };*/
 
-        //initial vector with all blocks loaded from the csv (think of this as a database)
-        std::vector<Block> allblocks;
-
         //vector containing current actual line with swtiches and branches factored in
         std::vector<Block> line;
 

@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <slint.h>
+#include <random>
 
 #include "track_model.h"
 #include "track_model_ui.h"
@@ -22,6 +23,243 @@
 #include <sstream>
 #include <vector>
 
+types::Error SetTrackLayout(const std::vector<std::vector<std::string> > records, std::vector<Block> line, std::string linetype)
+{
+    //print records
+    std::cout << "BACKEND READ A SIZE OF " << records.size() << std::endl;
+
+    //check if the line is blue, green, or red
+    if (records[1][0] == "Green")
+    {
+        linetype = "GREEN";
+    }
+    else
+    if (records[1][0] == "Red")
+    {
+        linetype = "RED";
+    }
+    else{
+        linetype = "BLUE";
+    }
+
+    //making the line the size of the track input
+    line.resize(records.size() + 1);
+
+    //printing line type
+    std::cout << "LINE IS " << records[1][0] << std::endl;
+
+    //parsing records
+    for (int i = 1; i < records.size(); i++)
+    {
+        if (records[i][1] != " ")
+        {
+            line[i].section = records[i][1];
+            //std::cout << line[i-1].section << std::endl;
+        }
+        if (records[i][2] != " ")
+        {
+            line[i].blocknum = stoi(records[i][2]);
+            //std::cout << line[i-1].blocknum << std::endl;
+        }
+        if (records[i][3] != " ")
+        {
+            line[i].length = stoi(records[i][3]);
+            //std::cout << line[i-1].length << std::endl;
+        }
+        if (records[i][4] != " ")
+        {
+            line[i].grade = stof(records[i][4]);
+            //std::cout << line[i-1].grade << std::endl;
+        }
+        if (records[i][5] != " ")
+        {
+            line[i].slimit = stoi(records[i][5]);
+            //std::cout << line[i-1].slimit << std::endl;
+        }
+        if (records[i][6] != " ")
+        {
+            std::string temp = records[i][6];
+            if (temp.substr(0, 7) == "STATION")
+            {
+                line[i].station = 1;
+                //std::cout << "STATION AT BLOCK " << i << std::endl;
+            }
+            else
+            if (temp.substr(0, 7) == "RAILWAY")
+            {
+                line[i].crossing = 1;
+                //std::cout << "CROSSING AT BLOCK " << i << std::endl;;
+            }
+            else
+            if (temp.substr(0, 11) == "UNDERGROUND")
+            {
+                line[i].underground = 1;
+                //std::cout << "UNDERGROUND FOR BLOCK " << i << " = " << line[i].underground << std::endl;
+            }
+            else
+            if (temp.substr(0, 6) == "SWITCH")
+            {
+                //CHECK IF IT IS TO THE YARD
+                if (temp.substr(7, 1) == "T")
+                {
+                    line[i - 1].Switch = 0;
+                    continue;
+                }
+                else
+                if (temp.substr(7, 1) == "F")
+                {
+                    line[i + 1].Switch = 0;
+                    continue;
+                }
+                //find ";" and "-"
+                size_t semicolonpos = 0;
+                size_t dashpos      = 0;
+                semicolonpos = temp.find(';', semicolonpos);
+                dashpos      = temp.find('-', semicolonpos);
+                //find ")"
+                size_t closep = 0;
+                closep = temp.find(')', dashpos);
+
+                std::string segment = temp.substr(semicolonpos + 2, dashpos - semicolonpos - 2);
+                std::cout << segment << std::endl;
+                if (segment == records[i][2]) //if first number is the current block
+                {
+                    segment        = temp.substr(dashpos + 1, closep - dashpos - 1);
+                    line[i].Switch = stoi(segment);
+                    //std::cout << "SWITCH FOR BLOCK " << i << " = " << line[i].Switch << " TYPE 1" << std::endl ;
+                }
+                else
+                if (stoi(segment) == (stoi(records[i][2]) + 1))  //if first number is the next block
+                {
+                    segment            = temp.substr(dashpos + 1, closep - dashpos - 1);
+                    line[i + 1].Switch = (stoi(segment));
+                    //std::cout << "SWITCH FOR BLOCK " << i+1 << " = " << line[i+1].Switch << " TYPE 2" << std::endl;
+                }
+                else
+                {
+                    std::string segment2 = temp.substr(dashpos + 1, closep - dashpos - 1);
+                    //std::cout << "SEGMENT 2 IS " << segment2 << std::endl;
+                    if (segment2 == records[i][2]) //second number is current block
+                    {
+                        line[i].Switch = (stoi(segment));
+                        //std::cout << "SWITCH FOR BLOCK " << i << " = " << line[i].Switch << " TYPE 3" << std::endl;
+                    }
+                    else //second number is next block
+                    {
+                        line[i + 1].Switch = (stoi(segment));
+                        //std::cout << "SWITCH FOR BLOCK " << i+1 << " = " << line[i+1].Switch << " TYPE 4" << std::endl;
+                    }
+                }
+            }
+        }
+        if (records[i][8] != " ")
+        {
+            line[i].elevation = stof(records[i][8]);
+            //std::cout << "ELEVATION FOR BLOCK " << i << " IS " << line[i].elevation << std::endl;
+        }
+        if (records[i][9] != " ")
+        {
+            line[i].cumelevation = stof(records[i][9]);
+            //std::cout << "CUMULATIVE ELEVATION FOR BLOCK " << i << " IS " << line[i].cumelevation << std::endl;
+        }
+        if (records[i][10] != " " && linetype == "GREEN")
+        {
+            line[i].sectotraverse = stof(records[i][10]);
+            //std::cout << "TIME TO TRAVERSE FOR BLOCK " << i << " IS " << line[i].sectotraverse << std::endl;;
+        }
+    }
+}
+
+types::Error SetTrainBlock(const types::BlockId block, std::vector<Block> line, types::BlockId currblock)
+{
+    //checking if block exists
+    if (line.size() < block)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    currblock = block;
+
+    return types::ERROR_NONE;
+}
+
+void Update(int externaltemp, std::vector<Block> line, int currblock, uint16_t deboarding, uint16_t boarding, uint16_t tpassengers, std::vector<types::BlockId> trainblockvec)
+{
+    // Update the state of the track model
+
+    //check temperature for heaters
+    if (externaltemp <= 32)
+    {
+        //set all track heaters
+        for (int i = 0; i < line.size(); i++)
+        {
+            line[i].heater = 1;
+        }
+    }
+
+    //check if train is at station
+    if (line[currblock].station == 1)
+    {
+        //update the passengers on board!
+        tpassengers -= deboarding;
+        tpassengers += boarding;
+        boarding     = 0;
+        deboarding   = 0;
+    }
+
+    //clear old occupancies
+    for (int k = 0; k < trainblockvec.size(); k++)
+    {
+        int pos = trainblockvec[k];
+        line[pos].occupancy = 0;
+    }
+
+    //get the BlockId of the train
+    types::BlockId trainblock = currblock;
+
+    //set block occupancy
+    line[trainblock].occupancy = 1;
+
+    trainblockvec.push_back(trainblock);
+
+    //calculate which blocks the train is currently taking up
+    //check the length of the block the train is occupying, and see if the train is longer
+    if (line[trainblock].length < 43)
+    {
+        //looping until the full length of the train is accounted for
+        auto sizeofblocks = line[trainblock].length;
+        int  j            = trainblock - 1;
+        while (sizeofblocks < 32)
+        {
+            //checking if the block behind this is connected to another block
+            if (line[j].connection != 0)
+            {
+                //adding size of block connected
+                types::BlockId blockcon = line[j].connection;
+
+                //adjust j
+                j = blockcon;
+            }
+            //adding the size of the block behind it
+            sizeofblocks += line[j - 1].length;
+
+            //adding this block to the vector of occupancies
+            line[j].occupancy = 1;
+
+            //adding to current train blocks
+            trainblockvec.push_back(j);
+
+            //increment
+            j--;
+            ;
+        }
+    }
+}
+
 std::string ExtractFileName(const std::string& full_path) {
     // Find the last occurrence of backslash
     size_t pos = full_path.find_last_of("\\/");
@@ -34,6 +272,23 @@ std::string ExtractFileName(const std::string& full_path) {
 
 int main(void)
 {
+    //temps
+    std::vector<Block> line;
+    types::TrackId track_id = 1;
+    std::vector<std::shared_ptr<train_model::TrainModel> > trainsvec;
+    std::vector<types::BlockId> trainblockvec;   //make vector for multiple trains
+    uint16_t tpassengers                  = 150; //make vector for multiple trains
+    uint16_t boarding                     = 0;   //make vector for multiple trains
+    uint16_t deboarding                   = 0;
+    int externaltemp = 50;
+    //vector containing current actual line with swtiches and branches factored in
+    int maxpass = 222;
+    std::vector<std::shared_ptr<train_model::TrainModel> > trainmodels;
+    types::Meters tlength = 32;
+    std::string linetype = "BLUE";
+    types::BlockId currblock = 0;
+
+
     track_model::SoftwareTrackModel trackModel;
     auto track_model_ui = ui::TrackModelUi::create();
     std::string input_file_path="";
@@ -62,15 +317,41 @@ int main(void)
 
     track_model_ui->on_request_update_external_temp([&](){
             tempchannel.Send(std::string(track_model_ui->get_external_temp()));
+            externaltemp=(stoi(tempchannel.Receive()));
+            std::string externaltempstring=std::to_string(externaltemp);
+            track_model_ui->set_external_temp(externaltempstring.c_str());
+            Update(externaltemp, line, currblock, deboarding, boarding, tpassengers, trainblockvec);
     });
-
+    /*
     track_model_ui->on_request_update_train_block([&](){
             blockidchannel.Send(std::string(track_model_ui->get_train_block()));
-    });
+    });*/
 
     track_model_ui->on_request_update_passengers_deboarding([&](){
+            //deboardchannel.Send(std::string(track_model_ui->get_passengers_deboarding()));
             deboardchannel.Send(std::string(track_model_ui->get_passengers_deboarding()));
+
+            //get the passengers deboarding
+            deboarding = stoi(deboardchannel.Receive());
+
+            //subtract from total passengers
+            uint16_t vacancy = maxpass - tpassengers + deboarding;
+
+            //generate random number within bounds for boarding
+            std::random_device rd;  // Seed
+            std::mt19937 gen(rd());  // Mersenne Twister engine
+            std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and board
+
+            // Generate a random number
+            int randomNumber = dis(gen);
+
+            //set passengers boarding
+            boarding = randomNumber;
+            //boardchannel.Send(std::to_string(boarding));
+            track_model_ui->set_passengers_boarding((std::to_string(boarding)).c_str()); //access ui. do ui.get_train_block for example
     });
+
+    /*
 
     track_model_ui->on_request_update_switch_block([&](){
             switchchannel.Send(track_model_ui->get_switch_block());
@@ -112,7 +393,7 @@ int main(void)
     track_model_ui->on_request_block_info([&](){
             requestchannel.Send(std::string(track_model_ui->get_view_block()));
             //trackModel.Update();
-    });
+    }); */
 
     track_model_ui->on_choose_file([&]() {
         // For other platforms
@@ -148,11 +429,12 @@ int main(void)
                 std::cout << std::endl;
             }
             recordschannel.Send(records);
-            trackModel.SetTrackLayout(recordschannel.Receive()); //turn this to a set function. Define recordschannel earlier and use it here. 
+            //trackModel.SetTrackLayout(recordschannel.Receive()); //turn this to a set function. Define recordschannel earlier and use it here. 
+            SetTrackLayout(records, line, linetype);
         });    
     });
 
-    slint::ComponentWeakHandle<ui::TrackModelUi> weak_tkm_handle(track_model_ui);
+    /*slint::ComponentWeakHandle<ui::TrackModelUi> weak_tkm_handle(track_model_ui);
     std::thread worker_thread([&]
     {
         //EXTERNAL TEMP
@@ -196,7 +478,7 @@ int main(void)
 
         //block to biew
         specificblock=trackModel.GetSpecificBlock(stoi(requestchannel.Receive()));
-        */
+        
         slint::invoke_from_event_loop([weak_tkm_handle, &boardchannel, &blockidchannel, &occupiedchannel]() { //weak pointer, no ownership. can read data from it but cant mutate. USE THIS FOR BACKEND TO FRONTEND SENDING SPECIFICALLY. FRONTEND TO BACKEND SHOULD BE DONE IN THE UI THREAD
         if (auto ui = weak_tkm_handle.lock()) { //creating smart pointer
             if (ui.has_value()) //ensuring the thing it is pointing to still exists. creates shared pointer.
@@ -219,9 +501,10 @@ int main(void)
         });
         //std::this_thread::sleep_for(std::chrono::seconds(1));
     }); //combo box for drop down*/
+    
 
     track_model_ui->run();
-    worker_thread.join();
+    //worker_thread.join();
 
     return 0;
 }

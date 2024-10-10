@@ -636,18 +636,18 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const uint16_t passenge
     deboarding = passengers;
 
     //subtract from total passengers
-    uint16_t vacancy = maxpass - tpassengers - deboarding;
+    uint16_t vacancy = maxpass - tpassengers + deboarding;
 
     //generate random number within bounds for boarding
-    srand((unsigned)time(0));
-    uint16_t board;
-    /*
-       board = (rand() % vacancy);*/
+    std::random_device rd;  // Seed
+    std::mt19937 gen(rd());  // Mersenne Twister engine
+    std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and board
 
-    board = vacancy;
+    // Generate a random number
+    int randomNumber = dis(gen);
 
     //set passengers boarding
-    boarding = board;
+    boarding = randomNumber;
 
     return types::ERROR_NONE;
 }
