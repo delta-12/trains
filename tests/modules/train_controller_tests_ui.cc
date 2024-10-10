@@ -19,7 +19,9 @@ int main(void)
     float IntegralSUM = 0;
     float maxPower = 120000;
 
-    // operation mode
+
+    // Operation mode
+
 
     train_controller_ui->on_request_automatic_mode([&]{
         if (train_controller_ui->get_operation_mode_status() == "Manual")
@@ -37,34 +39,72 @@ int main(void)
         train_controller_ui->set_operation_mode_status("Manual");
         });
 
-    // failures
+
+    // Failures
+
 
     train_controller_ui->on_request_engine_fail([&] {
-        if (train_controller_ui->get_engine_status() == 0)
+        if (train_controller_ui->get_engine_status() == 0) {
             train_controller_ui->set_engine_status(1);
+            train_controller_ui->set_emergency_brake(1);
+            train_controller_ui->set_commanded_power(0);
+        }
         else
             train_controller_ui->set_engine_status(0);
     });
     train_controller_ui->on_request_brake_fail([&] {
-        if (train_controller_ui->get_brake_status() == 0)
+        if (train_controller_ui->get_brake_status() == 0){
             train_controller_ui->set_brake_status(1);
+            train_controller_ui->set_emergency_brake(1);
+            train_controller_ui->set_commanded_power(0);
+            train_controller_ui->set_service_brake(0);
+        }
         else
             train_controller_ui->set_brake_status(0);
     });
     train_controller_ui->on_request_signal_fail([&] {
-        if (train_controller_ui->get_signal_status() == 0)
+        if (train_controller_ui->get_signal_status() == 0) {
             train_controller_ui->set_signal_status(1);
+            train_controller_ui->set_emergency_brake(1);
+            train_controller_ui->set_commanded_power(0);
+        }  
         else
             train_controller_ui->set_signal_status(0);
     });
 
 
-    // Manual - UI input parameters
+    // Test Bench input parameters
 
-   // commanded speed input from test bench
+
+    // actual internal temperature input from test bench
+    train_controller_ui->on_request_update_actual_internal_temperature([&]{
+        float temp = std::stof(std::string(train_controller_ui->get_temp_actual_internal_temperature()));
+        if (temp < 65) {
+            temp = 65;
+        } else if (temp > 75) {
+            temp = 75;
+        }
+            train_controller_ui->set_actual_internal_temperature(temp);
+    });
+
+    // commanded speed input from test bench
     train_controller_ui->on_request_update_commanded_speed([&]{
         float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_speed()));
             train_controller_ui->set_commanded_speed(temp);
+    });
+
+
+    // Manual - UI input parameters
+
+
+    // authority from UI
+    train_controller_ui->on_request_update_authority([&]{
+
+    });
+
+    // service brake input from UI
+    train_controller_ui->on_request_update_service_brake([&] {
+        
     });
 
     // commanded internal temperature from UI
@@ -78,141 +118,196 @@ int main(void)
             train_controller_ui->set_commanded_internal_temperature(temp);
     });
 
-    // actual internal temperature input from test bench
-    train_controller_ui->on_request_update_actual_internal_temperature([&]{
-        float temp = std::stof(std::string(train_controller_ui->get_temp_actual_internal_temperature()));
-        if (temp < 65) {
-            temp = 65;
-        } else if (temp > 75) {
-            temp = 75;
-        }
-            train_controller_ui->set_actual_internal_temperature(temp);
-    });
-
+    // update driver speed from UI
     train_controller_ui->on_request_update_driver_speed([&] {
         float temp = std::stof(std::string(train_controller_ui->get_temp_driver_speed()));
             train_controller_ui->set_driver_speed(temp);
+
+        float blockSpeedLimitMph = 50.0; // default speed limit
+        float current_velocity_mph = train_controller_ui->get_current_velocity();
+        float driver_speed_mph = train_controller_ui->get_driver_speed();
+
+        // Enforce block speed limit
+        if (current_velocity_mph > blockSpeedLimitMph) {
+            current_velocity_mph = blockSpeedLimitMph;
+            train_controller_ui->set_current_velocity(current_velocity_mph);
+        }
+
+        // Convert speeds to m/s
+        float currentVelocityInMPS = current_velocity_mph * 0.44704;
+        float driverSpeedInMPS = driver_speed_mph * 0.44704;
+        float blockSpeedLimitMPS = blockSpeedLimitMph * 0.44704;
+
+        // Enforce speed limit on driver speed
+        float Vsetpoint = driverSpeedInMPS;
+        if (Vsetpoint > blockSpeedLimitMPS) {
+            Vsetpoint = blockSpeedLimitMPS;
+        }
+
+        // Time delta
+        float deltaTime = 1;
+
+        if(train_controller_ui->get_emergency_brake() == true || train_controller_ui->get_authority() == 475)
+        {
+            IntegralSUM = 0;
+            train_controller_ui->set_commanded_power(0);
+        }
+        else
+        {
+            if (currentVelocityInMPS > Vsetpoint) {
+                IntegralSUM = 0;
+                train_controller_ui->set_commanded_power(0);
+
+                float tempSpeedDiffMPS = currentVelocityInMPS - Vsetpoint;
+                float tempSpeedDiffMPH = tempSpeedDiffMPS / 0.44704;
+
+                // Implement service brake increments based on speed difference
+                int brakeLevel = 0;
+                if(tempSpeedDiffMPH > 0 && tempSpeedDiffMPH <= 4.35)
+                    brakeLevel = 10;
+                else if(tempSpeedDiffMPH > 4.35 && tempSpeedDiffMPH <= 8.7)
+                    brakeLevel = 20;
+                else if(tempSpeedDiffMPH > 8.7 && tempSpeedDiffMPH <= 13.05)
+                    brakeLevel = 30;
+                else if(tempSpeedDiffMPH > 13.05 && tempSpeedDiffMPH <= 17.4)
+                    brakeLevel = 40;
+                else if(tempSpeedDiffMPH > 17.4 && tempSpeedDiffMPH <= 21.75)
+                    brakeLevel = 50;
+                else if(tempSpeedDiffMPH > 21.75 && tempSpeedDiffMPH <= 26.1)
+                    brakeLevel = 60;
+                else if(tempSpeedDiffMPH > 26.1 && tempSpeedDiffMPH <= 30.45)
+                    brakeLevel = 70;
+                else if(tempSpeedDiffMPH > 30.45 && tempSpeedDiffMPH <= 34.8)
+                    brakeLevel = 80;
+                else if(tempSpeedDiffMPH > 34.8 && tempSpeedDiffMPH <= 39.15)
+                    brakeLevel = 90;
+                else if(tempSpeedDiffMPH > 39.15)
+                    brakeLevel = 100;
+
+                train_controller_ui->set_service_brake(brakeLevel);
+
+            } else {
+                if (train_controller_ui->get_service_brake() > 0) {
+                    train_controller_ui->set_service_brake(0);
+                }
+
+                float Verror = Vsetpoint - currentVelocityInMPS;
+                IntegralSUM += Verror * deltaTime;
+
+                float KPterm = Verror * train_controller_ui->get_kp();
+                float KIterm = train_controller_ui->get_ki() * IntegralSUM;
+
+                float powerCommand = KPterm + KIterm;
+
+                if (powerCommand > maxPower) {
+                    powerCommand = maxPower;
+                } else if (powerCommand < 0) {
+                    powerCommand = 0;
+                }
+
+                train_controller_ui->set_commanded_power(powerCommand);
+            }
+        }
     });
 
-    // current velocity input from test bench
+    
+    // POWER EQUATION
+    // SERVICE BRAKE LEVELS
+    // SPEED LIMITER
+
+
     train_controller_ui->on_request_update_current_velocity([&]{
         float temp = std::stof(std::string(train_controller_ui->get_temp_current_velocity()));
 
-            // *** CALCULATE COMMANDED POWER ***
+        train_controller_ui->set_current_velocity(temp);
 
-            float blockSpeedLimit = 50.0; // default speed limit atm
-            types::MetersPerSecond Vsetpoint = train_controller_ui->get_driver_speed() * 0.44704; // go to m/s
+        // Include calculations here
+        // *** Begin Calculations ***
+        float blockSpeedLimitMph = 50.0; // default speed limit
+        float current_velocity_mph = train_controller_ui->get_current_velocity();
+        float driver_speed_mph = train_controller_ui->get_driver_speed();
 
-            if (train_controller_ui->get_current_velocity() > blockSpeedLimit) {
-                train_controller_ui->set_current_velocity(50);
-            } else {
-                train_controller_ui->set_current_velocity(temp);
-            }
-            
+        // Enforce block speed limit
+        if (current_velocity_mph > blockSpeedLimitMph) {
+            current_velocity_mph = blockSpeedLimitMph;
+            train_controller_ui->set_current_velocity(current_velocity_mph);
+        }
 
-            // convert to m/s from km/hr
-            blockSpeedLimit *= 0.27778;
+        // Convert speeds to m/s
+        float currentVelocityInMPS = current_velocity_mph * 0.44704;
+        float driverSpeedInMPS = driver_speed_mph * 0.44704;
+        float blockSpeedLimitMPS = blockSpeedLimitMph * 0.44704;
 
-            if (Vsetpoint > blockSpeedLimit) {
-                Vsetpoint = blockSpeedLimit;
-            }
+        // Enforce speed limit on driver speed
+        float Vsetpoint = driverSpeedInMPS;
+        if (Vsetpoint > blockSpeedLimitMPS) {
+            Vsetpoint = blockSpeedLimitMPS;
+        }
 
-            // Temp time passed since last update
-            float deltaTime = 1;
+        // Time delta
+        float deltaTime = 1;
 
-            if(train_controller_ui->get_emergency_brake() == 1 || train_controller_ui->get_authority() == 475)
-            {
+        if(train_controller_ui->get_emergency_brake() == true || train_controller_ui->get_authority() == 475)
+        {
+            IntegralSUM = 0;
+            train_controller_ui->set_commanded_power(0);
+        }
+        else
+        {
+            if (currentVelocityInMPS > Vsetpoint) {
                 IntegralSUM = 0;
                 train_controller_ui->set_commanded_power(0);
+
+                float tempSpeedDiffMPS = currentVelocityInMPS - Vsetpoint;
+                float tempSpeedDiffMPH = tempSpeedDiffMPS / 0.44704;
+
+                // Implement service brake increments based on speed difference
+                int brakeLevel = 0;
+                if(tempSpeedDiffMPH > 0 && tempSpeedDiffMPH <= 4.35)
+                    brakeLevel = 10;
+                else if(tempSpeedDiffMPH > 4.35 && tempSpeedDiffMPH <= 8.7)
+                    brakeLevel = 20;
+                else if(tempSpeedDiffMPH > 8.7 && tempSpeedDiffMPH <= 13.05)
+                    brakeLevel = 30;
+                else if(tempSpeedDiffMPH > 13.05 && tempSpeedDiffMPH <= 17.4)
+                    brakeLevel = 40;
+                else if(tempSpeedDiffMPH > 17.4 && tempSpeedDiffMPH <= 21.75)
+                    brakeLevel = 50;
+                else if(tempSpeedDiffMPH > 21.75 && tempSpeedDiffMPH <= 26.1)
+                    brakeLevel = 60;
+                else if(tempSpeedDiffMPH > 26.1 && tempSpeedDiffMPH <= 30.45)
+                    brakeLevel = 70;
+                else if(tempSpeedDiffMPH > 30.45 && tempSpeedDiffMPH <= 34.8)
+                    brakeLevel = 80;
+                else if(tempSpeedDiffMPH > 34.8 && tempSpeedDiffMPH <= 39.15)
+                    brakeLevel = 90;
+                else if(tempSpeedDiffMPH > 39.15)
+                    brakeLevel = 100;
+
+                train_controller_ui->set_service_brake(brakeLevel);
+
+            } else {
+                if (train_controller_ui->get_service_brake() > 0) {
+                    train_controller_ui->set_service_brake(0);
+                }
+
+                float Verror = Vsetpoint - currentVelocityInMPS;
+                IntegralSUM += Verror * deltaTime;
+
+                float KPterm = Verror * train_controller_ui->get_kp();
+                float KIterm = train_controller_ui->get_ki() * IntegralSUM;
+
+                float powerCommand = KPterm + KIterm;
+
+                if (powerCommand > maxPower) {
+                    powerCommand = maxPower;
+                } else if (powerCommand < 0) {
+                    powerCommand = 0;
+                }
+
+                train_controller_ui->set_commanded_power(powerCommand);
             }
-            else
-  { 
-    //Checking if Current Train Velocity is greater than Setpoint speed
-    if (train_controller_ui->get_current_velocity()*0.4470272687 > Vsetpoint) {
-        IntegralSUM = 0;
-        train_controller_ui->set_commanded_power(0);
-
-        float tempSpeedDiff = train_controller_ui->get_current_velocity() - train_controller_ui->get_driver_speed();
-
-        if(tempSpeedDiff >0  && tempSpeedDiff <= 4.35)
-        {
-            train_controller_ui->set_service_brake(10);
         }
-        else if (tempSpeedDiff > 4.35 && tempSpeedDiff <= 8.7) 
-        {
-            train_controller_ui->set_service_brake(20);
-        }
-        else if(tempSpeedDiff >8.7  && tempSpeedDiff <= 13.05)
-        {
-            train_controller_ui->set_service_brake(30);
-        }
-        else if (tempSpeedDiff > 13.05 && tempSpeedDiff <= 17.4) 
-        {
-            train_controller_ui->set_service_brake(40);
-        }
-        else if (tempSpeedDiff > 17.4 && tempSpeedDiff <= 21.75) 
-        {
-            train_controller_ui->set_service_brake(50);
-        }
-        else if (tempSpeedDiff > 21.75 && tempSpeedDiff <= 26.1) 
-        {
-            train_controller_ui->set_service_brake(60);
-        }
-        else if (tempSpeedDiff > 26.1 && tempSpeedDiff <= 30.45) 
-        {
-            train_controller_ui->set_service_brake(70);
-        }
-        else if (tempSpeedDiff > 30.45 && tempSpeedDiff <= 34.8) 
-        {
-            train_controller_ui->set_service_brake(80);
-        }
-        else if (tempSpeedDiff > 34.8 && tempSpeedDiff <= 39.15) 
-        {
-            train_controller_ui->set_service_brake(90);
-        }
-        else if(tempSpeedDiff > 39.15)
-        {
-            train_controller_ui->set_service_brake(100);
-        }
-    }
-    //Checking if Service brake is on
-    else if(train_controller_ui->get_service_brake() > 0)
-    {
-        IntegralSUM = 0;
-        train_controller_ui->set_commanded_power(0);
-    }
-
-    //Normal power calculation
-    else if(Vsetpoint > train_controller_ui->get_current_velocity()*0.4470272687) {
-        float Verror = Vsetpoint - (train_controller_ui->get_current_velocity() * 0.4470272687);
-
-    // Calculating Kp term
-    float KPterm = Verror * train_controller_ui->get_kp();
-    IntegralSUM += Verror * deltaTime;
-    float KIterm = train_controller_ui->get_ki() * IntegralSUM;
-
-    train_controller_ui->set_commanded_power(KPterm + KIterm);
-
-    if (train_controller_ui->get_commanded_power() > maxPower) 
-    {
-        train_controller_ui->set_commanded_power(maxPower);
-    }
-    }
-  }
-
-    });
-
-    train_controller_ui->on_request_update_service_brake([&] {
-        // assign service brake variable to text input
-    });
-    
-    // maybe emergency brake
-
-    // Test Bench input parameters
-
-    
-    train_controller_ui->on_request_update_authority([&]{
-        // assign authority variable to text input
     });
 
     train_controller_ui->run();
