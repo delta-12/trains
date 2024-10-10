@@ -151,7 +151,7 @@ int main(void)
         // Time delta
         float deltaTime = 1;
 
-        if(train_controller_ui->get_emergency_brake() == true || train_controller_ui->get_authority() == 475)
+        if(train_controller_ui->get_emergency_brake() == true)
         {
             IntegralSUM = 0;
             train_controller_ui->set_commanded_power(0);
@@ -252,7 +252,7 @@ int main(void)
         // Time delta
         float deltaTime = 1;
 
-        if(train_controller_ui->get_emergency_brake() == true || train_controller_ui->get_authority() == 475)
+        if(train_controller_ui->get_emergency_brake())
         {
             IntegralSUM = 0;
             train_controller_ui->set_commanded_power(0);
