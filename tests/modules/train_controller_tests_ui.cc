@@ -93,18 +93,22 @@ int main(void)
             train_controller_ui->set_commanded_speed(temp);
     });
 
+    // authority from UI
+    train_controller_ui->on_request_update_authority([&]{
+        float temp = std::stof(std::string(train_controller_ui->get_temp_authority()));
+            train_controller_ui->set_authority(temp);
+    });
+
 
     // Manual - UI input parameters
 
 
-    // authority from UI
-    train_controller_ui->on_request_update_authority([&]{
-
-    });
-
     // service brake input from UI
     train_controller_ui->on_request_update_service_brake([&] {
-        
+        float temp = std::stof(std::string(train_controller_ui->get_temp_service_brake()));
+            train_controller_ui->set_service_brake(temp);
+            train_controller_ui->set_commanded_power(0);
+            IntegralSUM = 0;
     });
 
     // commanded internal temperature from UI
@@ -187,9 +191,10 @@ int main(void)
                 train_controller_ui->set_service_brake(brakeLevel);
 
             } else {
-                if (train_controller_ui->get_service_brake() > 0) {
+                /*if (train_controller_ui->get_service_brake() > 0) {
                     train_controller_ui->set_service_brake(0);
-                }
+                }*/
+                train_controller_ui->set_service_brake(0);
 
                 float Verror = Vsetpoint - currentVelocityInMPS;
                 IntegralSUM += Verror * deltaTime;

@@ -6,7 +6,7 @@ export component TrainControllerUi inherits Window {
     in-out property <string> operation-status-message: "";
     in-out property <float> commanded_power: 0.0;
     in-out property <float> commanded_internal_temperature;
-    in-out property <float> authority: 0.0;
+    in-out property <float> authority: 475;
     in-out property <float> current_velocity: 0.0;
     in-out property <float> commanded_speed: 0.0;
     in-out property <float> driver_speed: 0.0;
@@ -357,13 +357,19 @@ export component TrainControllerUi inherits Window {
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
+                                Text {
+                                    text: root.service_brake;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
                                 HorizontalBox {
                                     LineEdit{
                                         horizontal-alignment: center;
-                                        text: root.service_brake;
                                         font-size: 20px;
                                         placeholder-text: "Enter Value";
                                         width: 75px;
+                                        edited(val) => {temp_service_brake = val}
                                     }
                                     Button {
                                         text: "Accept\nValue";
@@ -557,6 +563,7 @@ export component TrainControllerUi inherits Window {
                             height: 100px;
                             clicked => {
                                 root.emergency_brake = !root.emergency_brake;
+                                root.commanded_power = 0;
                             }
                         }
                         Text {
@@ -656,10 +663,10 @@ export component TrainControllerUi inherits Window {
                                     preferred-width: 200px;
                                 }
                                 LineEdit {
-                                    text: root.authority;
                                     font-size: 20px;
                                     placeholder-text: "Enter Value";
                                     horizontal-alignment: center;
+                                    edited(val) => {temp_authority = val}
                                 }
                                 Text {
                                     text: "m";
