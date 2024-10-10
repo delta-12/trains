@@ -63,19 +63,34 @@ int main(void)
         float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_speed()));
             train_controller_ui->set_commanded_speed(temp);
     });
+
     train_controller_ui->on_request_update_commanded_internal_temperature([&] {
         float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_internal_temperature()));
+        if (temp < 65) {
+            temp = 65;
+        } else if (temp > 75) {
+            temp = 75;
+        }
             train_controller_ui->set_commanded_internal_temperature(temp);
     });
+
+    train_controller_ui->on_request_update_actual_internal_temperature([&]{
+        float temp = std::stof(std::string(train_controller_ui->get_temp_actual_internal_temperature()));
+        if (temp < 65) {
+            temp = 65;
+        } else if (temp > 75) {
+            temp = 75;
+        }
+            train_controller_ui->set_actual_internal_temperature(temp);
+    });
+    
      train_controller_ui->on_request_update_driver_speed([&] {
         // assign driver speed variable to text input
     });
     train_controller_ui->on_request_update_service_brake([&] {
         // assign service brake variable to text input
     });
-    train_controller_ui->on_request_update_actual_internal_temperature([&]{
-        // assign actual internal temperature variable to text input
-    });
+    
     // maybe emergency brake
 
     // Test Bench input parameters

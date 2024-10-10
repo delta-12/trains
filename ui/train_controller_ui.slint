@@ -55,7 +55,7 @@ export component TrainControllerUi inherits Window {
     
 
     min-height: 845px;
-    min-width: 860px;
+    min-width: 870px;
 
     TabWidget {
         Tab {
@@ -693,7 +693,7 @@ export component TrainControllerUi inherits Window {
                                 Button {
                                     text: "Accept\nValue";
                                     clicked => {
-                                        root.request_update_commanded_internal_temperature();
+                                        root.request_update_actual_internal_temperature();
                                     }
                                     min-width: 100px;
                                 }
@@ -789,12 +789,12 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Grade:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                                 Text {
                                     text: root.grade_percent;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
@@ -802,7 +802,7 @@ export component TrainControllerUi inherits Window {
                                     text: "%";
                                     vertical-alignment: center;
                                     horizontal-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                             }
@@ -811,19 +811,19 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Commanded\nPower:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                                 Text {
                                     text: root.commanded_power;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "W";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                             }
@@ -832,19 +832,19 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Commanded\nInternal\nTemperature:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                                 Text {
                                     text: root.commanded_internal_temperature;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
                                 Text {
                                     text: "F";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                             }
@@ -853,19 +853,20 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Distance\nTraveled:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                                 Text {
                                     text: root.distance_traveled;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
+                                    preferred-width: 18px;
                                 }
                                 Text {
                                     text: "m";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 250px;
                                 }
                             }
@@ -874,12 +875,97 @@ export component TrainControllerUi inherits Window {
                                 Text {
                                     text: "Emergency\nBrake:";
                                     vertical-alignment: center;
-                                    font-size: 20px;
+                                    font-size: 18px;
                                     preferred-width: 100px;
                                 }
                                 Text {
                                     text: root.emergency_brake ? "ON" : "OFF";
-                                    font-size: 20px;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // interior lights
+                            HorizontalBox {
+                                Text {
+                                    text: "Interior\nLights:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                    preferred-height: 10px;
+                                }
+                                Text {
+                                    text: root.int-lights ? "ON" : "OFF";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-height: 10px;
+                                }
+                            }
+                            // exterior lights
+                            HorizontalBox {
+                                Text {
+                                    text: "Exterior\nLights:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                    preferred-height: 10px;
+                                }
+                                Text {
+                                    text: root.ext-lights ? "ON" : "OFF";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-height: 10px;
+                                }
+                            }
+                            // right doors
+                            HorizontalBox {
+                                Text {
+                                    text: "Right\nDoors:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.right-doors ? "OPEN" : "CLOSED";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // left doors
+                            HorizontalBox {
+                                Text {
+                                    text: "Left\nDoors:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.left-doors ? "OPEN" : "CLOSED";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // service brake
+                            HorizontalBox {
+                                Text {
+                                    text: "Service\nBrake:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.service_brake;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "%";
+                                    font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
                                 }
