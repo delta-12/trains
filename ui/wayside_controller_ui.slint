@@ -344,13 +344,16 @@ export component WaysideControllerUi inherits Window {
         //variables output
         in-out property <float> comm-spd;
         in-out property <int> comm-auth;
+
+        
         in-out property <string> str-plc-prog;
         in-out property <string> plc-prog;
 
         in-out property <string> str-block-main;
         in-out property <bool> block-main;
 
-        in-out property <string> str-sw-state;
+        in-out property <string> str_sw_state;
+        in-out property <string> str_sw_statein;
         in-out property <bool> sw-state;
 
         in-out property <string> str-block-occ;
@@ -373,11 +376,12 @@ export component WaysideControllerUi inherits Window {
         callback disp-sugg-spd();
         callback disp-sugg-auth();
         callback disp-maintenance-md();
-        callback disp-sw-state();
+        callback disp_sw_state();
         callback disp-block-occ();
         callback disp-select-plc();
         callback disp-parse-file();
-        callback disp-on_block_clicked();
+
+        callback clicked;
 
 
         //root callbacks
@@ -517,6 +521,12 @@ export component WaysideControllerUi inherits Window {
                             padding: 10px;
                             padding-left: 15px;
                             Text {text: "Inputs";}
+
+                            Button{
+                                text: "Switch Change Button";
+                                clicked => {
+                                    root.disp-sw-state();
+                                }}
                             
                             VerticalLayout {
                                 spacing: 10px;
@@ -530,7 +540,8 @@ export component WaysideControllerUi inherits Window {
                                         text: sugg-spd;
                                         width: 120px;
                                         height: 30px;
-                                        edited(val)=>{sugg-spd=val}
+                                        edited(val)=>{
+                                            sugg-spd=val}
                                     } 
                                 }
 
@@ -543,39 +554,40 @@ export component WaysideControllerUi inherits Window {
                                     text: sugg-auth;
                                     width: 120px;
                                     height: 30px;
-                                    edited(val)=>{sugg-spd=val}
+                                    edited(val)=>{sugg-auth=val}
                                     }
                                 }
                                 //Block Maintenance Mode
                                 HorizontalLayout {
                                     //alignment: start;
                                     Text { text: "Block Maintenance (CTC): ";}
-                                    ComboBox {
-                                        width: 150px;
-                                        height: 30px;
-                                        model: [@tr("In Maintenance"), @tr("Open Block")];
-                                        selected(val) => {self.current-value=val}
-                                    } 
+                                    Rectangle {width: 10px;}
+                                    LineEdit {
+                                    //text: sugg-auth;
+                                    width: 120px;
+                                    height: 30px;
+                                    edited(val)=>{sugg-spd=val}
+                                    }
                                 }
                                 HorizontalLayout {
                                     //alignment: left;
                                     Text { text: "Switch State (CTC): ";}
-                                    ComboBox {
-                                        width: 150px;
-                                        height: 30px;
-                                        model: [@tr("Switch Open"), @tr("Switch Closed")];
-                                        selected(val) => {self.current-value=val}
-                                    } 
+                                    Rectangle {width: 10px;}
+                                    LineEdit {
+                                    text: str_sw_statein;
+                                    width: 120px;
+                                    height: 30px;
+                                    edited(val)=>{str_sw_statein=val}
+                                    }
                                 }
                                 HorizontalLayout {
                                     //alignment: start;
                                     Text { text: "Block Occupancy (Track Model): ";}
-                                    ComboBox {
-                                        width: 122px;
-                                        height: 30px;
-                                        model: [@tr("Not Occupied"), @tr("Occupied")];
-                                        selected(val) => {self.current-value=val}
-                                    } 
+                                    Rectangle {width: 10px;}
+                                    LineEdit {
+                                    width: 120px;
+                                    height: 30px;
+                                    }
                                 }
 
                                 HorizontalLayout {
@@ -593,13 +605,13 @@ export component WaysideControllerUi inherits Window {
                                     //alignment: start;
                                     Text { text: "Track Failure Simulated Input: ";}
                                     Rectangle {width: 10px;}
-                                    ComboBox {
-                                        width: 122px;
-                                        height: 30px;
-                                        model: [@tr("No Failure"), @tr("Failure")];
-                                        selected(val) => {self.current-value=val}
-
-                                    } 
+                                    Rectangle {width: 10px;}
+                                    LineEdit {
+                                    //text: sugg-auth;
+                                    width: 120px;
+                                    height: 30px;
+                                    edited(val)=>{sugg-spd=val}
+                                    }
                                 }
                             }
                         }
@@ -620,7 +632,8 @@ export component WaysideControllerUi inherits Window {
                                     VerticalLayout {
                                         spacing: 10px;
                                         padding: 10px;
-                                        // Speed Authority Input
+
+                                        // Speed Input
                                         HorizontalLayout {
                                             //alignment: start;
                                             Text { vertical-alignment: center;
@@ -642,7 +655,7 @@ export component WaysideControllerUi inherits Window {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: comm-auth + " mi";
+                                                text: sugg-auth + " mi";
                                             } 
                                         }
                                         //Block Maintenance Mode
@@ -657,17 +670,22 @@ export component WaysideControllerUi inherits Window {
                                                 text: str-block-main;
                                             } 
                                         }
+
+                                        //Switch State Mode
                                         HorizontalLayout {
                                             //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Switch State: ";}
                                             LineEdit {
-                                                read-only: true;
+                                               //read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: str-sw-state;
+                                                text: str_sw_state;
+                                                read-only: true;
                                             }
                                         }
+
+                                        //Block Occupancy
                                         HorizontalLayout {
                                             //alignment: start;
                                             Text { vertical-alignment: center;
@@ -680,6 +698,7 @@ export component WaysideControllerUi inherits Window {
                                             }
                                         }
 
+                                        //PLC Program
                                         HorizontalLayout {
                                             //alignment: start;
                                             Text { vertical-alignment: center;
@@ -691,6 +710,8 @@ export component WaysideControllerUi inherits Window {
                                                 text: str-plc-prog;
                                             }
                                         }
+
+                                        //Track Failure
                                         HorizontalLayout {
                                             //alignment: start;
                                             Text { vertical-alignment: center;
