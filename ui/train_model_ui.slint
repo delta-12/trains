@@ -1,32 +1,72 @@
 import { TabWidget, Button, HorizontalBox, VerticalBox, ComboBox, ProgressIndicator, TextEdit, StandardTableView } from "std-widgets.slint";
 
 export component TrainModel inherits Window {
-    in-out property<string> ebrake-status: "PASS";
-    in-out property<string> engine-status: "PASS";
-    in-out property<string> signal-status: "PASS";
-    in-out property<string> brake-status: "PASS";
+    in-out property<string> brake-status;
+    in-out property<string> engine-status;
+    in-out property<string> signal-status;
     in-out property<string> station-banner: "Steel Plaza Station";
-    in-out property<float> comm-speed: 0.0;
+    in-out property<int> passengers-boarding;
+    in-out property<float> comm-speed;
     in-out property<float> act-speed: 0.0;
     in-out property<float> acceleration: 0.0;
     in-out property<int> crew-count: 14;
+    in-out property<float> authority;
+    in-out property<float> actual-power;
     in-out property<int> pass-count: 100;
-    in property<int> train-width: 10;
-    in property<int> train-length: 85;
-    in property<int> train-height: 15;
-    in property<int> train-mass: 4094;
-    in property<int> cabin-temp: 72;
-    in property<string> time: "12:00:00";
-    in-out property<bool> int-lights;
+    in-out property<float> distance-traveled: 100;
+    in-out property<float> grade;
+    in-out property<float> brake-percentage;
+    in-out property<bool> ebrake;
+    in-out property<bool> engine-fail;
+    in-out property<bool> brake-fail;
+    in-out property<bool> signal-fail;
+    in-out property<float> service-brake;
+    in-out property<int> bytes;
+    in-out property<bool> track-pol;
+    in-out property<float> train-width: 8.69;//feet
+    in-out property<float> train-length: 105.64;//feet
+    in-out property<float> train-height: 11.22;//feet
+    in-out property<float> train-mass: 81800;//lbs
+    in-out property<int> cabin-temp: 72;
+    in-out property<string> time: "12:00:00";
+    in-out property<bool> int-lights;//eventually run these as just inputs
     in-out property<bool> ext-lights;
     in-out property<bool> right-doors;
     in-out property<bool> left-doors;
-    in-out property<bool> beacon-recieved;//will be only an in
-    callback request_ebrake();
-    callback request-engine_fail();
-    callback request_brake_fail();
-    callback request_signal_fail();
-    callback clicked;
+    in-out property<bool> beacon-recieved;//will be on
+    //temporary testbench strings
+    in-out property<string> comm-speed-in;
+    in-out property<string> authority-in;
+    in-out property<string> pass-board-in;
+    in-out property<string> track-pol-in;
+    in-out property<string> left-door-in;
+    in-out property<string> right-door-in;
+    in-out property<string> ext-light-in;
+    in-out property<string> int-light-in;
+    in-out property<string> comm-power-in;
+    in-out property<string> dist-trav-in;
+    in-out property<string> int-temp-in;
+    in-out property<string> grade-in;
+    in-out property<string> service-brake-in;
+    in-out property<string> ebrake-in;
+    in-out property<string> station-announce-in;
+
+    //testbench
+    callback comm_speed_change();
+    callback authority_change();
+    callback pass_board_change();
+    callback track_pol_change();
+    callback left_door_change();
+    callback right_door_change();
+    callback ext_light_change();
+    callback int_light-change();
+    callback comm_power_change();
+    callback dist_trav_change();
+    callback int_temp_change();
+    callback grade_change();
+    callback service_brake_change();
+    callback ebrake_change();
+    callback station_announce_change();
 
     preferred-height:400px;
     min-height:650px;
@@ -48,10 +88,10 @@ TabWidget{
                 max-width: 10px;
             min-width: 10px;
                 Image {
-                    //ADD CODE TO CYCLE THRU ADS HERE
-                    source: @image-url("icons/image1.png");
                     width: parent.width;
                     height: parent.height;
+                    //ADD CODE TO CYCLE THRU ADS HERE
+                    source: @image-url("icons/image1.png");
                 }
             }
             Rectangle{
@@ -73,57 +113,73 @@ TabWidget{
             }
             HorizontalBox {
                 VerticalBox{
-                    Button {
-                        text: "Emergency Brake";
+                    Rectangle { 
                         min_width: 10px;
                         min_height: 100px;
                         max-height: 100px;
-                        clicked => {
-                            root.request_ebrake();
+                        area6 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                ebrake = !ebrake;
+                            }
                         }
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: "EBrake Status: \{root.ebrake-status}";
+                            border-radius:30px;
+                            Text{
+                                horizontal-alignment: center;
+                                font-size:25px;
+                                text: "Emergency\nBrake";
+                            }
+                            background: ebrake ? green : red; 
+                        }
+                }
+                VerticalBox{
+                    Rectangle { 
+                        min_height: 60px;
+                        max-height: 60px;
+                        area7 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                engine-fail = !engine-fail;
+                                engine-status = engine-fail ? "PASS" : "FAIL"; 
+                            }
+                        }
+                            border-radius:30px;
+                            Text{
+                                horizontal-alignment: center;
+                                font-size:15px;
+                                text: "Engine\nFailure";
+                            }
+                            background: engine-fail ? green : red; 
+                        }
+                    TextEdit{
+                        max-height: 30px;
+                        min-height: 30px;
+                        text: "Temp: " + cabin-temp + "°";
+                        read-only:true;
                     }
                 }
                 VerticalBox{
-                    Button {
+                    Rectangle { 
                         min_height: 60px;
                         max-height: 60px;
-                        text: "Engine Failure";
-                        clicked => {
-                            root.request_engine_fail();
+                        area8 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                brake-fail = !brake-fail;
+                                brake-status = brake-fail ? "PASS" : "FAIL"; 
+                            }
                         }
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: "Engine Status: \{root.engine-status}";
-                    }
-                    popup := PopupWindow {
-                        Rectangle { height:100%; width: 100%; background: yellow; }
-                        x: 20px; y: 20px; height: 50px; width: 50px;
-                    }
-                    Button{
-                        text: "Testbench";
-                        clicked => {
-                        popup.show();
+                            border-radius:30px;
+                            Text{
+                                horizontal-alignment: center;
+                                font-size:15px;
+                                text: "Brake\nFailure";
+                            }
+                            background: brake-fail ? green : red; 
                         }
-                    }
-                }
-                VerticalBox{
-                    Button {
-                        min_height: 60px;
-                        max-height: 60px;
-                        text: "Signal Pickup Failure";
-                        clicked => {
-                            root.request_signal_fail();
-                        }
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: "Signal Pickup Status: \{root.signal-status}";
-                    }
                     Rectangle{
                         background:#3357ac;
                         border-radius: 20px;
@@ -135,32 +191,42 @@ TabWidget{
                     }
                 }
                 VerticalBox{
-                    Button {
+                    Rectangle { 
                         min_height: 60px;
                         max-height: 60px;
-                        text: "Brake Failure";
-                        clicked => {
-                            root.request_brake_fail();
+                        area9 := TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                signal-fail = !signal-fail;
+                                signal-status = signal-fail ? "PASS" : "FAIL"; 
+                            }
                         }
-                    }
-                    Text {
-                        horizontal-alignment: center;
-                        text: "Brake Status: \{root.brake-status}";
-                    }
+                            border-radius:30px;
+                            Text{
+                                horizontal-alignment: center;
+                                font-size:15px;
+                                text: "Signal Pickup\nFailure";
+                            }
+                            background: signal-fail ? green : red; 
+                        }
                     TextEdit{
-                        text: "Cabin Temp: " + cabin-temp + "°";
+                        max-height: 30px;
+                        text: "Authority: " + authority + " miles";
                         read-only:true;
                     }
                 }
+                VerticalBox{
                 Button {
                     text: "Add Train";
-                    min_height: 100px;
-                    max-height: 100px;
+                    min_height: 110px;
+                    max-height: 110px;
                     clicked => {
                         //IMPLEMENT ADDING TAB HERE
                     }
 
                 }
+            }
             }
             Rectangle{
                 //background: #000000;
@@ -366,6 +432,402 @@ TabWidget{
                             { text: "Passenger Count" }, { text: pass-count},
                         ]
                     ];
+                }
+            }
+        }
+    }
+    Tab{
+        title: "Testbench";
+        HorizontalBox{
+            VerticalBox{
+                spacing: -20px;
+                Text{
+                    font-size: 30px;
+                    text:"Inputs";
+                    horizontal-alignment: center;
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Commanded Speed:";
+                    }
+                    TextEdit{
+                        edited(val) => {comm-speed-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.comm_speed_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Authority:";
+                    }
+                    TextEdit{
+                        edited(val) => {authority-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.authority_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Passengers Boarding:";
+                    }
+                    TextEdit{
+                        edited(val) => {pass-board-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.pass_board_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Track Polarity:";
+                    }
+                    TextEdit{
+                        edited(val) => {track-pol-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.track_pol_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Station Announce:";
+                    }
+                    TextEdit{
+                        edited(val) => {station-announce-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.station_announce_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "E-Brake:";
+                    }
+                    TextEdit{
+                        edited(val) => {ebrake-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.ebrake_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Service Brake:";
+                    }
+                    TextEdit{
+                        edited(val) => {service-brake-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.service_brake_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Grade:";
+                    }
+                    TextEdit{
+                        edited(val) => {grade-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.grade_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Distance Traveled:";
+                    }
+                    TextEdit{
+                        edited(val) => {dist-trav-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.dist_trav_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Internal Temp Comm:";
+                    }
+                    TextEdit{
+                        edited(val) => {int-temp-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.int_temp_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Left Doors:";
+                    }
+                    TextEdit{
+                        edited(val) => {left-door-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.left_door_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Right Doors:";
+                    }
+                    TextEdit{
+                        edited(val) => {right-door-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.right_door_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Internal Lights:";
+                    }
+                    TextEdit{
+                        edited(val) => {int-light-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.int_light_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "External Lights:";
+                    }
+                    TextEdit{
+                        edited(val) => {ext-light-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.ext_light_change();
+                        }
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Commanded Power:";
+                    }
+                    TextEdit{
+                        edited(val) => {comm-power-in = val}
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                    Button{
+                        text: "Submit";
+                        clicked => {
+                            root.comm_power_change();
+                        }
+                    }
+                }
+            }
+            VerticalBox{
+                spacing: 2px;
+                Text{
+                    font-size: 30px;
+                    text:"Outputs";
+                    horizontal-alignment: center;
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Commanded Speed:";
+                    }
+                    TextEdit{
+                        text: comm-speed + " mph";
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Distance Traveled:";
+                    }
+                    TextEdit{
+                        text: distance-traveled + " m";
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Passenger Count:";
+                    }
+                    TextEdit{
+                        text: pass-count;
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Engine Failure:";
+                    }
+                    TextEdit{
+                        text: engine-status;
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Brake Failure:";
+                    }
+                    TextEdit{
+                        text: brake-status;
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Signal Pickup Failure:";
+                    }
+                    TextEdit{
+                        text: signal-status;
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Actual Power:";
+                    }
+                    TextEdit{
+                        text: actual-power + " W";
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Authority:";
+                    }
+                    TextEdit{
+                        text: authority + " miles";
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Internal Temp:";
+                    }
+                    TextEdit{
+                        text: cabin-temp + "°";
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
+                }
+                HorizontalBox{
+                    Text{
+                        vertical-alignment: center;
+                        text: "Bytes:";
+                    }
+                    TextEdit{
+                        text: bytes;
+                        read-only: true;
+                        min-height: 30px;
+                        max-height: 30px;
+                    }
                 }
             }
         }
