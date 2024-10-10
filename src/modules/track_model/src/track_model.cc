@@ -2,6 +2,7 @@
 #include "train_model.h"
 #include <iostream>
 #include <string>
+#include <random>
 
 namespace track_model
 {
@@ -26,27 +27,27 @@ track_model::SoftwareTrackModel::SoftwareTrackModel()
         Block(),
         Block(),
         Block()
-    };
+       };
 
-    newstuff[2].crossing = 1;
-    newstuff[4].Switch   = 6;
-    newstuff[4].Switch   = 11;
-    newstuff[5].light    = 1;
-    newstuff[9].station  = 'B';
-    newstuff[10].light   = 1;
-    newstuff[14].station = 'C';
+       newstuff[2].crossing = 1;
+       newstuff[4].Switch   = 6;
+       newstuff[4].Switch   = 11;
+       newstuff[5].light    = 1;
+       newstuff[9].station  = 'B';
+       newstuff[10].light   = 1;
+       newstuff[14].station = 'C';
 
-    for (int i = 5; i < 10; i++)
-    {
+       for (int i = 5; i < 10; i++)
+       {
         newstuff[i].section = 'B';
-    }
+       }
 
-    for (int i = 11; i < 15; i++)
-    {
+       for (int i = 11; i < 15; i++)
+       {
         newstuff[i].section = 'C';
-    }
+       }
 
-    line.insert(line.end(), newstuff.begin(), newstuff.end());*/
+       line.insert(line.end(), newstuff.begin(), newstuff.end());*/
 }
 
 //constructor for when a track is passsed in
@@ -65,7 +66,8 @@ types::Error SoftwareTrackModel::SetTrackLayout(const std::vector<std::vector<st
     {
         linetype = "RED";
     }
-    else{
+    else
+    {
         linetype = "BLUE";
     }
 
@@ -639,8 +641,8 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const uint16_t passenge
     uint16_t vacancy = maxpass - tpassengers + deboarding;
 
     //generate random number within bounds for boarding
-    std::random_device rd;  // Seed
-    std::mt19937 gen(rd());  // Mersenne Twister engine
+    std::random_device              rd;              // Seed
+    std::mt19937                    gen(rd());       // Mersenne Twister engine
     std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and board
 
     // Generate a random number
