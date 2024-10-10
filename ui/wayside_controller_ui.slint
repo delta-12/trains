@@ -304,7 +304,7 @@ export component BlockInfo inherits Rectangle {
                     width: 100px;
                     height: 75px;
                     y: 100px;
-                    background: gray;
+                    //background: gray;
                     padding: 5px;
                     border-radius: 10px;
                     
@@ -330,8 +330,12 @@ export component WaysideControllerUi inherits Window {
         title: "Wayside Controller";
         min-height: 500px;
         min-width: 700px;
+
+        //generic time var
+        in-out property <string> time;
+
         in-out property <int> active-tab;
-        in-out property <string> select-file ;
+        in-out property <string> select-file;
 
         //variables STRING input
         in-out property <string> sugg-spd;
@@ -356,24 +360,24 @@ export component WaysideControllerUi inherits Window {
         in-out property <bool> track-fail;
 
         //input callbacks
-        callback set-sugg-spd();
+        /*callback set-sugg-spd();
         callback set-sugg-auth();
         callback set-maintenance-md();
         callback set-sw-state();
         callback set-block-occ();
         callback set-plc();
         callback set-file();
-        callback on_block_clicked();
+        callback on_block_clicked();*/
 
         //output callbacks
-        callback get-sugg-spd();
-        callback get-sugg-auth();
-        callback get-maintenance-md();
-        callback get-sw-state();
-        callback get-block-occ();
-        callback get-select-plc();
-        callback get-parse-file();
-        callback get-on_block_clicked();
+        callback disp-sugg-spd();
+        callback disp-sugg-auth();
+        callback disp-maintenance-md();
+        callback disp-sw-state();
+        callback disp-block-occ();
+        callback disp-select-plc();
+        callback disp-parse-file();
+        callback disp-on_block_clicked();
 
 
         //root callbacks
@@ -388,6 +392,7 @@ export component WaysideControllerUi inherits Window {
 
         VerticalLayout {
             tab_bar := HorizontalLayout {
+                
                 spacing: 3px;
                 Button {
                     text: "PLC";
@@ -461,7 +466,7 @@ export component WaysideControllerUi inherits Window {
                     viewport-height: 500px;
 
                     HorizontalLayout {
-                        alignment: center;
+                        //alignment: center;
                         padding: 10px;
                         spacing: 10px;
                         Text {text: "Track ID:";}
@@ -508,7 +513,7 @@ export component WaysideControllerUi inherits Window {
                         background: #252525;
                         border-radius: 10px;
                         VerticalLayout {
-                            alignment: LayoutAlignment.stretch;
+                            //alignment: LayoutAlignment.stretch;
                             padding: 10px;
                             padding-left: 15px;
                             Text {text: "Inputs";}
@@ -624,7 +629,7 @@ export component WaysideControllerUi inherits Window {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: comm-spd + " mph";
+                                                text: sugg-spd + " mph";
                                             } 
                                         }
 
