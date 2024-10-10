@@ -142,6 +142,15 @@ int main(void)
         ctc_ui->set_confirm_maintenance_message(message.c_str());
     });
 
+    ctc_ui->on_send_failure_signal([&] {
+        std::string block = std::string(ctc_ui->get_block_occupancy());
+        std::string section = std::string(ctc_ui->get_section_occupancy());
+        std::string message = "Failure Signal Received: Section " + section + " Block " + block;
+        std::string failure = "Failure";
+        ctc_ui->set_failure_signal(failure.c_str());
+        std::cout << message << std::endl;
+    });
+
     ctc_ui->run();
 
     return 0;
