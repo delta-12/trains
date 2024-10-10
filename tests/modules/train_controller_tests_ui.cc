@@ -211,6 +211,7 @@ int main(void)
                 }
 
                 train_controller_ui->set_commanded_power(powerCommand);
+                train_controller_ui->set_distance_traveled(train_controller_ui->get_distance_traveled() + train_controller_ui->get_current_velocity() * 1);
             }
         }
     });
@@ -311,6 +312,7 @@ int main(void)
                 }
 
                 train_controller_ui->set_commanded_power(powerCommand);
+                train_controller_ui->set_distance_traveled(train_controller_ui->get_distance_traveled() + train_controller_ui->get_current_velocity() * 1);
             }
         }
     });
