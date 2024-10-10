@@ -8,6 +8,7 @@ component TransitSystem inherits Rectangle {
     in-out property <string> section;
     in-out property <string> block;
     in-out property <bool> mode: true;
+    in-out property <bool> occupancy: false;
     VerticalLayout {
         padding-top: 10px;
         HorizontalLayout {
@@ -61,12 +62,12 @@ component TransitSystem inherits Rectangle {
                     { title: @tr("Failure") },
                 ];
                 rows: [
-                    [{text: "A"}, {text: "1"}, {text: mode ? "Open" : "Maintenance"}, {text: "Occupied"}, {text: ""},],
-                    [{text: "A"}, {text: "2"}, {text: "Open"}, {text: "Occupied"}, {text: ""},],
-                    [{text: "A"}, {text: "3"}, {text: "Open"}, {text: "Occupied"}, {text: ""},],
-                    [{text: "A"}, {text: "4"}, {text: "Open"}, {text: ""}, {text: ""},],
-                    [{text: "A"}, {text: "5"}, {text: "Open"}, {text: ""}, {text: ""},],
-                    [{text: "B"}, {text: "6"}, {text: "Open"}, {text: ""}, {text: ""},],
+                    [{text: "A"}, {text: "1"}, {text: mode ? "Open" : "Maintenance"}, {text: occupancy ? "Occupied" : ""}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
                 ];
             }
         }
@@ -295,6 +296,52 @@ component Dispatch inherits Rectangle {
     }
 }
 
+component TestBenchInputs {
+    in-out property <string> block_occupancy;
+    in-out property <string> section_occupancy;
+
+    in-out property <string> confirm_occupancy_message;
+
+    // Callbacks
+    callback print_occupancy_message();
+    VerticalLayout {
+        alignment: start;
+        padding: 10px;
+        spacing: 10px;
+        WaysideOccupancy := VerticalLayout {
+            spacing: 10px;
+            Text {text: "Wayside Occupancy Signal:";}
+            LineEdit {
+                height: 30px;
+                placeholder-text: @tr("Section");
+                edited(input) => {section_occupancy = input}
+            }
+            LineEdit {
+                height: 30px;
+                placeholder-text: @tr("Block Number");
+                edited(input) => {block_occupancy = input}
+            }
+            Button {
+                text: "Send Occupancy Signal";
+                clicked => {print_occupancy_message()}
+            }
+            Text {
+                text: confirm_occupancy_message;
+            }
+        }
+        // WaysideFailure := VerticalLayout {
+        //     Text {text: "Wayside Failure Signal:";}
+        //     Button {
+        //         text: "Send Occupancy Signal";
+                
+        //     }
+        //     Text {
+        //         text: "Failure Signal Here";
+        //     }
+        // }
+    }
+}
+
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
     in-out property <string> train_1: " ";
@@ -304,20 +351,22 @@ export component CtcUi inherits Window {
     in-out property <string> train_name;
     in-out property <string> destination;
     in-out property <string> arrival_time;
+    in-out property <string> maintenance_block;
+    in-out property <string> maintenance_section;
 
     //TestBench
-    in-out property <string> section;
-    in-out property <string> block;
+    in-out property <string> section_occupancy;
+    in-out property <string> block_occupancy;
+    in-out property <bool> occupancy;
+
     in-out property <string> authority;
     in-out property <string> dwell_time;
     in-out property <string> confirm_occupancy_message;
-    in-out property <string> confirm_failure_message;
     in-out property <string> confirm_output_message;
     in-out property <string> confirm_maintenance_message;
     in-out property <string> confirm_switch_message;
     in-out property <string> confirm_automatic_dispatch;
     callback print_occupancy_message();
-    callback print_failure_message();
     callback print_output_to_wayside();
     callback print_maintenance_message();
     callback print_switch_message();
@@ -341,6 +390,7 @@ export component CtcUi inherits Window {
                 alignment: stretch;
                 TransitSystem {
                     row_data: row_data;
+                    occupancy: occupancy;
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -376,56 +426,12 @@ export component CtcUi inherits Window {
                         padding-left: 15px;
                         Text {text: "Inputs";}
                         Rectangle {}
-                        VerticalLayout {
-                            alignment: start;
-                            padding: 10px;
-                            spacing: 10px;
-                            Text {text: "Wayside Occupancy Signal:";}
-                            LineEdit {
-                                
-                                height: 30px;
-                                placeholder-text: @tr("Section");
-                                edited(input) => {section = input}
-                            }
-                            LineEdit {
-                                
-                                height: 30px;
-                                placeholder-text: @tr("Block Number");
-                                edited(input) => {block = input}
-                            }
-                            Button {
-                                text: "Send Occupancy Signal";
-                                clicked => {root.print_occupancy_message()}
-                            }
-                            Text {
-                                text: confirm_occupancy_message;
-                            }
-                        }
-                        VerticalLayout {
-                            alignment: start;
-                            padding: 10px;
-                            spacing: 10px;
-                            Text {text: "Wayside Failure Signal:";}
-                            LineEdit {
-                                
-                                height: 30px;
-                                placeholder-text: @tr("Section");
-                                edited(input) => {section = input}
-                            }
-                            // LineEdit {
-                               
-                            //     height: 30px;
-                            //     placeholder-text: @tr("Block Number");
-                            //     edited(input) => {block = input}
-                            // }
-                            // Button {
-                            //     text: "Send Failure Signal";
-                            //     clicked => {root.print_failure_message()}
-                            // }
-                            // Text {
-                            //     text: confirm_failure_message;
-                            // }
-                        }
+                        TestBenchInputs {
+                            block_occupancy <=> block_occupancy;
+                            section_occupancy <=> section_occupancy;
+                            confirm_occupancy_message: confirm_occupancy_message;
+                            print_occupancy_message => {root.print_occupancy_message()}
+                        }     
                     }
                 } 
                 Rectangle {
