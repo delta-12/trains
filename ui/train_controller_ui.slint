@@ -11,8 +11,8 @@ export component TrainControllerUi inherits Window {
     in-out property <float> commanded_speed: 0.0;
     in-out property <float> driver_speed: 0.0;
     in-out property <float> actual_internal_temperature: 70;
-    in-out property <float> kp: 0.0;
-    in-out property <float> ki: 0.0;
+    in-out property <float> kp: 60;
+    in-out property <float> ki: 8;
     in-out property <float> grade_percent: 0.0;
     in-out property <float> distance_traveled: 0.0;
     in-out property <bool> emergency_brake: false;
@@ -39,7 +39,6 @@ export component TrainControllerUi inherits Window {
     callback request_signal_fail();
     callback request_update_driver_speed();
     callback request_update_service_brake();
-    callback request_update_actual_internal_temperature();
     callback request_update_commanded_internal_temperature();
     callback request_update_power();
 
@@ -47,11 +46,16 @@ export component TrainControllerUi inherits Window {
     callback request_update_current_velocity();
     callback request_update_commanded_speed();
     callback request_update_authority();
+    callback request_update_actual_internal_temperature();
 
     // temporary string variables
     in-out property <string> temp_commanded_speed;
     in-out property <string> temp_commanded_internal_temperature;
     in-out property <string> temp_actual_internal_temperature;
+    in-out property <string> temp_driver_speed;
+    in-out property <string> temp_current_velocity;
+    in-out property <string> temp_service_brake;
+    in-out property <string> temp_authority;
     
 
     min-height: 845px;
@@ -274,7 +278,7 @@ export component TrainControllerUi inherits Window {
                     }  
                 }
 
-                // set point speed and service brake
+                // set point speed and commanded speed
                 HorizontalBox {
                     Rectangle {
                             border-color: white;
@@ -283,7 +287,7 @@ export component TrainControllerUi inherits Window {
                             preferred-height: 200px;
                             preferred-width: 50px;
                         VerticalBox {
-                            // Commanded Power
+                            // Commanded Speed
                             HorizontalBox {
                                 Text {
                                     text: "Commanded\nSpeed:";
@@ -305,7 +309,7 @@ export component TrainControllerUi inherits Window {
                                 }
                             }
                 
-                            // Authority
+                            // driver speed
                             HorizontalBox {
                                 Text {
                                     text: "Set Driver\nSpeed:";
@@ -315,11 +319,11 @@ export component TrainControllerUi inherits Window {
                                     horizontal-alignment: center;
                                 }
                                 LineEdit {
-                                    text: root.driver_speed;
                                     font-size: 20px;
                                     placeholder-text: "Enter Value";
                                     horizontal-alignment: center;
                                     width: 75px;
+                                    edited(val) => {temp_driver_speed = val}
                                 }
                                 Text {
                                     text: "mph";
@@ -331,7 +335,7 @@ export component TrainControllerUi inherits Window {
                                     text: "Accept\nValue";
                                     clicked => {
                                         if (operation-mode-status == "Manual") {
-                                            root.request_update_authority();
+                                            root.request_update_driver_speed();
                                         }
                                     }
                                     preferred-width: 50px;
@@ -598,11 +602,10 @@ export component TrainControllerUi inherits Window {
                                     preferred-width: 200px;
                                 }
                                 LineEdit {
-                                    text: root.current_velocity;
                                     font-size: 20px;
                                     placeholder-text: "Enter Value";
                                     horizontal-alignment: center;
-                                    
+                                    edited(val) => {temp_current_velocity = val}
                                 }
                                 Text {
                                     text: "mph";
