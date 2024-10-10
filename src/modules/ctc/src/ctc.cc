@@ -191,14 +191,18 @@ void ctc::Ctc::PrintAllBlockMap(void) const
     std::cout << "-----------------------\n";
 }
 
-void ctc::Ctc::SetBlockOccupancy(std::string block_number) {
+void ctc::Ctc::SetBlockOccupancy(std::string block_number)
+{
     auto it = block_map.find(block_number);
     // Check if the block is found
-    if (it != block_map.end()) {
+    if (it != block_map.end())
+    {
         // Set occupancy to true
         it->second.occupancy = true;
         std::cout << "Occupancy set to true for block number: " << block_number << std::endl;
-    } else {
+    }
+    else
+    {
         // Block with given block_number not found
         std::cerr << "Error: Block with number " << block_number << " not found." << std::endl;
     }
