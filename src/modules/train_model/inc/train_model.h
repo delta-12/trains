@@ -11,6 +11,9 @@
 
 #include "types.h"
 
+#define TRAIN_MODEL_MAXIMUM_PASSENGERS 222
+#define TRAIN_MODEL_LENGTH             32
+
 namespace train_model
 {
 

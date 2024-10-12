@@ -33,13 +33,19 @@ typedef enum
     POLARITY_NEGATIVE
 } Polarity;
 
+typedef enum
+{
+    TRACKID_RED,
+    TRACKID_GREEN
+} TrackId;
+
 typedef double                                      MetersPerSecond;
 typedef double                                      MetersPerSecondSquared;
 typedef double                                      Meters;
 typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
 typedef int64_t                                     Tick;
-typedef uint8_t                                     TrackId;
+typedef char                                        SectionId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
