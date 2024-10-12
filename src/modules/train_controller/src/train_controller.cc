@@ -261,7 +261,7 @@ void SoftwareTrainController::CalculateCommandedPower()
 
 void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
 {
-    double train_max_speed_in_mps = convert::KilometersPerHourToMetersPerSecond(train_max_speed_); 
+    double train_max_speed_in_mps = convert::KilometersPerHourToMetersPerSecond(train_max_speed_);
     //Bins to increment service brake percentage by 10%
 
     // speed diff <= train_max_mps*0.1

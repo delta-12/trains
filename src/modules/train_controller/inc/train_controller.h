@@ -114,8 +114,8 @@ class SoftwareTrainController : public TrainController
         float ki_           = 2;
 
         types::KilometersPerHour train_max_speed_ = 70;
-        types::Watts max_power_                 = 120000;
-        types::MetersPerSecond commanded_speed_ = 0;
+        types::Watts max_power_                   = 120000;
+        types::MetersPerSecond commanded_speed_   = 0;
         types::MetersPerSecond driver_speed_;
         types::MetersPerSecond current_speed_ = 0;
         double service_brake_percentage_;
