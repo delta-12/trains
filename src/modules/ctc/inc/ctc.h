@@ -6,6 +6,7 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_H
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_H
 
+#include "types.h"
 #include "wayside_controller_gateway.h"
 #include "unordered_map"
 
