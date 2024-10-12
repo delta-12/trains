@@ -37,7 +37,7 @@ void ctc::Ctc::PopulateDataFromCsv(std::vector<std::vector<std::string> > record
     {
         const auto& record = records[i];
         ctc::Block  block  = Ctc::PopulateBlockFromRecord(record);
-        block_map.insert({record[2], block});
+        block_map_.insert({record[2], block});
         if (block.infra.station)
         {
             PopulateTrainSchedule(record);
@@ -51,15 +51,15 @@ void ctc::Ctc::PopulateTrainSchedule(std::vector<std::string> record)
     std::vector<std::string> arrival_time_list = SplitBySemicolon(record[10]);
     for (size_t i = 0; i < train_list.size(); i++)
     {
-        auto it = train_schedule.find(train_list[i]);
-        if ( it != train_schedule.end() )
+        auto it = train_schedule_.find(train_list[i]);
+        if ( it != train_schedule_.end() )
         {
             it->second.insert({record[6], arrival_time_list[i]});
         }
         else
         {
             std::unordered_map<std::string, std::string> destination_and_arrival_time = {{record[6], arrival_time_list[i]}};
-            train_schedule.insert({train_list[i], destination_and_arrival_time});
+            train_schedule_.insert({train_list[i], destination_and_arrival_time});
         }
     }
 }
@@ -88,26 +88,26 @@ int AssignInfrastructure(const std::string& input, ctc::Block& block)
 
 size_t ctc::Ctc::PrintTrackMapSize(void) const
 {
-    return block_map.size();
+    return block_map_.size();
 }
 
 void ctc::Ctc::AddTrainScheduleManual(std::string& train_name, std::string& destination, std::string& arrival_time)
 {
-    auto it = train_schedule.find(train_name);
-    if ( it != train_schedule.end() )
+    auto it = train_schedule_.find(train_name);
+    if ( it != train_schedule_.end() )
     {
         it->second.insert({destination, arrival_time});
     }
     else
     {
         std::unordered_map<std::string, std::string> destination_and_arrival_time = {{destination, arrival_time}};
-        train_schedule.insert({train_name, destination_and_arrival_time});
+        train_schedule_.insert({train_name, destination_and_arrival_time});
     }
 }
 
 void ctc::Ctc::PrintAllTrainSchedule(void) const
 {
-    for (const auto& train_entry : train_schedule)
+    for (const auto& train_entry : train_schedule_)
     {
         // The outer map has train names as keys, and another unordered_map as values
         const std::string& train_name       = train_entry.first;
@@ -178,7 +178,7 @@ void ctc::Ctc::PrintAllBlockMap(void) const
     std::cout << "Block Map Information: \n";
     std::cout << "-----------------------\n";
 
-    for (const auto& pair : block_map)
+    for (const auto& pair : block_map_)
     {
         const std::string& key   = pair.first;  // The key in the map (e.g., block name or ID)
         const Block&       block = pair.second; // The Block object
@@ -193,9 +193,9 @@ void ctc::Ctc::PrintAllBlockMap(void) const
 
 void ctc::Ctc::SetBlockOccupancy(std::string block_number)
 {
-    auto it = block_map.find(block_number);
+    auto it = block_map_.find(block_number);
     // Check if the block is found
-    if (it != block_map.end())
+    if (it != block_map_.end())
     {
         // Set occupancy to true
         it->second.occupancy = true;

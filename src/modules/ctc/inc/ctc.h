@@ -57,8 +57,8 @@ class Ctc
         void PopulateDataFromCsv(std::vector<std::vector<std::string> > records);
         void AddTrainScheduleManual(std::string& train_name, std::string& destination, std::string& arrival_time);
         void SetBlockOccupancy(std::string block_number);
-        std::unordered_map<std::string, ctc::Block> block_map;
-        std::unordered_map<std::string, std::unordered_map<std::string, std::string> > train_schedule;
+        std::unordered_map<std::string, ctc::Block> block_map_;
+        std::unordered_map<std::string, std::unordered_map<std::string, std::string> > train_schedule_;
 
     private:
 
