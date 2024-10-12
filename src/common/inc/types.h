@@ -6,7 +6,6 @@
 #ifndef TRAINS_SRC_COMMON_INC_TYPES_H
 #define TRAINS_SRC_COMMON_INC_TYPES_H
 
-#include "gtest/gtest.h"
 #include <array>
 #include <cstdint>
 #include <vector>
