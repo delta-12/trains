@@ -320,7 +320,7 @@ export component BlockInfo inherits Rectangle {
         }
 }
 
-//TB view component
+
 
 
 ////////////////////////////////////////////////
@@ -362,18 +362,8 @@ export component WaysideControllerUi inherits Window {
         in-out property <string> str_block_occin;
         in-out property <bool> block-occ;
 
-        in-out property <string> str-track-fail;
-        in-out property <bool> track-fail;
-
-        //input callbacks
-        /*callback set-sugg-spd();
-        callback set-sugg-auth();
-        callback set-maintenance-md();
-        callback set-sw-state();
-        callback set-block-occ();
-        callback set-plc();
-        callback set-file();
-        callback on_block_clicked();*/
+        in-out property <string> str_track_fail;
+        in-out property <bool> track_fail;
 
         //output callbacks
         callback disp_sugg_spd();
@@ -385,7 +375,6 @@ export component WaysideControllerUi inherits Window {
         callback disp_parse_file();
 
         callback clicked;
-
 
         
         VerticalLayout {
@@ -411,9 +400,10 @@ export component WaysideControllerUi inherits Window {
                     current-value: "Software Wayside Controller";
                 }
             }
+
+
             Rectangle {
                 Rectangle {
-
                     //animations to enter page
                     drop-shadow-blur: 0cm;
                     x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
@@ -499,7 +489,8 @@ export component WaysideControllerUi inherits Window {
                 }
             }
 
-////////////////////////////////////////////////////////////
+////////////////////TESTBENCH INPUTS////////////////////////////////////////
+
             Rectangle {
                 x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
                 animate x { duration: 125ms; easing: ease; }
@@ -511,7 +502,6 @@ export component WaysideControllerUi inherits Window {
                         background: #252525;
                         border-radius: 10px;
                         VerticalLayout {
-                            //alignment: LayoutAlignment.stretch;
                             padding: 10px;
                             padding-left: 15px;
                             Text {text: "Inputs";}
@@ -525,6 +515,7 @@ export component WaysideControllerUi inherits Window {
                             VerticalLayout {
                                 spacing: 10px;
                                 padding: 10px;
+
                                 // Speed Input
                                 HorizontalLayout {
                                     //alignment: start;
@@ -576,9 +567,8 @@ export component WaysideControllerUi inherits Window {
                                     }
                                 }
 
-
+                                //Block Occupancy
                                 HorizontalLayout {
-                                    //alignment: start;
                                     Text { text: "Block Occupancy (Track Model): ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
@@ -589,8 +579,8 @@ export component WaysideControllerUi inherits Window {
                                     }
                                 }
 
+                                //PLC Program **in TB can be deleted
                                 HorizontalLayout {
-                                    //alignment: start;
                                     Text { text: "PLC Program: ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
@@ -600,8 +590,9 @@ export component WaysideControllerUi inherits Window {
                                         edited(val)=>{plc-prog=val}
                                     } 
                                 }
+
+                                //Track Failure - should be an output
                                 HorizontalLayout {
-                                    //alignment: start;
                                     Text { text: "Track Failure Simulated Input: ";}
                                     Rectangle {width: 10px;}
                                     Rectangle {width: 10px;}
@@ -615,15 +606,14 @@ export component WaysideControllerUi inherits Window {
                             }
                         }
                     } 
-////////////////////////////////////////////////////////////
+
+////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
+
                         HorizontalLayout {
-                            //padding: 15px;
-                            //spacing: 10px;
                             Rectangle {
                                 background: #252525;
                                 border-radius: 10px;
                                 VerticalLayout {
-                                    //alignment: LayoutAlignment.stretch;
                                     padding: 10px;
                                     padding-right: 2px;
                                     Text {text: "Outputs";}
@@ -634,15 +624,14 @@ export component WaysideControllerUi inherits Window {
 
                                         // Speed Input
                                         HorizontalLayout {
-                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Commanded Speed: ";}
-                                            LineEdit {
-                                                read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: sugg-spd + " mph";
-                                            } 
+                                                LineEdit {
+                                                    read-only: true;
+                                                    min-height: 30px;
+                                                    max-height: 30px;
+                                                    text: sugg-spd + " mph";
+                                                } 
                                         }
 
                                         // Authority Input 
@@ -657,6 +646,7 @@ export component WaysideControllerUi inherits Window {
                                                 text: sugg-auth + " mi";
                                             } 
                                         }
+
                                         //Block Maintenance Mode
                                         HorizontalLayout {
                                             //alignment: start;
@@ -712,7 +702,6 @@ export component WaysideControllerUi inherits Window {
 
                                         //Track Failure
                                         HorizontalLayout {
-                                            //alignment: start;
                                             Text { vertical-alignment: center;
                                                 text: "Track Failure: ";}
                                             LineEdit {
@@ -725,19 +714,22 @@ export component WaysideControllerUi inherits Window {
                                     }
                                 }
                             } 
-                        }}}}}}
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
 
-                        /*
-
-
-                        TableView {
-                            columns: ["Route", "Block Number", "Occupancy", "Free", "Track Number", "Test"];
-                            values: [
-                                ["/dev/sda1", "/", "255GB", "82.2GB"] ,
-                                ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
-                                ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-                                ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-                            ];
-                        }*/
+/*
+TableView {
+    columns: ["Route", "Block Number", "Occupancy", "Free", "Track Number", "Test"];
+    values: [
+        ["/dev/sda1", "/", "255GB", "82.2GB"] ,
+        ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
+        ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+        ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
+    ];
+}*/
