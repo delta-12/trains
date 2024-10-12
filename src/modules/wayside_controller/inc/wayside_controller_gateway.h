@@ -8,22 +8,15 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "track_model.h"
 #include "types.h"
+#include "wayside_controller.h"
 
 namespace wayside_controller
 {
-
-typedef struct BlockOccupancy BlockOccupancy;
-
-struct BlockOccupancy
-{
-    public:
-        BlockOccupancy(const types::BlockId block, const bool occupied);
-        types::BlockId block;
-        bool occupied;
-};
 
 class Gateway
 {
@@ -34,11 +27,14 @@ class Gateway
         void SetSimulationMode(const bool simulation);
         bool GetSimulationMode(void) const;
         void AttachPort(std::shared_ptr<types::Port> port);
-        types::Error SetSuggestedSpeed(const types::TrackId track, const types::BlockId block, const types::MetersPerSecond speed);
-        types::Error SetAuthority(const types::TrackId track, const types::BlockId block, const types::Meters authority);
+        types::Error SetSuggestedSpeedAndAuthority(const types::TrackId track, const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
         types::Error SetMaintenanceMode(const types::TrackId track, const types::BlockId block, const bool maintenance);
         types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switch_state);
-        void GetBlockOccupancies(const types::TrackId track, std::vector<BlockOccupancy> &occupancies);
+        void GetBlockStates(const types::TrackId track, std::vector<BlockState> &states);
+
+    private:
+        std::vector<BlockState> block_states_;
+
 };
 
 } // namespace wayside_controller

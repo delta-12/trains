@@ -105,33 +105,6 @@ class SoftwareTrackModel : public TrackModel
         uint16_t deboarding                   = 0;
         types::DegreesFahrenheit externaltemp = 50;
 
-        /*struct Block
-           {
-            types::BlockId blocknum;
-            bool occupancy = 0;
-            types::BlockId Switch;
-            bool crossing             = 0;
-            bool crossingstate = 0;
-            bool light                = 0;
-            std::string lightcolor    = "NONE";
-            bool pfail                = 0;
-            bool tcfail               = 0;
-            bool brail                = 0;
-            float grade               = 0;
-            types::Meters length      = 50;
-            int slimit                = 50;
-            float elevation           = 0;
-            std::string section       = "A";
-            bool heater               = 0;
-            bool station              = 1;
-            int direction             = 0;
-            types::BlockId connection = 0;
-            bool underground          = 0;
-            float cumelevation        = 0;
-            float sectotraverse;
-
-           };*/
-
         //vector containing current actual line with swtiches and branches factored in
         std::vector<Block> line;
 

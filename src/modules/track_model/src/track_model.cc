@@ -253,8 +253,8 @@ void SoftwareTrackModel::Update(void)
     }
 
     //loop through all trains on the line
-       for (int i = 0; i < trainmodels.size(); i++)
-       {
+    for (int i = 0; i < trainmodels.size(); i++)
+    {
         //clear old occupancies
         for (int k = 0; k < trainblockvec.size(); k++)
         {
@@ -318,7 +318,7 @@ void SoftwareTrackModel::Update(void)
 
         //set passengers boarding
         trainmodels[i]->SetPassengersBoarding(board);
-       }
+    }
 
     //clear old occupancies
     for (int k = 0; k < trainblockvec.size(); k++)

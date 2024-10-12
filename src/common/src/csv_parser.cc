@@ -62,6 +62,8 @@ types::Error CsvParser::Parse(const std::string &input_string)
         records_.push_back(Split(line, CSVPARSER_VALUE_DELIMITER));
     }
 
+
+    // Restriction
     const std::size_t size = records_[0].size();
     for (const std::vector<std::string> &record : records_)
     {
