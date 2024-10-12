@@ -6,9 +6,7 @@
 #ifndef TRAINS_SRC_MODULES_TRACK_MODEL_INC_TRACK_MODEL_H
 #define TRAINS_SRC_MODULES_TRACK_MODEL_INC_TRACK_MODEL_H
 
-#include <iostream>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "train_model.h"
@@ -16,44 +14,6 @@
 
 namespace track_model
 {
-
-typedef enum
-{
-    LIGHTCOLOR_RED,
-    LIGHTCOLOR_GREEN
-} LightColor;
-
-typedef enum
-{
-    BLOCKDIRECTION_UNIDIRECTIONAL,
-    BLOCKDIRECTION_BIDIRECTIONAL
-} BlockDirection;
-
-typedef struct
-{
-    types::BlockId block;
-    bool occupied;
-    bool has_switch;
-    bool switched;
-    types::BlockId switch_connection;
-    bool has_crossing;
-    bool crossing_state;
-    bool has_light;
-    LightColor light_color;
-    bool power_failure;
-    bool track_circuit_failure;
-    bool broken_rail;
-    double grade;
-    types::Meters length;
-    types::MetersPerSecond speed_limit;
-    types::Meters elevation;
-    types::Meters cumulative_elevation;
-    types::SectionId section;
-    bool heater_on;
-    bool has_station;
-    BlockDirection direction;
-    bool underground;
-} Block;
 
 class TrackModel
 {
@@ -93,11 +53,11 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
         types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
         types::Error SetTrainBlock(const types::BlockId block);
-        Block GetBlock(const types::BlockId block);
+        types::Block GetBlock(const types::BlockId block);
 
     private:
         types::TrackId track_;
-        std::vector<Block> blocks_;
+        std::vector<types::Block> blocks_;
         std::vector<std::shared_ptr<train_model::TrainModel> > trains_;
         std::vector<types::BlockId> occupied_blocks_;
         std::vector<uint16_t> passenger_counts_;
