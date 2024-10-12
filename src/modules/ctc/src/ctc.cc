@@ -21,7 +21,7 @@ ctc::Block ctc::Ctc::PopulateBlockFromRecord(std::vector<std::string> record)
 {
     ctc::Block block;
     block.section      = record[1][0];
-    block.block_number = std::stoi(record[2]);
+    block.block_id = std::stoi(record[2]);
     block.block_length = std::stoi(record[3]);
     block.block_grade  = std::stof(record[4]);
     block.speed_limit  = std::stoi(record[5]);
@@ -152,7 +152,7 @@ void ctc::Ctc::PrintBlockInfo(const ctc::Block& block) const
     std::cout << "-------------------\n";
     std::cout << "Block ID: " << block.block_id << "\n";
     std::cout << "Section: " << block.section << "\n";
-    std::cout << "Block Number: " << block.block_number << "\n";
+    std::cout << "Block Number: " << block.block_id << "\n";
     std::cout << "Block Length: " << block.block_length << " meters\n";
     std::cout << "Block Grade: " << block.block_grade << "%\n";
     std::cout << "Speed Limit: " << block.speed_limit << " km/h\n";

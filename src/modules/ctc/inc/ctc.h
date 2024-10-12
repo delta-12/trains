@@ -27,7 +27,6 @@ struct Block
 {
     types::BlockId block_id;
     char section;
-    int block_number;
     int block_length;
     double block_grade;
     int speed_limit;
