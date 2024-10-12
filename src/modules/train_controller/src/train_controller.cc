@@ -1,216 +1,199 @@
 #include "train_controller.h"
-// #include "train_model.h"
 #include "types.h"
+#include "convert.h"
 
 namespace train_controller
 {
 // Getters
-uint16_t SoftwareTrainController::GetServiceBrake() const
+double SoftwareTrainController::GetServiceBrake() const
 {
-    return SBPercentage_; // Return the service brake percentage
+    return service_brake_percentage_;
 }
 
-uint16_t SoftwareTrainController::GetGrade(void) const
+double SoftwareTrainController::GetGrade(void) const
 {
     return 0;
 }
 
 types::MilesPerHour SoftwareTrainController::GetDriverSpeed(void) const
 {
-    return DriverSpeed_; // Return the current driver speed
+    return convert::MetersPerSecondToMilesPerHour(driver_Speed_);
 }
 
 types::Watts SoftwareTrainController::GetCommandedPower() const
 {
-    return CommandedPower_; // Return the commanded power
+    return commanded_power_; // Return the commanded power
 }
 
-types::Miles SoftwareTrainController::GetDistanceTravelled(void) const
+types::Meters SoftwareTrainController::GetDistanceTravelled(void) const
 {
-    return DistanceTravelled_ / 1609.34;
+    return distance_travelled_;
 }
 
 bool SoftwareTrainController::GetEmergencyBrake() const
 {
-    return Ebrake; // Return the state of the emergency brake
+    return emergency_brake_;
 }
 
 bool SoftwareTrainController::GetHeadLights() const
 {
-    return HLights; // Return the state of the headlights
-}
+he}
 
 bool SoftwareTrainController::GetInteriorLights() const
 {
-    return ILights; // Return the state of the interior lights
+    return interior_lights_;
 }
 
 bool SoftwareTrainController::GetLeftDoors() const
 {
-    return LDoor; // Return the state of the left doors
+    return left_door_;
 }
 
 bool SoftwareTrainController::GetRightDoors() const
 {
-    return RDoor; // Return the state of the right doors
+    return right_door_;
 }
 
 bool SoftwareTrainController::GetBrakeFailure(void) const
 {
-    return BFail; // Return the current state of brake failure
-}
+    return brake_failure_;
 
 bool SoftwareTrainController::GetEngineFailure(void) const
 {
-    return EFail; // Return the current state of engine failure
+    return engine_failure_;
 }
 
 bool SoftwareTrainController::GetSignalPickupFailure(void) const
 {
-    return SigPFail; // Return the current state of signal pickup failure
+    return signal_pickup_failure_; 
 }
 
-types::DegreesFahrenheit SoftwareTrainController::GetInternalTemperature() const
+types::DegreesFahrenheit SoftwareTrainController::GetCommandedInternalTemperature() const
 {
-    return Temp; // Return the internal temperature
+    return commanded_internal_temperature_; 
 }
 
-types::DegreesFahrenheit SoftwareTrainController::GetActInternalTemperature() const
+types::DegreesFahrenheit SoftwareTrainController::GetActualInternalTemperature() const
 {
-    return ActualTemp_; // Return the internal temperature
+    return actual_internal_temperature_; 
 }
 
-types::MilesPerHour SoftwareTrainController::GetCommandedSpeedWS() const
+types::MilesPerHour SoftwareTrainController::GetCommandedSpeed() const
 {
-    return CommandedSpeedWS_; // Return the commanded speed
+    return convert::MetersPerSecondToMilesPerHour(commanded_speed_); 
 }
 
-types::MilesPerHour SoftwareTrainController::GetCurrentVelocity() const
+types::MilesPerHour SoftwareTrainController::GetCurrentSpeed() const
 {
-    return CurrentVelocity_; // Return the current velocity
+    return convert::MetersPerSecondToMilesPerHour(current_speed_); 
 }
 
 types::Meters SoftwareTrainController::GetAuthority() const
 {
-    return Authority_; // Return the authority block
+    return authority_; 
 }
 
 // Setters
-void SoftwareTrainController::SetCommandedSpeedWS(types::MilesPerHour speed)
+void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
 {
-    CommandedSpeedWS_ = speed;
+    commanded_speed_ = speed;
 }
 
-void SoftwareTrainController::SetDriverSpeed(types::MilesPerHour speed)
+void SoftwareTrainController::SetDriverSpeed(const types::MilesPerHour speed)
 {
-    DriverSpeed_ = speed; // Set the driver speed to the provided value
+    driver_speed_ = convert::MilesPerHourToMetersPerSecond(speed);
 }
 
-void SoftwareTrainController::SetCurrentVelocity(types::MilesPerHour velocity)
+void SoftwareTrainController::SetCurrentSpeed(const types::MetersPerSecond speed)
 {
-    CurrentVelocity_ = velocity;
+    current_speed_ = speed;
 }
 
-void SoftwareTrainController::SetServiceBrake(uint16_t percentage)
+void SoftwareTrainController::SetServiceBrake(const double percentage)
 {
-    SBPercentage_ = percentage;
+    service_brake_percentage_ = percentage;
 }
 
-void SoftwareTrainController::setEmergencyBrake(bool state)
+void SoftwareTrainController::setEmergencyBrake(const bool state)
 {
-    Ebrake = state;
+    emergency_brake_ = state;
 }
 
-void SoftwareTrainController::SetHeadLights(bool state)
+void SoftwareTrainController::SetHeadLights(const bool state)
 {
-    HLights = state;
+    headlights_ = state;
 }
 
-void SoftwareTrainController::SetInteriorLights(bool state)
+void SoftwareTrainController::SetInteriorLights(const bool state)
 {
-    ILights = state;
+    interior_lights_ = state;
 }
 
-void SoftwareTrainController::SetLeftDoors(bool state)
+void SoftwareTrainController::SetLeftDoors(const bool state)
 {
-    //if(DistanceTravelled == )
-    LDoor = state;
+    left_door_ = state;
 }
 
-void SoftwareTrainController::SetRightDoors(bool state)
+void SoftwareTrainController::SetRightDoors(const bool state)
 {
-    if (CurrentVelocity_ == 0)
-    {
-        RDoor = state;
-    }
+    right_door_ = state;
 }
 
-void SoftwareTrainController::SetBrakeFailure(bool state)
+void SoftwareTrainController::SetBrakeFailure(const bool state)
 {
-    BFail = state; // Set the state of brake failure
+    brake_failure_ = state; 
 }
 
-void SoftwareTrainController::SetSignalPickupFailure(bool state)
+void SoftwareTrainController::SetSignalPickupFailure(const bool state)
 {
-    SigPFail = state;
+    signal_pickup_failure_ = state;
 }
 
-void SoftwareTrainController::SetEngineFailure(bool state)
+void SoftwareTrainController::SetEngineFailure(const bool state)
 {
-    EFail = state;
+    engine_failure_ = state;
 }
 
-void SoftwareTrainController::SetInternalTemperature(types::DegreesFahrenheit temp)
+void SoftwareTrainController::SetCommandedInternalTemperature(const types::DegreesFahrenheit temp)
 {
-    Temp = temp;
+    commanded_interal_temperature_ = temp;
 }
 
-void SoftwareTrainController::SetActInternalTemperature(types::DegreesFahrenheit temp)
+void SoftwareTrainController::SetActualInternalTemperature(const types::DegreesFahrenheit temp)
 {
-    ActualTemp_ = temp;
+    actual_internal_temperature_ = temp;
 }
 
-void SoftwareTrainController::SetAuthority(types::Meters authority)
+void SoftwareTrainController::SetAuthority(const types::Meters authority)
 {
-    Authority_ = authority;
+    authority_ = authority;
 }
 
-void SoftwareTrainController::SetKP(uint16_t kp)
+void SoftwareTrainController::SetKP(const uint16_t kp) 
 {
-    Kp_ = kp;
+    kp_ = kp;
 }
-void SoftwareTrainController::setKI(uint16_t ki)
+void SoftwareTrainController::setKI(const uint16_t ki)
 {
-    Ki_ = ki;
-}
-
-void SoftwareTrainController::SetCommandedSpeedTB(types::MilesPerHour CommandedSpeedTB)
-{
-    CommandedSpeedWS_ = CommandedSpeedTB;
+    ki_ = ki;
 }
 
-void SoftwareTrainController::SetCurrentVelocityTB(types::MilesPerHour CurrentVelocityTB)
+void SoftwareTrainController::SetArrived(const bool arrived) 
 {
-    CurrentVelocity_ = CurrentVelocityTB * 0.44704;
-}
-
-void SoftwareTrainController::SetArrived(bool x)
-{
-    Arrived = x;
+    arrived_ = arrived;
 }
 
 void SoftwareTrainController::CalculateCommandedPower()
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
 
-    // types::BlockId currentBlock = logic to get block
-    float blockSpeedLimit = 50.0; // default speed limit atm
+    float blockSpeedLimit = 50.0; // default speed in Km/H
 
     // Defining Vcmd and Actual speed in m/s
-    types::MetersPerSecond Vsetpoint = DriverSpeed_ * 0.44704;
+    types::MetersPerSecond Vsetpoint = driver_speed_
 
     // convert to m/s from km/hr
-    blockSpeedLimit *= 0.27778;
+    blockSpeedLimit = convert::KilometersPerHourToMetersPerSecond(blockSpeedLimit);
 
     if (Vsetpoint > blockSpeedLimit)
     {
@@ -218,102 +201,102 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     // Calculating Verror
-    float Verror = Vsetpoint - CurrentVelocity_ * 0.44704;
+    double Verror = Vsetpoint - current_speed_;
 
     // Calculating Kp term
-    float KPterm = Verror * Kp_;
+    float KPterm = Verror * kp_;
 
     // Temp time passed since last update
     float deltaTime = 1;
 
     // This section is where the integral section of the equation will be calculated
-    IntegralSUM += Verror * deltaTime;
+    integral_sum_ += Verror * deltaTime;
 
     // Calculating Ki term
-    float KIterm = Ki_ * IntegralSUM;
+    float KIterm = ki_ * integral_sum_;
 
 
-    if (Ebrake == 1 || Arrived)
+    if (Ebrake == true || arrived_)
     {
-        IntegralSUM     = 0;
-        CommandedPower_ = 0;
+        integral_sum_     = 0;
+        commanded_power_ = 0;
     }
     else
     {
         //Checking if Current Train Velocity is greater than Setpoint speed
-        if (CurrentVelocity_ > DriverSpeed_)
+        if (current_speed_ > driver_speed_)
         {
-            IntegralSUM     = 0;
-            CommandedPower_ = 0;
+            integral_sum_     = 0;
+            commanded_power_ = 0;
 
-            float tempSpeedDiff = CurrentVelocity_ - DriverSpeed_;
+            float tempSpeedDiff = current_speed_ - driver_speed_;
 
             if (tempSpeedDiff > 0  && tempSpeedDiff <= 4.35)
             {
-                SBPercentage_ = 10;
+                service_brake_percentage_ = 10;
             }
             else
             if (tempSpeedDiff > 4.35 && tempSpeedDiff <= 8.7)
             {
-                SBPercentage_ = 20;
+                service_brake_percentage_ = 20;
             }
             else
             if (tempSpeedDiff > 8.7  && tempSpeedDiff <= 13.05)
             {
-                SBPercentage_ = 30;
+                service_brake_percentage_ = 30;
             }
             else
             if (tempSpeedDiff > 13.05 && tempSpeedDiff <= 17.4)
             {
-                SBPercentage_ = 40;
+                service_brake_percentage_ = 40;
             }
             else
             if (tempSpeedDiff > 17.4 && tempSpeedDiff <= 21.75)
             {
-                SBPercentage_ = 50;
+                service_brake_percentage_ = 50;
             }
             else
             if (tempSpeedDiff > 21.75 && tempSpeedDiff <= 26.1)
             {
-                SBPercentage_ = 60;
+                service_brake_percentage_ = 60;
             }
             else
             if (tempSpeedDiff > 26.1 && tempSpeedDiff <= 30.45)
             {
-                SBPercentage_ = 70;
+                service_brake_percentage_ = 70;
             }
             else
             if (tempSpeedDiff > 30.45 && tempSpeedDiff <= 34.8)
             {
-                SBPercentage_ = 80;
+                service_brake_percentage_ = 80;
             }
             else
             if (tempSpeedDiff > 34.8 && tempSpeedDiff <= 39.15)
             {
-                SBPercentage_ = 90;
+                service_brake_percentage_ = 90;
             }
             else
             if (tempSpeedDiff > 39.15)
             {
-                SBPercentage_ = 100;
+                service_brake_percentage_ = 100;
             }
         }
         //Checking if Service brake is on
         else
-        if (SBPercentage_ > 0)
+        if (service_brake_percentage_ > 0)
         {
-            IntegralSUM     = 0;
-            CommandedPower_ = 0;
+            integral_sum_     = 0;
+            commanded_power_ = 0;
         }
         //Normal power calculation
         else
         {
 
-            CommandedPower_ = KPterm + KIterm;
+            commanded_power_ = KPterm + KIterm;
 
-            if (CommandedPower_ > maxPower)
+            if (commanded_power_ > maxPower)
             {
-                CommandedPower_ = maxPower;
+                commanded_power_ = maxPower;
             }
         }
 
@@ -323,15 +306,7 @@ void SoftwareTrainController::CalculateCommandedPower()
 
 void SoftwareTrainController::UpdateDistanceTravelled(long interval)
 {
-    DistanceTravelled_ += CurrentVelocity_ * interval;
+    distance_travelled_ += current_speed_ * interval;
 
-}
-
-
-// When this is called, the idea is that a second as passed
-void SoftwareTrainController::Update()
-{
-    UpdateDistanceTravelled(1);
-    CalculateCommandedPower();
 }
 }
