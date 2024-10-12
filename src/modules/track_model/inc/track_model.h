@@ -8,11 +8,11 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
+#include <string>
 
 #include "train_model.h"
 #include "types.h"
-#include <iostream>
-#include <string>
 
 struct Block
 {
@@ -99,10 +99,10 @@ class SoftwareTrackModel : public TrackModel
     private:
         types::TrackId track_id = 1;
         std::vector<std::shared_ptr<train_model::TrainModel> > trainsvec;
-        std::vector<types::BlockId> trainblockvec;   //make vector for multiple trains
-        uint16_t tpassengers                  = 150; //make vector for multiple trains
-        uint16_t boarding                     = 0;   //make vector for multiple trains
-        uint16_t deboarding                   = 0;
+        std::vector<types::BlockId> trainblockvec;     //make vector for multiple trains
+        uint16_t tpassengers                  = {150}; //make vector for multiple trains
+        uint16_t boarding                     = {0};   //make vector for multiple trains
+        uint16_t deboarding                   = {0};
         types::DegreesFahrenheit externaltemp = 50;
 
         //vector containing current actual line with swtiches and branches factored in

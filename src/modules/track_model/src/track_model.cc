@@ -1,8 +1,10 @@
 #include "track_model.h"
-#include "train_model.h"
+
 #include <iostream>
 #include <string>
 #include <random>
+
+#include "train_model.h"
 
 namespace track_model
 {
@@ -258,7 +260,7 @@ void SoftwareTrackModel::Update(void)
         //clear old occupancies
         for (int k = 0; k < trainblockvec.size(); k++)
         {
-            int pos = trainblockvec[i][k];
+            int pos = trainblockvec[k];
             line[pos].occupancy = 0;
         }
 
@@ -268,7 +270,7 @@ void SoftwareTrackModel::Update(void)
         //set block occupancy
         line[trainblock].occupancy = 1;
 
-        trainblockvec[i].push_back(trainblock);
+        trainblockvec.push_back(trainblock);
 
         //calculate which blocks the train is currently taking up
         //check the length of the block the train is occupying, and see if the train is longer
@@ -295,11 +297,10 @@ void SoftwareTrackModel::Update(void)
                 line[j].occupancy = 1;
 
                 //adding to current train blocks
-                trainblockvec[i].push_back(j);
+                trainblockvec.push_back(j);
 
                 //increment
                 j--;
-                ;
             }
         }
 
@@ -308,8 +309,8 @@ void SoftwareTrackModel::Update(void)
         uint16_t deboard = trainmodels[i]->GetPassengersDeboarding();
 
         //subtract from total passengers
-        tpassengers[i] -= deboard;
-        uint16_t vacancy = maxpass - tpassengers[i];
+        tpassengers -= deboard;
+        uint16_t vacancy = maxpass - tpassengers;
 
         //generate random number within bounds for boarding
         srand((unsigned)time(0));
@@ -334,39 +335,6 @@ void SoftwareTrackModel::Update(void)
     line[trainblock].occupancy = 1;
 
     trainblockvec.push_back(trainblock);
-
-    //calculate which blocks the train is currently taking up
-    //check the length of the block the train is occupying, and see if the train is longer
-    if (line[trainblock].length < tlength)
-    {
-        //looping until the full length of the train is accounted for
-        auto sizeofblocks = line[trainblock].length;
-        int  j            = trainblock - 1;
-        while (sizeofblocks < tlength)
-        {
-            //checking if the block behind this is connected to another block
-            if (line[j].connection != 0)
-            {
-                //adding size of block connected
-                types::BlockId blockcon = line[j].connection;
-
-                //adjust j
-                j = blockcon;
-            }
-            //adding the size of the block behind it
-            sizeofblocks += line[j - 1].length;
-
-            //adding this block to the vector of occupancies
-            line[j].occupancy = 1;
-
-            //adding to current train blocks
-            trainblockvec.push_back(j);
-
-            //increment
-            j--;
-            ;
-        }
-    }
 }
 
 

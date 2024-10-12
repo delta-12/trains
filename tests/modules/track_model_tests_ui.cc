@@ -8,6 +8,12 @@
 #include <chrono>
 #include <slint.h>
 #include <random>
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <string>
+#include <sstream>
+#include <vector>
 
 #include "track_model.h"
 #include "track_model_ui.h"
@@ -15,13 +21,6 @@
 #include "csv_parser.h"
 #include "types.h"
 #include "channel.h"
-#include <iostream>
-#include <fstream>
-
-#include <filesystem>
-#include <string>
-#include <sstream>
-#include <vector>
 
 types::Error SetTrackLayout(const std::vector<std::vector<std::string> > records, std::vector<Block> line, std::string linetype)
 {
