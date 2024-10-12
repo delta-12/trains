@@ -33,7 +33,7 @@ typedef enum
     POLARITY_NEGATIVE
 } Polarity;
 
-typedef double                                      KilometerPerHour;
+typedef double                                      KilometersPerHour;
 typedef double                                      Kilometers;
 typedef double                                      MetersPerSecond;
 typedef double                                      MetersPerSecondSquared;

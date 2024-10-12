@@ -118,7 +118,7 @@ class SoftwareTrainController : public TrainController
         types::MetersPerSecond commanded_speed_ = 0;
         types::MetersPerSecond driver_speed_;
         types::MetersPerSecond current_speed_ = 0;
-        double servBPercentage_;
+        double service_brake_percentage_;
         types::Watts commanded_power_         = 0;
         types::Meters authority_             = 0;
         bool emergency_brake_                          = 0;
@@ -130,7 +130,7 @@ class SoftwareTrainController : public TrainController
         bool signal_pickup_failure_                        = 0;
         bool engine_failure_                           = 0;
         types::DegreesFahrenheit commanded_internal_temperature_        = 68;
-        types::DegreesFahrenheit actual_internal_temper_ = 0;
+        types::DegreesFahrenheit actual_internal_temperature_ = 0;
         types::Meters distance_travelled_     = 0;
         bool arrived_                         = 0;
 };

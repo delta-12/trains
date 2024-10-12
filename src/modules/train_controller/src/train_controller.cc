@@ -17,7 +17,7 @@ double SoftwareTrainController::GetGrade(void) const
 
 types::MilesPerHour SoftwareTrainController::GetDriverSpeed(void) const
 {
-    return convert::MetersPerSecondToMilesPerHour(driver_Speed_);
+    return convert::MetersPerSecondToMilesPerHour(driver_speed_);
 }
 
 types::Watts SoftwareTrainController::GetCommandedPower() const
@@ -37,7 +37,8 @@ bool SoftwareTrainController::GetEmergencyBrake() const
 
 bool SoftwareTrainController::GetHeadLights() const
 {
-he}
+    return headlights_;
+}
 
 bool SoftwareTrainController::GetInteriorLights() const
 {
@@ -54,16 +55,16 @@ bool SoftwareTrainController::GetRightDoors() const
     return right_door_;
 }
 
-bool SoftwareTrainController::GetBrakeFailure(void) const
+bool SoftwareTrainController::GetBrakeFailure() const
 {
     return brake_failure_;
-
-bool SoftwareTrainController::GetEngineFailure(void) const
+}
+bool SoftwareTrainController::GetEngineFailure() const
 {
     return engine_failure_;
 }
 
-bool SoftwareTrainController::GetSignalPickupFailure(void) const
+bool SoftwareTrainController::GetSignalPickupFailure() const
 {
     return signal_pickup_failure_; 
 }
@@ -156,7 +157,7 @@ void SoftwareTrainController::SetEngineFailure(const bool state)
 
 void SoftwareTrainController::SetCommandedInternalTemperature(const types::DegreesFahrenheit temp)
 {
-    commanded_interal_temperature_ = temp;
+    commanded_internal_temperature_ = temp;
 }
 
 void SoftwareTrainController::SetActualInternalTemperature(const types::DegreesFahrenheit temp)
@@ -190,7 +191,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     float blockSpeedLimit = 50.0; // default speed in Km/H
 
     // Defining Vcmd and Actual speed in m/s
-    types::MetersPerSecond Vsetpoint = driver_speed_
+    types::MetersPerSecond Vsetpoint = driver_speed_;
 
     // convert to m/s from km/hr
     blockSpeedLimit = convert::KilometersPerHourToMetersPerSecond(blockSpeedLimit);
@@ -216,7 +217,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     float KIterm = ki_ * integral_sum_;
 
 
-    if (Ebrake == true || arrived_)
+    if (emergency_brake_ == true || arrived_)
     {
         integral_sum_     = 0;
         commanded_power_ = 0;
@@ -294,9 +295,9 @@ void SoftwareTrainController::CalculateCommandedPower()
 
             commanded_power_ = KPterm + KIterm;
 
-            if (commanded_power_ > maxPower)
+            if (commanded_power_ > max_power_)
             {
-                commanded_power_ = maxPower;
+                commanded_power_ = max_power_;
             }
         }
 
