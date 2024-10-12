@@ -66,32 +66,32 @@ bool SoftwareTrainController::GetEngineFailure() const
 
 bool SoftwareTrainController::GetSignalPickupFailure() const
 {
-    return signal_pickup_failure_; 
+    return signal_pickup_failure_;
 }
 
 types::DegreesFahrenheit SoftwareTrainController::GetCommandedInternalTemperature() const
 {
-    return commanded_internal_temperature_; 
+    return commanded_internal_temperature_;
 }
 
 types::DegreesFahrenheit SoftwareTrainController::GetActualInternalTemperature() const
 {
-    return actual_internal_temperature_; 
+    return actual_internal_temperature_;
 }
 
 types::MilesPerHour SoftwareTrainController::GetCommandedSpeed() const
 {
-    return convert::MetersPerSecondToMilesPerHour(commanded_speed_); 
+    return convert::MetersPerSecondToMilesPerHour(commanded_speed_);
 }
 
 types::MilesPerHour SoftwareTrainController::GetCurrentSpeed() const
 {
-    return convert::MetersPerSecondToMilesPerHour(current_speed_); 
+    return convert::MetersPerSecondToMilesPerHour(current_speed_);
 }
 
 types::Meters SoftwareTrainController::GetAuthority() const
 {
-    return authority_; 
+    return authority_;
 }
 
 // Setters
@@ -142,7 +142,7 @@ void SoftwareTrainController::SetRightDoors(const bool state)
 
 void SoftwareTrainController::SetBrakeFailure(const bool state)
 {
-    brake_failure_ = state; 
+    brake_failure_ = state;
 }
 
 void SoftwareTrainController::SetSignalPickupFailure(const bool state)
@@ -170,7 +170,7 @@ void SoftwareTrainController::SetAuthority(const types::Meters authority)
     authority_ = authority;
 }
 
-void SoftwareTrainController::SetKP(const uint16_t kp) 
+void SoftwareTrainController::SetKP(const uint16_t kp)
 {
     kp_ = kp;
 }
@@ -179,7 +179,7 @@ void SoftwareTrainController::setKI(const uint16_t ki)
     ki_ = ki;
 }
 
-void SoftwareTrainController::SetArrived(const bool arrived) 
+void SoftwareTrainController::SetArrived(const bool arrived)
 {
     arrived_ = arrived;
 }
@@ -187,6 +187,7 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 void SoftwareTrainController::CalculateCommandedPower()
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
+    // A function in time that represents the PI Controller
 
     float blockSpeedLimit = 50.0; // default speed in Km/H
 
@@ -219,7 +220,7 @@ void SoftwareTrainController::CalculateCommandedPower()
 
     if (emergency_brake_ == true || arrived_)
     {
-        integral_sum_     = 0;
+        integral_sum_    = 0;
         commanded_power_ = 0;
     }
     else
@@ -227,66 +228,19 @@ void SoftwareTrainController::CalculateCommandedPower()
         //Checking if Current Train Velocity is greater than Setpoint speed
         if (current_speed_ > driver_speed_)
         {
-            integral_sum_     = 0;
+            integral_sum_    = 0;
             commanded_power_ = 0;
 
-            float tempSpeedDiff = current_speed_ - driver_speed_;
+            double speed_difference = current_speed_ - driver_speed_;
 
-            if (tempSpeedDiff > 0  && tempSpeedDiff <= 4.35)
-            {
-                service_brake_percentage_ = 10;
-            }
-            else
-            if (tempSpeedDiff > 4.35 && tempSpeedDiff <= 8.7)
-            {
-                service_brake_percentage_ = 20;
-            }
-            else
-            if (tempSpeedDiff > 8.7  && tempSpeedDiff <= 13.05)
-            {
-                service_brake_percentage_ = 30;
-            }
-            else
-            if (tempSpeedDiff > 13.05 && tempSpeedDiff <= 17.4)
-            {
-                service_brake_percentage_ = 40;
-            }
-            else
-            if (tempSpeedDiff > 17.4 && tempSpeedDiff <= 21.75)
-            {
-                service_brake_percentage_ = 50;
-            }
-            else
-            if (tempSpeedDiff > 21.75 && tempSpeedDiff <= 26.1)
-            {
-                service_brake_percentage_ = 60;
-            }
-            else
-            if (tempSpeedDiff > 26.1 && tempSpeedDiff <= 30.45)
-            {
-                service_brake_percentage_ = 70;
-            }
-            else
-            if (tempSpeedDiff > 30.45 && tempSpeedDiff <= 34.8)
-            {
-                service_brake_percentage_ = 80;
-            }
-            else
-            if (tempSpeedDiff > 34.8 && tempSpeedDiff <= 39.15)
-            {
-                service_brake_percentage_ = 90;
-            }
-            else
-            if (tempSpeedDiff > 39.15)
-            {
-                service_brake_percentage_ = 100;
-            }
+            //Function to to assign service brake
+            CalculateServiceBrake(speed_difference);
         }
         //Checking if Service brake is on
         else
         if (service_brake_percentage_ > 0)
         {
-            integral_sum_     = 0;
+            integral_sum_    = 0;
             commanded_power_ = 0;
         }
         //Normal power calculation
@@ -305,9 +259,66 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 }
 
+void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
+{
+    double train_max_speed_in_mps = convert::KilometersPerHourToMetersPerSecond(train_max_speed_); 
+    //Bins to increment service brake percentage by 10%
+
+    // speed diff <= train_max_mps*0.1
+
+    if (speed_difference > 0  && speed_difference <= train_max_speed_in_mps * 0.1)
+    {
+        service_brake_percentage_ = 10;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.1 && speed_difference <= train_max_speed_in_mps * 0.2)
+    {
+        service_brake_percentage_ = 20;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.2  && speed_difference <= train_max_speed_in_mps * 0.3)
+    {
+        service_brake_percentage_ = 30;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.3 && speed_difference <= train_max_speed_in_mps * 0.4)
+    {
+        service_brake_percentage_ = 40;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.4 && speed_difference <= train_max_speed_in_mps * 0.5)
+    {
+        service_brake_percentage_ = 50;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.5 && speed_difference <= train_max_speed_in_mps * 0.6)
+    {
+        service_brake_percentage_ = 60;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.6 && speed_difference <= train_max_speed_in_mps * 0.7)
+    {
+        service_brake_percentage_ = 70;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.7 && speed_difference <= train_max_speed_in_mps * 0.8)
+    {
+        service_brake_percentage_ = 80;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.8 && speed_difference <= train_max_speed_in_mps * 0.9)
+    {
+        service_brake_percentage_ = 90;
+    }
+    else
+    if (speed_difference > train_max_speed_in_mps * 0.9)
+    {
+        service_brake_percentage_ = 100;
+    }
+}
+
 void SoftwareTrainController::UpdateDistanceTravelled(long interval)
 {
     distance_travelled_ += current_speed_ * interval;
-
 }
 }
