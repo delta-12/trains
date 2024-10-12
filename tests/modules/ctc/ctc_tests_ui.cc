@@ -76,14 +76,14 @@ int main(void)
         else
         {
             ctc.PopulateDataFromCsv(records);
-            auto it = ctc.train_schedule.begin();
+            auto it = ctc.train_schedule_.begin();
             ctc_ui->set_train_1(it->first.c_str());
             ctc_ui->set_train_1_dst(it->second.begin()->first.c_str());
             ctc_ui->set_train_1_at(it->second.begin()->second.c_str());
             ctc.PrintAllBlockMap();
             ctc.PrintAllTrainSchedule();
 
-            for (auto& entry : ctc.train_schedule) {
+            for (auto& entry : ctc.train_schedule_) {
                 message.append(entry.first);
                 message += "\n";
                 auto dst_at = entry.second;
