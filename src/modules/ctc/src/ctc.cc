@@ -21,7 +21,7 @@ ctc::Block ctc::Ctc::PopulateBlockFromRecord(std::vector<std::string> record)
 {
     ctc::Block block;
     block.section      = record[1][0];
-    block.block_id = std::stoi(record[2]);
+    block.block_id     = std::stoi(record[2]);
     block.block_length = std::stoi(record[3]);
     block.block_grade  = std::stof(record[4]);
     block.speed_limit  = std::stoi(record[5]);
