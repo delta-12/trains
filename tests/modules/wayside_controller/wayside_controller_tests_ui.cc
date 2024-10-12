@@ -117,7 +117,7 @@ int main(void)
         */
 
         //select switch state
-        wayside_controller_ui->on_disp-sw-state([&](){
+        wayside_controller_ui->on_disp_sw_state([&](){
 
             if (wayside_controller_ui->get_str_sw_statein() == "OPEN")
                 wayside_controller_ui->set_str_sw_state("CLOSED");

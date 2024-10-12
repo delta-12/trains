@@ -334,29 +334,32 @@ export component WaysideControllerUi inherits Window {
         //generic time var
         in-out property <string> time;
 
-        in-out property <int> active-tab;
-        in-out property <string> select-file;
+        in-out property <int> active_tab;
+        in-out property <string> select_file;
 
         //variables STRING input
-        in-out property <string> sugg-spd;
-        in-out property <string> sugg-auth;
+        in-out property <string> sugg_spd;
+        in-out property <string> sugg_auth;
 
         //variables output
-        in-out property <float> comm-spd;
-        in-out property <int> comm-auth;
+        in-out property <float> comm_spd;
+        in-out property <int> comm_auth;
 
         
-        in-out property <string> str-plc-prog;
-        in-out property <string> plc-prog;
+        in-out property <string> str_plc_prog;
+        in-out property <string> str_plc_progin;
+        in-out property <string> plc_prog;
 
-        in-out property <string> str-block-main;
-        in-out property <bool> block-main;
+        in-out property <string> str_block_main;
+        in-out property <string> str_block_mainin;
+        in-out property <bool> block_main;
 
         in-out property <string> str_sw_state;
         in-out property <string> str_sw_statein;
-        in-out property <bool> sw-state;
+        in-out property <bool> sw_state;
 
-        in-out property <string> str-block-occ;
+        in-out property <string> str_block_occ;
+        in-out property <string> str_block_occin;
         in-out property <bool> block-occ;
 
         in-out property <string> str-track-fail;
@@ -373,27 +376,18 @@ export component WaysideControllerUi inherits Window {
         callback on_block_clicked();*/
 
         //output callbacks
-        callback disp-sugg-spd();
-        callback disp-sugg-auth();
-        callback disp-maintenance-md();
+        callback disp_sugg_spd();
+        callback disp_sugg_auth();
+        callback disp_maintenance_md();
         callback disp_sw_state();
-        callback disp-block-occ();
-        callback disp-select-plc();
-        callback disp-parse-file();
+        callback disp_block_occ();
+        callback disp_select_plc();
+        callback disp_parse_file();
 
         callback clicked;
 
 
-        //root callbacks
-        callback from-sugg-spd();
-        callback from-sugg-auth();
-        callback from-maintenance-md();
-        callback from-sw-state();
-        callback from-block-occ();
-        callback from-select-plc();
-        callback from-parse-file();
-        callback from-on_block_clicked();
-
+        
         VerticalLayout {
             tab_bar := HorizontalLayout {
                 
@@ -563,12 +557,13 @@ export component WaysideControllerUi inherits Window {
                                     Text { text: "Block Maintenance (CTC): ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
-                                    //text: sugg-auth;
+                                    text: str_block_mainin;
                                     width: 120px;
                                     height: 30px;
-                                    edited(val)=>{sugg-spd=val}
+                                    edited(val)=>{str_block_mainin=val}
                                     }
                                 }
+                                //Switch State
                                 HorizontalLayout {
                                     //alignment: left;
                                     Text { text: "Switch State (CTC): ";}
@@ -580,13 +575,17 @@ export component WaysideControllerUi inherits Window {
                                     edited(val)=>{str_sw_statein=val}
                                     }
                                 }
+
+
                                 HorizontalLayout {
                                     //alignment: start;
                                     Text { text: "Block Occupancy (Track Model): ";}
                                     Rectangle {width: 10px;}
                                     LineEdit {
+                                    text: str_block_occin;
                                     width: 120px;
                                     height: 30px;
+                                    edited(val)=>{str_block_occin=val}
                                     }
                                 }
 
@@ -607,10 +606,10 @@ export component WaysideControllerUi inherits Window {
                                     Rectangle {width: 10px;}
                                     Rectangle {width: 10px;}
                                     LineEdit {
-                                    //text: sugg-auth;
+                                    text: str-track-fail;
                                     width: 120px;
                                     height: 30px;
-                                    edited(val)=>{sugg-spd=val}
+                                    edited(val)=>{str-track-fail=val}
                                     }
                                 }
                             }
@@ -664,10 +663,10 @@ export component WaysideControllerUi inherits Window {
                                             Text { vertical-alignment: center;
                                                 text: "Block Maintenance (CTC): ";}
                                             LineEdit {
-                                                read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: str-block-main;
+                                                text: str_block_main;
+                                                read-only: true;
                                             } 
                                         }
 
@@ -694,7 +693,7 @@ export component WaysideControllerUi inherits Window {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: str-block-occ;
+                                                text: str_block_occ;
                                             }
                                         }
 
@@ -707,7 +706,7 @@ export component WaysideControllerUi inherits Window {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: str-plc-prog;
+                                                text: str_plc_prog;
                                             }
                                         }
 
@@ -720,7 +719,7 @@ export component WaysideControllerUi inherits Window {
                                                 read-only: true;
                                                 min-height: 30px;
                                                 max-height: 30px;
-                                                text: str-track-fail;
+                                                text: str_track_fail;
                                             }
                                         }
                                     }
