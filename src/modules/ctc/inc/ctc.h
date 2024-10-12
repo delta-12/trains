@@ -6,65 +6,31 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_H
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_H
 
+#include <unordered_map>
+
 #include "types.h"
+#include "wayside_controller.h"
 #include "wayside_controller_gateway.h"
-#include "unordered_map"
 
 namespace ctc
 {
 
-struct Infrastructure
+typedef struct
 {
-    bool station             = false;
-    std::string station_name = "";
-    bool railway_crossing    = false;
-    bool rail_switch         = false;
-    bool underground         = false;
-    bool transponder         = false;
-};
-
-struct Block
-{
-    types::BlockId block_id;
-    char section;
-    int block_length;
-    double block_grade;
-    int speed_limit;
-    double elevation;
-    Infrastructure infra;
-    double cum_elevation;
-    bool occupancy;
-    // int time_to_travel_block;
-    // int accel_and_decell;
-    // int constant_speed_time;
-    // int total_time;
-    // int dwell_time;
-    // double total_time_to_station_with_dwell;
-};
+    types::BlockId block;
+    types::Tick arrival_time;
+} DestinationAndArrivalTime;
 
 class Ctc
 {
     public:
-        // types::Error UpdateWaysideControllers(wayside_controller::Gateway &gateway);
-
-        ctc::Block PopulateBlockFromRecord(std::vector<std::string> record);
-
-        void PopulateTrainSchedule(std::vector<std::string> record);
-        void PrintAllTrainSchedule(void) const;
-        void PrintAllBlockMap(void) const;
-        void PrintBlockInfo(const ctc::Block& block) const;
-        size_t PrintTrackMapSize(void) const;
-        void PopulateDataFromCsv(std::vector<std::vector<std::string> > records);
-        void AddTrainScheduleManual(std::string& train_name, std::string& destination, std::string& arrival_time);
-        void SetBlockOccupancy(std::string block_number);
-        std::unordered_map<std::string, ctc::Block> block_map_;
-        std::unordered_map<std::string, std::unordered_map<std::string, std::string> > train_schedule_;
-
-    private:
-
+        void SetTrackLayout(const std::vector<types::Block> &blocks);
+        void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule);
+        void SetManualMode(void);
+        types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
+        std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 };
 
-int AssignInfrastructure(const std::string& input, ctc::Block& block);
 std::vector<std::string> SplitBySemicolon(const std::string& input);
 
 } // namespace ctc
