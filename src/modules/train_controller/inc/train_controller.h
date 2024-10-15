@@ -6,6 +6,18 @@
 #ifndef TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
+
+#define ZERO (0)
+#define TRAIN_CONTROLLER_DEFAULT_KP (4)
+#define TRAIN_CONTROLLER_DEFAULT_KI (2)
+#define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
+#define TRAIN_SPEED_LIMIT (120000)
+#define DEFAULT_BLOCK_SPEED_LIMIT (50)
+#define DEFAULT_BLOCK_GRADE (0)
+#define DEFAULT_TRAIN_TEMPERATURE (68)
+#define DEFAULT_DELTA_TIME (1)
+
+
 #include <array>
 #include <string>
 #include <cstdint>
@@ -63,6 +75,9 @@ class TrainController
 class SoftwareTrainController : public TrainController
 {
     public:
+        // Constructor
+        SoftwareTrainController();
+
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
         types::MilesPerHour GetDriverSpeed(void) const;
@@ -105,34 +120,35 @@ class SoftwareTrainController : public TrainController
 
         //local functions
         void CalculateCommandedPower(void);
-        void UpdateDistanceTravelled(long interval);
+        void UpdateDistanceTravelled(long interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
-        float integral_sum_ = 0;
-        uint16_t kp_        = 4;
-        uint16_t ki_        = 2;
 
-        types::KilometersPerHour train_max_speed_ = 70;
-        types::Watts max_power_                   = 120000;
-        types::MetersPerSecond commanded_speed_   = 0;
+        float integral_sum_;
+        uint16_t kp_;
+        uint16_t ki_;
+
+        types::KilometersPerHour train_max_speed_;
+        types::Watts max_power_;
+        types::MetersPerSecond commanded_speed_;
         types::MetersPerSecond driver_speed_;
-        types::MetersPerSecond current_speed_ = 0;
+        types::MetersPerSecond current_speed_;
         double service_brake_percentage_;
-        types::Watts commanded_power_                            = 0;
-        types::Meters authority_                                 = 0;
-        bool emergency_brake_                                    = 0;
-        bool headlights_                                         = 0;
-        bool interior_lights_                                    = 0;
-        bool left_door_                                          = 0;
-        bool right_door_                                         = 0;
-        bool brake_failure_                                      = 0;
-        bool signal_pickup_failure_                              = 0;
-        bool engine_failure_                                     = 0;
-        types::DegreesFahrenheit commanded_internal_temperature_ = 68;
-        types::DegreesFahrenheit actual_internal_temperature_    = 0;
-        types::Meters distance_travelled_                        = 0;
-        bool arrived_                                            = 0;
+        types::Watts commanded_power_;
+        types::Meters authority_;
+        bool emergency_brake_;
+        bool headlights_;
+        bool interior_lights_;
+        bool left_door_;
+        bool right_door_;
+        bool brake_failure_;
+        bool signal_pickup_failure_;
+        bool engine_failure_;
+        types::DegreesFahrenheit commanded_internal_temperature_;
+        types::DegreesFahrenheit actual_internal_temperature_;
+        types::Meters distance_travelled_;
+        bool arrived_;
 };
 
 } // namespace train_controller

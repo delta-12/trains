@@ -4,6 +4,37 @@
 
 namespace train_controller
 {
+//Constructor
+SoftwareTrainController::SoftwareTrainController()
+{
+    // Initializing variables
+    ki_ = TRAIN_CONTROLLER_DEFAULT_KP;
+    kp_ = TRAIN_CONTROLLER_DEFAULT_KI;
+    max_power_ = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
+    commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
+    train_max_speed_ = TRAIN_SPEED_LIMIT;
+
+    integral_sum_ = ZERO;
+    commanded_speed_   = ZERO;
+    driver_speed_ = ZERO;
+    current_speed_ = ZERO;
+    service_brake_percentage_ = ZERO;
+    commanded_power_ = ZERO;
+    authority_= ZERO;
+    emergency_brake_ = ZERO;
+    headlights_ = ZERO;
+    interior_lights_ = ZERO;
+    left_door_ = ZERO;
+    right_door_ = ZERO;
+    brake_failure_ = ZERO;
+    signal_pickup_failure_ = ZERO;
+    engine_failure_ = ZERO;
+    actual_internal_temperature_    = ZERO;
+    distance_travelled_ = ZERO;
+    arrived_ = ZERO;
+}
+
+
 // Getters
 double SoftwareTrainController::GetServiceBrake() const
 {
@@ -12,7 +43,7 @@ double SoftwareTrainController::GetServiceBrake() const
 
 double SoftwareTrainController::GetGrade(void) const
 {
-    return 0;
+    return DEFAULT_BLOCK_GRADE;
 }
 
 types::MilesPerHour SoftwareTrainController::GetDriverSpeed(void) const
@@ -189,12 +220,12 @@ void SoftwareTrainController::CalculateCommandedPower()
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float block_speed_limit = 50.0; // TODO - Add hashmap with track data
+    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters. 
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
 
-    // TODO - NNF-182
+    
 
     // convert to m/s from km/hr
     block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
@@ -211,7 +242,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     float kp_term = speed_error * kp_;
 
     // Temp time passed since last update
-    float delta_time = 1; // TODO - NNF-181
+    float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
     integral_sum_ += speed_error * delta_time;
@@ -222,16 +253,17 @@ void SoftwareTrainController::CalculateCommandedPower()
 
     if ((emergency_brake_ == true) || arrived_)
     {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
+        integral_sum_    = ZERO;
+        commanded_power_ = ZERO;
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
     else
     if (current_speed_ > driver_speed_)
     {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
+        integral_sum_    = ZERO;
+        
+        commanded_power_ = ZERO;
 
         types::MetersPerSecond speed_difference = current_speed_ - driver_speed_;
 
@@ -240,10 +272,10 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
     //Checking if Service brake is on
     else
-    if (service_brake_percentage_ > 0)
+    if (service_brake_percentage_ > ZERO)
     {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
+        integral_sum_    = ZERO;
+        commanded_power_ = ZERO;
     }
     //Normal power calculation
     else
@@ -265,54 +297,56 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
 
     // speed diff <= train_max_mps*0.1
 
-    if ((speed_difference > 0)  && (speed_difference <= maximum_speed * 0.1))
+
+    //TODO - NNF-184: Rework this if-else statement into a single calculation
+    if ((speed_difference > ZERO)  && (speed_difference <= (maximum_speed * 0.1)))
     {
-        service_brake_percentage_ = 10;
+        service_brake_percentage_ = 0.1;
     }
     else
-    if ((speed_difference > maximum_speed * 0.1) && (speed_difference <= maximum_speed * 0.2))
+    if ((speed_difference > maximum_speed * 0.1) && (speed_difference <= (maximum_speed * 0.2)))
     {
-        service_brake_percentage_ = 20;
+        service_brake_percentage_ = 0.2;
     }
     else
-    if ((speed_difference > maximum_speed * 0.2)  && (speed_difference <= maximum_speed * 0.3))
+    if ((speed_difference > maximum_speed * 0.2)  && (speed_difference <= (maximum_speed * 0.3)))
     {
-        service_brake_percentage_ = 30;
+        service_brake_percentage_ = 0.3;
     }
     else
-    if ((speed_difference > maximum_speed * 0.3) && (speed_difference <= maximum_speed * 0.4))
+    if ((speed_difference > maximum_speed * 0.3) && (speed_difference <= (maximum_speed * 0.4)))
     {
-        service_brake_percentage_ = 40;
+        service_brake_percentage_ = 0.4;
     }
     else
-    if ((speed_difference > maximum_speed * 0.4) && (speed_difference <= maximum_speed * 0.5))
+    if ((speed_difference > maximum_speed * 0.4) && (speed_difference <= (maximum_speed * 0.5)))
     {
-        service_brake_percentage_ = 50;
+        service_brake_percentage_ = 0.5;
     }
     else
-    if ((speed_difference > maximum_speed * 0.5) && (speed_difference <= maximum_speed * 0.6))
+    if ((speed_difference > maximum_speed * 0.5) && (speed_difference <= (maximum_speed * 0.6)))
     {
-        service_brake_percentage_ = 60;
+        service_brake_percentage_ = 0.6;
     }
     else
-    if ((speed_difference > maximum_speed * 0.6) && (speed_difference <= maximum_speed * 0.7))
+    if ((speed_difference > maximum_speed * 0.6) && (speed_difference <= (maximum_speed * 0.7)))
     {
-        service_brake_percentage_ = 70;
+        service_brake_percentage_ = 0.7;
     }
     else
-    if ((speed_difference > maximum_speed * 0.7) && (speed_difference <= maximum_speed * 0.8))
+    if ((speed_difference > maximum_speed * 0.7) && (speed_difference <= (maximum_speed * 0.8)))
     {
-        service_brake_percentage_ = 80;
+        service_brake_percentage_ = 0.8;
     }
     else
-    if ((speed_difference > maximum_speed * 0.8) && (speed_difference <= maximum_speed * 0.9))
+    if ((speed_difference > maximum_speed * 0.8) && (speed_difference <= (maximum_speed * 0.9)))
     {
-        service_brake_percentage_ = 90;
+        service_brake_percentage_ = 0.9;
     }
     else
-    if (speed_difference > maximum_speed * 0.9)
+    if (speed_difference > (maximum_speed * 0.9))
     {
-        service_brake_percentage_ = 100;
+        service_brake_percentage_ = 1;
     }
 }
 
