@@ -8,30 +8,30 @@ namespace train_controller
 SoftwareTrainController::SoftwareTrainController()
 {
     // Initializing variables
-    ki_ = TRAIN_CONTROLLER_DEFAULT_KP;
-    kp_ = TRAIN_CONTROLLER_DEFAULT_KI;
-    max_power_ = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
+    ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
+    kp_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
-    train_max_speed_ = TRAIN_SPEED_LIMIT;
+    train_max_speed_                = TRAIN_SPEED_LIMIT;
 
-    integral_sum_ = 0;
-    commanded_speed_   = 0;
-    driver_speed_ = 0;
-    current_speed_ = 0;
-    service_brake_percentage_ = 0;
-    commanded_power_ = 0;
-    authority_= 0;
-    emergency_brake_ = 0;
-    headlights_ = 0;
-    interior_lights_ = 0;
-    left_door_ = 0;
-    right_door_ = 0;
-    brake_failure_ = 0;
-    signal_pickup_failure_ = 0;
-    engine_failure_ = 0;
-    actual_internal_temperature_    = 0;
-    distance_travelled_ = 0;
-    arrived_ = 0;
+    integral_sum_                = 0;
+    commanded_speed_             = 0;
+    driver_speed_                = 0;
+    current_speed_               = 0;
+    service_brake_percentage_    = 0;
+    commanded_power_             = 0;
+    authority_                   = 0;
+    emergency_brake_             = 0;
+    headlights_                  = 0;
+    interior_lights_             = 0;
+    left_door_                   = 0;
+    right_door_                  = 0;
+    brake_failure_               = 0;
+    signal_pickup_failure_       = 0;
+    engine_failure_              = 0;
+    actual_internal_temperature_ = 0;
+    distance_travelled_          = 0;
+    arrived_                     = 0;
 }
 
 
@@ -220,12 +220,12 @@ void SoftwareTrainController::CalculateCommandedPower()
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters. 
+    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
 
-    
+
 
     // convert to m/s from km/hr
     block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
@@ -261,8 +261,8 @@ void SoftwareTrainController::CalculateCommandedPower()
     else
     if (current_speed_ > driver_speed_)
     {
-        integral_sum_    = 0;
-        
+        integral_sum_ = 0;
+
         commanded_power_ = 0;
 
         types::MetersPerSecond speed_difference = current_speed_ - driver_speed_;

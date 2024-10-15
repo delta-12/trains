@@ -7,14 +7,14 @@
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
 
-#define TRAIN_CONTROLLER_DEFAULT_KP (4)
-#define TRAIN_CONTROLLER_DEFAULT_KI (2)
+#define TRAIN_CONTROLLER_DEFAULT_KP           (4)
+#define TRAIN_CONTROLLER_DEFAULT_KI           (2)
 #define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
-#define TRAIN_SPEED_LIMIT (120000)
-#define DEFAULT_BLOCK_SPEED_LIMIT (50)
-#define DEFAULT_BLOCK_GRADE (0)
-#define DEFAULT_TRAIN_TEMPERATURE (68)
-#define DEFAULT_DELTA_TIME (1)
+#define TRAIN_SPEED_LIMIT                     (120000)
+#define DEFAULT_BLOCK_SPEED_LIMIT             (50)
+#define DEFAULT_BLOCK_GRADE                   (0)
+#define DEFAULT_TRAIN_TEMPERATURE             (68)
+#define DEFAULT_DELTA_TIME                    (1)
 
 
 #include <array>
@@ -23,6 +23,7 @@
 #include <unordered_map>
 
 #include "types.h"
+#include "convert.h"
 
 namespace train_controller
 {
