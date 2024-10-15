@@ -15,7 +15,7 @@ types::Feet MetersToFeet(const types::Meters meters);
 types::Meters FeetToMeters(const types::Feet feet);
 types::Meters MilesToMeters(const types::Miles miles);
 types::Miles MetersToMiles(const types::Meters meters);
-types::MetersPerSecond KilometersPerHourToMetersPerSecond(const types::KilometersPerHour);
+types::MetersPerSecond KilometersPerHourToMetersPerSecond(const types::KilometersPerHour kilometers_per_hour);
 types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters meters_per_second);
 
 } // namespace convert

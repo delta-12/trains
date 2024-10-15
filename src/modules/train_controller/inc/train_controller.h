@@ -40,23 +40,23 @@ class TrainController
         virtual types::Meters GetAuthority(void) const                               = 0;
 
         // Setter declarations
-        virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                = 0;
-        virtual void SetDriverSpeed(const types::MilesPerHour speed)                      = 0;
-        virtual void SetCurrentSpeed(const types::MetersPerSecond speed)                  = 0;
-        virtual void SetServiceBrake(const double percentage)                             = 0;
-        virtual void setEmergencyBrake(const bool state)                                  = 0;
-        virtual void SetHeadLights(const bool state)                                      = 0;
-        virtual void SetInteriorLights(const bool state)                                  = 0;
-        virtual void SetLeftDoors(const bool state)                                       = 0;
-        virtual void SetRightDoors(const bool state)                                      = 0;
-        virtual void SetBrakeFailure(const bool state)                                    = 0;
-        virtual void SetSignalPickupFailure(const bool state)                             = 0;
-        virtual void SetEngineFailure(const bool state)                                   = 0;
-        virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit temp) = 0;
-        virtual void SetActualInternalTemperature(const types::DegreesFahrenheit temp)    = 0;
-        virtual void SetAuthority(const types::Meters authority)                          = 0;
-        virtual void SetKP(const uint16_t kp)                                             = 0;
-        virtual void SetKI(const uint16_t ki)                                             = 0;
+        virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                       = 0;
+        virtual void SetDriverSpeed(const types::MilesPerHour speed)                             = 0;
+        virtual void SetCurrentSpeed(const types::MetersPerSecond speed)                         = 0;
+        virtual void SetServiceBrake(const double percentage)                                    = 0;
+        virtual void SetEmergencyBrake(const bool state)                                         = 0;
+        virtual void SetHeadLights(const bool state)                                             = 0;
+        virtual void SetInteriorLights(const bool state)                                         = 0;
+        virtual void SetLeftDoors(const bool state)                                              = 0;
+        virtual void SetRightDoors(const bool state)                                             = 0;
+        virtual void SetBrakeFailure(const bool state)                                           = 0;
+        virtual void SetSignalPickupFailure(const bool state)                                    = 0;
+        virtual void SetEngineFailure(const bool state)                                          = 0;
+        virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature) = 0;
+        virtual void SetActualInternalTemperature(const types::DegreesFahrenheit temperature)    = 0;
+        virtual void SetAuthority(const types::Meters authority)                                 = 0;
+        virtual void SetKP(const uint16_t kp)                                                    = 0;
+        virtual void SetKI(const uint16_t ki)                                                    = 0;
 };
 
 
@@ -88,7 +88,7 @@ class SoftwareTrainController : public TrainController
         void SetDriverSpeed(const types::MilesPerHour speed);
         void SetCurrentSpeed(const types::MetersPerSecond speed);
         void SetServiceBrake(const double percentage);
-        void setEmergencyBrake(const bool state);
+        void SetEmergencyBrake(const bool state);
         void SetHeadLights(const bool state);
         void SetInteriorLights(const bool state);
         void SetLeftDoors(const bool state);
@@ -96,22 +96,22 @@ class SoftwareTrainController : public TrainController
         void SetBrakeFailure(const bool state);
         void SetSignalPickupFailure(const bool state);
         void SetEngineFailure(const bool state);
-        void SetCommandedInternalTemperature(const types::DegreesFahrenheit temp);
-        void SetActualInternalTemperature(const types::DegreesFahrenheit temp);
+        void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature);
+        void SetActualInternalTemperature(const types::DegreesFahrenheit temperature);
         void SetAuthority(const types::Meters authority);
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t ki);
         void setKI(const uint16_t kp);
 
         //local functions
-        void CalculateCommandedPower();
+        void CalculateCommandedPower(void);
         void UpdateDistanceTravelled(long interval);
-        void CalculateServiceBrake(double speed_difference);
+        void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
         float integral_sum_ = 0;
-        float kp_           = 4;
-        float ki_           = 2;
+        uint16_t kp_        = 4;
+        uint16_t ki_        = 2;
 
         types::KilometersPerHour train_max_speed_ = 70;
         types::Watts max_power_                   = 120000;
