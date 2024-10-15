@@ -14,6 +14,24 @@
 
 namespace types
 {
+typedef double                                      KilometersPerHour;
+typedef double                                      Kilometers;
+typedef double                                      MetersPerSecond;
+typedef double                                      MetersPerSecondSquared;
+typedef double                                      Meters;
+typedef double                                      MilesPerHour;
+typedef double                                      Miles;
+typedef double                                      Feet;
+typedef double                                      Watts;
+typedef int16_t                                     DegreesFahrenheit;
+typedef int64_t                                     Tick;
+typedef char                                        SectionId;
+typedef uint8_t                                     TrackId;
+typedef uint16_t                                    BlockId;
+typedef uint16_t                                    Blocks;
+typedef uint16_t                                    TrainId;
+typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
+
 
 typedef enum
 {
@@ -33,22 +51,50 @@ typedef enum
     POLARITY_NEGATIVE
 } Polarity;
 
-typedef double                                      KilometersPerHour;
-typedef double                                      Kilometers;
-typedef double                                      MetersPerSecond;
-typedef double                                      MetersPerSecondSquared;
-typedef double                                      Meters;
-typedef double                                      MilesPerHour;
-typedef double                                      Miles;
-typedef double                                      Feet;
-typedef double                                      Watts;
-typedef int16_t                                     DegreesFahrenheit;
-typedef int64_t                                     Tick;
-typedef uint8_t                                     TrackId;
-typedef uint16_t                                    BlockId;
-typedef uint16_t                                    Blocks;
-typedef uint16_t                                    TrainId;
-typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
+typedef enum
+{
+    LIGHTCOLOR_RED,
+    LIGHTCOLOR_GREEN
+} LightColor;
+
+typedef enum
+{
+    BLOCKDIRECTION_UNIDIRECTIONAL,
+    BLOCKDIRECTION_BIDIRECTIONAL
+} BlockDirection;
+
+typedef enum
+{
+    TRACKID_RED,
+    TRACKID_GREEN
+} TrackId;
+
+typedef struct
+{
+    BlockId block;
+    bool occupied;
+    bool has_switch;
+    bool switched;
+    BlockId switch_connection;
+    bool has_crossing;
+    bool crossing_state;
+    bool has_light;
+    LightColor light_color;
+    bool power_failure;
+    bool track_circuit_failure;
+    bool broken_rail;
+    double grade;
+    Meters length;
+    MetersPerSecond speed_limit;
+    Meters elevation;
+    Meters cumulative_elevation;
+    SectionId section;
+    bool heater_on;
+    bool has_station;
+    BlockDirection direction;
+    bool underground;
+} Block;
+
 
 class Port
 {
