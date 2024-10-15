@@ -14,24 +14,24 @@ SoftwareTrainController::SoftwareTrainController()
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_ = TRAIN_SPEED_LIMIT;
 
-    integral_sum_ = ZERO;
-    commanded_speed_   = ZERO;
-    driver_speed_ = ZERO;
-    current_speed_ = ZERO;
-    service_brake_percentage_ = ZERO;
-    commanded_power_ = ZERO;
-    authority_= ZERO;
-    emergency_brake_ = ZERO;
-    headlights_ = ZERO;
-    interior_lights_ = ZERO;
-    left_door_ = ZERO;
-    right_door_ = ZERO;
-    brake_failure_ = ZERO;
-    signal_pickup_failure_ = ZERO;
-    engine_failure_ = ZERO;
-    actual_internal_temperature_    = ZERO;
-    distance_travelled_ = ZERO;
-    arrived_ = ZERO;
+    integral_sum_ = 0;
+    commanded_speed_   = 0;
+    driver_speed_ = 0;
+    current_speed_ = 0;
+    service_brake_percentage_ = 0;
+    commanded_power_ = 0;
+    authority_= 0;
+    emergency_brake_ = 0;
+    headlights_ = 0;
+    interior_lights_ = 0;
+    left_door_ = 0;
+    right_door_ = 0;
+    brake_failure_ = 0;
+    signal_pickup_failure_ = 0;
+    engine_failure_ = 0;
+    actual_internal_temperature_    = 0;
+    distance_travelled_ = 0;
+    arrived_ = 0;
 }
 
 
@@ -253,17 +253,17 @@ void SoftwareTrainController::CalculateCommandedPower()
 
     if ((emergency_brake_ == true) || arrived_)
     {
-        integral_sum_    = ZERO;
-        commanded_power_ = ZERO;
+        integral_sum_    = 0;
+        commanded_power_ = 0;
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
     else
     if (current_speed_ > driver_speed_)
     {
-        integral_sum_    = ZERO;
+        integral_sum_    = 0;
         
-        commanded_power_ = ZERO;
+        commanded_power_ = 0;
 
         types::MetersPerSecond speed_difference = current_speed_ - driver_speed_;
 
@@ -272,10 +272,10 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
     //Checking if Service brake is on
     else
-    if (service_brake_percentage_ > ZERO)
+    if (service_brake_percentage_ > 0)
     {
-        integral_sum_    = ZERO;
-        commanded_power_ = ZERO;
+        integral_sum_    = 0;
+        commanded_power_ = 0;
     }
     //Normal power calculation
     else
@@ -299,7 +299,7 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
 
 
     //TODO - NNF-184: Rework this if-else statement into a single calculation
-    if ((speed_difference > ZERO)  && (speed_difference <= (maximum_speed * 0.1)))
+    if ((speed_difference > 0)  && (speed_difference <= (maximum_speed * 0.1)))
     {
         service_brake_percentage_ = 0.1;
     }
