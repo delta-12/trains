@@ -26,7 +26,6 @@ typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
 typedef int64_t                                     Tick;
 typedef char                                        SectionId;
-typedef uint8_t                                     TrackId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;

@@ -6,4 +6,10 @@
     <suppress>
         <id>missingIncludeSystem</id>
     </suppress>
+    
+    <!-- Suppress unused convert functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/common/src/convert.cc</fileName>
+    </suppress>
 </suppressions>
