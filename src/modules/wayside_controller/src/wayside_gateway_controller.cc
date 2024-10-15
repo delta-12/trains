@@ -12,7 +12,7 @@ types::Error Gateway::UpdateTrackModel(std::shared_ptr<track_model::TrackModel> 
     // TODO NNF-172 receive data
 }
 
-types::Error Gateway::UpdateTrackModels(std::vector<std::shared_ptr<track_model::TrackModel> > &tracks)
+types::Error Gateway::UpdateTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks)
 {
     // TODO NNF-172
 }
