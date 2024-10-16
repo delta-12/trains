@@ -145,6 +145,7 @@ slint_target_sources(train_model_tests_ui ${UI_DIR}/train_model_ui.slint NAMESPA
 add_executable(train_controller_tests_ui
     ${TESTS_DIR}/modules/train_controller_tests_ui.cc
     ${TRAIN_CONTROLLER_SRCS}
+    ${COMMON_SRCS}
 )
 target_include_directories(train_controller_tests_ui PRIVATE ${INC_DIRS})
 target_link_libraries(train_controller_tests_ui PRIVATE Slint::Slint)
