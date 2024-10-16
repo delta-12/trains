@@ -16,6 +16,7 @@ TEST(BlockBuilderTests, BlueBline)
     CsvParser parser(path);
     BlockBuilder bb(parser.GetRecords());
 
+    ASSERT_EQ(bb.GetSize(), 15);
     ASSERT_EQ(bb.GetBlock(1).block, 1);
     ASSERT_EQ(bb.GetBlock(2).block, 2);
     ASSERT_EQ(bb.GetBlock(2).has_crossing, false);
@@ -34,6 +35,7 @@ TEST(BlockBuilderTests, GreenLine)
     CsvParser parser(path);
     BlockBuilder bb(parser.GetRecords());
 
+    ASSERT_EQ(bb.GetSize(), 150);
     ASSERT_EQ(bb.GetBlock(2).block, 2);
     ASSERT_EQ(bb.GetBlock(1).has_crossing, false);
 
@@ -46,4 +48,6 @@ TEST(BlockBuilderTests, GreenLine)
     ASSERT_EQ(bb.GetBlock(62).has_switch, true);
     ASSERT_EQ(bb.GetBlock(62).has_station, false);
     ASSERT_EQ(bb.GetBlock(62).has_light, false);
+
+    ASSERT_EQ(bb.GetBlock(77).station_side, types::StationSide::BOTH);
 }

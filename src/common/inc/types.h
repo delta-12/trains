@@ -64,6 +64,13 @@ typedef enum
     TRACKID_GREEN
 } TrackId;
 
+typedef enum
+{
+    LEFT,
+    RIGHT,
+    BOTH
+} StationSide;
+
 struct Block
 {
     Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), 
@@ -89,6 +96,7 @@ struct Block
     bool heater_on;
     bool has_station;
     std::string station_name;
+    StationSide station_side;
     BlockDirection direction;
     bool underground;
 };

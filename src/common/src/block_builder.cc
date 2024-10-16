@@ -41,14 +41,68 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
 {
     types::Block block;
     block.section = record[1][0];
-    block.block = std::stoi(record[2]);
-    block.length = std::stod(record[3]);
-    block.grade = std::stod(record[4]);
-    block.speed_limit = std::stod(record[5]);
+    try {
+        block.block = std::stoi(record[2]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block number: " << record[2] << std::endl;
+        throw;
+    }
+
+    try {
+        block.length = std::stod(record[3]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block length: " << record[3] << std::endl;
+        throw;
+    }
+
+    try {
+        block.grade = std::stod(record[4]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block grade: " << record[4] << std::endl;
+        throw;
+    }
+
+    try {
+        block.speed_limit = std::stod(record[5]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block speed limit: " << record[5] << std::endl;
+        throw;
+    }
+
     // Assigning Infrastructure to block
     AssignBlockInfrastructure(block, record[6]);
-    block.elevation = std::stod(record[7]);
-    block.cumulative_elevation = std::stod(record[8]);
+
+    try {
+        std::string station_side = record[7];
+        if (station_side.find("Left") != std::string::npos && station_side.find("Right") != std::string::npos) {
+            block.station_side = types::StationSide::BOTH;
+        }
+        else if (station_side.find("Left") != std::string::npos)
+        {
+            block.station_side = types::StationSide::LEFT;
+        }
+        else if (station_side.find("Right") != std::string::npos)
+        {
+            block.station_side = types::StationSide::RIGHT;
+        }
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block speed limit: " << record[5] << std::endl;
+        throw;
+    }
+    
+    try {
+        block.elevation = std::stod(record[8]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for block elevation: " << record[7] << std::endl;
+        throw;
+    }
+
+    try {
+        block.cumulative_elevation = std::stod(record[9]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << "Block: " << record[2] << " Invalid input for cumulative elevation: " << record[8] << std::endl;
+        throw;
+    }
     return block;
 }
 
