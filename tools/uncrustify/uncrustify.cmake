@@ -15,7 +15,7 @@ else()
 endif()
 
 message(STATUS "Adding files to Uncrustify")
-set(UNCRUSTIFY_SOURCES ${TRAINS_SRCS})
+set(UNCRUSTIFY_SOURCES ${TRAINS_SRCS} ${TEST_SRCS})
 foreach(INC_DIR ${INC_DIRS})
     file(GLOB INC_DIR_H_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
         "${INC_DIR}/*.h"
