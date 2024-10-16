@@ -11,6 +11,9 @@
 
 #include "types.h"
 
+#define TRAIN_MODEL_MAXIMUM_PASSENGERS 222
+#define TRAIN_MODEL_LENGTH             32
+
 namespace train_model
 {
 
@@ -42,7 +45,7 @@ class TrainModel
         virtual void SetRightDoorsState(const bool open)                                     = 0;
         virtual void SetCommandedPower(const types::Watts power)                             = 0;
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees) = 0;
-        virtual void SetDistanceTraveled(const types::Meters distance)                       = 0;
+        virtual void SetBlockId(const types::BlockId block)                                  = 0;
         virtual uint16_t GetPassengersDeboarding(void)                                       = 0;
         virtual types::BlockId GetBlockId(void)                                              = 0;
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                   = 0;

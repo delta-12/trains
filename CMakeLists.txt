@@ -121,11 +121,14 @@ slint_target_sources(wayside_controller_tests_ui ${UI_DIR}/wayside_controller_ui
 # Track Model UI test build
 ################################################################################
 add_executable(track_model_tests_ui
-    ${TESTS_DIR}/modules/track_model_tests_ui.cc
-    ${TRACK_MODEL_SRCS}
+  ${TESTS_DIR}/modules/track_model_tests_ui.cc
+  ${TRACK_MODEL_SRCS}
+  ${TRAIN_MODEL_SRCS}
+  ${COMMON_SRCS}
 )
 target_include_directories(track_model_tests_ui PRIVATE ${INC_DIRS})
 target_link_libraries(track_model_tests_ui PRIVATE Slint::Slint)
+target_link_libraries(track_model_tests_ui PRIVATE /usr/local/lib/libslint_cpp.dylib)
 slint_target_sources(track_model_tests_ui ${UI_DIR}/track_model_ui.slint NAMESPACE ui)
 
 ################################################################################
