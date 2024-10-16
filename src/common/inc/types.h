@@ -73,8 +73,10 @@ typedef enum
 
 struct Block
 {
-    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), 
-            speed_limit(0), elevation(0), cumulative_elevation(0), section(' '), heater_on(false), has_station(false), underground(false)  {};
+    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
+              speed_limit(0), elevation(0), cumulative_elevation(0), section(' '), heater_on(false), has_station(false), underground(false)
+    {
+    };
     BlockId block;
     bool occupied;
     bool has_switch;

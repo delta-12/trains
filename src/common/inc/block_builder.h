@@ -20,6 +20,7 @@ class BlockBuilder
         types::Block GetBlock(const types::BlockId block_id);
         std::vector<types::Block> GetBlocks(void) const;
         void Reset(void);
+
     private:
         std::vector<types::Block> blocks_;
 };
