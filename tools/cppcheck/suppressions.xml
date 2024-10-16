@@ -14,5 +14,10 @@
         <id>unusedFunction</id>
         <fileName>*/src/common/src/logger.cc</fileName>
     </suppress>
-
+       
+    <!-- Suppress unused convert functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/common/src/convert.cc</fileName>
+    </suppress>
 </suppressions>
