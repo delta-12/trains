@@ -78,7 +78,7 @@ TEST(BlockBuilderTests, BlueBline)
 TEST(BlockBuilderTests, GreenLine)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
 
