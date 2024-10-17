@@ -20,9 +20,9 @@ TEST(BlockBuilderTests, GetSize)
 
 TEST(BlockBuilderTests, ConvertRecordToBlock)
 {
-    std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
-    CsvParser parser(path);
+    std::filesystem::path                  base_path = std::filesystem::current_path();
+    std::filesystem::path                  path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                              parser(path);
     std::vector<std::vector<std::string> > records = parser.GetRecords();
 
     BlockBuilder bb;
@@ -34,9 +34,9 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
 
 TEST(BlockBuilderTests, AssignBlockInfrastructure)
 {
-    std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
-    CsvParser parser(path);
+    std::filesystem::path                  base_path = std::filesystem::current_path();
+    std::filesystem::path                  path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                              parser(path);
     std::vector<std::vector<std::string> > records = parser.GetRecords();
 
     BlockBuilder bb;

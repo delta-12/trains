@@ -10,7 +10,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string> > &records
     for (size_t i = 1; i < records.size(); ++i)
     {
         const std::vector<std::string> &record = records[i];
-        types::Block block  = ConvertRecordToBlock(record);
+        types::Block                    block  = ConvertRecordToBlock(record);
         blocks_.push_back(block);
     }
 }
@@ -33,9 +33,9 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
 
             // Ensure there's a next token for the station name
             if (i + 1 < infra_list.size())
-            {   
+            {
                 std::string station_name = infra_list[i + 1];
-                station_name[0] = std::toupper(station_name[0]);
+                station_name[0]    = std::toupper(station_name[0]);
                 block.station_name = station_name;  // The next token should be the station name
             }
         }
@@ -61,10 +61,10 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
 types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &record)
 {
     types::Block block;
-    block.section = record[1][0];
-    block.block = std::stoi(record[CSV_FIELD_BLOCK_NUMBER]);
-    block.length = std::stod(record[CSV_FIELD_BLOCK_LENGTH]);
-    block.grade = std::stod(record[CSV_FIELD_BLOCK_GRADE]);
+    block.section     = record[1][0];
+    block.block       = std::stoi(record[CSV_FIELD_BLOCK_NUMBER]);
+    block.length      = std::stod(record[CSV_FIELD_BLOCK_LENGTH]);
+    block.grade       = std::stod(record[CSV_FIELD_BLOCK_GRADE]);
     block.speed_limit = std::stod(record[CSV_FIELD_SPEED_LIMIT]);
     AssignBlockInfrastructure(block, record[CSV_FIELD_INFRASTRUCTURE]);
     std::string station_side = record[CSV_FIELD_STATION_SIDE];
@@ -82,7 +82,7 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
     {
         block.station_side = types::StationSide::STATIONSIDE_RIGHT;
     }
-    block.elevation = std::stod(record[CSV_FIELD_ELEVATION]);
+    block.elevation            = std::stod(record[CSV_FIELD_ELEVATION]);
     block.cumulative_elevation = std::stod(record[CSV_FIELD_CUMULATIVE_ELEVATION]);
 
     return block;
