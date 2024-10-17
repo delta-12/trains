@@ -1,0 +1,16 @@
+Line,Section,Block Number,Block Length,Block Grade,Speed Limit,Infrastructure,Station Side,Elevatiton,Cumulative Elevation,Arriving Train,Arrival Time
+Blue ,A,1,50,0,50,,,0,0,,
+Blue ,A,2,50,0,50,,,0,0,,
+Blue ,A,3,50,0,50,RAILWAY CROSSING,,0,0,,
+Blue ,A,4,50,0,50,,,0,0,,
+Blue ,A,5,50,0,50,Switch (5 to 6) or (5 to 11),,0,0,,
+Blue ,B,6,50,0,50,Switch (5 to 6); Light,,0,0,,
+Blue ,B,7,50,0,50,,,0,0,,
+Blue ,B,8,50,0,50,,,0,0,,
+Blue ,B,9,50,0,50,Transponder,,0,0,,
+Blue ,B,10,50,0,50,Station B,,0,0,Train 1; Train 2,10:00:00; 11:30:00
+Blue ,C,11,50,0,50,Switch (5 to 11); Light,,0,0,,
+Blue ,C,12,50,0,50,,,0,0,,
+Blue ,C,13,50,0,50,,,0,0,,
+Blue ,C,14,50,0,50,Transponder,,0,0,,
+Blue ,C,15,50,0,50,Station C,,0,0,Train 3,17:00:00

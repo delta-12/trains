@@ -120,7 +120,7 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
 types::Block BlockBuilder::GetBlock(const types::BlockId block_id)
 {
     types::Block block;
-    for (auto& blk : blocks_)
+    for (const auto& blk : blocks_)
     {
         if (blk.block == block_id)
         {
