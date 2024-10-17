@@ -9,6 +9,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <string>
 
 #define TYPES_BEACON_DATA_SIZE 128U
 
@@ -30,6 +31,7 @@ typedef uint16_t                                    BlockId;
 typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
+typedef struct Block                                Block;
 
 
 typedef enum
@@ -68,8 +70,19 @@ typedef enum
     TRACKID_GREEN
 } TrackId;
 
-typedef struct
+typedef enum
 {
+    STATIONSIDE_LEFT,
+    STATIONSIDE_RIGHT,
+    STATIONSIDE_BOTH
+} StationSide;
+
+struct Block
+{
+    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
+              speed_limit(0), elevation(0), cumulative_elevation(0), section(' '), heater_on(false), has_station(false), underground(false)
+    {
+    };
     BlockId block;
     bool occupied;
     bool has_switch;
@@ -90,9 +103,11 @@ typedef struct
     SectionId section;
     bool heater_on;
     bool has_station;
+    std::string station_name;
+    StationSide station_side;
     BlockDirection direction;
     bool underground;
-} Block;
+};
 
 
 class Port
