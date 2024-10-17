@@ -12,7 +12,8 @@
 TEST(BlockBuilderTests, BlueBline)
 {
     std::string input_path = "./tests/common/test_csv/blue_line.csv";
-    std::filesystem::path path(input_path);
+    std::filesystem::path path;
+    path.assign(input_path);
     CsvParser parser(path);
     BlockBuilder bb(parser.GetRecords());
 
