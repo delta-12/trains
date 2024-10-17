@@ -10,15 +10,28 @@
 
 #include "types.h"
 
+#define CSV_FIELD_LINE                  0
+#define CSV_FIELD_SECTION               1
+#define CSV_FIELD_BLOCK_NUMBER          2
+#define CSV_FIELD_BLOCK_LENGTH          3
+#define CSV_FIELD_BLOCK_GRADE           4
+#define CSV_FIELD_SPEED_LIMIT           5
+#define CSV_FIELD_INFRASTRUCTURE        6
+#define CSV_FIELD_STATION_SIDE          7
+#define CSV_FIELD_ELEVATION             8
+#define CSV_FIELD_CUMULATIVE_ELEVATION  9
+
 class BlockBuilder
 {
     public:
         BlockBuilder(void);
         BlockBuilder(const std::vector<std::vector<std::string> > &records);
         std::size_t GetSize(void) const;
+        void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
         types::Block ConvertRecordToBlock(const std::vector<std::string> &record);
         types::Block GetBlock(const types::BlockId block_id);
         std::vector<types::Block> GetBlocks(void) const;
+        
         void Reset(void);
 
     private:

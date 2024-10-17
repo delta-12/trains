@@ -72,9 +72,9 @@ typedef enum
 
 typedef enum
 {
-    LEFT,
-    RIGHT,
-    BOTH
+    STATIONSIDE_LEFT,
+    STATIONSIDE_RIGHT,
+    STATIONSIDE_BOTH
 } StationSide;
 
 struct Block
