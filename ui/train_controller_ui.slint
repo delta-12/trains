@@ -1,11 +1,989 @@
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, VerticalBox, TabWidget, Button, LineEdit, Slider, TextEdit} from "std-widgets.slint";
 
 export component TrainControllerUi inherits Window {
-    title: "Train Controller";
-    HorizontalBox {
-        padding: 50px;
-        Text {
-            text: "This is the Train Controller UI.";
+
+    in-out property <string> operation-mode-status: "Automatic";
+    in-out property <string> operation-status-message: "";
+    in-out property <float> commanded_power: 0.0;
+    in-out property <float> commanded_internal_temperature;
+    in-out property <float> authority: 475;
+    in-out property <float> current_velocity: 0.0;
+    in-out property <float> commanded_speed: 0.0;
+    in-out property <float> driver_speed: 0.0;
+    in-out property <float> actual_internal_temperature: 70;
+    in-out property <float> kp: 60;
+    in-out property <float> ki: 8;
+    in-out property <float> grade_percent: 0.0;
+    in-out property <float> distance_traveled: 0.0;
+    in-out property <bool> emergency_brake: false;
+    in-out property <int> service_brake: 0;
+
+    // false = operating
+    // true  = failing
+    in-out property <bool> engine_status: false;
+    in-out property <bool> brake_status: false;
+    in-out property <bool> signal_status: false;
+
+    // false = off
+    // true  = on
+    in-out property<bool> int-lights: false;
+    in-out property<bool> ext-lights: false;
+    in-out property<bool> right-doors: false;
+    in-out property<bool> left-doors: false;
+
+
+    callback request_automatic_mode();
+    callback request_manual_mode();
+    callback request_engine_fail();
+    callback request_brake_fail();
+    callback request_signal_fail();
+    callback request_update_driver_speed();
+    callback request_update_service_brake();
+    callback request_update_commanded_internal_temperature();
+    callback request_update_power();
+
+    // unique to test bench
+    callback request_update_current_velocity();
+    callback request_update_commanded_speed();
+    callback request_update_authority();
+    callback request_update_actual_internal_temperature();
+
+    // temporary string variables
+    in-out property <string> temp_commanded_speed;
+    in-out property <string> temp_commanded_internal_temperature;
+    in-out property <string> temp_actual_internal_temperature;
+    in-out property <string> temp_driver_speed;
+    in-out property <string> temp_current_velocity;
+    in-out property <string> temp_service_brake;
+    in-out property <string> temp_authority;
+    
+
+    min-height: 845px;
+    min-width: 870px;
+
+    TabWidget {
+        Tab {
+            title: "Train Controller Home";
+            VerticalBox {
+                HorizontalBox {
+                    VerticalBox {
+                        Text {
+                            text: root.operation-status-message;
+                            max-height: 10px;
+                            font-size: 20px;
+                            color: red;
+                            horizontal-alignment: center;
+                        }
+                        Rectangle {
+                            area9 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    root.request_automatic_mode();
+                                }
+                            }
+                            Text {
+                                text: "Automatic";
+                                font-size: 20px;
+                                horizontal-alignment: center;
+                            }
+                            background: root.operation-mode-status == "Automatic" ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            preferred-width: 60px;
+                        }
+                        Rectangle {
+                            area10 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    root.request_manual_mode();
+                                }
+                            }
+                            Text {
+                                text: "Manual";
+                                font-size: 20px;
+                                horizontal-alignment: center;
+                            }
+                            background: root.operation-mode-status == "Manual" ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            preferred-width: 60px;
+                        }
+
+                        Text {
+                            horizontal-alignment: center;
+                            text: "Current Operation Mode: \{root.operation-mode-status}";
+                            height: 1px;
+                            font-size: 20px;
+                        }
+                    }   
+                }
+                HorizontalBox {
+                    Rectangle {
+                        border-color: red;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        VerticalBox {
+                            // Commanded Power
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded Power:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 250px;
+                                }
+                                Text {
+                                    text: root.commanded_power;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "W";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // Authority
+                            HorizontalBox {
+                                Text {
+                                    text: "Authority:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 250px;
+                                }
+                                Text {
+                                    text: root.authority;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "ft";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // Current Velocity
+                            HorizontalBox {
+                                Text {
+                                    text: "Current Velocity:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 250px;
+                                }
+                                Text {
+                                    text: root.current_velocity;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "mph";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // Emergency Brake
+                            HorizontalBox {
+                                Text {
+                                    text: "Emergency Brake:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    width: 200px;
+                                }
+                                Text {
+                                    text: root.emergency_brake ? "ON" : "OFF";
+                                    font-size: 20px;
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+
+                                }
+                            }
+                        }
+                    }
+                    // buttons for engine failure, brake failure, signal pickup failure
+                    HorizontalBox {
+                        //max-height: 200px;
+                        VerticalBox {
+                            Rectangle {
+                                area6 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
+                                }
+                                Text {
+                                    text: "Engine Failure";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.engine_status ? red : #3b3b3b;
+                                preferred-height: 20px;
+                                preferred-width: 60px;
+                            }
+                            Text {
+                                text: root.engine_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 20px;
+                                max-height: 20px;
+                                horizontal-alignment: center;
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                area7 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
+                                }
+                                Text {
+                                    text: "Brake Failure";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.brake_status ? red : #3b3b3b;
+                                preferred-height: 20px;
+                                preferred-width: 60px;
+                            }
+                            Text {
+                                text: root.brake_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 20px;
+                                max-height: 20px;
+                                horizontal-alignment: center;
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                area8 := TouchArea {
+                                    width: parent.width;
+                                    height: parent.height;
+                                }
+                                Text {
+                                    text: "Signal Pickup\nFailure";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                }
+                                background: root.signal_status ? red : #3b3b3b;
+                                preferred-height: 20px;
+                                preferred-width: 60px;
+                            }
+                            Text {
+                                text: root.signal_status ? "FAILING" : "OPERATIONAL";
+                                font-size: 20px;
+                                max-height: 20px;
+                                horizontal-alignment: center;
+                            }
+                        }  
+                    }  
+                }
+
+                // set point speed and commanded speed
+                HorizontalBox {
+                    Rectangle {
+                            border-color: white;
+                            border-radius: 20px;
+                            border-width: 5px;
+                            preferred-height: 200px;
+                            preferred-width: 50px;
+                        VerticalBox {
+                            // Commanded Speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded\nSpeed:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                Text {
+                                    text: root.commanded_speed;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-width: 20px;
+                                }
+                                Text {
+                                    text: "mph";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                            }
+                
+                            // driver speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Set Driver\nSpeed:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 25px;
+                                    horizontal-alignment: center;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    width: 75px;
+                                    edited(val) => {temp_driver_speed = val}
+                                }
+                                Text {
+                                    text: "mph";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 45px;
+                                }
+                                Button {
+                                    text: "Accept\nValue";
+                                    clicked => {
+                                        if (operation-mode-status == "Manual") {
+                                            root.request_update_driver_speed();
+                                        }
+                                    }
+                                    preferred-width: 50px;
+                                }
+                            }
+                        }
+                    }
+                    VerticalBox {
+                        Rectangle {
+                            border-color: white;
+                            border-radius: 20px;
+                            border-width: 5px;
+                            preferred-height: 250px;
+                            preferred-width: 50px;
+                            VerticalBox {
+                                Text {
+                                    text: "Service Brake (%):";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: root.service_brake;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                HorizontalBox {
+                                    LineEdit{
+                                        horizontal-alignment: center;
+                                        font-size: 20px;
+                                        placeholder-text: "Enter Value";
+                                        width: 75px;
+                                        edited(val) => {temp_service_brake = val}
+                                    }
+                                    Button {
+                                        text: "Accept\nValue";
+                                        clicked => {
+                                            if (operation-mode-status == "Manual") {
+                                                root.request_update_service_brake();
+                                            }
+                                        }
+                                        preferred-width: 50px;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    VerticalBox {
+                        Rectangle {
+                            border-color: white;
+                            border-radius: 20px;
+                            border-width: 5px;
+                            preferred-height: 250px;
+                            preferred-width: 50px;
+                            VerticalBox {
+                                HorizontalBox {
+                                    Text {
+                                        text: "Actual Internal\nTemperature:";
+                                        font-size: 20px;
+                                        vertical-alignment: center;
+                                        horizontal-alignment: center;
+                                    }
+                                    Text {
+                                        text: root.actual_internal_temperature;
+                                        font-size: 20px;
+                                        horizontal-alignment: left;
+                                        vertical-alignment: center;
+                                        preferred-width: 20px;
+                                    }
+                                    Text {
+                                        text: "F";
+                                        font-size: 20px;
+                                        horizontal-alignment: left;
+                                        vertical-alignment: center;
+                                        preferred-width: 20px;
+                                    }
+                                }
+                                Text {
+                                    text: "Commanded Internal\nTemperature:";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                HorizontalBox {
+                                    LineEdit{
+                                        horizontal-alignment: center;
+                                        font-size: 20px;
+                                        placeholder-text: "Enter Value";
+                                        edited(val) => {temp_commanded_internal_temperature = val}
+                                    }
+                                    Text {
+                                        text: "F";
+                                        vertical-alignment: center;
+                                        font-size: 20px;
+                                    }
+                                    Button {
+                                        text: "Accept\nValue";
+                                        clicked => {
+                                            if (operation-mode-status == "Manual") {
+                                                root.request_update_commanded_internal_temperature();
+                                            }
+                                        }
+                                        min-width: 75px;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // kp and ki values, buttons for lights and doors, emergency brake
+                HorizontalBox {
+                    preferred-height: 100px;
+                    VerticalBox {
+                        // Interior Lights
+                        Rectangle {
+                            area1 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    if (operation-mode-status == "Manual") {
+                                        root.int-lights = !root.int-lights;
+                                    }
+                                }
+                            }
+                            Text {
+                                text: root.int-lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
+                                font-size: 20px;
+                            }
+                            background: root.int-lights ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;
+                        }
+    
+                        Rectangle {
+                            area2 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    if (operation-mode-status == "Manual") {
+                                        root.ext-lights = !root.ext-lights;
+                                    }
+                                }
+                            }
+                            Text {
+                                text: root.ext-lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
+                                font-size: 20px;
+                            }
+                            background: root.ext-lights ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;
+                        }
+    
+                        Rectangle {
+                            area3 := TouchArea {
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    if (operation-mode-status == "Manual"){
+                                        root.right-doors = !root.right-doors;
+                                    }
+                                }
+                            }
+                            Text {
+                                text: root.right-doors ? "Close Right Doors" : "Open Right Doors";
+                                font-size: 20px;
+                            }
+                            background: root.right-doors ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;
+                        }
+    
+                        Rectangle {
+                            area4 := TouchArea {
+                            
+                                width: parent.width;
+                                height: parent.height;
+                                clicked => {
+                                    if (operation-mode-status == "Manual") {
+                                        root.left-doors = !root.left-doors;
+                                    }
+                                }
+                            }
+                            Text {
+                                text: root.left-doors ? "Close Left Doors" : "Open Left Doors";
+                                font-size: 20px;
+                            }
+                            background: root.left-doors ? green : #3b3b3b;
+                            preferred-height: 20px;
+                            max-height: 50px;
+                            preferred-width: 60px;
+                        }
+                    }
+                    Rectangle {
+                        border-color: white;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        min-height:100px;
+                        max-height:250px;
+                        max-width: 400px;
+                        VerticalBox {
+                            Text {
+                                text: "Kp: \{root.kp}";
+                                font-size: 20px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                            Text {
+                                text: "Ki: \{root.ki}";
+                                font-size: 20px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    Rectangle {
+                        area5 := TouchArea {
+                            width: parent.width;
+                            height: 100px;
+                            clicked => {
+                                root.emergency_brake = !root.emergency_brake;
+                                root.commanded_power = 0;
+                            }
+                        }
+                        Text {
+                            text: "EMERGENCY BRAKE";
+                            font-size: 20px;
+                        }
+                        background: red;
+                        preferred-height: 80px;
+                        min-height: 100px;
+                        preferred-width: 60px;
+                    }
+                } 
+            }
+        }
+        Tab {
+            title: "TestBench";
+            HorizontalBox {
+
+                // inputs
+
+                VerticalBox {
+                    Text {
+                        text: "INPUTS";
+                        font-size: 20px;
+                        horizontal-alignment: center;
+                    }
+
+                    Rectangle {
+                        border-color: white;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        //min-height:400px;
+                        VerticalBox {
+                            spacing: 5px; 
+                            // current velocity
+                            HorizontalBox {
+                                Text {
+                                    text: "Current\nVelocity:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    edited(val) => {temp_current_velocity = val}
+                                }
+                                Text {
+                                    text: "mph";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                                Button {
+                                    text: "Accept\nValue";
+                                    clicked => {
+                                        root.request_update_current_velocity();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // commanded speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded\nSpeed:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    edited(val) => {temp_commanded_speed = val}
+                                }
+                                Text {
+                                    text: "mph";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                                Button {
+                                    text: "Accept\nValue";
+                                    clicked => {
+                                        root.request_update_commanded_speed();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // authority
+                            HorizontalBox {
+                                Text {
+                                    text: "Authority:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    edited(val) => {temp_authority = val}
+                                }
+                                Text {
+                                    text: "m";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                                Button {
+                                    text: "Accept\nValue";
+                                    clicked => {
+                                        root.request_update_authority();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // actual internal temperature
+                            HorizontalBox {
+                                Text {
+                                    text: "Actual Internal\nTemperature:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                    edited(val) => {temp_actual_internal_temperature = val}
+                                }
+                                Text {
+                                    text: "F";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                }
+                                Button {
+                                    text: "Accept\nValue";
+                                    clicked => {
+                                        root.request_update_actual_internal_temperature();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // engine failure
+                            HorizontalBox {
+                                Text {
+                                    text: "Engine\nFailure:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    text: root.engine_status ? "FAILING" : "OPERATIONAL";
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                }
+                                Button {
+                                    text: "Swap\nFailure\nState";
+                                    clicked => {
+                                        root.request_engine_fail();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // brake failure
+                            HorizontalBox {
+                                Text {
+                                    text: "Brake Failure:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    text: root.brake_status ? "FAILING" : "OPERATIONAL";
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                }
+                                Button {
+                                    text: "Swap\nFailure\nState";
+                                    clicked => {
+                                        root.request_brake_fail();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            // signal failure
+                            HorizontalBox {
+                                Text {
+                                    text: "Signal Pickup\nFailure:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 200px;
+                                }
+                                LineEdit {
+                                    text: root.signal_status ? "FAILING" : "OPERATIONAL";
+                                    font-size: 20px;
+                                    placeholder-text: "Enter Value";
+                                    horizontal-alignment: center;
+                                }
+                                Button {
+                                    text: "Swap\nFailure\nState";
+                                    clicked => {
+                                        root.request_signal_fail();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                        }
+                    }
+                }
+                // outputs
+
+                VerticalBox {
+                    Text {
+                        text: "OUTPUTS";
+                        font-size: 20px;
+                        horizontal-alignment: center;
+                    }
+
+                    Rectangle {
+                        border-color: white;
+                        border-radius: 20px;
+                        border-width: 5px;
+                        preferred-height: 250px;
+                        preferred-width: 50px;
+                        //min-height:400px;
+                        VerticalBox {
+                            // grade
+                            HorizontalBox {
+                                Text {
+                                    text: "Grade:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.grade_percent;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "%";
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            // commanded power
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded\nPower:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.commanded_power;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "W";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            // commanded internal temperature
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded\nInternal\nTemperature:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.commanded_internal_temperature;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "F";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            // distance traveled
+                            HorizontalBox {
+                                Text {
+                                    text: "Distance\nTraveled:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.distance_traveled;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-width: 18px;
+                                }
+                                Text {
+                                    text: "miles";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            // emergency brake
+                            HorizontalBox {
+                                Text {
+                                    text: "Emergency\nBrake:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.emergency_brake ? "ON" : "OFF";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // interior lights
+                            HorizontalBox {
+                                Text {
+                                    text: "Interior\nLights:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                    preferred-height: 10px;
+                                }
+                                Text {
+                                    text: root.int-lights ? "ON" : "OFF";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-height: 10px;
+                                }
+                            }
+                            // exterior lights
+                            HorizontalBox {
+                                Text {
+                                    text: "Exterior\nLights:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                    preferred-height: 10px;
+                                }
+                                Text {
+                                    text: root.ext-lights ? "ON" : "OFF";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-height: 10px;
+                                }
+                            }
+                            // right doors
+                            HorizontalBox {
+                                Text {
+                                    text: "Right\nDoors:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.right-doors ? "OPEN" : "CLOSED";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // left doors
+                            HorizontalBox {
+                                Text {
+                                    text: "Left\nDoors:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.left-doors ? "OPEN" : "CLOSED";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // service brake
+                            HorizontalBox {
+                                Text {
+                                    text: "Service\nBrake:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 100px;
+                                }
+                                Text {
+                                    text: root.service_brake;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "%";
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }    
+                }
+            }
         }
     }
 }

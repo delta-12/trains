@@ -1,9 +1,23 @@
 <?xml version="1.0"?>
 <suppressions>
+
+    <!-- Suppress missing includes -->
     <suppress>
         <id>missingInclude</id>
     </suppress>
     <suppress>
         <id>missingIncludeSystem</id>
+    </suppress>
+
+    <!-- Suppress unused logger functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/common/src/logger.cc</fileName>
+    </suppress>
+       
+    <!-- Suppress unused convert functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/common/src/convert.cc</fileName>
     </suppress>
 </suppressions>

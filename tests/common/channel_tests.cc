@@ -1,8 +1,8 @@
 /*****************************************************************************
- * @file channel_tests.cc
- *
- * @brief Unit testing for Channel.
- *****************************************************************************/
+* @file channel_tests.cc
+*
+* @brief Unit testing for Channel.
+*****************************************************************************/
 
 #include <thread>
 
@@ -14,7 +14,9 @@ TEST(ChannelTests, SendAndReceive)
 {
     Channel<int> channel;
 
-    std::thread worker_thread([&]{ channel.Send(69); });
+    std::thread worker_thread([&]{
+                              channel.Send(69);
+        });
 
     ASSERT_EQ(69, channel.Receive());
     worker_thread.join();

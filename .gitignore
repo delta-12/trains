@@ -1,5 +1,8 @@
 # CMake
 build
 
+# ESP-IDF
+managed_components
+
 # VS Code
 .vscode

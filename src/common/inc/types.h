@@ -14,17 +14,23 @@
 
 namespace types
 {
-
+typedef double                                      KilometersPerHour;
+typedef double                                      Kilometers;
 typedef double                                      MetersPerSecond;
 typedef double                                      MetersPerSecondSquared;
 typedef double                                      Meters;
+typedef double                                      MilesPerHour;
+typedef double                                      Miles;
+typedef double                                      Feet;
 typedef double                                      Watts;
 typedef int16_t                                     DegreesFahrenheit;
 typedef int64_t                                     Tick;
 typedef char                                        SectionId;
 typedef uint16_t                                    BlockId;
+typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
+
 
 typedef enum
 {
@@ -87,6 +93,7 @@ typedef struct
     BlockDirection direction;
     bool underground;
 } Block;
+
 
 class Port
 {
