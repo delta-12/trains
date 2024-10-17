@@ -1,8 +1,8 @@
 /*****************************************************************************
- * @file block_builder_tests.cc
- *
- * @brief Unit testing for block builder.
- *****************************************************************************/
+* @file block_builder_tests.cc
+*
+* @brief Unit testing for block builder.
+*****************************************************************************/
 
 #include <gtest/gtest.h>
 
@@ -12,9 +12,9 @@
 TEST(BlockBuilderTests, BlueBline)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
-    CsvParser parser(path);
-    BlockBuilder bb(parser.GetRecords());
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
+    CsvParser             parser(path);
+    BlockBuilder          bb(parser.GetRecords());
 
     ASSERT_EQ(bb.GetSize(), 15);
     ASSERT_EQ(bb.GetBlock(1).block, 1);
@@ -31,9 +31,9 @@ TEST(BlockBuilderTests, BlueBline)
 TEST(BlockBuilderTests, GreenLine)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
-    CsvParser parser(path);
-    BlockBuilder bb(parser.GetRecords());
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser             parser(path);
+    BlockBuilder          bb(parser.GetRecords());
 
     ASSERT_EQ(bb.GetSize(), 150);
     ASSERT_EQ(bb.GetBlock(2).block, 2);
