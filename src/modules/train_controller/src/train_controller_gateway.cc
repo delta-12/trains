@@ -1,5 +1,7 @@
 #include "train_controller_gateway.h"
 
+#include "logger.h"
+
 namespace train_controller
 {
 
@@ -7,7 +9,8 @@ types::Error Gateway::UpdateTrainModels(std::vector<std::shared_ptr<train_model:
 {
     types::Error error = types::ERROR_NONE;
 
-    // TODO
+    // TODO NNF-162
+    LOGGER_UNUSED(trains); // temporary fix to remove compiler warnings
 
     return error;
 }
