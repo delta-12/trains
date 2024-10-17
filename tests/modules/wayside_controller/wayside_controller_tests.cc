@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "logger.h"
 #include "wayside_controller.h"
 
 static const std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
@@ -44,6 +45,7 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
     if (output < WAYSIDE_CONTROLLER_TOTAL_OUTPUTS)
     {
         // TODO NNF-105 set outputs
+        LOGGER_UNUSED(state); // temporary fix to remove compiler warnings
         error = wayside_controller::ERROR_NONE;
     }
 

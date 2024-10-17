@@ -23,7 +23,7 @@ class Gateway
     public:
         void UpdateControllers(void);
         types::Error UpdateTrackModel(std::shared_ptr<track_model::TrackModel> track);
-        types::Error UpdateTrackModels(std::vector<std::shared_ptr<track_model::TrackModel> > &tracks);
+        types::Error UpdateTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks);
         void SetSimulationMode(const bool simulation);
         bool GetSimulationMode(void) const;
         void AttachPort(std::shared_ptr<types::Port> port);

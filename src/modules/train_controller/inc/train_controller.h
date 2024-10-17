@@ -6,6 +6,7 @@
 #ifndef TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
+#include "types.h"
 
 #define TRAIN_CONTROLLER_DEFAULT_KP           (4)
 #define TRAIN_CONTROLLER_DEFAULT_KI           (2)
@@ -15,15 +16,6 @@
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
 #define DEFAULT_DELTA_TIME                    (1)
-
-
-#include <array>
-#include <string>
-#include <cstdint>
-#include <unordered_map>
-
-#include "types.h"
-#include "convert.h"
 
 namespace train_controller
 {

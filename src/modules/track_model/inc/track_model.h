@@ -20,7 +20,7 @@ class TrackModel
     public:
         virtual types::TrackId GetTrackId(void)                                                                   = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
-        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const         = 0;
+        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const          = 0;
         virtual void Update(void)                                                                                 = 0;
         virtual types::Error SetSwitchState(const types::BlockId block, const bool switched)                      = 0;
         virtual types::Error SetCrossingState(const types::BlockId block, const bool closed)                      = 0;
