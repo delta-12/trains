@@ -11,8 +11,9 @@
 
 TEST(BlockBuilderTests, BlueBline)
 {
-    std::string file_path = "/tests/common/test_csv/blue_line.csv";
+    std::string file_path = "./tests/common/test_csv/blue_line.csv";
     std::string input_path = std::filesystem::current_path().string() + file_path;
+    std::cout << "Current directory: " << std::filesystem::current_path().string() << std::endl;
     std::filesystem::path path;
     path.assign(input_path);
     CsvParser parser(path);
@@ -32,7 +33,7 @@ TEST(BlockBuilderTests, BlueBline)
 
 TEST(BlockBuilderTests, GreenLine)
 {
-    std::string file_path = "/tests/common/test_csv/green_line.csv";
+    std::string file_path = "./tests/common/test_csv/green_line.csv";
     std::string input_path = std::filesystem::current_path().string() + file_path;
     std::filesystem::path path;
     path.assign(input_path);
