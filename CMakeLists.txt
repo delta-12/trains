@@ -4,6 +4,14 @@ project(trains LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fdiagnostics-color=always")
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+add_compile_definitions(
+    $<$<CONFIG:Debug>:LOGGER>
+)
+
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(COMMON_DIR ${SRC_DIR}/common)
 set(MODULES_DIR ${SRC_DIR}/modules)
@@ -137,6 +145,7 @@ slint_target_sources(train_model_tests_ui ${UI_DIR}/train_model_ui.slint NAMESPA
 add_executable(train_controller_tests_ui
     ${TESTS_DIR}/modules/train_controller_tests_ui.cc
     ${TRAIN_CONTROLLER_SRCS}
+    ${COMMON_SRCS}
 )
 target_include_directories(train_controller_tests_ui PRIVATE ${INC_DIRS})
 target_link_libraries(train_controller_tests_ui PRIVATE Slint::Slint)
