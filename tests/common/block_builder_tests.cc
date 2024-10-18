@@ -12,7 +12,7 @@
 TEST(BlockBuilderTests, GetSize)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
     ASSERT_EQ(bb.GetSize(), 150);
@@ -21,7 +21,7 @@ TEST(BlockBuilderTests, GetSize)
 TEST(BlockBuilderTests, ConvertRecordToBlock)
 {
     std::filesystem::path                  base_path = std::filesystem::current_path();
-    std::filesystem::path                  path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path                  path      = base_path / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                              parser(path);
     std::vector<std::vector<std::string> > records = parser.GetRecords();
 
@@ -35,7 +35,7 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
 TEST(BlockBuilderTests, AssignBlockInfrastructure)
 {
     std::filesystem::path                  base_path = std::filesystem::current_path();
-    std::filesystem::path                  path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path                  path      = base_path / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                              parser(path);
     std::vector<std::vector<std::string> > records = parser.GetRecords();
 
@@ -59,7 +59,7 @@ TEST(BlockBuilderTests, AssignBlockInfrastructure)
 TEST(BlockBuilderTests, BlueBline)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
+    std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "blue_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
 
@@ -71,6 +71,7 @@ TEST(BlockBuilderTests, BlueBline)
     ASSERT_EQ(bb.GetBlock(3).has_crossing, true);
     ASSERT_EQ(bb.GetBlock(5).has_switch, true);
     ASSERT_EQ(bb.GetBlock(6).has_switch, true);
+    ASSERT_EQ(bb.GetBlock(10).station_name, "Station b");
     ASSERT_EQ(bb.GetBlock(10).has_station, true);
     ASSERT_EQ(bb.GetBlock(15).has_station, true);
 }
@@ -78,7 +79,7 @@ TEST(BlockBuilderTests, BlueBline)
 TEST(BlockBuilderTests, GreenLine)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
 

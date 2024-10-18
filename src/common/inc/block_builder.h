@@ -10,16 +10,16 @@
 
 #include "types.h"
 
-#define CSV_FIELD_LINE                 0
-#define CSV_FIELD_SECTION              1
-#define CSV_FIELD_BLOCK_NUMBER         2
-#define CSV_FIELD_BLOCK_LENGTH         3
-#define CSV_FIELD_BLOCK_GRADE          4
-#define CSV_FIELD_SPEED_LIMIT          5
-#define CSV_FIELD_INFRASTRUCTURE       6
-#define CSV_FIELD_STATION_SIDE         7
-#define CSV_FIELD_ELEVATION            8
-#define CSV_FIELD_CUMULATIVE_ELEVATION 9
+#define BLOCK_BUILDER_CSV_FIELD_LINE                 0
+#define BLOCK_BUILDER_CSV_FIELD_SECTION              1
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER         2
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH         3
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE          4
+#define BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT          5
+#define BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE       6
+#define BLOCK_BUILDER_CSV_FIELD_STATION_SIDE         7
+#define BLOCK_BUILDER_CSV_FIELD_ELEVATION            8
+#define BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION 9
 
 class BlockBuilder
 {
