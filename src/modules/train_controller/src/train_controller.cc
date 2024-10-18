@@ -32,6 +32,7 @@ SoftwareTrainController::SoftwareTrainController()
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
+    operation_mode_              = 0;
 }
 
 
@@ -125,6 +126,11 @@ types::Meters SoftwareTrainController::GetAuthority() const
     return authority_;
 }
 
+bool SoftwareTrainController::GetOperationMode() const
+{
+    return operation_mode_;
+}
+
 // Setters
 void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
 {
@@ -203,11 +209,17 @@ void SoftwareTrainController::SetAuthority(const types::Meters authority)
 
 void SoftwareTrainController::SetKP(const uint16_t kp)
 {
-    kp_ = kp;
+    if (distance_travelled_ == 0)
+    {
+        kp_ = kp;
+    }
 }
-void SoftwareTrainController::setKI(const uint16_t ki)
+void SoftwareTrainController::SetKI(const uint16_t ki)
 {
-    ki_ = ki;
+    if (distance_travelled_ == 0)
+    {
+        ki_ = ki;
+    }
 }
 
 void SoftwareTrainController::SetArrived(const bool arrived)
@@ -215,17 +227,28 @@ void SoftwareTrainController::SetArrived(const bool arrived)
     arrived_ = arrived;
 }
 
+void SoftwareTrainController::SetOperationMode(const bool mode)
+{
+    operation_mode_ = mode;
+}
+
 void SoftwareTrainController::CalculateCommandedPower()
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    float                  block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    types::MetersPerSecond setpoint_speed;
 
     // Defining Vcmd and Actual speed in m/s
-    types::MetersPerSecond setpoint_speed = driver_speed_;
-
-
+    if (operation_mode_ == 0) // automatic
+    {
+        setpoint_speed = commanded_speed_;
+    }
+    else // manual
+    {
+        setpoint_speed = driver_speed_;
+    }
 
     // convert to m/s from km/hr
     block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
@@ -251,10 +274,11 @@ void SoftwareTrainController::CalculateCommandedPower()
     float ki_term = ki_ * integral_sum_;
 
 
-    if ((emergency_brake_ == true) || arrived_)
+    if (emergency_brake_ == true)
     {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
+        integral_sum_             = 0;
+        commanded_power_          = 0;
+        service_brake_percentage_ =  0;
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
@@ -280,7 +304,6 @@ void SoftwareTrainController::CalculateCommandedPower()
     //Normal power calculation
     else
     {
-
         commanded_power_ = kp_term + ki_term;
 
         if (commanded_power_ > max_power_)
@@ -294,9 +317,6 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
 {
     types::MetersPerSecond maximum_speed = convert::KilometersPerHourToMetersPerSecond(train_max_speed_);
     //Bins to increment service brake percentage by 10%
-
-    // speed diff <= train_max_mps*0.1
-
 
     //TODO - NNF-184: Rework this if-else statement into a single calculation
     if ((speed_difference > 0)  && (speed_difference <= (maximum_speed * 0.1)))
@@ -353,5 +373,13 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
 void SoftwareTrainController::UpdateDistanceTravelled(long interval)
 {
     distance_travelled_ += current_speed_ * interval;
+}
+
+void SoftwareTrainController::CheckFailureStates(void)
+{
+    if ((engine_failure_ == true) || (signal_pickup_failure_ == true) || (brake_failure_ == true))
+    {
+        emergency_brake_ = true;
+    }
 }
 }
