@@ -16,6 +16,58 @@ int main(void)
 {
     auto train_controller_ui = ui::TrainControllerUi::create();
 
+    
+    slint::ComponentWeakHandle<ui::TrainControllerUi> weak_ui_handle(train_controller_ui);
+    std::thread worker_thread([&]
+        {
+            
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    );
+
+
+
+    train_controller_ui->run();
+
+    return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     float IntegralSUM = 0;
     float maxPower = 120000;
 
@@ -191,9 +243,9 @@ int main(void)
                 train_controller_ui->set_service_brake(brakeLevel);
 
             } else {
-                /*if (train_controller_ui->get_service_brake() > 0) {
-                    train_controller_ui->set_service_brake(0);
-                }*/
+                //*if (train_controller_ui->get_service_brake() > 0) {
+                //    train_controller_ui->set_service_brake(0);
+                //}
                 train_controller_ui->set_service_brake(0);
 
                 float Verror = Vsetpoint - currentVelocityInMPS;
@@ -317,7 +369,8 @@ int main(void)
         }
     });
 
-    train_controller_ui->run();
+    */
 
-    return 0;
+
+    
 }
