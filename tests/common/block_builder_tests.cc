@@ -16,6 +16,11 @@ TEST(BlockBuilderTests, GetSize)
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
     ASSERT_EQ(bb.GetSize(), 150);
+
+    std::vector<types::Block> result = bb.GetBlocks();
+    ASSERT_EQ(result.size(), 150);
+    bb.Reset();
+    ASSERT_EQ(bb.GetSize(), 0);
 }
 
 TEST(BlockBuilderTests, ConvertRecordToBlock)
