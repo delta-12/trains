@@ -24,6 +24,7 @@
 
 #include "types.h"
 #include "convert.h"
+#include "tick_source.h"
 
 namespace train_controller
 {
@@ -76,8 +77,8 @@ class SoftwareTrainController : public TrainController
 {
     public:
         // Constructor
-        SoftwareTrainController();
-
+        SoftwareTrainController(std::shared_ptr<TickSource> clk);
+        
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
         types::MilesPerHour GetDriverSpeed(void) const;
@@ -119,11 +120,14 @@ class SoftwareTrainController : public TrainController
         void setKI(const uint16_t kp);
 
         //local functions
-        void CalculateCommandedPower(void);
-        void UpdateDistanceTravelled(long interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        void Update(void);
+        void CalculateCommandedPower(float interval);
+        void UpdateDistanceTravelled(float interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
+
+        std::shared_ptr<TickSource> CLK;
 
         float integral_sum_;
         uint16_t kp_;

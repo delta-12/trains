@@ -1,11 +1,15 @@
+#include <cstdint>
+#include <chrono>
+
 #include "train_controller.h"
 #include "types.h"
 #include "convert.h"
+#include "tick_source.h"
 
 namespace train_controller
 {
 //Constructor
-SoftwareTrainController::SoftwareTrainController()
+SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : CLK(clk)
 {
     // Initializing variables
     ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
@@ -215,8 +219,31 @@ void SoftwareTrainController::SetArrived(const bool arrived)
     arrived_ = arrived;
 }
 
-void SoftwareTrainController::CalculateCommandedPower()
+
+
+void SoftwareTrainController::Update()
 {
+    auto last_time = (*CLK).GetTick();
+
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+
+    float delta_time = static_cast<float>(delta_time_in_seconds.count());
+
+    CalculateCommandedPower(delta_time);
+    UpdateDistanceTravelled(delta_time);
+
+}
+
+
+void SoftwareTrainController::CalculateCommandedPower(float interval)
+{
+    
+    auto last_time = (*CLK).GetTick();
+
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+
+    float delta_time = static_cast<float>(delta_time_in_seconds.count());
+    
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
@@ -236,13 +263,13 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     // Calculating speed_error
-    double speed_error = setpoint_speed - current_speed_;
+    float speed_error = setpoint_speed - current_speed_;
 
     // Calculating Kp term
     float kp_term = speed_error * kp_;
 
     // Temp time passed since last update
-    float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
+    //float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
     integral_sum_ += speed_error * delta_time;
@@ -350,7 +377,7 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     }
 }
 
-void SoftwareTrainController::UpdateDistanceTravelled(long interval)
+void SoftwareTrainController::UpdateDistanceTravelled(float interval)
 {
     distance_travelled_ += current_speed_ * interval;
 }
