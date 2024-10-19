@@ -1,5 +1,8 @@
 #include "block_builder.h"
+
 #include <bits/stdc++.h>
+
+static std::vector<std::string> SplitBySemicolon(const std::string& input);
 
 BlockBuilder::BlockBuilder(void)
 {
@@ -15,8 +18,6 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string> > &records
     }
 }
 
-static std::vector<std::string> SplitBySemicolon(const std::string& input);
-
 void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::string &input_string)
 {
     std::string input_lowercase = input_string;
@@ -27,7 +28,7 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
     {
         const std::string &infrastructure = infrastructure_list[i];
         // Check for "station" keyword
-        if (infrastructure.find("station") != std::string::npos && i + 1 < infrastructure_list.size())
+        if ((infrastructure.find("station") != std::string::npos) && (i + 1 < infrastructure_list.size()))
         {
             block.has_station = true;
             std::string station_name = infrastructure_list[i + 1];
@@ -63,7 +64,7 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
     block.speed_limit = std::stod(record[BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT]);
     AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
     std::string station_side = record[BLOCK_BUILDER_CSV_FIELD_STATION_SIDE];
-    if (station_side.find("Left") != std::string::npos && station_side.find("Right") != std::string::npos)
+    if ((station_side.find("Left") != std::string::npos) && (station_side.find("Right") != std::string::npos))
     {
         block.station_side = types::StationSide::STATIONSIDE_BOTH;
     }
