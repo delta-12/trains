@@ -88,6 +88,7 @@ TEST(BlockBuilderTests, BlueBline)
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(10, block));
     ASSERT_EQ(block.station_name, "Station b");
     ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.has_light, false);
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(15, block));
     ASSERT_EQ(block.has_station, true);
