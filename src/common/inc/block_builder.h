@@ -25,7 +25,7 @@ class BlockBuilder
 {
     public:
         BlockBuilder(void);
-        BlockBuilder(const std::vector<std::vector<std::string> > &records);
+        BlockBuilder(const std::vector<std::vector<std::string>> &records);
         std::size_t GetSize(void) const;
         void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
         types::Block ConvertRecordToBlock(const std::vector<std::string> &record);

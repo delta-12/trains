@@ -8,7 +8,7 @@ BlockBuilder::BlockBuilder(void)
 {
 }
 
-BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string> > &records)
+BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records)
 {
     for (size_t i = 1; i < records.size(); ++i)
     {
@@ -68,13 +68,11 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
     {
         block.station_side = types::StationSide::STATIONSIDE_BOTH;
     }
-    else
-    if (station_side.find("Left") != std::string::npos)
+    else if (station_side.find("Left") != std::string::npos)
     {
         block.station_side = types::StationSide::STATIONSIDE_LEFT;
     }
-    else
-    if (station_side.find("Right") != std::string::npos)
+    else if (station_side.find("Right") != std::string::npos)
     {
         block.station_side = types::StationSide::STATIONSIDE_RIGHT;
     }
