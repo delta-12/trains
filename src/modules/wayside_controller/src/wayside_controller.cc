@@ -52,13 +52,11 @@ Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_input
         {
             error = ERROR_DUPLICATE_BLOCK;
         }
-        else
-        if (!IsTrackCircuitInputValid(block_inputs.track_circuit_input))
+        else if (!IsTrackCircuitInputValid(block_inputs.track_circuit_input))
         {
             error = ERROR_INVALID_INPUT;
         }
-        else
-        if (mapped_inputs.end() != mapped_inputs.find(block_inputs.track_circuit_input))
+        else if (mapped_inputs.end() != mapped_inputs.find(block_inputs.track_circuit_input))
         {
             error = ERROR_DUPLICATE_INPUT;
         }
@@ -69,8 +67,7 @@ Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_input
             {
                 error = ERROR_INVALID_INPUT;
             }
-            else
-            if (mapped_inputs.end() != mapped_inputs.find(block_inputs.switch_input))
+            else if (mapped_inputs.end() != mapped_inputs.find(block_inputs.switch_input))
             {
                 error = ERROR_DUPLICATE_INPUT;
             }
@@ -170,8 +167,7 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     {
         error = ERROR_INVALID_BLOCK;
     }
-    else
-    if (!IsSwitchInputValid(block_inputs->second.switch_input))
+    else if (!IsSwitchInputValid(block_inputs->second.switch_input))
     {
         error = ERROR_INVALID_INPUT;
     }
