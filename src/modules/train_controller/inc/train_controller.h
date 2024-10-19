@@ -98,6 +98,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetCommandedInternalTemperature(void) const;
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Meters GetAuthority(void) const;
+        
 
         // Implementations for setters
         void SetCommandedSpeed(const types::MetersPerSecond speed);
@@ -117,18 +118,20 @@ class SoftwareTrainController : public TrainController
         void SetAuthority(const types::Meters authority);
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t ki);
-        void setKI(const uint16_t kp);
+        void SetKI(const uint16_t kp);
 
         //local functions
+        float GetDeltaTime(void) const;
         void Update(void);
-        void CalculateCommandedPower(float interval);
-        void UpdateDistanceTravelled(float interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        void CalculateCommandedPower();
+        void UpdateDistanceTravelled(); // NNF-181 TODO: Update the interval application to make use of Tick Source
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
 
         std::shared_ptr<TickSource> clock_;
         types::Tick last_tick_updated_;
+        float delta_time_;
 
         float integral_sum_;
         uint16_t kp_;

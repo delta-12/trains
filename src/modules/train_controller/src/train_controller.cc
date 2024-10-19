@@ -36,7 +36,9 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
+    last_tick_updated_ = (*clock_).GetTick();
 
+    
     Update();
 }
 
@@ -211,7 +213,7 @@ void SoftwareTrainController::SetKP(const uint16_t kp)
 {
     kp_ = kp;
 }
-void SoftwareTrainController::setKI(const uint16_t ki)
+void SoftwareTrainController::SetKI(const uint16_t ki)
 {
     ki_ = ki;
 }
@@ -225,27 +227,20 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 
 void SoftwareTrainController::Update()
 {
-    auto last_time = (*clock_).GetTick();
 
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_time));
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_tick_updated_));
 
-    float delta_time = static_cast<float>(delta_time_in_seconds.count());
+    delta_time_ = static_cast<float>(delta_time_in_seconds.count());
 
-    CalculateCommandedPower(delta_time);
-    UpdateDistanceTravelled(delta_time);
+    last_tick_updated_ = (*clock_).GetTick();
 
+    CalculateCommandedPower();
+    UpdateDistanceTravelled();
 }
 
 
-void SoftwareTrainController::CalculateCommandedPower(float interval)
+void SoftwareTrainController::CalculateCommandedPower()
 {
-    
-    auto last_time = (*clock_).GetTick();
-
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_time));
-
-    float delta_time = static_cast<float>(delta_time_in_seconds.count());
-    
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
@@ -253,8 +248,6 @@ void SoftwareTrainController::CalculateCommandedPower(float interval)
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
-
-
 
     // convert to m/s from km/hr
     block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
@@ -274,7 +267,7 @@ void SoftwareTrainController::CalculateCommandedPower(float interval)
     //float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
-    integral_sum_ += speed_error * delta_time;
+    integral_sum_ += speed_error * delta_time_;
 
     // Calculating Ki term
     float ki_term = ki_ * integral_sum_;
@@ -379,8 +372,13 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     }
 }
 
-void SoftwareTrainController::UpdateDistanceTravelled(float interval)
+void SoftwareTrainController::UpdateDistanceTravelled()
 {
-    distance_travelled_ += current_speed_ * interval;
+    distance_travelled_ += current_speed_ * delta_time_;
+}
+
+float SoftwareTrainController::GetDeltaTime(void) const
+{
+    return delta_time_;
 }
 }
