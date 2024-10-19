@@ -9,7 +9,7 @@
 namespace train_controller
 {
 //Constructor
-SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : CLK(clk)
+SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
     // Initializing variables
     ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
@@ -36,6 +36,8 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
+
+    Update();
 }
 
 
@@ -223,9 +225,9 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 
 void SoftwareTrainController::Update()
 {
-    auto last_time = (*CLK).GetTick();
+    auto last_time = (*clock_).GetTick();
 
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_time));
 
     float delta_time = static_cast<float>(delta_time_in_seconds.count());
 
@@ -238,9 +240,9 @@ void SoftwareTrainController::Update()
 void SoftwareTrainController::CalculateCommandedPower(float interval)
 {
     
-    auto last_time = (*CLK).GetTick();
+    auto last_time = (*clock_).GetTick();
 
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_time));
 
     float delta_time = static_cast<float>(delta_time_in_seconds.count());
     
