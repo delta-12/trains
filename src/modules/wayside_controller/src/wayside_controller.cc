@@ -182,6 +182,36 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 std::vector<BlockState> WaysideController::GetBlockStates(void)
 {
     // TODO NNF-168
+    std::vector<BlockState> current_block_states_; 
+    std::vector<BlockState> previous_block_states_; // Holds previous block states
+
+    std::vector<BlockState> changed_states;
+
+    // Compare current and previous states
+    for (size_t i = 0; i < current_block_states_.size(); ++i) {
+        const BlockState& current_state = current_block_states_[i];
+        const BlockState& previous_state = previous_block_states_[i];
+
+        // If any of the fields have changed, add to the changed states vector
+        if (current_state.block != previous_state.block ||
+            current_state.occupied != previous_state.occupied ||
+            current_state.track_failure != previous_state.track_failure) 
+        {
+            changed_states.push_back(current_state);
+        }
+    }
+
+    // Update previous block states for the next comparison
+    previous_block_states_ = current_block_states_;
+
+    // Process the changed states (internally)
+    // For example, store or update the states in another structure
+    if (!changed_states.empty()) {
+        // Process the states here as per your logic
+        // For example, update internal tracking or perform additional actions
+    }
+
+
 
     return std::vector<BlockState>();
 }
