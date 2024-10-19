@@ -29,7 +29,7 @@ class BlockBuilder
         std::size_t GetSize(void) const;
         void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
         types::Block ConvertRecordToBlock(const std::vector<std::string> &record);
-        types::Block GetBlock(const types::BlockId block_id);
+        types::Error GetBlock(const types::BlockId block_id, types::Block &block);
         std::vector<types::Block> GetBlocks(void) const;
 
         void Reset(void);

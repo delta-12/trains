@@ -29,9 +29,8 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
     std::filesystem::path                  path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                              parser(path);
     std::vector<std::vector<std::string> > records = parser.GetRecords();
-
-    BlockBuilder bb;
-    types::Block block = bb.ConvertRecordToBlock(records[88]);
+    BlockBuilder                           bb;
+    types::Block                           block = bb.ConvertRecordToBlock(records[88]);
 
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Poplar");
@@ -67,18 +66,31 @@ TEST(BlockBuilderTests, BlueBline)
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
+    types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 15);
-    ASSERT_EQ(bb.GetBlock(1).block, 1);
-    ASSERT_EQ(bb.GetBlock(2).block, 2);
-    ASSERT_EQ(bb.GetBlock(2).has_crossing, false);
+    bb.GetBlock(1, block);
+    ASSERT_EQ(block.block, 1);
 
-    ASSERT_EQ(bb.GetBlock(3).has_crossing, true);
-    ASSERT_EQ(bb.GetBlock(5).has_switch, true);
-    ASSERT_EQ(bb.GetBlock(6).has_switch, true);
-    ASSERT_EQ(bb.GetBlock(10).station_name, "Station b");
-    ASSERT_EQ(bb.GetBlock(10).has_station, true);
-    ASSERT_EQ(bb.GetBlock(15).has_station, true);
+    bb.GetBlock(2, block);
+    ASSERT_EQ(block.block, 2);
+    ASSERT_EQ(block.has_crossing, false);
+
+    bb.GetBlock(3, block);
+    ASSERT_EQ(block.has_crossing, true);
+
+    bb.GetBlock(5, block);
+    ASSERT_EQ(block.has_switch, true);
+
+    bb.GetBlock(6, block);
+    ASSERT_EQ(block.has_switch, true);
+
+    bb.GetBlock(10, block);
+    ASSERT_EQ(block.station_name, "Station b");
+    ASSERT_EQ(block.has_station, true);
+
+    bb.GetBlock(15, block);
+    ASSERT_EQ(block.has_station, true);
 }
 
 TEST(BlockBuilderTests, GreenLine)
@@ -87,20 +99,26 @@ TEST(BlockBuilderTests, GreenLine)
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
+    types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 150);
-    ASSERT_EQ(bb.GetBlock(2).block, 2);
-    ASSERT_EQ(bb.GetBlock(1).has_crossing, false);
 
-    ASSERT_EQ(bb.GetBlock(2).has_crossing, false);
-    ASSERT_EQ(bb.GetBlock(2).has_switch, false);
-    ASSERT_EQ(bb.GetBlock(2).has_station, true);
-    ASSERT_EQ(bb.GetBlock(2).has_light, false);
+    bb.GetBlock(1, block);
+    ASSERT_EQ(block.has_crossing, false);
 
-    ASSERT_EQ(bb.GetBlock(62).has_crossing, false);
-    ASSERT_EQ(bb.GetBlock(62).has_switch, true);
-    ASSERT_EQ(bb.GetBlock(62).has_station, false);
-    ASSERT_EQ(bb.GetBlock(62).has_light, false);
+    bb.GetBlock(2, block);
+    ASSERT_EQ(block.block, 2);
+    ASSERT_EQ(block.has_crossing, false);
+    ASSERT_EQ(block.has_switch, false);
+    ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.has_light, false);
 
-    ASSERT_EQ(bb.GetBlock(77).station_side, types::StationSide::STATIONSIDE_BOTH);
+    bb.GetBlock(62, block);
+    ASSERT_EQ(block.has_crossing, false);
+    ASSERT_EQ(block.has_switch, true);
+    ASSERT_EQ(block.has_station, false);
+    ASSERT_EQ(block.has_light, false);
+
+    bb.GetBlock(77, block);
+    ASSERT_EQ(block.station_side, types::StationSide::STATIONSIDE_BOTH);
 }
