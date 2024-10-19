@@ -1,6 +1,7 @@
 #include "train_controller.h"
-#include "types.h"
+
 #include "convert.h"
+#include "types.h"
 
 namespace train_controller
 {
@@ -258,8 +259,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
-    else
-    if (current_speed_ > driver_speed_)
+    else if (current_speed_ > driver_speed_)
     {
         integral_sum_ = 0;
 
@@ -271,8 +271,7 @@ void SoftwareTrainController::CalculateCommandedPower()
         CalculateServiceBrake(speed_difference);
     }
     //Checking if Service brake is on
-    else
-    if (service_brake_percentage_ > 0)
+    else if (service_brake_percentage_ > 0)
     {
         integral_sum_    = 0;
         commanded_power_ = 0;
@@ -303,48 +302,39 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     {
         service_brake_percentage_ = 0.1;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.1) && (speed_difference <= (maximum_speed * 0.2)))
+    else if ((speed_difference > maximum_speed * 0.1) && (speed_difference <= (maximum_speed * 0.2)))
     {
         service_brake_percentage_ = 0.2;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.2)  && (speed_difference <= (maximum_speed * 0.3)))
+    else if ((speed_difference > maximum_speed * 0.2)  && (speed_difference <= (maximum_speed * 0.3)))
     {
         service_brake_percentage_ = 0.3;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.3) && (speed_difference <= (maximum_speed * 0.4)))
+    else if ((speed_difference > maximum_speed * 0.3) && (speed_difference <= (maximum_speed * 0.4)))
     {
         service_brake_percentage_ = 0.4;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.4) && (speed_difference <= (maximum_speed * 0.5)))
+    else if ((speed_difference > maximum_speed * 0.4) && (speed_difference <= (maximum_speed * 0.5)))
     {
         service_brake_percentage_ = 0.5;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.5) && (speed_difference <= (maximum_speed * 0.6)))
+    else if ((speed_difference > maximum_speed * 0.5) && (speed_difference <= (maximum_speed * 0.6)))
     {
         service_brake_percentage_ = 0.6;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.6) && (speed_difference <= (maximum_speed * 0.7)))
+    else if ((speed_difference > maximum_speed * 0.6) && (speed_difference <= (maximum_speed * 0.7)))
     {
         service_brake_percentage_ = 0.7;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.7) && (speed_difference <= (maximum_speed * 0.8)))
+    else if ((speed_difference > maximum_speed * 0.7) && (speed_difference <= (maximum_speed * 0.8)))
     {
         service_brake_percentage_ = 0.8;
     }
-    else
-    if ((speed_difference > maximum_speed * 0.8) && (speed_difference <= (maximum_speed * 0.9)))
+    else if ((speed_difference > maximum_speed * 0.8) && (speed_difference <= (maximum_speed * 0.9)))
     {
         service_brake_percentage_ = 0.9;
     }
-    else
-    if (speed_difference > (maximum_speed * 0.9))
+    else if (speed_difference > (maximum_speed * 0.9))
     {
         service_brake_percentage_ = 1;
     }
