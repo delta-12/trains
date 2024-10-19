@@ -85,8 +85,8 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
 
 types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block &block)
 {
-    types::Error error = types::ERROR_NONE;
-    std::vector<types::Block>::iterator it = std::find_if(blocks_.begin(), blocks_.end(), [&block_id](const types::Block& block) {
+    types::Error                        error = types::ERROR_NONE;
+    std::vector<types::Block>::iterator it    = std::find_if(blocks_.begin(), blocks_.end(), [&block_id](const types::Block& block) {
         return block.block == block_id;
     });
 
