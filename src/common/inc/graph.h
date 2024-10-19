@@ -18,8 +18,7 @@ class Graph
         bool RemoveEdge(const NodeLabel &start, const NodeLabel &end);
         void Clear(void);
         size_t GetEdgeCount(void) const;
-    // TODO adjust edge weight
-    // TODO path algos
+    // TODO NNF-190 path algorithms
 
     private:
         bool IsConnected(const NodeLabel &node) const;
@@ -49,6 +48,7 @@ bool Graph<NodeLabel, EdgeWeight>::AddEdge(const NodeLabel &start, const NodeLab
     return edge_added;
 }
 
+// Allows for disconnected graphs to form
 template<typename NodeLabel, typename EdgeWeight>
 bool Graph<NodeLabel, EdgeWeight>::RemoveEdge(const NodeLabel &start, const NodeLabel &end)
 {
