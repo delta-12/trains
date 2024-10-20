@@ -8,29 +8,46 @@
 #define TRAINS_SRC_COMMON_INC_GRAPH_H
 
 #include <algorithm>
+#include <functional>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 template <typename NodeLabel, typename EdgeWeight>
 class Graph
 {
     public:
-        bool AddEdge(const NodeLabel &start, const NodeLabel &end, const EdgeWeight &weight);
-        bool RemoveEdge(const NodeLabel &start, const NodeLabel &end);
+        bool AddEdge(const NodeLabel start, const NodeLabel end, const EdgeWeight &weight);
+        bool RemoveEdge(const NodeLabel start, const NodeLabel end);
         void Clear(void);
         size_t GetEdgeCount(void) const;
-        std::unordered_set<NodeLabel> BreadthFirstSearch(const NodeLabel &start) const;
-        bool BreadthFirstSearch(const NodeLabel &start, const NodeLabel &end, std::vector<NodeLabel> &path) const;
-    // TODO NNF-190 path algorithms
+        std::unordered_set<NodeLabel> BreadthFirstSearch(const NodeLabel start) const;
+        std::vector<NodeLabel> Dijkstra(const NodeLabel start, const NodeLabel end) const;
 
     private:
-        bool IsConnected(const NodeLabel &node) const;
+        typedef struct NodeDistance
+        {
+            NodeDistance(void)
+            {
+            }
+            NodeDistance(const NodeLabel node, const EdgeWeight distance) : node(node), distance(distance)
+            {
+            }
+            NodeDistance(const NodeLabel node, const NodeLabel previous, const EdgeWeight distance) : node(node), previous(previous), distance(distance)
+            {
+            }
+            NodeLabel node;
+            NodeLabel previous;
+            EdgeWeight distance;
+        } NodeDistance;
+        bool IsConnected(const NodeLabel node) const;
+        std::unordered_map<NodeLabel, EdgeWeight> GetEdges(const NodeLabel node) const;
         std::unordered_map<NodeLabel, std::unordered_map<NodeLabel, EdgeWeight>> node_map_;
 };
 
 template <typename NodeLabel, typename EdgeWeight>
-bool Graph<NodeLabel, EdgeWeight>::AddEdge(const NodeLabel &start, const NodeLabel &end, const EdgeWeight &weight)
+bool Graph<NodeLabel, EdgeWeight>::AddEdge(const NodeLabel start, const NodeLabel end, const EdgeWeight &weight)
 {
     bool edge_added = true;
 
@@ -54,7 +71,7 @@ bool Graph<NodeLabel, EdgeWeight>::AddEdge(const NodeLabel &start, const NodeLab
 
 // Allows for disconnected graphs to form
 template <typename NodeLabel, typename EdgeWeight>
-bool Graph<NodeLabel, EdgeWeight>::RemoveEdge(const NodeLabel &start, const NodeLabel &end)
+bool Graph<NodeLabel, EdgeWeight>::RemoveEdge(const NodeLabel start, const NodeLabel end)
 {
     bool edge_removed = true;
 
@@ -99,8 +116,105 @@ size_t Graph<NodeLabel, EdgeWeight>::GetEdgeCount(void) const
     return edge_count;
 }
 
+// Returns set of connected nodes
 template <typename NodeLabel, typename EdgeWeight>
-bool Graph<NodeLabel, EdgeWeight>::IsConnected(const NodeLabel &node) const
+std::unordered_set<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(const NodeLabel start) const
+{
+    std::queue<NodeLabel>         node_queue;
+    std::unordered_set<NodeLabel> visited_nodes;
+
+    if (IsConnected(start))
+    {
+        node_queue.push(start);
+        visited_nodes.insert(start);
+
+        while (!node_queue.empty())
+        {
+            for (const typename std::unordered_map<NodeLabel, EdgeWeight>::value_type &edge : GetEdges(node_queue.front()))
+            {
+                if (visited_nodes.end() == visited_nodes.find(edge.first))
+                {
+                    visited_nodes.insert(edge.first);
+                    node_queue.push(edge.first);
+                }
+            }
+
+            node_queue.pop();
+        }
+    }
+
+    return visited_nodes;
+}
+
+template <typename NodeLabel, typename EdgeWeight>
+std::vector<NodeLabel> Graph<NodeLabel, EdgeWeight>::Dijkstra(const NodeLabel start, const NodeLabel end) const
+{
+    std::function<bool(const NodeDistance &distance_a, const NodeDistance &distance_b)> compare_distances = [](const NodeDistance &distance_a, const NodeDistance &distance_b)
+                                                                                                            {
+                                                                                                                return distance_a.distance > distance_b.distance;
+                                                                                                            };
+    std::priority_queue<NodeDistance, std::vector<NodeDistance>, decltype(compare_distances)> min_priority_queue(compare_distances);
+    std::unordered_map<NodeLabel, NodeDistance>                                               node_distances;
+    std::unordered_set<NodeLabel>                                                             visited_nodes;
+    std::vector<NodeLabel>                                                                    path;
+    NodeDistance                                                                              current_node_distance;
+
+    current_node_distance.node     = start;
+    current_node_distance.distance = static_cast<EdgeWeight>(0);
+    min_priority_queue.emplace(start, static_cast<EdgeWeight>(0));
+    node_distances[start] = current_node_distance;
+    visited_nodes.insert(start);
+
+    while (!min_priority_queue.empty())
+    {
+        current_node_distance = min_priority_queue.top();
+        min_priority_queue.pop();
+
+        if (end == current_node_distance.node)
+        {
+            break;
+        }
+
+        for (const typename std::unordered_map<NodeLabel, EdgeWeight>::value_type &edge : GetEdges(current_node_distance.node))
+        {
+            EdgeWeight distance = current_node_distance.distance + edge.second;
+
+            if ((node_distances.end() == node_distances.find(edge.first)) ||
+                (distance < node_distances[edge.first].distance))
+            {
+                NodeDistance node_distance(edge.first, current_node_distance.node, distance);
+
+                node_distances[edge.first] = node_distance;
+
+                if (visited_nodes.end() == visited_nodes.find(edge.first))
+                {
+                    visited_nodes.insert(edge.first);
+                    min_priority_queue.push(node_distance);
+                }
+            }
+        }
+    }
+
+    typename std::unordered_map<NodeLabel, NodeDistance>::const_iterator end_node_distance = node_distances.find(end);
+    if (node_distances.end() != end_node_distance)
+    {
+        NodeDistance node_distance = end_node_distance->second;
+
+        while (start != node_distance.node)
+        {
+            path.push_back(node_distance.node);
+            node_distance = node_distances[node_distance.previous];
+        }
+        path.push_back(start);
+
+        std::reverse(path.begin(), path.end());
+    }
+
+    return path;
+}
+
+template <typename NodeLabel, typename EdgeWeight>
+bool Graph<NodeLabel, EdgeWeight>::IsConnected(const NodeLabel node) const
 {
     bool connected = false;
 
@@ -120,65 +234,17 @@ bool Graph<NodeLabel, EdgeWeight>::IsConnected(const NodeLabel &node) const
 }
 
 template <typename NodeLabel, typename EdgeWeight>
-std::unordered_set<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(const NodeLabel &start) const
+std::unordered_map<NodeLabel, EdgeWeight> Graph<NodeLabel, EdgeWeight>::GetEdges(const NodeLabel node) const
 {
-    std::queue<NodeLabel>         node_queue;
-    std::unordered_set<NodeLabel> visited_nodes;
+    std::unordered_map<NodeLabel, EdgeWeight>                                                         edges;
+    typename std::unordered_map<NodeLabel, std::unordered_map<NodeLabel, EdgeWeight>>::const_iterator node_edges = node_map_.find(node);
 
-    if (IsConnected(start))
+    if (node_map_.end() != node_edges)
     {
-        node_queue.push(start);
-        visited_nodes.insert(start);
-
-        while (!node_queue.empty())
-        {
-            typename std::unordered_map<NodeLabel, std::unordered_map<NodeLabel, EdgeWeight>>::const_iterator current_node = node_map_.find(node_queue.front());
-            node_queue.pop();
-
-            if (node_map_.end() != current_node)
-            {
-                for (const typename std::unordered_map<NodeLabel, EdgeWeight>::value_type &edge : current_node->second)
-                {
-                    if (visited_nodes.end() == visited_nodes.find(edge.first))
-                    {
-                        visited_nodes.insert(edge.first);
-                        node_queue.push(edge.first);
-                    }
-                }
-            }
-        }
+        edges = node_edges->second;
     }
 
-    return visited_nodes;
-}
-
-template <typename NodeLabel, typename EdgeWeight>
-bool Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(const NodeLabel &start, const NodeLabel &end, std::vector<NodeLabel> &path) const
-{
-    bool connected = false;
-    // std::queue<NodeLabel>         node_queue;
-    // std::unordered_set<NodeLabel> visited_nodes;
-    // std::unordered_map<NodeLabel, NodeLabel> parent_nodes;
-
-    // node_queue.push(start);
-    // visited_nodes.insert(start);
-
-    // while (!node_queue.empty())
-    // {
-    //     NodeLabel current_node = node_queue.front();
-    //     node_queue.pop();
-
-    //     for (const std::unordered_map<NodeLabel, EdgeWeight>::value_type &edge : node_map_[current_node])
-    //     {
-    //         if (visited_nodes.end() == visited_nodes.find(edge.first))
-    //         {
-    //             visited_nodes.insert(edge.first);
-    //             node_queue.push(edge.first);
-    //         }
-    //     }
-    // }
-
-    return connected;
+    return edges;
 }
 
 #endif // TRAINS_SRC_COMMON_INC_GRAPH_H
