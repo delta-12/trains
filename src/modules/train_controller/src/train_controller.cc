@@ -246,7 +246,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    double block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
@@ -260,19 +260,19 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     // Calculating speed_error
-    float speed_error = setpoint_speed - current_speed_;
+    double speed_error = setpoint_speed - current_speed_;
 
     // Calculating Kp term
-    float kp_term = speed_error * kp_;
+    double kp_term = speed_error * kp_;
 
     // Temp time passed since last update
-    //float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
+    //double delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
     integral_sum_ += speed_error * delta_time_;
 
     // Calculating Ki term
-    float ki_term = ki_ * integral_sum_;
+    double ki_term = ki_ * integral_sum_;
 
 
     if ((emergency_brake_ == true) || arrived_)
@@ -379,7 +379,7 @@ void SoftwareTrainController::UpdateDistanceTravelled()
     distance_travelled_ += current_speed_ * delta_time_;
 }
 
-float SoftwareTrainController::GetDeltaTime(void) const
+double SoftwareTrainController::GetDeltaTime(void) const
 {
     return delta_time_;
 }

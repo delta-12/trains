@@ -121,7 +121,7 @@ class SoftwareTrainController : public TrainController
         void SetKI(const uint16_t kp);
 
         //local functions
-        float GetDeltaTime(void) const;
+        double GetDeltaTime(void) const;
         void Update(void);
         void CalculateCommandedPower();
         void UpdateDistanceTravelled(); // NNF-181 TODO: Update the interval application to make use of Tick Source
@@ -133,7 +133,7 @@ class SoftwareTrainController : public TrainController
         types::Tick last_tick_updated_;
         double delta_time_;
 
-        float integral_sum_;
+        double integral_sum_;
         uint16_t kp_;
         uint16_t ki_;
 

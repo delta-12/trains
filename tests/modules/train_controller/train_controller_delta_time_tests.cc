@@ -29,7 +29,7 @@ TEST(TrainControllerDeltaTimeTests, GetDeltaTime)
     TC.Update();
 
     //Checking if the delta time corresponds to the 1 second wait time
-    ASSERT_NEAR(1, TC.GetDeltaTime(),0.02);
+    EXPECT_DOUBLE_EQ(1, TC.GetDeltaTime());
 
     //(*CLOCK).Start();
     usleep(2000000);
@@ -38,7 +38,7 @@ TEST(TrainControllerDeltaTimeTests, GetDeltaTime)
     TC.Update();
 
     //Checking if the delta time corresponds to the 2 second wait time
-    ASSERT_NEAR(2, TC.GetDeltaTime(),0.02);
+    EXPECT_DOUBLE_EQ(2, TC.GetDeltaTime());
 
     (*CLOCK).Stop();
 }
@@ -55,7 +55,7 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     TC.Update();
 
     //Checking no distance has been travelled
-    ASSERT_EQ(0, TC.GetDistanceTravelled());
+    EXPECT_DOUBLE_EQ(0, TC.GetDistanceTravelled());
 
 
 
@@ -67,7 +67,7 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     TC.Update();
     
     //Checking if the distance travelled corresponds to the time passed and the current speed
-    ASSERT_NEAR(20, TC.GetDistanceTravelled(),0.1);
+    EXPECT_DOUBLE_EQ(20, TC.GetDistanceTravelled());
 
 
 
@@ -79,11 +79,11 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     TC.Update();
     
     //Checking if the distance travelled corresponds to the time passed and the current speed
-    ASSERT_NEAR(25, TC.GetDistanceTravelled(),0.1);
+    EXPECT_DOUBLE_EQ(25, TC.GetDistanceTravelled());
 
 
 
-    //Setting current speed to 5 m/s
+    //Setting current speed to 2.5 m/s
     TC.SetCurrentSpeed(2.5);
 
     //Waiting for 3 seconds
@@ -91,7 +91,7 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     TC.Update();
     
     //Checking if the distance travelled corresponds to the time passed and the current speed
-    ASSERT_NEAR(32.5, TC.GetDistanceTravelled(),0.1);
+    EXPECT_DOUBLE_EQ(32.5, TC.GetDistanceTravelled());
 
     (*CLOCK).Stop();
 }
@@ -99,11 +99,11 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
 /*
 TEST(TrainControllerDeltaTimeTests, DistanceTravelled2)
 {
-    TickSource tick_source("07:00:00", std::chrono::milliseconds(2));
-    tick_source.Start();
+    TickSource tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource> CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
 
-    std::shared_ptr<TickSource> sadPtr = std::make_shared<TickSource>(tick_source);
-    train_controller::SoftwareTrainController TC(sadPtr);
+    (*CLOCK).Start();
     usleep(1000000);
     TC.Update();
 
