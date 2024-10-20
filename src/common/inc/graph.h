@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
+// Does not support multigraphs
 template <typename NodeLabel, typename EdgeWeight>
 class Graph
 {

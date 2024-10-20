@@ -39,6 +39,10 @@ TEST(GraphTests, AddEdges)
 
     ASSERT_TRUE(graph.AddEdge(0, 3, 7));
     ASSERT_EQ(5, graph.GetEdgeCount());
+
+    // Does not support multigraphs
+    ASSERT_FALSE(graph.AddEdge(0, 3, 1));
+    ASSERT_EQ(5, graph.GetEdgeCount());
 }
 
 TEST(GraphTests, Clear)
@@ -230,5 +234,46 @@ TEST(GraphTests, Dijkstra)
     ASSERT_EQ(5, path[4]);
     ASSERT_EQ(6, path[5]);
 
-    // TODO test with multiple edges between same nodes with multiple direction and different lengths
+    graph.Clear();
+    graph.AddEdge(1, 2, 1);
+    graph.AddEdge(1, 3, 3);
+    graph.AddEdge(2, 1, 1);
+    graph.AddEdge(2, 3, 1);
+    graph.AddEdge(3, 1, 2);
+    graph.AddEdge(3, 2, 1);
+    graph.AddEdge(3, 4, 1);
+    graph.AddEdge(4, 3, 1);
+    graph.AddEdge(4, 5, 1);
+    graph.AddEdge(4, 7, 5);
+    graph.AddEdge(5, 3, 6);
+    graph.AddEdge(5, 6, 1);
+    graph.AddEdge(6, 7, 1);
+    graph.AddEdge(7, 4, 1);
+    ASSERT_EQ(14, graph.GetEdgeCount());
+
+    path = graph.Dijkstra(1, 7);
+    ASSERT_EQ(7, path.size());
+    ASSERT_EQ(1, path[0]);
+    ASSERT_EQ(2, path[1]);
+    ASSERT_EQ(3, path[2]);
+    ASSERT_EQ(4, path[3]);
+    ASSERT_EQ(5, path[4]);
+    ASSERT_EQ(6, path[5]);
+    ASSERT_EQ(7, path[6]);
+
+    path = graph.Dijkstra(7, 1);
+    ASSERT_EQ(4, path.size());
+    ASSERT_EQ(7, path[0]);
+    ASSERT_EQ(4, path[1]);
+    ASSERT_EQ(3, path[2]);
+    ASSERT_EQ(1, path[3]);
+
+    path = graph.Dijkstra(5, 2);
+    ASSERT_EQ(6, path.size());
+    ASSERT_EQ(5, path[0]);
+    ASSERT_EQ(6, path[1]);
+    ASSERT_EQ(7, path[2]);
+    ASSERT_EQ(4, path[3]);
+    ASSERT_EQ(3, path[4]);
+    ASSERT_EQ(2, path[5]);
 }
