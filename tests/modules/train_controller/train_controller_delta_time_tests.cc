@@ -108,7 +108,7 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled2)
     //Setting current speed to 10 m/s
     TC.SetCurrentSpeed(10);
 
-    //waiting 0.0.9 seconds
+    //waiting 0.9 seconds
     usleep(900000);
     TC.Update();
     
