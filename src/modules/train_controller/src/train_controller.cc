@@ -38,7 +38,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     arrived_                     = 0;
     last_tick_updated_ = (*clock_).GetTick();
 
-    
+
     Update();
 }
 
@@ -228,9 +228,11 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 void SoftwareTrainController::Update()
 {
 
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*clock_).GetElapsedTime(last_tick_updated_));
+    auto elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
 
-    delta_time_ = static_cast<float>(delta_time_in_seconds.count());
+    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time);
+
+    delta_time_ = static_cast<double>(delta_time_in_seconds.count());
 
     last_tick_updated_ = (*clock_).GetTick();
 

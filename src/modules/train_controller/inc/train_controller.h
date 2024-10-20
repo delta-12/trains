@@ -131,7 +131,7 @@ class SoftwareTrainController : public TrainController
 
         std::shared_ptr<TickSource> clock_;
         types::Tick last_tick_updated_;
-        float delta_time_;
+        double delta_time_;
 
         float integral_sum_;
         uint16_t kp_;
