@@ -92,28 +92,28 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
 }
 
 
-// TEST(TrainControllerDeltaTimeTests, DistanceTravelled2)
-// {
-//     TickSource tick_source("07:00:00", std::chrono::milliseconds(1));
-//     std::shared_ptr<TickSource> CLOCK = std::make_shared<TickSource>(tick_source);
-//     train_controller::SoftwareTrainController TC(CLOCK);
+TEST(TrainControllerDeltaTimeTests, DistanceTravelled2)
+{
+    TickSource tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource> CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
 
-//     (*CLOCK).Start();
-//     usleep(1000000);
-//     TC.Update();
+    (*CLOCK).Start();
+    usleep(1000000);
+    TC.Update();
 
-//     //Checking no distance has been travelled
-//     ASSERT_EQ(0, TC.GetDistanceTravelled());
+    //Checking no distance has been travelled
+    ASSERT_EQ(0, TC.GetDistanceTravelled());
 
-//     //Setting current speed to 10 m/s
-//     TC.SetCurrentSpeed(10);
+    //Setting current speed to 10 m/s
+    TC.SetCurrentSpeed(10);
 
-//     //waiting 0.0.9 seconds
-//     usleep(900000);
-//     TC.Update();
+    //waiting 0.0.9 seconds
+    usleep(900000);
+    TC.Update();
     
-//     //Checking if the distance travelled corresponds to the time passed and the current speed
-//     EXPECT_DOUBLE_EQ(9, TC.GetDistanceTravelled());
+    //Checking if the distance travelled corresponds to the time passed and the current speed
+    EXPECT_DOUBLE_EQ(9, TC.GetDistanceTravelled());
 
-//     tick_source.Stop();
-// }
+    tick_source.Stop();
+}
