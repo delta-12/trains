@@ -123,8 +123,8 @@ class SoftwareTrainController : public TrainController
         //local functions
         double GetDeltaTime(void) const;
         void Update(void);
-        void CalculateCommandedPower();
-        void UpdateDistanceTravelled(); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        void CalculateCommandedPower(double delta_time);
+        void UpdateDistanceTravelled(double delta_time); // NNF-181 TODO: Update the interval application to make use of Tick Source
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:

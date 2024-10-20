@@ -232,16 +232,18 @@ void SoftwareTrainController::Update()
 
     auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time);
 
-    delta_time_ = static_cast<double>(delta_time_in_seconds.count());
+    double delta_time = static_cast<double>(delta_time_in_seconds.count());
 
     last_tick_updated_ = (*clock_).GetTick();
 
-    CalculateCommandedPower();
-    UpdateDistanceTravelled();
+    CalculateCommandedPower(delta_time);
+    UpdateDistanceTravelled(delta_time);
+
+    delta_time_ = delta_time;
 }
 
 
-void SoftwareTrainController::CalculateCommandedPower()
+void SoftwareTrainController::CalculateCommandedPower(double delta_time)
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
@@ -269,7 +271,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     //double delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
-    integral_sum_ += speed_error * delta_time_;
+    integral_sum_ += speed_error * delta_time;
 
     // Calculating Ki term
     double ki_term = ki_ * integral_sum_;
@@ -374,9 +376,9 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     }
 }
 
-void SoftwareTrainController::UpdateDistanceTravelled()
+void SoftwareTrainController::UpdateDistanceTravelled(double delta_time)
 {
-    distance_travelled_ += current_speed_ * delta_time_;
+    distance_travelled_ += current_speed_ * delta_time;
 }
 
 double SoftwareTrainController::GetDeltaTime(void) const
