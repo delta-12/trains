@@ -35,6 +35,7 @@ class TrackModel
 class SoftwareTrackModel : public TrackModel
 {
     public:
+        //ADD constructor that takes in a shared pointer to the tick source
         types::Error SetTrackLayout(const types::TrackId track, const std::vector<Block> &blocks);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
@@ -43,7 +44,7 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetSwitchState(const types::BlockId block, const bool switched);
         types::Error SetCrossingState(const types::BlockId block, const bool closed);
         types::Error SetRedTrafficLight(const types::BlockId block, const bool on);
-        types::Error SetYelloTrafficLight(const types::BlockId block, const bool on);
+        types::Error SetYellowTrafficLight(const types::BlockId block, const bool on);
         types::Error SetGreenTrafficLight(const types::BlockId block, const bool on);
         types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed);
         types::Error SetAuthority(const types::BlockId block, const types::Meters authority);
@@ -52,6 +53,7 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure);
         types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
         types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
+        types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
         types::Error SetTrainBlock(const types::BlockId block);
         types::Block GetBlock(const types::BlockId block);
 
