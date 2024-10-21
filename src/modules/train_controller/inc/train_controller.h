@@ -10,7 +10,7 @@
 #define TRAIN_CONTROLLER_DEFAULT_KP           (4)
 #define TRAIN_CONTROLLER_DEFAULT_KI           (2)
 #define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
-#define TRAIN_SPEED_LIMIT                     (120000)
+#define TRAIN_SPEED_LIMIT                     (70)
 #define DEFAULT_BLOCK_SPEED_LIMIT             (50)
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
@@ -120,7 +120,7 @@ class SoftwareTrainController : public TrainController
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t ki);
         void SetKI(const uint16_t kp);
-        void SetOperationMode(const bool operation_mode);
+        void SetOperationMode(const bool mode);
 
         //local functions
         void CalculateCommandedPower(void);

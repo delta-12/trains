@@ -229,7 +229,11 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 
 void SoftwareTrainController::SetOperationMode(const bool mode)
 {
-    operation_mode_ = mode;
+    if (operation_mode_ == 0 && mode == 1)
+    {
+        driver_speed_ = commanded_speed_;
+        operation_mode_ = mode; // cannot switch back to auto
+    }
 }
 
 void SoftwareTrainController::CalculateCommandedPower()
@@ -237,7 +241,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float                  block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    types::MetersPerSecond block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
     types::MetersPerSecond setpoint_speed;
 
     // Defining Vcmd and Actual speed in m/s
