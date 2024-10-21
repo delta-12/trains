@@ -98,7 +98,7 @@ std::vector<std::string> CsvParser::GetRecord(const std::size_t index) const
     return record;
 }
 
-std::vector<std::vector<std::string> > CsvParser::GetRecords(void) const
+std::vector<std::vector<std::string>> CsvParser::GetRecords(void) const
 {
     return records_;
 }
