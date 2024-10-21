@@ -78,7 +78,7 @@ class SoftwareTrainController : public TrainController
     public:
         // Constructor
         SoftwareTrainController(std::shared_ptr<TickSource> clk);
-        
+
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
         types::MilesPerHour GetDriverSpeed(void) const;
@@ -98,7 +98,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetCommandedInternalTemperature(void) const;
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Meters GetAuthority(void) const;
-        
+
 
         // Implementations for setters
         void SetCommandedSpeed(const types::MetersPerSecond speed);

@@ -36,7 +36,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
-    last_tick_updated_ = (*clock_).GetTick();
+    last_tick_updated_           = (*clock_).GetTick();
 
 
     Update();
