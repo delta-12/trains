@@ -6,7 +6,6 @@
 #ifndef TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
-#include "types.h"
 
 #define TRAIN_CONTROLLER_DEFAULT_KP           (4)
 #define TRAIN_CONTROLLER_DEFAULT_KI           (2)
@@ -16,6 +15,16 @@
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
 #define DEFAULT_DELTA_TIME                    (1)
+
+
+#include <array>
+#include <string>
+#include <cstdint>
+#include <unordered_map>
+
+#include "types.h"
+#include "convert.h"
+#include "tick_source.h"
 
 namespace train_controller
 {
@@ -68,7 +77,7 @@ class SoftwareTrainController : public TrainController
 {
     public:
         // Constructor
-        SoftwareTrainController();
+        SoftwareTrainController(std::shared_ptr<TickSource> clk);
 
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
@@ -90,6 +99,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Meters GetAuthority(void) const;
 
+
         // Implementations for setters
         void SetCommandedSpeed(const types::MetersPerSecond speed);
         void SetDriverSpeed(const types::MilesPerHour speed);
@@ -108,16 +118,22 @@ class SoftwareTrainController : public TrainController
         void SetAuthority(const types::Meters authority);
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t ki);
-        void setKI(const uint16_t kp);
+        void SetKI(const uint16_t kp);
 
         //local functions
-        void CalculateCommandedPower(void);
-        void UpdateDistanceTravelled(long interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        double GetDeltaTime(void) const;
+        void Update(void);
+        void CalculateCommandedPower(double delta_time);
+        void UpdateDistanceTravelled(double delta_time); // NNF-181 TODO: Update the interval application to make use of Tick Source
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
 
-        float integral_sum_;
+        std::shared_ptr<TickSource> clock_;
+        types::Tick last_tick_updated_;
+        double delta_time_;
+
+        double integral_sum_;
         uint16_t kp_;
         uint16_t ki_;
 
