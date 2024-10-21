@@ -10,42 +10,51 @@
 #include "wayside_controller.h"
 
 static const std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
-                                                                               false, false, false, true, true, false, false, true, true, false, false, false, false, true, true, false, true, true, false, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, false, false, true, false, true};
+                                                                               false, false, false, true, true, false, false, true, true, false, false, false, false, true, true, false, true, true, false, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, false, false};
 
-static const std::vector<wayside_controller::BlockInputs> kBlueLineBlockInputs = {
-    wayside_controller::BlockInputs(1, 0, 0, false, false),
-    wayside_controller::BlockInputs(2, 1, 0, false, false),
-    wayside_controller::BlockInputs(3, 2, 0, false, false),
-    wayside_controller::BlockInputs(4, 3, 0, false, false),
-    wayside_controller::BlockInputs(5, 4, 75, true, false),
-    wayside_controller::BlockInputs(6, 5, 0, false, false),
-    wayside_controller::BlockInputs(7, 6, 0, false, false),
-    wayside_controller::BlockInputs(8, 7, 0, false, false),
-    wayside_controller::BlockInputs(9, 8, 0, false, false),
-    wayside_controller::BlockInputs(10, 9, 0, false, false),
-    wayside_controller::BlockInputs(11, 10, 0, false, false),
-    wayside_controller::BlockInputs(12, 11, 0, false, false),
-    wayside_controller::BlockInputs(13, 12, 0, false, false),
-    wayside_controller::BlockInputs(14, 13, 0, false, false),
-    wayside_controller::BlockInputs(15, 14, 0, false, false),
-    wayside_controller::BlockInputs(16, 15, 0, false, false)};
+static const std::vector<wayside_controller::BlockIo> kBlueLineBlockIo = {
+    wayside_controller::BlockIo(1, 0, 0, false, false),
+    wayside_controller::BlockIo(2, 1, 0, false, false),
+    wayside_controller::BlockIo(3, 2, 0, false, false),
+    wayside_controller::BlockIo(4, 3, 0, false, false),
+    wayside_controller::BlockIo(5, 4, 78, true, false),
+    wayside_controller::BlockIo(6, 5, 0, false, false),
+    wayside_controller::BlockIo(7, 6, 0, false, false),
+    wayside_controller::BlockIo(8, 7, 0, false, false),
+    wayside_controller::BlockIo(9, 8, 0, false, false),
+    wayside_controller::BlockIo(10, 9, 0, false, false),
+    wayside_controller::BlockIo(11, 10, 0, false, false),
+    wayside_controller::BlockIo(12, 11, 0, false, false),
+    wayside_controller::BlockIo(13, 12, 0, false, false),
+    wayside_controller::BlockIo(14, 13, 0, false, false),
+    wayside_controller::BlockIo(15, 14, 0, false, false),
+    wayside_controller::BlockIo(16, 15, 0, false, false)};
 
-void GetInputs(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)
+wayside_controller::Error GetInput(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
 {
-    for (std::size_t i = 0; i < inputs.size(); i++)
+    wayside_controller::Error error = wayside_controller::ERROR_INVALID_INPUT;
+
+    if (input < kInputs.size())
     {
-        inputs[i] = kInputs[i];
+        signal = wayside_controller::IOSIGNAL_LOW;
+
+        if (kInputs[input])
+        {
+            signal = wayside_controller::IOSIGNAL_HIGH;
+        }
     }
+
+    return error;
 }
 
-wayside_controller::Error SetOutput(const wayside_controller::OutputId output, const bool state)
+wayside_controller::Error SetOutput(const wayside_controller::OutputId output, const wayside_controller::IoSignal signal)
 {
     wayside_controller::Error error = wayside_controller::ERROR_INVALID_OUTPUT;
 
     if (output < WAYSIDE_CONTROLLER_TOTAL_OUTPUTS)
     {
         // TODO NNF-105 set outputs
-        LOGGER_UNUSED(state); // temporary fix to remove compiler warnings
+        LOGGER_UNUSED(signal); // temporary fix to remove compiler warnings
         error = wayside_controller::ERROR_NONE;
     }
 
@@ -54,77 +63,54 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
 
 TEST(WaysideControllerTests, SetBlockMap)
 {
-    std::vector<wayside_controller::BlockInputs> block_inputs_map = kBlueLineBlockInputs;
-    wayside_controller::WaysideController        software_wayside_controller(GetInputs, SetOutput);
+    std::vector<wayside_controller::BlockIo> block_io_map = kBlueLineBlockIo;
+    wayside_controller::WaysideController    software_wayside_controller(GetInput);
 
     // Success
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(block_inputs_map));
+    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(block_io_map));
 
     // Empty map
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(std::vector<wayside_controller::BlockInputs>()));
+    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(std::vector<wayside_controller::BlockIo>()));
 
     // Duplicate block ID
-    block_inputs_map.push_back(wayside_controller::BlockInputs(1, 16, 0, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_BLOCK, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(1, 16, 0, false, false));
+    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_BLOCK, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Invalid track circuit input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 75, 0, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, 78, 0, false, false));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Invalid track circuit input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, -1, 0, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, -1, 0, false, false));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Duplicate track circuit input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 0, 0, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, 0, 0, false, false));
+    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Invalid switch input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 16, 74, true, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, 16, 77, true, false));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Invalid switch input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 16, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT, true, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, 16, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT, true, false));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Invalid switch input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 16, -1, true, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
+    block_io_map.push_back(wayside_controller::BlockIo(17, 16, -1, true, false));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 
     // Duplicate switch input
-    block_inputs_map.push_back(wayside_controller::BlockInputs(17, 16, 75, true, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.SetBlockMap(block_inputs_map));
-    block_inputs_map.pop_back();
-}
-
-TEST(WaysideControllerTests, SetOutput)
-{
-    // TODO NNF-105
-}
-
-TEST(WaysideControllerTests, GetInput)
-{
-    bool                                  input_state;
-    wayside_controller::WaysideController software_wayside_controller(GetInputs, SetOutput);
-
-    software_wayside_controller.ScanInputs();
-
-    for (std::size_t i = 0; i < kInputs.size(); i++)
-    {
-        ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetInput((wayside_controller::InputId)i, input_state));
-        ASSERT_EQ(kInputs[i], input_state);
-    }
-
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.GetInput(-1, input_state));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.GetInput(kInputs.size(), input_state));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.GetInput(kInputs.size() + 1, input_state));
+    block_io_map.push_back(wayside_controller::BlockIo(17, 16, 78, true, false));
+    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.SetBlockMap(block_io_map));
+    block_io_map.pop_back();
 }
 
 TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
@@ -141,18 +127,13 @@ TEST(WaysideControllerTests, SetSwitch)
 {
     // TODO NNF-105
 
-    bool                                  input_state;
-    wayside_controller::WaysideController software_wayside_controller(GetInputs, SetOutput);
+    wayside_controller::WaysideController software_wayside_controller(GetInput);
 
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(kBlueLineBlockInputs));
+    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(kBlueLineBlockIo));
 
     // Valid switch
     ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetSwitch(5, true));
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetInput(75, input_state));
-    ASSERT_TRUE(input_state);
     ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetSwitch(5, false));
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetInput(75, input_state));
-    ASSERT_FALSE(input_state);
 
     // Invalid block
     ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.SetSwitch(17, true));

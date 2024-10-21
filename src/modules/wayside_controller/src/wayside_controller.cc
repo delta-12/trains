@@ -9,15 +9,11 @@ BlockState::BlockState(const types::BlockId block, const bool occupied, const bo
 {
 }
 
-BlockInputs::BlockInputs(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false)
+BlockIo::BlockIo(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false)
 {
 }
 
-BlockInputs::BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode) : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode)
-{
-}
-
-TrackCircuitData::TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority) : block(block), speed(speed), authority(authority)
+BlockIo::BlockIo(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode) : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode)
 {
 }
 
@@ -29,26 +25,26 @@ PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const 
 {
 }
 
-WaysideController::WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}     // TODO verify registers are initialized to 0
+WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input) : get_input_(get_input)
 {
 }
 
-WaysideController::WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map) : get_inputs_(get_inputs), set_output_(set_output), inputs_{}
+WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<BlockIo> &block_io_map) : get_input_(get_input)
 {
     // TODO NNF-174 error handling
-    SetBlockMap(block_inputs_map);
+    SetBlockMap(block_io_map);
 }
 
-Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_inputs_map)
+Error WaysideController::SetBlockMap(const std::vector<BlockIo> &block_io_map)
 {
     Error                       error = ERROR_NONE;
     std::unordered_set<InputId> mapped_inputs;
 
-    block_inputs_map_.clear();
+    block_io_map_.clear();
 
-    for (const BlockInputs &block_inputs : block_inputs_map)
+    for (const BlockIo &block_inputs : block_io_map)
     {
-        if (block_inputs_map_.end() != block_inputs_map_.find(block_inputs.block))
+        if (block_io_map_.end() != block_io_map_.find(block_inputs.block))
         {
             error = ERROR_DUPLICATE_BLOCK;
         }
@@ -73,9 +69,11 @@ Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_input
             }
         }
 
+        // TODO check for duplicate outputs
+
         if (ERROR_NONE == error)
         {
-            block_inputs_map_[block_inputs.block] = block_inputs;
+            block_io_map_[block_inputs.block] = block_inputs;
             mapped_inputs.insert(block_inputs.track_circuit_input);
 
             if (block_inputs.has_switch)
@@ -85,7 +83,7 @@ Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_input
         }
         else
         {
-            block_inputs_map_.clear();
+            block_io_map_.clear();
             break;
         }
     }
@@ -93,44 +91,21 @@ Error WaysideController::SetBlockMap(const std::vector<BlockInputs> &block_input
     return error;
 }
 
-Error WaysideController::SetOutput(const OutputId output, const bool state)
-{
-    // TODO NNF-105 check outputs corresponding to switches to verify safety
-
-    return set_output_(output, state);
-}
-
-Error WaysideController::GetInput(const InputId input, bool &state)
-{
-    Error error = ERROR_INVALID_INPUT;
-
-    if (input < inputs_.size())
-    {
-        state = inputs_[input];
-        error = ERROR_NONE;
-    }
-
-    return error;
-}
-
-void WaysideController::ScanInputs(void)
-{
-    get_inputs_(inputs_);
-}
-
-Error WaysideController::GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data)
+Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data)
 {
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(track_circuit_data.block);
+    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(track_circuit_data.block);
 
-    if (block_inputs_map_.end() == block_inputs)
+    if (block_io_map_.end() == block_inputs)
     {
         error = ERROR_INVALID_BLOCK;
     }
     else
     {
-        // TODO NNF-144, NNF-145 check for safe speed and authority
+        // TODO NNF-144 check for safe speed
+
+        // TODO NNF-145 authority
     }
 
     return error;
@@ -140,9 +115,9 @@ Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bo
 {
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
+    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(block);
 
-    if (block_inputs_map_.end() == block_inputs)
+    if (block_io_map_.end() == block_inputs)
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -161,9 +136,10 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_inputs_map_.find(block);
+    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(block);
 
-    if ((block_inputs_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
+    // TODO NNF-105 only blocks with swithes can be put into maintenance mode?
+    if ((block_io_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -173,7 +149,8 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     }
     else
     {
-        inputs_[block_inputs->second.switch_input] = switch_state;
+        // TODO NNF-105 verify safe switch state here or in PLC program
+        // TODO NNF-105 set virtual input accordingly
     }
 
     return error;
@@ -196,11 +173,11 @@ bool WaysideController::IsSwitchInputValid(const InputId input) const
     return ((input >= WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT) && (input < WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT));
 }
 
-Plc::Plc(void) : program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
+Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output) : get_input_(get_input), set_output_(set_output), program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
 {
 }
 
-Plc::Plc(const std::vector<PlcInstruction> &instructions) : instructions_(instructions), program_counter_(0), registers_{}
+Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions) : get_input_(get_input), set_output_(set_output), instructions_(instructions), program_counter_(0), registers_{}
 {
 }
 
@@ -219,7 +196,7 @@ PlcInstruction Plc::GetInstruction(void) const
     return instructions_[program_counter_];
 }
 
-bool Plc::Run(WaysideController &wayside_controller)
+bool Plc::Run(void)
 {
     PlcInstruction instruction;
     bool           execution_success = true;
@@ -238,7 +215,7 @@ bool Plc::Run(WaysideController &wayside_controller)
             program_counter_++;
             break;
         case PLCINSTRUCTIONCODE_READ_SIGNAL:
-            if (ReadSignal(wayside_controller, instruction.argument_0, instruction.argument_1))
+            if (ReadSignal(instruction.argument_0, instruction.argument_1))
             {
                 program_counter_++;
             }
@@ -248,7 +225,7 @@ bool Plc::Run(WaysideController &wayside_controller)
             }
             break;
         case PLCINSTRUCTIONCODE_WRITE_SIGNAL:
-            if (WriteSignal(wayside_controller, instruction.argument_0, instruction.argument_1))
+            if (WriteSignal(instruction.argument_0, instruction.argument_1))
             {
                 program_counter_++;
             }
@@ -301,14 +278,14 @@ bool Plc::Run(WaysideController &wayside_controller)
     return execution_success;
 }
 
-bool Plc::ReadSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument input)
+bool Plc::ReadSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument input)
 {
-    bool success        = false;
-    bool register_value = false;
+    bool     success = false;
+    IoSignal signal  = IOSIGNAL_LOW;
 
-    if (ERROR_NONE == wayside_controller.GetInput(input, register_value))
+    if (ERROR_NONE == get_input_(input, signal))
     {
-        if (register_value)
+        if (IOSIGNAL_HIGH == signal)
         {
             registers_[register_number] = 1;
         }
@@ -323,17 +300,17 @@ bool Plc::ReadSignal(WaysideController &wayside_controller, const PlcInstruction
     return success;
 }
 
-bool Plc::WriteSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument output)
+bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument output)
 {
-    bool success      = false;
-    bool output_value = false;
+    bool     success = false;
+    IoSignal signal  = IOSIGNAL_LOW;
 
     if (0 != registers_[register_number])
     {
-        output_value = true;
+        signal = IOSIGNAL_HIGH;
     }
 
-    if (ERROR_NONE == wayside_controller.SetOutput(output, output_value))
+    if (ERROR_NONE == set_output_(output, signal))
     {
         success = true;
     }

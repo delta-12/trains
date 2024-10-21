@@ -15,6 +15,7 @@
 
 namespace types
 {
+
 typedef double                                      KilometersPerHour;
 typedef double                                      Kilometers;
 typedef double                                      MetersPerSecond;
@@ -32,7 +33,7 @@ typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
-
+typedef struct TrackCircuitData                     TrackCircuitData;
 
 typedef enum
 {
@@ -79,8 +80,9 @@ typedef enum
 
 struct Block
 {
-    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
-              speed_limit(0), elevation(0), cumulative_elevation(0), section(' '), heater_on(false), has_station(false), underground(false)
+    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
+              power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), speed_limit(0), elevation(0), cumulative_elevation(0),
+              section('\0'), heater_on(false), has_station(false), underground(false)
     {
     };
     BlockId block;
@@ -109,6 +111,16 @@ struct Block
     bool underground;
 };
 
+struct TrackCircuitData
+{
+    public:
+        TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const size_t authority) : block(block), speed(speed), authority(authority)
+        {
+        }
+        types::BlockId block;
+        types::MetersPerSecond speed;
+        size_t authority;
+};
 
 class Port
 {

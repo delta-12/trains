@@ -13,7 +13,7 @@
 
 #include "types.h"
 
-#define WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT       75
+#define WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT       78
 #define WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT        7
 #define WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT          (WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT + WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT)
 #define WAYSIDE_CONTROLLER_TRAFFIC_LIGHTS_PER_SWITCH  3
@@ -27,7 +27,7 @@ namespace wayside_controller
 {
 
 typedef struct BlockState       BlockState;
-typedef struct BlockInputs      BlockInputs;
+typedef struct BlockIo          BlockIo;
 typedef struct TrackCircuitData TrackCircuitData;
 typedef struct PlcInstruction   PlcInstruction;
 typedef uint16_t                InputId;
@@ -43,6 +43,12 @@ typedef enum
     ERROR_DUPLICATE_INPUT,
     ERROR_INVALID_OUTPUT
 } Error;
+
+typedef enum
+{
+    IOSIGNAL_LOW,
+    IOSIGNAL_HIGH
+} IoSignal;
 
 typedef enum
 {
@@ -65,25 +71,23 @@ struct BlockState
         bool track_failure;
 };
 
-struct BlockInputs
+struct BlockIo
 {
     public:
-        BlockInputs(void);
-        BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode);
+        // TODO update constructors
+        BlockIo(void);
+        BlockIo(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode);
         types::BlockId block;
         InputId track_circuit_input;
         InputId switch_input;
+        OutputId traffic_light_red;
+        OutputId traffic_light_green;
+        OutputId crossing;
         bool has_switch;
+        bool has_traffic_light;
+        bool has_crossing;
         bool maintenance_mode;
-};
-
-struct TrackCircuitData
-{
-    public:
-        TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
-        types::BlockId block;
-        types::MetersPerSecond speed;
-        types::Meters authority;
+        bool occupied;
 };
 
 struct PlcInstruction
@@ -100,40 +104,38 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output);
-        WaysideController(std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> &inputs)> get_inputs, std::function<Error(const OutputId output, const bool state)> set_output, const std::vector<BlockInputs> &block_inputs_map);
-        Error SetBlockMap(const std::vector<BlockInputs> &block_inputs_map);
-        Error SetOutput(const OutputId output, const bool state); // check outputs corresponding to switches to verify safety
-        Error GetInput(const InputId input, bool &state);
-        void ScanInputs(void);
-        Error GetCommandedSpeedAndAuthority(TrackCircuitData &track_circuit_data); // check for safe speed and authority
+        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input);
+        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<BlockIo> &block_io_map);
+        Error SetBlockMap(const std::vector<BlockIo> &block_io_map);
+        Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
-        Error SetSwitch(const types::BlockId block, const bool switch_state); // can be used in both auto and maintenance mode?
+        Error SetSwitch(const types::BlockId block, const bool switch_state);
         std::vector<BlockState> GetBlockStates(void);
 
     private:
         bool IsTrackCircuitInputValid(const InputId input) const;
         bool IsSwitchInputValid(const InputId input) const;
 
-        std::function<void(std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT>&inputs)> get_inputs_;
-        std::function<Error(const OutputId output, const bool state)> set_output_;
-        std::unordered_map<types::BlockId, BlockInputs> block_inputs_map_;
-        std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> inputs_;
+        std::function<Error(const InputId input, IoSignal &signal)> get_input_;
+        std::unordered_map<types::BlockId, BlockIo> block_io_map_;
 };
 
 class Plc
 {
     public:
-        Plc(void);
-        Plc(const std::vector<PlcInstruction> &instructions);
+        Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output);
+        Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions);
         void SetInstructions(const std::vector<PlcInstruction> &instructions);
         uint32_t GetProgramCounter(void) const;
         PlcInstruction GetInstruction(void) const;
-        bool Run(WaysideController &wayside_controller);
+        bool Run(void);
 
     private:
-        bool ReadSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument input);
-        bool WriteSignal(WaysideController &wayside_controller, const PlcInstructionArgument register_number, const PlcInstructionArgument output);
+        bool ReadSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument input);
+        bool WriteSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument output);
+
+        std::function<Error(const InputId input, IoSignal &signal)> get_input_;
+        std::function<Error(const OutputId output, const IoSignal signal)> set_output_;
         std::vector<PlcInstruction> instructions_;
         uint32_t program_counter_;
         std::array<PlcInstructionArgument, WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT> registers_;
