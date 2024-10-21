@@ -34,6 +34,7 @@ typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
+typedef struct BlockState                           BlockState;
 
 typedef enum
 {
@@ -114,12 +115,29 @@ struct Block
 struct TrackCircuitData
 {
     public:
+        TrackCircuitData(void) : block(0), speed(0.0), authority(0)
+        {
+        }
         TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const size_t authority) : block(block), speed(speed), authority(authority)
         {
         }
         types::BlockId block;
         types::MetersPerSecond speed;
         size_t authority;
+};
+
+struct BlockState
+{
+    public:
+        BlockState(void) : block(0), occupied(false), track_failure(false)
+        {
+        }
+        BlockState(const types::BlockId block, const bool occupied, const bool track_failure) : block(block), occupied(occupied), track_failure(track_failure)
+        {
+        }
+        types::BlockId block;
+        bool occupied;
+        bool track_failure;
 };
 
 class Port

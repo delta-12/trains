@@ -5,10 +5,6 @@
 namespace wayside_controller
 {
 
-BlockState::BlockState(const types::BlockId block, const bool occupied, const bool track_failure) : block(block), occupied(occupied), track_failure(track_failure)
-{
-}
-
 BlockIo::BlockIo(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false)
 {
 }
@@ -156,11 +152,11 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     return error;
 }
 
-std::vector<BlockState> WaysideController::GetBlockStates(void)
+std::vector<types::BlockState> WaysideController::GetBlockStates(void)
 {
     // TODO NNF-168
 
-    return std::vector<BlockState>();
+    return std::vector<types::BlockState>();
 }
 
 bool WaysideController::IsTrackCircuitInputValid(const InputId input) const

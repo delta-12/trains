@@ -26,13 +26,11 @@
 namespace wayside_controller
 {
 
-typedef struct BlockState       BlockState;
-typedef struct BlockIo          BlockIo;
-typedef struct TrackCircuitData TrackCircuitData;
-typedef struct PlcInstruction   PlcInstruction;
-typedef uint16_t                InputId;
-typedef uint16_t                OutputId;
-typedef uint32_t                PlcInstructionArgument;
+typedef struct BlockIo        BlockIo;
+typedef struct PlcInstruction PlcInstruction;
+typedef uint16_t              InputId;
+typedef uint16_t              OutputId;
+typedef uint32_t              PlcInstructionArgument;
 
 typedef enum
 {
@@ -61,15 +59,6 @@ typedef enum
     PLCINSTRUCTIONCODE_BRANCH_IF,
     PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL
 } PlcInstructionCode;
-
-struct BlockState
-{
-    public:
-        BlockState(const types::BlockId block, const bool occupied, const bool track_failure);
-        types::BlockId block;
-        bool occupied;
-        bool track_failure;
-};
 
 struct BlockIo
 {
@@ -110,7 +99,7 @@ class WaysideController
         Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
-        std::vector<BlockState> GetBlockStates(void);
+        std::vector<types::BlockState> GetBlockStates(void);
 
     private:
         bool IsTrackCircuitInputValid(const InputId input) const;
