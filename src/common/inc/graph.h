@@ -19,6 +19,9 @@ template <typename NodeLabel, typename EdgeWeight>
 class Graph
 {
     public:
+        Graph(void);
+        Graph(const Graph<NodeLabel, EdgeWeight> &graph);
+        Graph& operator=(const Graph<NodeLabel, EdgeWeight>& graph);
         bool AddEdge(const NodeLabel start, const NodeLabel end, const EdgeWeight &weight);
         bool RemoveEdge(const NodeLabel start, const NodeLabel end);
         void Clear(void);
@@ -42,10 +45,29 @@ class Graph
             NodeLabel previous;
             EdgeWeight distance;
         } NodeDistance;
+
         bool IsConnected(const NodeLabel node) const;
         std::unordered_map<NodeLabel, EdgeWeight> GetEdges(const NodeLabel node) const;
+
         std::unordered_map<NodeLabel, std::unordered_map<NodeLabel, EdgeWeight>> node_map_;
 };
+
+template <typename NodeLabel, typename EdgeWeight>
+Graph<NodeLabel, EdgeWeight>::Graph(void)
+{
+}
+
+template <typename NodeLabel, typename EdgeWeight>
+Graph<NodeLabel, EdgeWeight>::Graph(const Graph<NodeLabel, EdgeWeight> &graph) : node_map_(graph.node_map_)
+{
+}
+
+template <typename NodeLabel, typename EdgeWeight>
+Graph<NodeLabel, EdgeWeight> &Graph<NodeLabel, EdgeWeight>::operator=(const Graph<NodeLabel, EdgeWeight>& graph)
+{
+    node_map_ = graph.node_map_;
+    return *this;
+}
 
 template <typename NodeLabel, typename EdgeWeight>
 bool Graph<NodeLabel, EdgeWeight>::AddEdge(const NodeLabel start, const NodeLabel end, const EdgeWeight &weight)

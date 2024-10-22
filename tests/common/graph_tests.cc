@@ -9,6 +9,61 @@
 #include "graph.h"
 #include "types.h"
 
+TEST(GraphTests, CopyConstructor)
+{
+    Graph<types::BlockId, types::Meters> graph;
+
+    Graph<types::BlockId, types::Meters> graph_copy_0(graph);
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    graph.AddEdge(0, 1, 1);
+    graph.AddEdge(1, 2, 1);
+    graph.AddEdge(1, 3, 1);
+    graph.AddEdge(2, 3, 1);
+    graph.AddEdge(3, 0, 1);
+    ASSERT_NE(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    Graph<types::BlockId, types::Meters> graph_copy_1(graph);
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_1.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+}
+
+TEST(GraphTests, CopyAssignment)
+{
+    Graph<types::BlockId, types::Meters> graph;
+
+    Graph<types::BlockId, types::Meters> graph_copy_0;
+    graph_copy_0 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    graph.AddEdge(0, 1, 1);
+    graph.AddEdge(1, 2, 1);
+    graph.AddEdge(1, 3, 1);
+    graph.AddEdge(2, 3, 1);
+    graph.AddEdge(3, 0, 1);
+    ASSERT_NE(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    Graph<types::BlockId, types::Meters> graph_copy_1;
+    graph_copy_1 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_1.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+
+    Graph<types::BlockId, types::Meters> graph_copy_2 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_2.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+
+    Graph<types::BlockId, types::Meters> graph_copy_3;
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 6, 1));
+    graph_copy_3 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_3.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_3.AddEdge(5, 6, 1));
+    ASSERT_FALSE(graph_copy_3.AddEdge(5, 7, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(7, 0, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 0, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 6, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 7, 1));
+}
+
 TEST(GraphTests, AddEdges)
 {
     Graph<types::BlockId, types::Meters> graph;
