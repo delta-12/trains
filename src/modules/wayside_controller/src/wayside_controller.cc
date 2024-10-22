@@ -2,14 +2,33 @@
 
 #include <unordered_set>
 
+#include "logger.h"
+
 namespace wayside_controller
 {
 
-BlockIo::BlockIo(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false)
+BlockInputs::BlockInputs(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false), occupied(false)
 {
 }
 
-BlockIo::BlockIo(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode) : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode)
+BlockInputs::BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied)
+    : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupied(occupied)
+{
+}
+
+BlockConnection::BlockConnection(void)
+{
+}
+
+BlockConnection::BlockConnection(const types::BlockId from_block, const types::BlockId to_block) : from_block(from_block), to_block(to_block)
+{
+}
+
+Configuration::Configuration(void)
+{
+}
+
+Configuration::Configuration(const std::vector<BlockInputs> &block_input_map, const std::vector<BlockConnection> &connected_blocks) : block_input_map(block_input_map), connected_blocks(connected_blocks)
 {
 }
 
@@ -17,7 +36,8 @@ PlcInstruction::PlcInstruction(void) : instruction_code(PLCINSTRUCTIONCODE_NOOP)
 {
 }
 
-PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2) : instruction_code(instruction_code), argument_0(argument_0), argument_1(argument_1), argument_2(argument_2)
+PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2)
+    : instruction_code(instruction_code), argument_0(argument_0), argument_1(argument_1), argument_2(argument_2)
 {
 }
 
@@ -25,22 +45,24 @@ WaysideController::WaysideController(std::function<Error(const InputId input, Io
 {
 }
 
-WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<BlockIo> &block_io_map) : get_input_(get_input)
+WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const Configuration &configuration) : get_input_(get_input)
 {
     // TODO NNF-174 error handling
-    SetBlockMap(block_io_map);
+    Configure(configuration);
 }
 
-Error WaysideController::SetBlockMap(const std::vector<BlockIo> &block_io_map)
+Error WaysideController::Configure(const Configuration &configuration)
 {
     Error                       error = ERROR_NONE;
     std::unordered_set<InputId> mapped_inputs;
 
-    block_io_map_.clear();
+    block_input_map_.clear();
+    block_layout_.Clear();
 
-    for (const BlockIo &block_inputs : block_io_map)
+    for (const BlockInputs &block_inputs : configuration.block_input_map)
     {
-        if (block_io_map_.end() != block_io_map_.find(block_inputs.block))
+        // Validate block and track circuit input
+        if (block_input_map_.end() != block_input_map_.find(block_inputs.block))
         {
             error = ERROR_DUPLICATE_BLOCK;
         }
@@ -53,6 +75,7 @@ Error WaysideController::SetBlockMap(const std::vector<BlockIo> &block_io_map)
             error = ERROR_DUPLICATE_INPUT;
         }
 
+        // Validate switch input
         if ((ERROR_NONE == error) && (true == block_inputs.has_switch))
         {
             if (!IsSwitchInputValid(block_inputs.switch_input))
@@ -65,11 +88,9 @@ Error WaysideController::SetBlockMap(const std::vector<BlockIo> &block_io_map)
             }
         }
 
-        // TODO check for duplicate outputs
-
         if (ERROR_NONE == error)
         {
-            block_io_map_[block_inputs.block] = block_inputs;
+            block_input_map_[block_inputs.block] = block_inputs;
             mapped_inputs.insert(block_inputs.track_circuit_input);
 
             if (block_inputs.has_switch)
@@ -79,9 +100,16 @@ Error WaysideController::SetBlockMap(const std::vector<BlockIo> &block_io_map)
         }
         else
         {
-            block_io_map_.clear();
             break;
         }
+    }
+
+    // TODO build graph
+
+    if (ERROR_NONE != error)
+    {
+        block_input_map_.clear();
+        block_layout_.Clear();
     }
 
     return error;
@@ -91,9 +119,9 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
 {
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(track_circuit_data.block);
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(track_circuit_data.block);
 
-    if (block_io_map_.end() == block_inputs)
+    if (block_input_map_.end() == block_inputs)
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -111,9 +139,9 @@ Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bo
 {
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(block);
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(block);
 
-    if (block_io_map_.end() == block_inputs)
+    if (block_input_map_.end() == block_inputs)
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -132,10 +160,10 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockIo>::iterator block_inputs = block_io_map_.find(block);
+    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(block);
 
     // TODO NNF-105 only blocks with swithes can be put into maintenance mode?
-    if ((block_io_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
+    if ((block_input_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -147,6 +175,7 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     {
         // TODO NNF-105 verify safe switch state here or in PLC program
         // TODO NNF-105 set virtual input accordingly
+        LOGGER_UNUSED(switch_state);
     }
 
     return error;
@@ -159,21 +188,23 @@ std::vector<types::BlockState> WaysideController::GetBlockStates(void)
     return std::vector<types::BlockState>();
 }
 
-bool WaysideController::IsTrackCircuitInputValid(const InputId input) const
+bool WaysideController::IsTrackCircuitInputValid(const InputId input)
 {
     return (input < WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT);
 }
 
-bool WaysideController::IsSwitchInputValid(const InputId input) const
+bool WaysideController::IsSwitchInputValid(const InputId input)
 {
     return ((input >= WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT) && (input < WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT));
 }
 
-Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output) : get_input_(get_input), set_output_(set_output), program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
+Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output)
+    : get_input_(get_input), set_output_(set_output), program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
 {
 }
 
-Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions) : get_input_(get_input), set_output_(set_output), instructions_(instructions), program_counter_(0), registers_{}
+Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions)
+    : get_input_(get_input), set_output_(set_output), instructions_(instructions), program_counter_(0), registers_{}
 {
 }
 

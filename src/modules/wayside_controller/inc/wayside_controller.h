@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "graph.h"
 #include "types.h"
 
 #define WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT       78
@@ -26,11 +27,12 @@
 namespace wayside_controller
 {
 
-typedef struct BlockIo        BlockIo;
-typedef struct PlcInstruction PlcInstruction;
-typedef uint16_t              InputId;
-typedef uint16_t              OutputId;
-typedef uint32_t              PlcInstructionArgument;
+typedef uint16_t               InputId;
+typedef uint16_t               OutputId;
+typedef struct BlockInputs     BlockInputs;
+typedef struct BlockConnection BlockConnection;
+typedef uint32_t               PlcInstructionArgument;
+typedef struct PlcInstruction  PlcInstruction;
 
 typedef enum
 {
@@ -39,7 +41,8 @@ typedef enum
     ERROR_DUPLICATE_BLOCK,
     ERROR_INVALID_INPUT,
     ERROR_DUPLICATE_INPUT,
-    ERROR_INVALID_OUTPUT
+    ERROR_INVALID_OUTPUT,
+    ERROR_DUPLICATE_OUTPUT,
 } Error;
 
 typedef enum
@@ -60,30 +63,45 @@ typedef enum
     PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL
 } PlcInstructionCode;
 
-struct BlockIo
+// TODO NNF-144 add block speed limit
+struct BlockInputs
 {
     public:
-        // TODO update constructors
-        BlockIo(void);
-        BlockIo(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode);
+        BlockInputs(void);
+        BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode,
+                    const bool occupied);
         types::BlockId block;
         InputId track_circuit_input;
         InputId switch_input;
-        OutputId traffic_light_red;
-        OutputId traffic_light_green;
-        OutputId crossing;
         bool has_switch;
-        bool has_traffic_light;
-        bool has_crossing;
         bool maintenance_mode;
         bool occupied;
+};
+
+struct BlockConnection
+{
+    public:
+        BlockConnection(void);
+        BlockConnection(const types::BlockId from_block, const types::BlockId to_block);
+        types::BlockId from_block;
+        types::BlockId to_block;
+};
+
+struct Configuration
+{
+    public:
+        Configuration(void);
+        Configuration(const std::vector<BlockInputs> &block_input_map, const std::vector<BlockConnection> &connected_blocks);
+        std::vector<BlockInputs> block_input_map;
+        std::vector<BlockConnection> connected_blocks;
 };
 
 struct PlcInstruction
 {
     public:
         PlcInstruction(void);
-        PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1, const PlcInstructionArgument argument_2);
+        PlcInstruction(const PlcInstructionCode instruction_code, const PlcInstructionArgument argument_0, const PlcInstructionArgument argument_1,
+                       const PlcInstructionArgument argument_2);
         PlcInstructionCode instruction_code;
         PlcInstructionArgument argument_0;
         PlcInstructionArgument argument_1;
@@ -94,19 +112,20 @@ class WaysideController
 {
     public:
         WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input);
-        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<BlockIo> &block_io_map);
-        Error SetBlockMap(const std::vector<BlockIo> &block_io_map);
+        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const Configuration &configuration);
+        Error Configure(const Configuration &configuration);
         Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
         std::vector<types::BlockState> GetBlockStates(void);
 
     private:
-        bool IsTrackCircuitInputValid(const InputId input) const;
-        bool IsSwitchInputValid(const InputId input) const;
+        static bool IsTrackCircuitInputValid(const InputId input);
+        static bool IsSwitchInputValid(const InputId input);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_;
-        std::unordered_map<types::BlockId, BlockIo> block_io_map_;
+        std::unordered_map<types::BlockId, BlockInputs> block_input_map_;
+        Graph<types::BlockId, uint8_t> block_layout_;
 };
 
 class Plc
