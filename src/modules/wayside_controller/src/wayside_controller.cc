@@ -120,8 +120,6 @@ Error WaysideController::Configure(const Configuration &configuration)
         }
     }
 
-    // TODO NNF-105 initialize switches and ensure graph reflects switch positions
-
     if (ERROR_NONE != error)
     {
         block_input_map_.clear();
@@ -133,7 +131,9 @@ Error WaysideController::Configure(const Configuration &configuration)
 
 Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data)
 {
-    Error error = ERROR_NONE;
+    Error                  error     = ERROR_NONE;
+    types::MetersPerSecond speed     = 0;
+    size_t                 authority = 0;
 
     std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(track_circuit_data.block);
 
@@ -145,8 +145,29 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
     {
         // TODO NNF-144 check for safe speed
 
-        // TODO NNF-145 authority
+        // BFS should return set of blocks in the order they can be traversed from the starting block
+        std::unordered_set<types::BlockId> blocks = block_layout_.BreadthFirstSearch(track_circuit_data.block);
+        blocks.erase(track_circuit_data.block);
+
+        // Authority can only be less than or equal to initial value
+        while ((authority < track_circuit_data.authority) && (false == blocks.empty()))
+        {
+            IoSignal track_circuit_signal = IOSIGNAL_HIGH;
+
+            // Check for occupancy by getting track circuit input
+            if ((ERROR_NONE != get_input_(block_input_map_[*blocks.begin()].track_circuit_input, track_circuit_signal)) || (IOSIGNAL_HIGH == track_circuit_signal))
+            {
+                break;
+            }
+            else
+            {
+                track_circuit_data.authority++;
+            }
+        }
     }
+
+    track_circuit_data.speed     = speed;
+    track_circuit_data.authority = authority;
 
     return error;
 }
