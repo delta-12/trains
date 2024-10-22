@@ -63,7 +63,7 @@ Error WaysideController::Configure(const Configuration &configuration)
     for (const BlockInputs &block_inputs : configuration.block_input_map)
     {
         // Validate block and track circuit input
-        if (block_input_map_.end() != block_input_map_.find(block_inputs.block))
+        if (block_input_map_.contains(block_inputs.block))
         {
             error = ERROR_DUPLICATE_BLOCK;
         }
@@ -71,7 +71,7 @@ Error WaysideController::Configure(const Configuration &configuration)
         {
             error = ERROR_INVALID_INPUT;
         }
-        else if (mapped_inputs.end() != mapped_inputs.find(block_inputs.track_circuit_input))
+        else if (mapped_inputs.contains(block_inputs.track_circuit_input))
         {
             error = ERROR_DUPLICATE_INPUT;
         }
@@ -83,7 +83,7 @@ Error WaysideController::Configure(const Configuration &configuration)
             {
                 error = ERROR_INVALID_INPUT;
             }
-            else if (mapped_inputs.end() != mapped_inputs.find(block_inputs.switch_input))
+            else if (mapped_inputs.contains(block_inputs.switch_input))
             {
                 error = ERROR_DUPLICATE_INPUT;
             }
@@ -110,9 +110,9 @@ Error WaysideController::Configure(const Configuration &configuration)
     {
         for (const BlockConnection &block_connection : configuration.connected_blocks)
         {
-            if ((block_input_map_.end() == block_input_map_.find(block_connection.from_block)) ||
-                (block_input_map_.end() == block_input_map_.find(block_connection.to_block)) ||
-                (false == block_layout_.AddEdge(block_connection.from_block, block_connection.to_block, 1)))
+            if ((!block_input_map_.contains(block_connection.from_block)) ||
+                (!block_input_map_.contains(block_connection.to_block)) ||
+                (!block_layout_.AddEdge(block_connection.from_block, block_connection.to_block, 1)))
             {
                 error = ERROR_INVALID_BLOCK;
                 break;
@@ -135,9 +135,7 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
     types::MetersPerSecond speed     = 0;
     size_t                 authority = 0;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(track_circuit_data.block);
-
-    if (block_input_map_.end() == block_inputs)
+    if (!block_input_map_.contains(track_circuit_data.block))
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -163,6 +161,8 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
             {
                 track_circuit_data.authority++;
             }
+
+            blocks.erase(blocks.begin());
         }
     }
 
@@ -176,16 +176,14 @@ Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bo
 {
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(block);
-
-    if (block_input_map_.end() == block_inputs)
+    if (!block_input_map_.contains(block))
     {
         error = ERROR_INVALID_BLOCK;
     }
     else
     {
         // TODO NNF-105 can only be set if block has switch?
-        block_inputs->second.maintenance_mode = maintenance_mode;
+        block_input_map_[block].maintenance_mode = maintenance_mode;
     }
 
     return error;
@@ -197,14 +195,12 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 
     Error error = ERROR_NONE;
 
-    std::unordered_map<types::BlockId, BlockInputs>::iterator block_inputs = block_input_map_.find(block);
-
     // TODO NNF-105 only blocks with swithes can be put into maintenance mode?
-    if ((block_input_map_.end() == block_inputs) || (false == block_inputs->second.has_switch))
+    if ((!block_input_map_.contains(block)) || (false == block_input_map_[block].has_switch))
     {
         error = ERROR_INVALID_BLOCK;
     }
-    else if (!IsSwitchInputValid(block_inputs->second.switch_input))
+    else if (!IsSwitchInputValid(block_input_map_[block].switch_input))
     {
         error = ERROR_INVALID_INPUT;
     }
