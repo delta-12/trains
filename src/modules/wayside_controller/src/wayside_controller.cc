@@ -59,6 +59,7 @@ Error WaysideController::Configure(const Configuration &configuration)
     block_input_map_.clear();
     block_layout_.Clear();
 
+    // Map block inputs
     for (const BlockInputs &block_inputs : configuration.block_input_map)
     {
         // Validate block and track circuit input
@@ -104,7 +105,22 @@ Error WaysideController::Configure(const Configuration &configuration)
         }
     }
 
-    // TODO build graph
+    // Build track layout
+    if (ERROR_NONE == error)
+    {
+        for (const BlockConnection &block_connection : configuration.connected_blocks)
+        {
+            if ((block_input_map_.end() == block_input_map_.find(block_connection.from_block)) ||
+                (block_input_map_.end() == block_input_map_.find(block_connection.to_block)) ||
+                (false == block_layout_.AddEdge(block_connection.from_block, block_connection.to_block, 1)))
+            {
+                error = ERROR_INVALID_BLOCK;
+                break;
+            }
+        }
+    }
+
+    // TODO NNF-105 initialize switches and ensure graph reflects switch positions
 
     if (ERROR_NONE != error)
     {
@@ -175,6 +191,7 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     {
         // TODO NNF-105 verify safe switch state here or in PLC program
         // TODO NNF-105 set virtual input accordingly
+        // TODO NNF-105 update block_layout_ graph accordingly (i.e. add/remove connections betweens blocks)
         LOGGER_UNUSED(switch_state);
     }
 

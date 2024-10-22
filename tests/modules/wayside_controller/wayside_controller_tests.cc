@@ -30,7 +30,23 @@ static const std::vector<wayside_controller::BlockInputs> kBlueLineBlockInputs =
     wayside_controller::BlockInputs(15, 14, 0, false, false, false),
     wayside_controller::BlockInputs(16, 15, 0, false, false, false)};
 
-static const std::vector<wayside_controller::BlockConnection> kBlueLineBlockConnections = {}; // TODO test build graph
+static const std::vector<wayside_controller::BlockConnection> kBlueLineBlockConnections = {
+    wayside_controller::BlockConnection(1, 2),
+    wayside_controller::BlockConnection(2, 3),
+    wayside_controller::BlockConnection(3, 4),
+    wayside_controller::BlockConnection(4, 5),
+    wayside_controller::BlockConnection(5, 6),
+    wayside_controller::BlockConnection(5, 11),
+    wayside_controller::BlockConnection(6, 7),
+    wayside_controller::BlockConnection(7, 8),
+    wayside_controller::BlockConnection(8, 9),
+    wayside_controller::BlockConnection(9, 10),
+    wayside_controller::BlockConnection(11, 12),
+    wayside_controller::BlockConnection(12, 13),
+    wayside_controller::BlockConnection(13, 14),
+    wayside_controller::BlockConnection(14, 15),
+    wayside_controller::BlockConnection(15, 16),
+};
 
 wayside_controller::Error GetInput(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
 {
@@ -115,7 +131,25 @@ TEST(WaysideControllerTests, Configure)
     ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure({block_input_map, block_connections}));
     block_input_map.pop_back();
 
-    // TODO test build graph
+    // Block not in block inputs map
+    block_connections.push_back(wayside_controller::BlockConnection(10, 17));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.Configure({block_input_map, block_connections}));
+    block_connections.pop_back();
+
+    // Block not in block inputs map
+    block_connections.push_back(wayside_controller::BlockConnection(17, 10));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.Configure({block_input_map, block_connections}));
+    block_connections.pop_back();
+
+    // Block not in block inputs map
+    block_connections.push_back(wayside_controller::BlockConnection(0, 17));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.Configure({block_input_map, block_connections}));
+    block_connections.pop_back();
+
+    // Duplicate block in block inputs map
+    block_connections.push_back(wayside_controller::BlockConnection(1, 2));
+    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.Configure({block_input_map, block_connections}));
+    block_connections.pop_back();
 }
 
 TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
