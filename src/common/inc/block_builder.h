@@ -10,25 +10,39 @@
 
 #include "types.h"
 
-#define BLOCK_BUILDER_CSV_FIELD_LINE                 0
-#define BLOCK_BUILDER_CSV_FIELD_SECTION              1
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER         2
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH         3
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE          4
-#define BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT          5
-#define BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE       6
-#define BLOCK_BUILDER_CSV_FIELD_STATION_SIDE         7
-#define BLOCK_BUILDER_CSV_FIELD_ELEVATION            8
-#define BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION 9
+#define BLOCK_BUILDER_CSV_FIELD_LINE                    0
+#define BLOCK_BUILDER_CSV_FIELD_SECTION                 1
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER            2
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH            3
+#define BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE             4
+#define BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT             5
+#define BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE          6
+#define BLOCK_BUILDER_CSV_FIELD_STATION_SIDE            7
+#define BLOCK_BUILDER_CSV_FIELD_ELEVATION               8
+#define BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION    9
+
+#define BLOCK_BUILDER_SHCEDULE_FIELD_ELEVATION              7
+#define BLOCK_BUILDER_SCHEDULE_FIELD_CUMULATIVE_ELEVATION   8
+#define BLOCK_BUILDER_SCHEDULE_FIELD_SPEED_LIMIT            9
+#define BLOCK_BUILDER_SCHEDULE_FIELD_TIME_TO_TRAVEL_BLOCK   10
+#define BLOCK_BUIDLER_SCHEDULE_FIELD_TIME_BETWEEN_STATION   11        
+
+typedef enum {
+    MODULE_TRACK_MODEL,
+    MODULE_CTC,
+} Module;
 
 class BlockBuilder
 {
     public:
         BlockBuilder(void);
-        BlockBuilder(const std::vector<std::vector<std::string>> &records);
+        BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module);
+        // BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module);
+
         std::size_t GetSize(void) const;
         void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
         types::Block ConvertRecordToBlock(const std::vector<std::string> &record);
+        types::Block ConvertRecordToBlockCTC(const std::vector<std::string> &record);
         types::Error GetBlock(const types::BlockId block_id, types::Block &block);
         std::vector<types::Block> GetBlocks(void) const;
 

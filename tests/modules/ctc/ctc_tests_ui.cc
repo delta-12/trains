@@ -16,6 +16,20 @@
 int main(void)
 {
     auto ctc_ui = ui::CtcUi::create();
+
+    ctc::Ctc ctc;
+    ctc_ui->on_choose_file([&]() {
+        std::string file;
+        types::Error error = ctc.OpenFileExplorer(file);
+        if (error = types::Error::ERROR_NONE) {
+            ctc_ui->set_selected_fileName(file.c_str());
+        }
+        else {
+            std::string message = "*Invalid File";
+            ctc_ui->set_selected_fileName(message.c_str());
+        }
+    });
+
     ctc_ui->run();
     return 0;
 }

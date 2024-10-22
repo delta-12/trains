@@ -8,13 +8,25 @@ BlockBuilder::BlockBuilder(void)
 {
 }
 
-BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records)
+BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module)
 {
-    for (size_t i = 1; i < records.size(); ++i)
+    if (module == Module::MODULE_TRACK_MODEL)
     {
-        const std::vector<std::string> &record = records[i];
-        types::Block                    block  = ConvertRecordToBlock(record);
-        blocks_.push_back(block);
+        for (size_t i = 1; i < records.size(); ++i)
+        {
+            const std::vector<std::string> &record = records[i];
+            types::Block                    block  = ConvertRecordToBlock(record);
+            blocks_.push_back(block);
+        }
+    } 
+    else if (module == Module::MODULE_CTC)
+    {
+        for (size_t i = 0; i < records.size(); ++i)
+        {
+            const std::vector<std::string> &record = records[i];
+            types::Block                    block  = ConvertRecordToBlockCTC(record);
+            blocks_.push_back(block);
+        }
     }
 }
 
@@ -55,6 +67,34 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
 }
 
 types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &record)
+{
+    types::Block block;
+    block.section     = record[1][0];
+    block.block       = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER]);
+    block.length      = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH]);
+    block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
+    block.speed_limit = std::stod(record[BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT]);
+    AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
+    std::string station_side = record[BLOCK_BUILDER_CSV_FIELD_STATION_SIDE];
+    if ((station_side.find("Left") != std::string::npos) && (station_side.find("Right") != std::string::npos))
+    {
+        block.station_side = types::StationSide::STATIONSIDE_BOTH;
+    }
+    else if (station_side.find("Left") != std::string::npos)
+    {
+        block.station_side = types::StationSide::STATIONSIDE_LEFT;
+    }
+    else if (station_side.find("Right") != std::string::npos)
+    {
+        block.station_side = types::StationSide::STATIONSIDE_RIGHT;
+    }
+    block.elevation            = std::stod(record[BLOCK_BUILDER_CSV_FIELD_ELEVATION]);
+    block.cumulative_elevation = std::stod(record[BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION]);
+
+    return block;
+}
+
+types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string> &record)
 {
     types::Block block;
     block.section     = record[1][0];

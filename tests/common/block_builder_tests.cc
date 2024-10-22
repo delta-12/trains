@@ -14,7 +14,7 @@ TEST(BlockBuilderTests, GetSize)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     ASSERT_EQ(bb.GetSize(), 150);
 
     std::vector<types::Block> result = bb.GetBlocks();
@@ -65,7 +65,7 @@ TEST(BlockBuilderTests, BlueBline)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 15);
@@ -101,7 +101,7 @@ TEST(BlockBuilderTests, GreenLine)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 150);

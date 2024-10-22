@@ -8,8 +8,10 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include <filesystem>
 
 #include "types.h"
+#include "block_builder.h"
 #include "wayside_controller.h"
 #include "wayside_controller_gateway.h"
 
@@ -48,49 +50,54 @@ struct DestinationAndArrivalTime
 // 
 struct Train
 {
-    Train(void) : train_id(++last_id) {};
-    Train(std::string train_name) : train_name(train_name), train_id(++last_id) {};
+    Train(void) : train_id(GetNextId()) {};
+    Train(std::string train_name) : train_name(train_name) {};
     types::TrainId train_id;
-    types::TrackId track_id;
     std::string train_name;
     std::vector<types::BlockId> block_occupancy;
     types::MetersPerSecond suggested_speed;
     std::vector<types::Block> authority;
     std::vector<DestinationAndArrivalTime> destination_list;
     static types::TrainId last_id;
-};
 
-class Line
-{  
-    public:
-        Line(void);
-        Line(const std::vector<types::Block> &block_list);
-        std::unordered_map<types::BlockId, types::Block> block_map_;
-        std::vector<ctc::Station> station_list_;
-        types::TrackId track_;
-
-        types::Block GetBlock(const types::BlockId blockId );
-        Station GetStationByStationName(const std::string station_name );
+    static types::TrainId GetNextId() {
+        static types::TrainId last_id = 1;
+        return last_id++;
+    }
 };
 
 class Ctc
 {
     public:
-        void SetTrackLayout(const std::vector<types::Block> &blocks);
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule);
-        void SetManualMode(void);
-
-        void ManualDispatch(std::string &arrival_time, std::string &station_name, std::string &train_name, types::TrackId track_id);
+        void LoadSchedule(const std::string &file_path);
+        types::Error OpenFileExplorer(std::string &file);
+        types::Error ManualDispatch(std::string &arrival_time, std::string &station_name, std::string &train_name, types::TrackId track_id);
         types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
         std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
-        ctc::Train GetTrainByName(const std::string train_name);
-        ctc::Line GetLine(const types::TrackId track_id);
+        /* Helpers */
+         
+        /* Setters */
+        void SetManualMode(void);
+        void SetAutomaticMode(void);
 
+        /* Train Specific */
+        void UpdateSuggestedSpeed(const types::TrainId train_id);
+        void UpdateAuthority(const types::TrainId train_id);
+        std::vector<types::Block> GetRoute(const types::BlockId start, const types::BlockId end);
+
+        /* Getters */
+        ctc::Train GetTrainByName(const std::string train_name);
+        ctc::Train GetTrain(const std::string &train_name);
+        types::Block GetBlock(const types::BlockId &block_id);
+        ctc::Station GetStationBlockId(const std::string &station_name);
         /* Variables */
-        std::unordered_map<types::TrackId, ctc::Line> track_layout_;
-        std::unordered_map<types::TrainId, ctc::Train> train_schedule_;
+        std::vector<types::Block> blocks_;
+        std::vector<ctc::Station> stations_;
+        std::vector<ctc::Train> train_schedules_;
         OperationMode ctc_mode_;
+        std::filesystem::path schedule_file_path;
 
 };
 
