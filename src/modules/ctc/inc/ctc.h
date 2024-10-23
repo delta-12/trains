@@ -27,8 +27,8 @@ class Ctc
         void SetTrackLayout(const std::vector<types::Block> &blocks);
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule);
         void SetManualMode(void);
-        types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
-        std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
+        types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
+        std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 };
 
 std::vector<std::string> SplitBySemicolon(const std::string& input);
