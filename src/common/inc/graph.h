@@ -26,7 +26,7 @@ class Graph
         bool RemoveEdge(const NodeLabel start, const NodeLabel end);
         void Clear(void);
         size_t GetEdgeCount(void) const;
-        std::unordered_set<NodeLabel> BreadthFirstSearch(const NodeLabel start) const;
+        std::vector<NodeLabel> BreadthFirstSearch(const NodeLabel start) const;
         std::vector<NodeLabel> Dijkstra(const NodeLabel start, const NodeLabel end) const;
 
     private:
@@ -141,15 +141,17 @@ size_t Graph<NodeLabel, EdgeWeight>::GetEdgeCount(void) const
 
 // Returns set of connected nodes
 template <typename NodeLabel, typename EdgeWeight>
-std::unordered_set<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(const NodeLabel start) const
+std::vector<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(const NodeLabel start) const
 {
     std::queue<NodeLabel>         node_queue;
     std::unordered_set<NodeLabel> visited_nodes;
+    std::vector<NodeLabel>        path;
 
     if (IsConnected(start))
     {
         node_queue.push(start);
         visited_nodes.insert(start);
+        path.push_back(start);
 
         while (!node_queue.empty())
         {
@@ -157,8 +159,9 @@ std::unordered_set<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(c
             {
                 if (!visited_nodes.contains(edge.first))
                 {
-                    visited_nodes.insert(edge.first);
                     node_queue.push(edge.first);
+                    visited_nodes.insert(edge.first);
+                    path.push_back(edge.first);
                 }
             }
 
@@ -166,7 +169,7 @@ std::unordered_set<NodeLabel> Graph<NodeLabel, EdgeWeight>::BreadthFirstSearch(c
         }
     }
 
-    return visited_nodes;
+    return path;
 }
 
 template <typename NodeLabel, typename EdgeWeight>
