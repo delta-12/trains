@@ -29,7 +29,7 @@ namespace wayside_controller
 
 typedef uint16_t               InputId;
 typedef uint16_t               OutputId;
-typedef struct BlockInputs     BlockInputs;
+typedef struct WaysideBlock    WaysideBlock;
 typedef struct BlockConnection BlockConnection;
 typedef uint32_t               PlcInstructionArgument;
 typedef struct PlcInstruction  PlcInstruction;
@@ -64,36 +64,21 @@ typedef enum
 } PlcInstructionCode;
 
 // TODO NNF-144 add block speed limit
-struct BlockInputs
+struct WaysideBlock
 {
     public:
-        BlockInputs(void);
-        BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode,
-                    const bool occupied);
+        WaysideBlock(void);
+        WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
+                     const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied);
         types::BlockId block;
+        types::BlockId primary_connection;
+        types::BlockId switch_connection;
+        types::BlockDirection direction;
         InputId track_circuit_input;
         InputId switch_input;
         bool has_switch;
         bool maintenance_mode;
         bool occupied;
-};
-
-struct BlockConnection
-{
-    public:
-        BlockConnection(void);
-        BlockConnection(const types::BlockId from_block, const types::BlockId to_block);
-        types::BlockId from_block;
-        types::BlockId to_block;
-};
-
-struct Configuration
-{
-    public:
-        Configuration(void);
-        Configuration(const std::vector<BlockInputs> &block_input_map, const std::vector<BlockConnection> &connected_blocks);
-        std::vector<BlockInputs> block_input_map;
-        std::vector<BlockConnection> connected_blocks;
 };
 
 struct PlcInstruction
@@ -112,8 +97,8 @@ class WaysideController
 {
     public:
         WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input);
-        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const Configuration &configuration);
-        Error Configure(const Configuration &configuration);
+        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<WaysideBlock> &blocks);
+        Error Configure(const std::vector<WaysideBlock> &blocks);
         Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
@@ -124,7 +109,7 @@ class WaysideController
         static bool IsSwitchInputValid(const InputId input);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_;
-        std::unordered_map<types::BlockId, BlockInputs> block_input_map_;
+        std::unordered_map<types::BlockId, WaysideBlock> block_configuration_;
         Graph<types::BlockId, uint8_t> block_layout_;
 };
 

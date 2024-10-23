@@ -7,28 +7,15 @@
 namespace wayside_controller
 {
 
-BlockInputs::BlockInputs(void) : block(0), track_circuit_input(0), switch_input(0), has_switch(false), maintenance_mode(false), occupied(false)
+WaysideBlock::WaysideBlock(void) : block(0), primary_connection(0), switch_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
+    maintenance_mode(false), occupied(false)
 {
 }
 
-BlockInputs::BlockInputs(const types::BlockId block, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied)
-    : block(block), track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupied(occupied)
-{
-}
-
-BlockConnection::BlockConnection(void)
-{
-}
-
-BlockConnection::BlockConnection(const types::BlockId from_block, const types::BlockId to_block) : from_block(from_block), to_block(to_block)
-{
-}
-
-Configuration::Configuration(void)
-{
-}
-
-Configuration::Configuration(const std::vector<BlockInputs> &block_input_map, const std::vector<BlockConnection> &connected_blocks) : block_input_map(block_input_map), connected_blocks(connected_blocks)
+WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
+                           const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied)
+    : block(block), primary_connection(primary_connection), switch_connection(switch_connection), direction(direction), track_circuit_input(track_circuit_input),
+    switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupied(occupied)
 {
 }
 
@@ -45,45 +32,49 @@ WaysideController::WaysideController(std::function<Error(const InputId input, Io
 {
 }
 
-WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const Configuration &configuration) : get_input_(get_input)
+WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<WaysideBlock> &blocks) : get_input_(get_input)
 {
     // TODO NNF-174 error handling
-    Configure(configuration);
+    Configure(blocks);
 }
 
-Error WaysideController::Configure(const Configuration &configuration)
+Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
 {
     Error                       error = ERROR_NONE;
     std::unordered_set<InputId> mapped_inputs;
 
-    block_input_map_.clear();
+    block_configuration_.clear();
     block_layout_.Clear();
 
     // Map block inputs
-    for (const BlockInputs &block_inputs : configuration.block_input_map)
+    for (const WaysideBlock &wayside_block : blocks)
     {
         // Validate block and track circuit input
-        if (block_input_map_.contains(block_inputs.block))
+        if (TYPES_END_BLOCK_ID == wayside_block.block)
+        {
+            error = ERROR_INVALID_BLOCK;
+        }
+        else if (block_configuration_.contains(wayside_block.block))
         {
             error = ERROR_DUPLICATE_BLOCK;
         }
-        else if (!IsTrackCircuitInputValid(block_inputs.track_circuit_input))
+        else if (!IsTrackCircuitInputValid(wayside_block.track_circuit_input))
         {
             error = ERROR_INVALID_INPUT;
         }
-        else if (mapped_inputs.contains(block_inputs.track_circuit_input))
+        else if (mapped_inputs.contains(wayside_block.track_circuit_input))
         {
             error = ERROR_DUPLICATE_INPUT;
         }
 
         // Validate switch input
-        if ((ERROR_NONE == error) && (true == block_inputs.has_switch))
+        if ((ERROR_NONE == error) && (true == wayside_block.has_switch))
         {
-            if (!IsSwitchInputValid(block_inputs.switch_input))
+            if (!IsSwitchInputValid(wayside_block.switch_input))
             {
                 error = ERROR_INVALID_INPUT;
             }
-            else if (mapped_inputs.contains(block_inputs.switch_input))
+            else if (mapped_inputs.contains(wayside_block.switch_input))
             {
                 error = ERROR_DUPLICATE_INPUT;
             }
@@ -91,12 +82,18 @@ Error WaysideController::Configure(const Configuration &configuration)
 
         if (ERROR_NONE == error)
         {
-            block_input_map_[block_inputs.block] = block_inputs;
-            mapped_inputs.insert(block_inputs.track_circuit_input);
+            block_configuration_[wayside_block.block] = wayside_block;
+            mapped_inputs.insert(wayside_block.track_circuit_input);
+            block_layout_.AddEdge(wayside_block.block, wayside_block.primary_connection, 1);
 
-            if (block_inputs.has_switch)
+            if (types::BLOCKDIRECTION_BIDIRECTIONAL == wayside_block.direction)
             {
-                mapped_inputs.insert(block_inputs.switch_input);
+                block_layout_.AddEdge(wayside_block.primary_connection, wayside_block.block, 1);
+            }
+
+            if (wayside_block.has_switch)
+            {
+                mapped_inputs.insert(wayside_block.switch_input);
             }
         }
         else
@@ -105,24 +102,9 @@ Error WaysideController::Configure(const Configuration &configuration)
         }
     }
 
-    // Build track layout
-    if (ERROR_NONE == error)
-    {
-        for (const BlockConnection &block_connection : configuration.connected_blocks)
-        {
-            if ((!block_input_map_.contains(block_connection.from_block)) ||
-                (!block_input_map_.contains(block_connection.to_block)) ||
-                (!block_layout_.AddEdge(block_connection.from_block, block_connection.to_block, 1)))
-            {
-                error = ERROR_INVALID_BLOCK;
-                break;
-            }
-        }
-    }
-
     if (ERROR_NONE != error)
     {
-        block_input_map_.clear();
+        block_configuration_.clear();
         block_layout_.Clear();
     }
 
@@ -135,7 +117,7 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
     types::MetersPerSecond speed     = 0;
     size_t                 authority = 0;
 
-    if (!block_input_map_.contains(track_circuit_data.block))
+    if (false == block_configuration_.contains(track_circuit_data.block))
     {
         error = ERROR_INVALID_BLOCK;
     }
@@ -144,25 +126,35 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
         // TODO NNF-144 check for safe speed
 
         // BFS should return set of blocks in the order they can be traversed from the starting block
-        std::unordered_set<types::BlockId> blocks = block_layout_.BreadthFirstSearch(track_circuit_data.block);
-        blocks.erase(track_circuit_data.block);
+        std::vector<types::BlockId>                 blocks         = block_layout_.BreadthFirstSearch(track_circuit_data.block);
+        std::vector<types::BlockId>::const_iterator selected_block = blocks.begin() + 1;     // Don't include current block in authority
 
         // Authority can only be less than or equal to initial value
-        while ((authority < track_circuit_data.authority) && (false == blocks.empty()))
+        while ((authority < track_circuit_data.authority) && (blocks.end() != selected_block))
         {
-            IoSignal track_circuit_signal = IOSIGNAL_HIGH;
-
-            // Check for occupancy by getting track circuit input
-            if ((ERROR_NONE != get_input_(block_input_map_[*blocks.begin()].track_circuit_input, track_circuit_signal)) || (IOSIGNAL_HIGH == track_circuit_signal))
+            if (TYPES_END_BLOCK_ID == *selected_block)
             {
-                break;
+                // Train cannot travel further than the end of the track, should be the end of blocks
+                // Do nothing
+            }
+            else if (!block_configuration_.contains(*selected_block))
+            {
+                error = ERROR_INVALID_BLOCK;
             }
             else
             {
-                track_circuit_data.authority++;
+                // Occupancy check
+                IoSignal track_circuit_signal = IOSIGNAL_HIGH;
+                error = get_input_(block_configuration_[*selected_block].track_circuit_input, track_circuit_signal);
+
+                if ((ERROR_NONE != error) || (IOSIGNAL_HIGH == track_circuit_signal))
+                {
+                    break;
+                }
             }
 
-            blocks.erase(blocks.begin());
+            ++authority;
+            ++selected_block;
         }
     }
 
@@ -176,14 +168,14 @@ Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bo
 {
     Error error = ERROR_NONE;
 
-    if (!block_input_map_.contains(block))
+    if (!block_configuration_.contains(block))
     {
         error = ERROR_INVALID_BLOCK;
     }
     else
     {
         // TODO NNF-105 can only be set if block has switch?
-        block_input_map_[block].maintenance_mode = maintenance_mode;
+        block_configuration_[block].maintenance_mode = maintenance_mode;
     }
 
     return error;
@@ -196,11 +188,11 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     Error error = ERROR_NONE;
 
     // TODO NNF-105 only blocks with swithes can be put into maintenance mode?
-    if ((!block_input_map_.contains(block)) || (false == block_input_map_[block].has_switch))
+    if ((!block_configuration_.contains(block)) || (false == block_configuration_[block].has_switch))
     {
         error = ERROR_INVALID_BLOCK;
     }
-    else if (!IsSwitchInputValid(block_input_map_[block].switch_input))
+    else if (!IsSwitchInputValid(block_configuration_[block].switch_input))
     {
         error = ERROR_INVALID_INPUT;
     }
