@@ -12,6 +12,7 @@
 #include <string>
 
 #define TYPES_BEACON_DATA_SIZE 128U
+#define TYPES_END_BLOCK_ID     0U
 
 namespace types
 {
