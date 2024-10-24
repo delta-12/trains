@@ -374,6 +374,21 @@ types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahr
     //setting temperature
     external_temperature_ = temperature;
 
+    if (temperature < 32)
+    {
+        for (int i = 0; i < blocks_.size(); i++)
+        {
+            blocks_[i].heater_on = 1;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < blocks_.size(); i++)
+        {
+            blocks_[i].heater_on = 0;
+        }
+    }
+
     return types::ERROR_NONE;
 }
 

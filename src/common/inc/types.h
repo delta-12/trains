@@ -47,7 +47,8 @@ typedef enum
 typedef enum
 {
     LIGHTCOLOR_RED,
-    LIGHTCOLOR_GREEN
+    LIGHTCOLOR_GREEN,
+    LIGHTCOLOR_NONE
 } LightColor;
 
 typedef enum

@@ -47,7 +47,7 @@ class TrainModel
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees) = 0;
         virtual void SetBlockId(const types::BlockId block)                                  = 0;
         virtual uint16_t GetPassengersDeboarding(void)                                       = 0;
-        virtual types::BlockId GetBlockId(void)                                              = 0;
+        virtual types::Meters GetDistanceTraveled(void)                                      = 0;
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                   = 0;
         virtual void SetAuthority(const types::Meters meters)                                = 0;
         virtual void SetPassengersBoarding(const uint16_t passegners)                        = 0;
