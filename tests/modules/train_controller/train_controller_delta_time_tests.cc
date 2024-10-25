@@ -4,44 +4,13 @@
 * @brief Unit testing for Tick SOurce implementation in train controller.
 *****************************************************************************/
 
+#include "train_controller.h"
 #include <unistd.h>
-
 #include <iostream>
 #include <iomanip>
-
-
 #include <gtest/gtest.h>
 
-#include "train_controller.h"
 
-
-
-TEST(TrainControllerDeltaTimeTests, GetDeltaTime)
-{
-    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
-    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
-    train_controller::SoftwareTrainController TC(CLOCK);
-
-    (*CLOCK).Start();
-    usleep(1000000);
-    //(*CLOCK).Stop();
-
-    TC.Update();
-
-    //Checking if the delta time corresponds to the 1 second wait time
-    EXPECT_DOUBLE_EQ(1, TC.GetDeltaTime());
-
-    //(*CLOCK).Start();
-    usleep(2000000);
-    //(*CLOCK).Stop();
-
-    TC.Update();
-
-    //Checking if the delta time corresponds to the 2 second wait time
-    EXPECT_DOUBLE_EQ(2, TC.GetDeltaTime());
-
-    (*CLOCK).Stop();
-}
 
 TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
 {
@@ -50,19 +19,22 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     train_controller::SoftwareTrainController TC(CLOCK);
 
 
-    (*CLOCK).Start();
+    types::Second elapsed_time0(0);
+    types::Second elapsed_time1(1);
+    types::Second elapsed_time2(2);
+    types::Second elapsed_time3(3);
+
     usleep(1000000);
-    TC.UpdateDistanceTravelled(0);
+    TC.UpdateDistanceTravelled(elapsed_time0);
 
     //Checking no distance has been travelled
     EXPECT_DOUBLE_EQ(0, TC.GetDistanceTravelled());
 
 
-
     //Setting current speed to 10 m/s
     TC.SetCurrentSpeed(10);
 
-    TC.UpdateDistanceTravelled(2);
+    TC.UpdateDistanceTravelled(elapsed_time2);
 
     //Checking if the distance travelled corresponds to the time passed and the current speed
     EXPECT_DOUBLE_EQ(20, TC.GetDistanceTravelled());
@@ -72,7 +44,7 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     //Setting current speed to 5 m/s
     TC.SetCurrentSpeed(5);
 
-    TC.UpdateDistanceTravelled(1);
+    TC.UpdateDistanceTravelled(elapsed_time1);
 
     //Checking if the distance travelled corresponds to the time passed and the current speed
     EXPECT_DOUBLE_EQ(25, TC.GetDistanceTravelled());
@@ -83,12 +55,10 @@ TEST(TrainControllerDeltaTimeTests, DistanceTravelled1)
     TC.SetCurrentSpeed(2.5);
 
     //Waiting for 3 seconds
-    TC.UpdateDistanceTravelled(3);
+    TC.UpdateDistanceTravelled(elapsed_time3);
 
     //Checking if the distance travelled corresponds to the time passed and the current speed
     EXPECT_DOUBLE_EQ(32.5, TC.GetDistanceTravelled());
-
-    (*CLOCK).Stop();
 }
 
 

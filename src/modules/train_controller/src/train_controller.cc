@@ -1,7 +1,8 @@
+#include "train_controller.h"
+
 #include <cstdint>
 #include <chrono>
 
-#include "train_controller.h"
 #include "types.h"
 #include "convert.h"
 #include "tick_source.h"
@@ -228,11 +229,10 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 void SoftwareTrainController::Update()
 {
 
-    auto elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
 
-    auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time);
+    std::chrono::milliseconds elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
 
-    double delta_time = static_cast<double>(delta_time_in_seconds.count());
+    types::Second delta_time = std::chrono::duration_cast<types::Second>(elapsed_time);
 
     last_tick_updated_ = (*clock_).GetTick();
 
@@ -243,12 +243,12 @@ void SoftwareTrainController::Update()
 }
 
 
-void SoftwareTrainController::CalculateCommandedPower(double delta_time)
+void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_time)
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    double block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    types::MetersPerSecond block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
@@ -262,16 +262,14 @@ void SoftwareTrainController::CalculateCommandedPower(double delta_time)
     }
 
     // Calculating speed_error
-    double speed_error = setpoint_speed - current_speed_;
+    types::MetersPerSecond speed_error = setpoint_speed - current_speed_;
 
     // Calculating Kp term
     double kp_term = speed_error * kp_;
 
-    // Temp time passed since last update
-    //double delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
-    integral_sum_ += speed_error * delta_time;
+    integral_sum_ += speed_error * delta_time.count();
 
     // Calculating Ki term
     double ki_term = ki_ * integral_sum_;
@@ -314,7 +312,7 @@ void SoftwareTrainController::CalculateCommandedPower(double delta_time)
     }
 }
 
-void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
+void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed_difference)
 {
     types::MetersPerSecond maximum_speed = convert::KilometersPerHourToMetersPerSecond(train_max_speed_);
     //Bins to increment service brake percentage by 10%
@@ -365,12 +363,12 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     }
 }
 
-void SoftwareTrainController::UpdateDistanceTravelled(double delta_time)
+void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_time)
 {
-    distance_travelled_ += current_speed_ * delta_time;
+    distance_travelled_ += current_speed_ * delta_time.count();
 }
 
-double SoftwareTrainController::GetDeltaTime(void) const
+types::Second SoftwareTrainController::GetDeltaTime(void) const
 {
     return delta_time_;
 }

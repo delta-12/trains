@@ -17,10 +17,10 @@
 #define DEFAULT_DELTA_TIME                    (1)
 
 
-#include <array>
+
 #include <string>
 #include <cstdint>
-#include <unordered_map>
+
 
 #include "types.h"
 #include "convert.h"
@@ -121,17 +121,17 @@ class SoftwareTrainController : public TrainController
         void SetKI(const uint16_t kp);
 
         //local functions
-        double GetDeltaTime(void) const;
+        types::Second GetDeltaTime(void) const;
         void Update(void);
-        void CalculateCommandedPower(double delta_time);
-        void UpdateDistanceTravelled(double delta_time); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        void CalculateCommandedPower(const types::Second delta_time);
+        void UpdateDistanceTravelled(const types::Second delta_time);
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
 
     private:
 
         std::shared_ptr<TickSource> clock_;
         types::Tick last_tick_updated_;
-        double delta_time_;
+        types::Second delta_time_;
 
         double integral_sum_;
         uint16_t kp_;
