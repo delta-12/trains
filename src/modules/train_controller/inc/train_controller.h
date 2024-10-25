@@ -137,7 +137,7 @@ class SoftwareTrainController : public TrainController
         //          index 4: cumulative elevation   (m)
         //          index 5: underground            (0: no, 1: yes)
 
-        const std::unordered_map<int, std::vector<double> > red_block_data_map_ = {
+        const std::unordered_map<int, std::vector<double>> red_block_data_map_ = {
             {1,  {50, 0.5, 40, 0.25, 0.25, 0}},
             {2,  {50, 1, 40, 0.50, 0.75, 0}},
             {3,  {50, 1.5, 40, 0.75, 1.50, 0}},
@@ -223,7 +223,7 @@ class SoftwareTrainController : public TrainController
         //          index 0: infrastructure string
         //          index 1: station side
 
-        const std::unordered_map<int, std::vector<std::string> > red_infrastructure_data_map_ = {
+        const std::unordered_map<int, std::vector<std::string>> red_infrastructure_data_map_ = {
             {7,  {"STATION: SHADYSIDE", "Left/Right"}},
             {9,  {"SWITCH TO/FROM YARD (75-yard)", ""}},
             {11, {"RAILWAY CROSSING", ""}},
@@ -261,7 +261,7 @@ class SoftwareTrainController : public TrainController
         //          index 4: cumulative elevation   (m)
         //          index 5: underground            (0: no, 1: yes)
 
-        std::unordered_map<int, std::vector<double> > green_block_data_map_ = {
+        std::unordered_map<int, std::vector<double>> green_block_data_map_ = {
             {1,  {100, 0.5, 45, 0.5, 0.5, 0}},
             {2,  {100, 1, 45, 1, 1.5, 0}},
             {3,  {100, 1.5, 45, 1.5, 3, 0}},
@@ -421,7 +421,7 @@ class SoftwareTrainController : public TrainController
         //          index 0: infrastructure string
         //          index 1: station side
 
-        std::unordered_map<int, std::vector<std::string> > green_infrastructure_data_map_ = {
+        std::unordered_map<int, std::vector<std::string>> green_infrastructure_data_map_ = {
             {2,  {"STATION; PIONEER", "Left"}},
             {9,  {"STATION; EDGEBROOK", "Left"}},
             {12, {"SWITCH (12-13; 1-13)", ""}},
