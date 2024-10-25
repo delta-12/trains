@@ -228,12 +228,12 @@ void SoftwareTrainController::SetArrived(const bool arrived)
     arrived_ = arrived;
 }
 
-void SoftwareTrainController::SetOperationMode(const bool mode)
+void SoftwareTrainController::SetOperationMode(const bool operation_mode)
 {
-    if (operation_mode_ == 0 && mode == 1)
+    if (operation_mode_ == 0 && operation_mode == 1)
     {
         driver_speed_   = commanded_speed_;
-        operation_mode_ = mode; // cannot switch back to auto
+        operation_mode_ = operation_mode; // cannot switch back to auto
     }
 }
 

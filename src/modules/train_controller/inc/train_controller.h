@@ -43,7 +43,7 @@ class TrainController
         virtual types::DegreesFahrenheit GetCommandedInternalTemperature(void) const = 0;
         virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const    = 0;
         virtual types::Meters GetAuthority(void) const                               = 0;
-        virtual bool SetOperationMode(void) const                                    = 0;
+        virtual bool GetOperationMode(void) const                                    = 0;
 
         // Setter declarations
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                       = 0;
@@ -113,7 +113,7 @@ class SoftwareTrainController : public TrainController
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t ki);
         void SetKI(const uint16_t kp);
-        void SetOperationMode(const bool mode);
+        void SetOperationMode(const bool operation_mode);
 
         //local functions
         void CalculateCommandedPower(void);

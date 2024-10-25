@@ -5,23 +5,20 @@
 *****************************************************************************/
 #include "train_controller.h"
 #include <unistd.h>
-
 #include <iostream>
 #include <iomanip>
-
-
 #include <gtest/gtest.h>
 
-//#include "_deps/googletest-src/googletest/include/gtest/gtest.h"
 
 
 
 
-TEST(TrainControllerOperationModeTests)
+TEST(TrainControllerOperationModeTests, SettingOperationMode)
 {
     train_controller::SoftwareTrainController TC;
-    
-    // assert operation mode starts in automatic
+
+    //assert operation mode starts in automatic
+
     ASSERT_EQ(0, TC.GetOperationMode());
 
     // switch to manual mode and assert it worked
