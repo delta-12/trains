@@ -3,8 +3,6 @@
 *
 * @brief Implements the CTC backend.
 *****************************************************************************/
-#ifndef TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
-#define TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
 
 #include "wayside_controller_gateway.h"
 #include "ctc.h"
@@ -13,6 +11,10 @@
 #include "unordered_map"
 #include <iostream>
 
+#ifdef WIN32
+#include "windows.h"
+#include "commdlg.h"
+#endif
 
 namespace ctc
 {
@@ -371,6 +373,7 @@ void Ctc::LoadSchedule(void)
 
 types::Error Ctc::OpenFileExplorer(std::string &file)
 {
+#ifdef WIN32
     types::Error error;
     OPENFILENAME ofn;                 // Common dialog box structure
     char         file_name[MAX_PATH]; // Buffer for the file name
@@ -400,6 +403,9 @@ types::Error Ctc::OpenFileExplorer(std::string &file)
         error = types::Error::ERROR_INVALID_FORMAT;
     }
     return error;
+#else
+    std::cout << "Operation not supported" << std::endl;
+#endif
 }
 
 void Ctc::ManualDispatch(types::BlockId destination)
@@ -533,5 +539,3 @@ void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 }
 
 } // namespace ctc
-
-#endif // TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
