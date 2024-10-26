@@ -277,19 +277,6 @@ void GraphBuilder::BuildGreenLine(void)
     graph_.AddEdge(150, 28, 50);
 }
 
-std::vector<types::Block> GraphBuilder::BuildSection(types::SectionId section_id)
-{
-    std::vector<types::Block> section;
-    for (const types::Block &block : block_list_)
-    {
-        if (block.section == section_id)
-        {
-            section.push_back(block);
-        }
-    }
-    return section;
-}
-
 std::size_t GraphBuilder::GetBlockList(void) const
 {
     return block_list_.size();
