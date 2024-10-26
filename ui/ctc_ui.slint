@@ -205,7 +205,7 @@ component ManualMode inherits Rectangle {
 component AutomaticMode inherits Rectangle {
     in-out property<string> fileName: "";
     callback choose-file();
-    callback parse-file();
+    callback automatic_dispatch();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -237,7 +237,7 @@ component AutomaticMode inherits Rectangle {
                 max-height: 30px;
                 preferred-width: 250px;
                 text: "DISPATCH";
-                clicked => {parse-file()}
+                clicked => {automatic_dispatch()}
             } 
         }       
     }
@@ -251,7 +251,7 @@ component Dispatch inherits Rectangle {
     in-out property <string> arrival_time;
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     background: #252525;
@@ -288,7 +288,7 @@ component Dispatch inherits Rectangle {
 
         if(automatic_mode == true) : AutomaticMode {
             choose-file => {root.choose-file()}
-            parse-file => {root.parse-file()}
+            automatic_dispatch => {root.automatic-dispatch()}
             fileName: fileName;
         }
         if(automatic_mode == false) : ManualMode {
@@ -388,7 +388,7 @@ export component CtcUi inherits Window {
     callback send-failure-signal();
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     title: "CTC Office";
@@ -422,7 +422,7 @@ export component CtcUi inherits Window {
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
-                        parse-file => {root.parse-file()}
+                        automatic-dispatch => {root.automatic-dispatch()}
                         train_name <=> train_name;
                         destination <=> destination;
                         arrival_time <=> arrival_time;

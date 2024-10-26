@@ -79,7 +79,7 @@ typedef enum
 
 struct Block
 {
-    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
+    Block() : block(0), occupied(false), has_switch(false), switched(false), primary_connection(0), secondary_connection(0), has_crossing(false), crossing_state(false), has_light(false), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
               speed_limit(0), elevation(0), cumulative_elevation(0), section(' '), heater_on(false), has_station(false), underground(false)
     {
     };
@@ -87,7 +87,8 @@ struct Block
     bool occupied;
     bool has_switch;
     bool switched;
-    BlockId switch_connection;
+    BlockId primary_connection;
+    BlockId secondary_connection;
     bool has_crossing;
     bool crossing_state;
     bool has_light;
@@ -107,6 +108,10 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+
+    BlockId GetSwitchConnection(void) const {
+        return switched ? secondary_connection : primary_connection;
+    }
 };
 
 

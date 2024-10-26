@@ -103,21 +103,6 @@ types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string
     block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
     block.speed_limit = std::stod(record[BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT]);
     AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
-    std::string station_side = record[BLOCK_BUILDER_CSV_FIELD_STATION_SIDE];
-    if ((station_side.find("Left") != std::string::npos) && (station_side.find("Right") != std::string::npos))
-    {
-        block.station_side = types::StationSide::STATIONSIDE_BOTH;
-    }
-    else if (station_side.find("Left") != std::string::npos)
-    {
-        block.station_side = types::StationSide::STATIONSIDE_LEFT;
-    }
-    else if (station_side.find("Right") != std::string::npos)
-    {
-        block.station_side = types::StationSide::STATIONSIDE_RIGHT;
-    }
-    block.elevation            = std::stod(record[BLOCK_BUILDER_CSV_FIELD_ELEVATION]);
-    block.cumulative_elevation = std::stod(record[BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION]);
 
     return block;
 }

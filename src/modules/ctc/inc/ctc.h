@@ -11,25 +11,33 @@
 #include <filesystem>
 
 #include "types.h"
+#include "csv_parser.h"
 #include "block_builder.h"
 #include "wayside_controller.h"
 #include "wayside_controller_gateway.h"
+#include "graph.h"
 
 
 
 namespace ctc
 {
 
+typedef uint16_t column; 
 typedef struct DestinationAndArrivalTime DestinationAndArrivalTime;
 typedef struct Train Train;
 typedef struct Station Station;
+
+typedef enum {
+    SectionDirection_Forward,
+    SectionDirection_Reverse,
+} SectionDirection;
 
 typedef enum
 {
     AUTOMATIC_MODE,
     MANUAL_MODE,
     MAINTENANCE_MODE
-} OperationMode;
+} CtcOperationMode;
 
 struct Station
 {
@@ -47,7 +55,29 @@ struct DestinationAndArrivalTime
     types::Tick arrival_time;
 };
 
-// 
+class ScheduleBuilder {
+    public:
+        ScheduleBuilder(void);
+        ScheduleBuilder(std::filesystem::path &file_path);
+};
+
+class GraphBuilder {
+    public:
+        GraphBuilder(void);
+        GraphBuilder(std::vector<types::Block> &blocks);
+        void BuildGreenLine(void);
+        std::vector<types::Block> BuildSection(types::SectionId section_id);
+        void AddSection(std::vector<types::Block> section, types::BlockDirection direction);
+
+        std::size_t GetBlockList(void) const;
+        types::BlockId GetSectionBegin(void) const;
+        types::BlockId GetSectionEnd(void) const;
+        Graph<types::BlockId, types::Meters> GetGraph(void);
+    private:
+        std::vector<types::Block> block_list_;
+        Graph<types::BlockId, types::Meters> graph_;
+};
+
 struct Train
 {
     Train(void) : train_id(GetNextId()) {};
@@ -56,7 +86,7 @@ struct Train
     std::string train_name;
     std::vector<types::BlockId> block_occupancy;
     types::MetersPerSecond suggested_speed;
-    std::vector<types::Block> authority;
+    std::queue<types::BlockId> authority;
     std::vector<DestinationAndArrivalTime> destination_list;
     static types::TrainId last_id;
 
@@ -69,36 +99,55 @@ struct Train
 class Ctc
 {
     public:
-        void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule);
-        void LoadSchedule(const std::string &file_path);
+        /* Dispatch */
+        void LoadSchedule(void);
+        void ManualDispatch(types::BlockId destination);
         types::Error OpenFileExplorer(std::string &file);
-        types::Error ManualDispatch(std::string &arrival_time, std::string &station_name, std::string &train_name, types::TrackId track_id);
+        
+        /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
         std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
-
-        /* Helpers */
-         
-        /* Setters */
-        void SetManualMode(void);
-        void SetAutomaticMode(void);
 
         /* Train Specific */
         void UpdateSuggestedSpeed(const types::TrainId train_id);
         void UpdateAuthority(const types::TrainId train_id);
-        std::vector<types::Block> GetRoute(const types::BlockId start, const types::BlockId end);
+        void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
+        std::vector<types::BlockId> FindRoute(const types::BlockId start, const types::BlockId end);
+        types::Tick GetTrainDepartureTime(const ctc::Train);
+        void AddTrainToTrainSchedule(ctc::Train train);
+
+        /* Block Specific */
+        types::Error SetBlockToMaintenanceMode(const types::BlockId block_id);
 
         /* Getters */
-        ctc::Train GetTrainByName(const std::string train_name);
-        ctc::Train GetTrain(const std::string &train_name);
-        types::Block GetBlock(const types::BlockId &block_id);
-        ctc::Station GetStationBlockId(const std::string &station_name);
+        ctc::Train GetTrainByName(const std::string &train_name) const;
+        ctc::Train GetTrainById(const types::TrainId train_id) const;
+        types::Block GetBlockById(const types::BlockId &block_id);
+        ctc::Station GetStationByName(const std::string &station_name);  
+        std::filesystem::path GetCsvPath(void) const;
+        std::vector<types::Block> GetBlocks(void) const;
+        std::size_t GetBlockSize(void) const;
+        std::size_t GetTrainAuthority(types::TrainId train_id) const;
+
+        /* Setters */
+        void SetManualMode(void);
+        void SetAutomaticMode(void);
+        void SetStations(void);
+        void SetScheduleFilePath(std::filesystem::path path);
+        void SetBlocks(std::vector<types::Block> &blocks);
+        void SetTrackLayout(void);
+        void SetGraphLayout(std::vector<types::Block> &blocks);
+        void SetGraphManually(Graph<types::BlockId, types::Meters> graph);
+        void SetGreenLineGraph(void);
+    
+    private:
         /* Variables */
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
         std::vector<ctc::Train> train_schedules_;
-        OperationMode ctc_mode_;
-        std::filesystem::path schedule_file_path;
-
+        ctc::CtcOperationMode ctc_mode_;
+        std::filesystem::path schedule_file_path_;
+        Graph<types::BlockId, types::Meters> graph_;
 };
 
 std::vector<std::string> SplitBySemicolon(const std::string& input);
