@@ -34,21 +34,8 @@ int main(void)
     ctc_ui->on_manual_dispatch([&]() {
         int block_id = std::stoi(std::string(ctc_ui->get_destination()));
         types::BlockId destination = (uint16_t)block_id;
-        std::cout << "Destination: " << destination << std::endl;
-
-        std::cout << "Stations From Schedule: " << ctc.GetNumStation() << std::endl;
 
         ctc.ManualDispatch(destination);
-
-        ctc::Train train = ctc.GetTrainById(1);
-        std::queue authority = train.authority;
-
-        std::cout << "Authority: " << ctc.GetTrainAuthority(1) <<  std::endl;
-        while (!authority.empty()) {
-            types::BlockId id = authority.front();
-            std::cout << "Block: " << id << std::endl;
-            authority.pop();
-        }
     });
 
     ctc_ui->run();

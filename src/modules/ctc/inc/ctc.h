@@ -20,12 +20,13 @@
 namespace ctc
 {
 
-typedef uint16_t column; 
+typedef uint16_t                         column;
 typedef struct DestinationAndArrivalTime DestinationAndArrivalTime;
-typedef struct Train Train;
-typedef struct Station Station;
+typedef struct Train                     Train;
+typedef struct Station                   Station;
 
-typedef enum {
+typedef enum
+{
     SectionDirection_Forward,
     SectionDirection_Reverse,
 } SectionDirection;
@@ -39,8 +40,12 @@ typedef enum
 
 struct Station
 {
-    Station(void) : station_name(""), block_id(0) {};
-    Station(std::string station_name, types::BlockId block_id) : station_name(station_name), block_id(block_id) {};
+    Station(void) : station_name(""), block_id(0)
+    {
+    };
+    Station(std::string station_name, types::BlockId block_id) : station_name(station_name), block_id(block_id)
+    {
+    };
     std::string station_name;
     types::BlockId block_id;
 };
@@ -48,18 +53,22 @@ struct Station
 struct DestinationAndArrivalTime
 {
     DestinationAndArrivalTime(void);
-    DestinationAndArrivalTime(const Station station, types::Tick arrival_time) : station(station), arrival_time(arrival_time) {};
+    DestinationAndArrivalTime(const Station station, types::Tick arrival_time) : station(station), arrival_time(arrival_time)
+    {
+    };
     ctc::Station station;
     types::Tick arrival_time;
 };
 
-class ScheduleBuilder {
+class ScheduleBuilder
+{
     public:
         ScheduleBuilder(void);
         ScheduleBuilder(std::filesystem::path &file_path);
 };
 
-class GraphBuilder {
+class GraphBuilder
+{
     public:
         GraphBuilder(void);
         GraphBuilder(std::vector<types::Block> &blocks);
@@ -71,6 +80,7 @@ class GraphBuilder {
         types::BlockId GetSectionBegin(void) const;
         types::BlockId GetSectionEnd(void) const;
         Graph<types::BlockId, types::Meters> GetGraph(void);
+
     private:
         std::vector<types::Block> block_list_;
         Graph<types::BlockId, types::Meters> graph_;
@@ -78,8 +88,12 @@ class GraphBuilder {
 
 struct Train
 {
-    Train(void) : train_id(GetNextId()) {};
-    Train(std::string train_name) : train_name(train_name) {};
+    Train(void) : train_id(GetNextId())
+    {
+    };
+    Train(std::string train_name) : train_name(train_name)
+    {
+    };
     types::TrainId train_id;
     std::string train_name;
     std::vector<types::BlockId> block_occupancy;
@@ -89,7 +103,8 @@ struct Train
     std::vector<DestinationAndArrivalTime> destination_list;
     static types::TrainId last_id;
 
-    static types::TrainId GetNextId() {
+    static types::TrainId GetNextId()
+    {
         static types::TrainId last_id = 1;
         return last_id++;
     }
@@ -102,7 +117,7 @@ class Ctc
         void LoadSchedule(void);
         void ManualDispatch(types::BlockId destination);
         types::Error OpenFileExplorer(std::string &file);
-        
+
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
         std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void);
@@ -122,7 +137,7 @@ class Ctc
         ctc::Train GetTrainById(const types::TrainId train_id) const;
         ctc::Train* GetTrainPointerById(const types::TrainId train_id);
         types::Block GetBlockById(const types::BlockId block_id);
-        ctc::Station GetStationByName(const std::string &station_name);  
+        ctc::Station GetStationByName(const std::string &station_name);
         std::filesystem::path GetCsvPath(void) const;
         std::vector<types::Block> GetBlocks(void) const;
         std::size_t GetBlockSize(void) const;
@@ -140,7 +155,7 @@ class Ctc
         void SetStations(std::vector<types::Block> &blocks);
         void SetGraphManually(Graph<types::BlockId, types::Meters> graph);
         void SetGreenLineGraph(void);
-    
+
     private:
         /* Variables */
         std::vector<types::Block> blocks_;

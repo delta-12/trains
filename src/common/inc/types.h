@@ -109,7 +109,8 @@ struct Block
     BlockDirection direction;
     bool underground;
 
-    BlockId GetSwitchConnection(void) const {
+    BlockId GetSwitchConnection(void) const
+    {
         return switched ? secondary_connection : primary_connection;
     }
 };

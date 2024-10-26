@@ -19,7 +19,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records,
             types::Block                    block  = ConvertRecordToBlock(record);
             blocks_.push_back(block);
         }
-    } 
+    }
     else if (module == Module::MODULE_CTC)
     {
         for (size_t i = 0; i < records.size(); ++i)

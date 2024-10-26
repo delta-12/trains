@@ -21,11 +21,13 @@ namespace ctc
 static std::string ExtractFileName(const std::string& full_path);
 
 /*------------------------------ Graph Builder Implementation ------------------------------*/
-GraphBuilder::GraphBuilder(std::vector<types::Block> &blocks) {
-    block_list_ = blocks;  
+GraphBuilder::GraphBuilder(std::vector<types::Block> &blocks)
+{
+    block_list_ = blocks;
 }
 
-void GraphBuilder::BuildGreenLine(void) {
+void GraphBuilder::BuildGreenLine(void)
+{
     // A and B
     graph_.AddEdge(6, 5, 100);
     graph_.AddEdge(5, 4, 100);
@@ -34,22 +36,22 @@ void GraphBuilder::BuildGreenLine(void) {
     graph_.AddEdge(2, 1, 100);
     graph_.AddEdge(1, 13, 150);
     graph_.AddEdge(7, 6, 100);      // C to B connection
-    
+
     // C Bidirectional
     graph_.AddEdge(7, 8, 100);
     graph_.AddEdge(8, 9, 100);
     graph_.AddEdge(9, 10, 100);
     graph_.AddEdge(10, 11, 100);
     graph_.AddEdge(11, 12, 100);
-    graph_.AddEdge(12, 13, 150);    // C to D 
+    graph_.AddEdge(12, 13, 150);    // C to D
     graph_.AddEdge(13, 12, 150);    // D to C connection
-    
+
     graph_.AddEdge(12, 11, 100);
     graph_.AddEdge(11, 10, 100);
     graph_.AddEdge(10, 9, 100);
     graph_.AddEdge(9, 8, 100);
     graph_.AddEdge(8, 7, 100);
-    
+
     // D Bidirectional
     graph_.AddEdge(13, 14, 150);
     graph_.AddEdge(14, 15, 150);
@@ -105,25 +107,25 @@ void GraphBuilder::BuildGreenLine(void) {
     // I Unidirectional
     graph_.AddEdge(36, 37, 50);
     graph_.AddEdge(37, 38, 50);
-    graph_.AddEdge(38, 39, 50);  
+    graph_.AddEdge(38, 39, 50);
     graph_.AddEdge(39, 40, 50);
     graph_.AddEdge(40, 41, 50);
-    graph_.AddEdge(41, 42, 50); 
+    graph_.AddEdge(41, 42, 50);
     graph_.AddEdge(42, 43, 50);
     graph_.AddEdge(43, 44, 50);
-    graph_.AddEdge(44, 45, 50);  
-    graph_.AddEdge(45, 46, 50); 
+    graph_.AddEdge(44, 45, 50);
+    graph_.AddEdge(45, 46, 50);
     graph_.AddEdge(46, 47, 50);
     graph_.AddEdge(47, 48, 50);
-    graph_.AddEdge(48, 49, 50); 
-    graph_.AddEdge(49, 50, 50);  
-    graph_.AddEdge(50, 51, 50); 
+    graph_.AddEdge(48, 49, 50);
+    graph_.AddEdge(49, 50, 50);
+    graph_.AddEdge(50, 51, 50);
     graph_.AddEdge(51, 52, 50);
     graph_.AddEdge(52, 53, 50);
-    graph_.AddEdge(53, 54, 50); 
-    graph_.AddEdge(54, 55, 50); 
-    graph_.AddEdge(55, 56, 50); 
-    graph_.AddEdge(56, 57, 50); 
+    graph_.AddEdge(53, 54, 50);
+    graph_.AddEdge(54, 55, 50);
+    graph_.AddEdge(55, 56, 50);
+    graph_.AddEdge(56, 57, 50);
 
     graph_.AddEdge(57, 58, 50);     // I to J
 
@@ -161,26 +163,26 @@ void GraphBuilder::BuildGreenLine(void) {
     // N Bidirectional
     graph_.AddEdge(77, 78, 300);
     graph_.AddEdge(78, 79, 300);
-    graph_.AddEdge(79, 80, 300);  
-    graph_.AddEdge(70, 81, 300); 
+    graph_.AddEdge(79, 80, 300);
+    graph_.AddEdge(70, 81, 300);
     graph_.AddEdge(81, 82, 300);
     graph_.AddEdge(82, 83, 300);
-    graph_.AddEdge(83, 84, 300);  
-    graph_.AddEdge(84, 85, 300);  
+    graph_.AddEdge(83, 84, 300);
+    graph_.AddEdge(84, 85, 300);
 
     graph_.AddEdge(85, 84, 300);
     graph_.AddEdge(84, 83, 300);
-    graph_.AddEdge(83, 82, 300);  
-    graph_.AddEdge(82, 81, 300); 
+    graph_.AddEdge(83, 82, 300);
+    graph_.AddEdge(82, 81, 300);
     graph_.AddEdge(81, 80, 300);
     graph_.AddEdge(80, 79, 300);
-    graph_.AddEdge(79, 78, 300);  
-    graph_.AddEdge(78, 77, 300);  
+    graph_.AddEdge(79, 78, 300);
+    graph_.AddEdge(78, 77, 300);
 
     graph_.AddEdge(77, 101, 35);   // N to R
-    graph_.AddEdge(85, 86, 100);    // N to O
+    graph_.AddEdge(85, 86, 100);   // N to O
 
-    // O Bidirectional 
+    // O Bidirectional
     graph_.AddEdge(86, 87, 86.6);
     graph_.AddEdge(87, 88, 100);
     graph_.AddEdge(88, 87, 100);
@@ -223,7 +225,7 @@ void GraphBuilder::BuildGreenLine(void) {
 
     graph_.AddEdge(109, 110, 100);  // T to U
 
-    // U Unidirectional 
+    // U Unidirectional
     graph_.AddEdge(110, 111, 100);
     graph_.AddEdge(111, 112, 100);
     graph_.AddEdge(112, 113, 100);
@@ -233,7 +235,7 @@ void GraphBuilder::BuildGreenLine(void) {
 
     graph_.AddEdge(116, 117, 50);  // U to V
 
-    // V Unidirectional 
+    // V Unidirectional
     graph_.AddEdge(117, 118, 50);
     graph_.AddEdge(118, 119, 40);
     graph_.AddEdge(119, 120, 50);
@@ -273,77 +275,96 @@ void GraphBuilder::BuildGreenLine(void) {
     // Y Unidirectional
     graph_.AddEdge(147, 148, 184);
     graph_.AddEdge(148, 149, 40);
-    graph_.AddEdge(149, 150, 35); 
+    graph_.AddEdge(149, 150, 35);
     graph_.AddEdge(150, 28, 50);
 }
 
-std::vector<types::Block> GraphBuilder::BuildSection(types::SectionId section_id) {
+std::vector<types::Block> GraphBuilder::BuildSection(types::SectionId section_id)
+{
     std::vector<types::Block> section;
-    for (types::Block &block : block_list_) {
-        if (block.section == section_id) {
+    for (types::Block &block : block_list_)
+    {
+        if (block.section == section_id)
+        {
             section.push_back(block);
         }
     }
     return section;
 }
 
-std::size_t GraphBuilder::GetBlockList(void) const {
+std::size_t GraphBuilder::GetBlockList(void) const
+{
     return block_list_.size();
 }
 
-void GraphBuilder::AddSection(std::vector<types::Block> section, types::BlockDirection direction) {
-    for (size_t i = 0; i < section.size(); ++i) {
-        graph_.AddEdge(section[i].block, section[i+1].block, section[i+1].length);
+void GraphBuilder::AddSection(std::vector<types::Block> section, types::BlockDirection direction)
+{
+    for (size_t i = 0; i < section.size(); ++i)
+    {
+        graph_.AddEdge(section[i].block, section[i + 1].block, section[i + 1].length);
     }
-    if (direction == types::BLOCKDIRECTION_BIDIRECTIONAL) {
-        for (size_t i = section.size() - 1; i > 0; --i) {
-            graph_.AddEdge(section[i].block, section[i-1].block, section[i-1].length);
+    if (direction == types::BLOCKDIRECTION_BIDIRECTIONAL)
+    {
+        for (size_t i = section.size() - 1; i > 0; --i)
+        {
+            graph_.AddEdge(section[i].block, section[i - 1].block, section[i - 1].length);
         }
     }
 }
 
-Graph<types::BlockId, types::Meters> GraphBuilder::GetGraph(void) {
+Graph<types::BlockId, types::Meters> GraphBuilder::GetGraph(void)
+{
     return graph_;
 }
 
 /*------------------------------ Ctc Implementation ------------------------------*/
-void Ctc::SetTrackLayout(void) {
-    CsvParser parser(schedule_file_path_);
-    BlockBuilder bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
+void Ctc::SetTrackLayout(void)
+{
+    CsvParser                 parser(schedule_file_path_);
+    BlockBuilder              bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
     SetGraphLayout(blocks_);
 }
 
-void Ctc::SetStations(std::vector<types::Block> &blocks) {
-    for (types::Block block : blocks) {
-        if (block.has_station) {
+void Ctc::SetStations(std::vector<types::Block> &blocks)
+{
+    for (types::Block block : blocks)
+    {
+        if (block.has_station)
+        {
             ctc::Station station(block.station_name, block.block);
             stations_.push_back(station);
         }
     }
 }
 
-void Ctc::SetGraphLayout(std::vector<types::Block> &blocks) {
+void Ctc::SetGraphLayout(std::vector<types::Block> &blocks)
+{
     GraphBuilder gb(blocks);
     gb.BuildGreenLine();
     graph_ = gb.GetGraph();
 }
 
-void Ctc::SetGraphManually(Graph<types::BlockId, types::Meters> graph) {
+void Ctc::SetGraphManually(Graph<types::BlockId, types::Meters> graph)
+{
     graph_ = graph;
 }
 
-std::vector<types::BlockId> Ctc::FindRoute(const types::BlockId start, const types::BlockId end) {
+std::vector<types::BlockId> Ctc::FindRoute(const types::BlockId start, const types::BlockId end)
+{
     return graph_.Dijkstra(start, end);
 }
 
-void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id) {
+void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id)
+{
     std::queue<types::BlockId> authority(std::deque<types::BlockId>(route.begin(), route.end()));
 
-    for (ctc::Train &train : train_schedules_) {
-        if (train.train_id == train_id) {
+    for (ctc::Train &train : train_schedules_)
+    {
+        if (train.train_id == train_id)
+        {
             train.authority = authority;
         }
     }
@@ -351,156 +372,189 @@ void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::Train
 
 
 /* Method: LoadSchedule()
-* 1. Create CsvParser Object CsvParser(const std::filesystem::path &file_path) to get list of records
-* 2. Create BlockBuilder Object to parse record information into blocks and populate ctc.blocks_ and ctc.train_schedules_
-* 3. Upon receiving train schedule, tell train_model and train_controller to create according objects
-* 4. Calculate authority and suggested speed for each train in train_schedules_
-* 5. Calculate departure time for each train in ctc.train_schedule_
-* 6. Set up timer for each train; when timer is up and match with depature time, get top block in authority queue and set suggested speed to block's speed limit
-*/
-void Ctc::LoadSchedule(void) {
+ * 1. Create CsvParser Object CsvParser(const std::filesystem::path &file_path) to get list of records
+ * 2. Create BlockBuilder Object to parse record information into blocks and populate ctc.blocks_ and ctc.train_schedules_
+ * 3. Upon receiving train schedule, tell train_model and train_controller to create according objects
+ * 4. Calculate authority and suggested speed for each train in train_schedules_
+ * 5. Calculate departure time for each train in ctc.train_schedule_
+ * 6. Set up timer for each train; when timer is up and match with depature time, get top block in authority queue and set suggested speed to block's speed limit
+ */
+void Ctc::LoadSchedule(void)
+{
 
 }
 
-types::Error Ctc::OpenFileExplorer(std::string &file) {
+types::Error Ctc::OpenFileExplorer(std::string &file)
+{
     types::Error error;
-    OPENFILENAME ofn;       // Common dialog box structure
-    char file_name[MAX_PATH]; // Buffer for the file name
-    ZeroMemory(&ofn, sizeof(ofn)); // Clear the structure
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = nullptr; // If using in a GUI, set to the parent window handle
-    ofn.lpstrFile = file_name;
-    ofn.lpstrFile[0] = '\0';  // Initialize buffer to empty string
-    ofn.nMaxFile = sizeof(file_name);
-    ofn.lpstrFilter = "CSV Files\0*.CSV\0";
-    ofn.nFilterIndex = 1; // Default to the first filter (Excel)
-    ofn.lpstrFileTitle = nullptr;
-    ofn.nMaxFileTitle = 0;
+    OPENFILENAME ofn;                 // Common dialog box structure
+    char         file_name[MAX_PATH]; // Buffer for the file name
+    ZeroMemory(&ofn, sizeof(ofn));    // Clear the structure
+    ofn.lStructSize     = sizeof(ofn);
+    ofn.hwndOwner       = nullptr; // If using in a GUI, set to the parent window handle
+    ofn.lpstrFile       = file_name;
+    ofn.lpstrFile[0]    = '\0'; // Initialize buffer to empty string
+    ofn.nMaxFile        = sizeof(file_name);
+    ofn.lpstrFilter     = "CSV Files\0*.CSV\0";
+    ofn.nFilterIndex    = 1; // Default to the first filter (Excel)
+    ofn.lpstrFileTitle  = nullptr;
+    ofn.nMaxFileTitle   = 0;
     ofn.lpstrInitialDir = nullptr; // Default directory
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    ofn.Flags           = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
     // Open the file dialog
-    if (GetOpenFileName(&ofn)) {
+    if (GetOpenFileName(&ofn))
+    {
         SetScheduleFilePath(ofn.lpstrFile);
         file = ExtractFileName(ofn.lpstrFile);
         std::cout << "File Name: " << file << std::endl;
         error = types::Error::ERROR_NONE;
-    } else {
+    }
+    else
+    {
         error = types::Error::ERROR_INVALID_FORMAT;
     }
     return error;
 }
 
-void Ctc::ManualDispatch(types::BlockId destination) {
+void Ctc::ManualDispatch(types::BlockId destination)
+{
     ctc::Train train;
-    std::cout << "Train is created! Train ID: " << train.train_id << std::endl; 
+    std::cout << "Train is created! Train ID: " << train.train_id << std::endl;
     AddTrainToTrainSchedule(train);
     std::vector<types::BlockId> route = FindRoute(0, destination);
     AssignAuthority(route, train.train_id);
 }
 
-types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id) {
+types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id)
+{
     types::Error error = types::ERROR_NONE;
-    ctc::Train* train = GetTrainPointerById(train_id);
-    if (train != nullptr) {
-         train->authority.pop();
+    ctc::Train*  train = GetTrainPointerById(train_id);
+    if (train != nullptr)
+    {
+        train->authority.pop();
         types::BlockId current_block_id = train->authority.front();
-        types::Block current_block = GetBlockById(current_block_id);
+        types::Block   current_block    = GetBlockById(current_block_id);
         train->suggested_speed = current_block.speed_limit;
     }
-    else {
+    else
+    {
         error = types::ERROR_INVALID_TRAIN;
     }
     return error;
 }
 
-std::vector<wayside_controller::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void) {
+std::vector<wayside_controller::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
+{
     std::vector<wayside_controller::TrackCircuitData> track_circuit_data_signals;
-    for (ctc::Train &train : train_schedules_) {
+    for (ctc::Train &train : train_schedules_)
+    {
         // wayside_controller::TrackCircuitData track_circuit_data(train.current_position, train.suggested_speed, train.authority.size());
         // track_circuit_data_signals.push_back(track_circuit_data);
     }
     return track_circuit_data_signals;
 }
 
-static std::string ExtractFileName(const std::string& full_path) {
+static std::string ExtractFileName(const std::string& full_path)
+{
     // Find the last occurrence of backslash
     size_t pos = full_path.find_last_of("\\/");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
+    {
         return full_path.substr(pos + 1); // Return everything after the last backslash
-    } else {
+    }
+    else
+    {
         return full_path; // If no backslash is found, return the full string (it may already be a file name)
     }
 }
 
 
 /*------------------------------ Getters ------------------------------*/
-std::filesystem::path Ctc::GetCsvPath(void) const {
+std::filesystem::path Ctc::GetCsvPath(void) const
+{
     return schedule_file_path_;
 }
 
-void Ctc::SetScheduleFilePath(std::filesystem::path path) {
+void Ctc::SetScheduleFilePath(std::filesystem::path path)
+{
     schedule_file_path_ = path;
 }
 
-ctc::Train* Ctc::GetTrainPointerById(const types::TrainId train_id) {
+ctc::Train* Ctc::GetTrainPointerById(const types::TrainId train_id)
+{
     ctc::Train* train_pointer;
-    for (ctc::Train &train : train_schedules_) {
-        if (train.train_id == train_id) {
+    for (ctc::Train &train : train_schedules_)
+    {
+        if (train.train_id == train_id)
+        {
             train_pointer = &train;
         }
     }
     return train_pointer;
 }
 
-ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const{
+ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
+{
     ctc::Train result;
-    for (ctc::Train train : train_schedules_) {
-        if (train.train_id == train_id) {
+    for (ctc::Train train : train_schedules_)
+    {
+        if (train.train_id == train_id)
+        {
             result = train;
         }
     }
     return result;
 }
 
-std::size_t Ctc::GetBlockSize(void) const {
+std::size_t Ctc::GetBlockSize(void) const
+{
     return blocks_.size();
 }
 
-types::Block Ctc::GetBlockById(const types::BlockId block_id) {
+types::Block Ctc::GetBlockById(const types::BlockId block_id)
+{
     types::Block result;
-    for (types::Block block : blocks_) {
-        if (block.block == block_id) {
+    for (types::Block block : blocks_)
+    {
+        if (block.block == block_id)
+        {
             result = block;
         }
     }
     return result;
 }
 
-std::vector<types::Block> Ctc::GetBlocks(void) const {
+std::vector<types::Block> Ctc::GetBlocks(void) const
+{
     return blocks_;
 }
 
-std::size_t Ctc::GetTrainAuthority(types::TrainId train_id) const {
+std::size_t Ctc::GetTrainAuthority(types::TrainId train_id) const
+{
     ctc::Train train = GetTrainById(train_id);
     return train.authority.size();
 }
 
-std::size_t Ctc::GetNumStation(void) const {
+std::size_t Ctc::GetNumStation(void) const
+{
     return stations_.size();
 }
 
 /*------------------------------ Setters ------------------------------*/
-void Ctc::SetBlocks(std::vector<types::Block> &blocks) {
+void Ctc::SetBlocks(std::vector<types::Block> &blocks)
+{
     types::Block yard;
     yard.block = 0;
     blocks_.push_back(yard);
-    for ( types::Block &block : blocks) {
+    for ( types::Block &block : blocks)
+    {
         blocks_.push_back(block);
     }
 }
 
-void Ctc::AddTrainToTrainSchedule(ctc::Train train) {
+void Ctc::AddTrainToTrainSchedule(ctc::Train train)
+{
     train_schedules_.push_back(train);
 }
 

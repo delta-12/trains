@@ -8,8 +8,9 @@
 
 #include "ctc.h"
 
-TEST(CtcBackEndTest, SetTrackLayout) {
-    ctc::Ctc ctc;
+TEST(CtcBackEndTest, SetTrackLayout)
+{
+    ctc::Ctc              ctc;
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     ctc.SetScheduleFilePath(path);
@@ -27,8 +28,9 @@ TEST(CtcBackEndTest, SetTrackLayout) {
     ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
 }
 
-TEST(CtcBackEndTest, SetStations) {
-    ctc::Ctc ctc;
+TEST(CtcBackEndTest, SetStations)
+{
+    ctc::Ctc              ctc;
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     ctc.SetScheduleFilePath(path);
