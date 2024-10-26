@@ -9,10 +9,6 @@
 #include <iomanip>
 #include <gtest/gtest.h>
 
-
-
-
-
 TEST(TrainControllerOperationModeTests, SettingOperationMode)
 {
     train_controller::SoftwareTrainController TC;
