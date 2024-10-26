@@ -7,6 +7,13 @@
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
 
+#include <string>
+#include <cstdint>
+
+#include "types.h"
+#include "convert.h"
+#include "tick_source.h"
+
 #define TRAIN_CONTROLLER_DEFAULT_KP           (4)
 #define TRAIN_CONTROLLER_DEFAULT_KI           (2)
 #define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
@@ -18,13 +25,7 @@
 
 
 
-#include <string>
-#include <cstdint>
 
-
-#include "types.h"
-#include "convert.h"
-#include "tick_source.h"
 
 namespace train_controller
 {
@@ -117,8 +118,8 @@ class SoftwareTrainController : public TrainController
         void SetActualInternalTemperature(const types::DegreesFahrenheit temperature);
         void SetAuthority(const types::Meters authority);
         void SetArrived(const bool arrived);
-        void SetKP(const uint16_t ki);
-        void SetKI(const uint16_t kp);
+        void SetKP(const uint16_t kp);
+        void SetKI(const uint16_t ki);
 
         //local functions
         types::Second GetDeltaTime(void) const;
