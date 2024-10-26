@@ -1,5 +1,8 @@
 #include "train_controller.h"
 
+#include <unistd.h>
+#include <iostream>
+
 #include "convert.h"
 #include "types.h"
 
@@ -242,7 +245,17 @@ void SoftwareTrainController::CalculateCommandedPower()
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    types::MetersPerSecond block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+
+    // convert to m/s from km/hr
+    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(50);
+
+    //types::MetersPerSecond block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+
+    if(commanded_speed_ > block_speed_limit)
+    {
+        commanded_speed_ =block_speed_limit;
+    }
+    
     types::MetersPerSecond setpoint_speed;
 
     // Defining Vcmd and Actual speed in m/s
@@ -255,8 +268,7 @@ void SoftwareTrainController::CalculateCommandedPower()
         setpoint_speed = driver_speed_;
     }
 
-    // convert to m/s from km/hr
-    block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
+    
 
     if (setpoint_speed > block_speed_limit)
     {
@@ -287,13 +299,14 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
-    else if (current_speed_ > driver_speed_)
+    else if (current_speed_ > setpoint_speed)
     {
+        std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         integral_sum_ = 0;
 
         commanded_power_ = 0;
 
-        types::MetersPerSecond speed_difference = current_speed_ - driver_speed_;
+        types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
 
         //Function to to assign service brake
         CalculateServiceBrake(speed_difference);
@@ -301,12 +314,14 @@ void SoftwareTrainController::CalculateCommandedPower()
     //Checking if Service brake is on
     else if (service_brake_percentage_ > 0)
     {
+        std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
         integral_sum_    = 0;
         commanded_power_ = 0;
     }
     //Normal power calculation
     else
     {
+        std::cout << "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
         commanded_power_ = kp_term + ki_term;
 
         if (commanded_power_ > max_power_)

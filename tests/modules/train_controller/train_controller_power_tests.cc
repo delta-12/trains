@@ -9,22 +9,46 @@
 #include <iomanip>
 #include <gtest/gtest.h>
 
-TEST(TrainControllerPowerTests, CommandedSpeedInputHigher)
+TEST(TrainControllerPowerTests, IncreaseCommandedPowerFromStationary)
 {
     train_controller::SoftwareTrainController TC;
 
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode()); 
 
-    // train going slower than commanded speed that will be input
-    TC.SetCurrentSpeed(30);
-
     // commanded speed passed, faster than current speed
-    TC.SetCommandedSpeed(50); 
+    TC.SetCommandedSpeed(18); 
 
     // call power calculation
     TC.CalculateCommandedPower();
 
+    // std::cout << TC.GetCommandedPower();
+    // assert power is greater than 0
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+
+    // train going slower than commanded speed that will be input
+    TC.SetCurrentSpeed(15);
+}
+
+
+
+TEST(TrainControllerPowerTests, IncreaseCommandedPowerInMoving)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // assert automatic mode
+    ASSERT_EQ(0, TC.GetOperationMode()); 
+
+
+    TC.SetCurrentSpeed(10);
+
+    // commanded speed passed, faster than current speed
+    TC.SetCommandedSpeed(18); 
+
+    // call power calculation
+    TC.CalculateCommandedPower();
+
+    // std::cout << TC.GetCommandedPower();
     // assert power is greater than 0
     ASSERT_GT(TC.GetCommandedPower(), 0);
 }
