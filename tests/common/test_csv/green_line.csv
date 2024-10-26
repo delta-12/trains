@@ -14,7 +14,7 @@ Green,C,12,100,-3,45,SWITCH (12-13; 1-13),,-3,0.5,8
 Green,D,13,150,0,70,,,0,0.5,7.7
 Green,D,14,150,0,70,,,0,0.5,7.7
 Green,D,15,150,0,70,,,0,0.5,7.7
-Green,D,16,150,0,70,STATION,Left/Right,0,0.5,7.7
+Green,D,16,150,0,70,STATION; DOWNTOWN,Left/Right,0,0.5,7.7
 Green,E,17,150,0,60,,,0,0.5,9
 Green,E,18,150,0,60,,,0,0.5,9
 Green,E,19,150,0,60,RAILWAY CROSSING,,0,0.5,9

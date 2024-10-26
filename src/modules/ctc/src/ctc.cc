@@ -312,7 +312,17 @@ void Ctc::SetTrackLayout(void) {
     BlockBuilder bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
+    SetStations(blocks_);
     SetGraphLayout(blocks_);
+}
+
+void Ctc::SetStations(std::vector<types::Block> &blocks) {
+    for (types::Block block : blocks) {
+        if (block.has_station) {
+            ctc::Station station(block.station_name, block.block);
+            stations_.push_back(station);
+        }
+    }
 }
 
 void Ctc::SetGraphLayout(std::vector<types::Block> &blocks) {
@@ -389,6 +399,30 @@ void Ctc::ManualDispatch(types::BlockId destination) {
     AssignAuthority(route, train.train_id);
 }
 
+types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id) {
+    types::Error error = types::ERROR_NONE;
+    ctc::Train* train = GetTrainPointerById(train_id);
+    if (train != nullptr) {
+         train->authority.pop();
+        types::BlockId current_block_id = train->authority.front();
+        types::Block current_block = GetBlockById(current_block_id);
+        train->suggested_speed = current_block.speed_limit;
+    }
+    else {
+        error = types::ERROR_INVALID_TRAIN;
+    }
+    return error;
+}
+
+std::vector<wayside_controller::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void) {
+    std::vector<wayside_controller::TrackCircuitData> track_circuit_data_signals;
+    for (ctc::Train &train : train_schedules_) {
+        // wayside_controller::TrackCircuitData track_circuit_data(train.current_position, train.suggested_speed, train.authority.size());
+        // track_circuit_data_signals.push_back(track_circuit_data);
+    }
+    return track_circuit_data_signals;
+}
+
 static std::string ExtractFileName(const std::string& full_path) {
     // Find the last occurrence of backslash
     size_t pos = full_path.find_last_of("\\/");
@@ -409,7 +443,17 @@ void Ctc::SetScheduleFilePath(std::filesystem::path path) {
     schedule_file_path_ = path;
 }
 
-ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const {
+ctc::Train* Ctc::GetTrainPointerById(const types::TrainId train_id) {
+    ctc::Train* train_pointer;
+    for (ctc::Train &train : train_schedules_) {
+        if (train.train_id == train_id) {
+            train_pointer = &train;
+        }
+    }
+    return train_pointer;
+}
+
+ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const{
     ctc::Train result;
     for (ctc::Train train : train_schedules_) {
         if (train.train_id == train_id) {
@@ -423,6 +467,16 @@ std::size_t Ctc::GetBlockSize(void) const {
     return blocks_.size();
 }
 
+types::Block Ctc::GetBlockById(const types::BlockId block_id) {
+    types::Block result;
+    for (types::Block block : blocks_) {
+        if (block.block == block_id) {
+            result = block;
+        }
+    }
+    return result;
+}
+
 std::vector<types::Block> Ctc::GetBlocks(void) const {
     return blocks_;
 }
@@ -430,6 +484,10 @@ std::vector<types::Block> Ctc::GetBlocks(void) const {
 std::size_t Ctc::GetTrainAuthority(types::TrainId train_id) const {
     ctc::Train train = GetTrainById(train_id);
     return train.authority.size();
+}
+
+std::size_t Ctc::GetNumStation(void) const {
+    return stations_.size();
 }
 
 /*------------------------------ Setters ------------------------------*/

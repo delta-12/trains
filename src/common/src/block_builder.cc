@@ -1,6 +1,7 @@
 #include "block_builder.h"
 
-#include <bits/stdc++.h>
+#include <sstream>
+#include <algorithm>
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
 

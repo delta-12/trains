@@ -6,7 +6,6 @@
 
 #include "ctc.h"
 #include "ctc_ui.h"
-#include "csv_parser.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -30,8 +29,6 @@ int main(void)
         }
 
         ctc.SetTrackLayout();
-
-        // ctc.ManualDispatch(1);
     });
 
     ctc_ui->on_manual_dispatch([&]() {
@@ -39,10 +36,13 @@ int main(void)
         types::BlockId destination = (uint16_t)block_id;
         std::cout << "Destination: " << destination << std::endl;
 
+        std::cout << "Stations From Schedule: " << ctc.GetNumStation() << std::endl;
+
         ctc.ManualDispatch(destination);
 
         ctc::Train train = ctc.GetTrainById(1);
         std::queue authority = train.authority;
+
         std::cout << "Authority: " << ctc.GetTrainAuthority(1) <<  std::endl;
         while (!authority.empty()) {
             types::BlockId id = authority.front();
