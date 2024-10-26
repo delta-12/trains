@@ -1,5 +1,11 @@
 # CMake
 build
 
+# ESP-IDF
+managed_components
+
+# MacOS
+.DS_Store
+
 # VS Code
 .vscode

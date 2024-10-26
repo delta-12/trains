@@ -6,18 +6,21 @@
 
 #include "train_model.h"
 #include "types.h"
+#include "block_builder.h"
 
 namespace track_model
 {
 
 //constructor for when a track is passsed in
-types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, const std::vector<Block> &blocks)
+types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks)
 {
     //setting trackID
     track_ = track;
 
     //fill vector with blocks
     blocks_ = blocks;
+
+    //TODO: FILL GRAPH WITH BLOCKS HERE
 }
 
 types::TrackId SoftwareTrackModel::GetTrackId(void)
@@ -39,7 +42,7 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
 }
 
 
-void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel> > &trains) const
+void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const
 {
     // Populating the trains vector with current train models
     trains = trains_;
@@ -50,16 +53,6 @@ void SoftwareTrackModel::Update(void)
 {
     // Update the state of the track model
 
-    //check temperature for heaters
-    if (external_temperature_ <= 32)
-    {
-        //set all track heaters
-        for (int i = 0; i < blocks_.size(); i++)
-        {
-            blocks_[i].heater_on = 1;
-        }
-    }
-
     //loop through all trains on the blocks_
     for (int i = 0; i < trains_.size(); i++)
     {
@@ -67,7 +60,7 @@ void SoftwareTrackModel::Update(void)
         types::BlockId trainblock = trains_[i]->GetDistanceTraveled();
 
         //TODO: CALCULATE ALL BLOCKS THAT THIS TRAIN IS OCCUPYING
-        types::BlockId front_of_train_block
+        types::BlockId front_of_train_block;
 
         //TODO: clear old occupancies for this train specifically
         for (int k = 0; k < occupied_blocks_.size(); k++)
@@ -80,12 +73,12 @@ void SoftwareTrackModel::Update(void)
         blocks_[trainblock].occupied = 1;
 
         //check the length of the block the train is occupying, and see if the train is longer
-        if (blocks_[trainblock].length < tlength)
+        if (blocks_[trainblock].length < train_length_)
         {
             //looping until the full length of the train is accounted for
             auto sizeofblocks = blocks_[trainblock].length;
             int  j            = trainblock - 1;
-            while (sizeofblocks < tlength)
+            while (sizeofblocks < train_length_)
             {
                 //checking if the block behind this is connected to another block
                 if (blocks_[j].switch_connection != 0)
@@ -100,10 +93,10 @@ void SoftwareTrackModel::Update(void)
                 sizeofblocks += blocks_[j - 1].length;
 
                 //adding this block to the vector of occupancies
-                blocks_[j].occupancy = 1;
+                blocks_[j].occupied = 1;
 
                 //adding to current train blocks
-                trainblockvec.push_back(j);
+                //trainblockvec.push_back(j);
 
                 //increment
                 j--;
@@ -112,7 +105,7 @@ void SoftwareTrackModel::Update(void)
 
         //if this train is at a station, update boarding
 
-        if (blocks_[front_of_train_block].station == 1)
+        if (blocks_[front_of_train_block].has_station == 1)
         {
             uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
             SetPassengersDeboarding(trains_[i]->GetTrainId(), traindeb);
@@ -120,19 +113,19 @@ void SoftwareTrackModel::Update(void)
     }
 
     //clear old occupancies
-    for (int k = 0; k < trainblockvec.size(); k++)
-    {
+    /*for (int k = 0; k < trainblockvec.size(); k++)
+       {
         int pos = trainblockvec[k];
-        blocks_[pos].occupancy = 0;
-    }
+        blocks_[pos].occupied = 0;
+       }*/
 
     //get the BlockId of the train
-    types::BlockId trainblock = currblock;
+    //types::BlockId trainblock = currblock;
 
     //set block occupancy
-    blocks_[trainblock].occupied = 1;
+    //blocks_[trainblock].occupied = 1;
 
-    trainblockvec.push_back(trainblock);
+    //trainblockvec.push_back(trainblock);
 }
 
 
@@ -205,7 +198,7 @@ types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, 
     return types::ERROR_NONE;
 }
 
-types::Error SoftwareTrackModel::SetYelloTrafficLight(const types::BlockId block, const bool on)
+types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
     // Logic to set the yellow traffic light state for the specified block
     if (blocks_.size() < block)
@@ -374,7 +367,7 @@ types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahr
     //setting temperature
     external_temperature_ = temperature;
 
-    if (temperature < 32)
+    if (temperature <= 32)
     {
         for (int i = 0; i < blocks_.size(); i++)
         {
@@ -423,7 +416,7 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId tr
     //generate random number within bounds for boarding
     std::random_device              rd;              // Seed
     std::mt19937                    gen(rd());       // Mersenne Twister engine
-    std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and board
+    std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and vacancy
 
     // Generate a random number
     int randomNumber = dis(gen);
@@ -437,7 +430,7 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId tr
     return types::ERROR_NONE;
 }
 
-struct ::Block SoftwareTrackModel::GetBlock(const types::BlockId block)
+types::Block SoftwareTrackModel::GetBlock(const types::BlockId block)
 {
     return blocks_[block];
 }

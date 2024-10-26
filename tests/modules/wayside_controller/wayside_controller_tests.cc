@@ -1,11 +1,12 @@
 /*****************************************************************************
- * @file wayside_controller_tests.cc
- *
- * @brief Unit testing for WaysideController.
- *****************************************************************************/
+* @file wayside_controller_tests.cc
+*
+* @brief Unit testing for WaysideController.
+*****************************************************************************/
 
 #include <gtest/gtest.h>
 
+#include "logger.h"
 #include "wayside_controller.h"
 
 static const std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
@@ -44,6 +45,7 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
     if (output < WAYSIDE_CONTROLLER_TOTAL_OUTPUTS)
     {
         // TODO NNF-105 set outputs
+        LOGGER_UNUSED(state); // temporary fix to remove compiler warnings
         error = wayside_controller::ERROR_NONE;
     }
 
@@ -53,7 +55,7 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
 TEST(WaysideControllerTests, SetBlockMap)
 {
     std::vector<wayside_controller::BlockInputs> block_inputs_map = kBlueLineBlockInputs;
-    wayside_controller::WaysideController software_wayside_controller(GetInputs, SetOutput);
+    wayside_controller::WaysideController        software_wayside_controller(GetInputs, SetOutput);
 
     // Success
     ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(block_inputs_map));
@@ -109,7 +111,7 @@ TEST(WaysideControllerTests, SetOutput)
 
 TEST(WaysideControllerTests, GetInput)
 {
-    bool input_state;
+    bool                                  input_state;
     wayside_controller::WaysideController software_wayside_controller(GetInputs, SetOutput);
 
     software_wayside_controller.ScanInputs();
@@ -139,8 +141,9 @@ TEST(WaysideControllerTests, SetSwitch)
 {
     // TODO NNF-105
 
-    bool input_state;
+    bool                                  input_state;
     wayside_controller::WaysideController software_wayside_controller(GetInputs, SetOutput);
+
     ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetBlockMap(kBlueLineBlockInputs));
 
     // Valid switch
