@@ -21,6 +21,8 @@ types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, cons
     blocks_ = blocks;
 
     //TODO: FILL GRAPH WITH BLOCKS HERE
+
+    return types::ERROR_NONE;
 }
 
 types::TrackId SoftwareTrackModel::GetTrackId(void)
@@ -258,14 +260,97 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
+
     // Logic to set the commanded speed
-    return types::Error{ };
+
+    if (blocks_.size() < block)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    //loop through train models
+    for (int i = 0; i < trains_.size(); i++)
+    {
+        //calculate block this train is on
+        types::Meters d_traveled = trains_[i]->GetDistanceTraveled();
+        types::Meters d_iterator = 0;
+
+        types::BlockId currblock;
+
+        for (int j = 0; j < blocks_.size(); j++)
+        {
+            d_iterator += blocks_[j].length;
+
+            currblock = blocks_[j].block;
+
+            if (d_iterator >= d_traveled)
+            {
+                //we now have the location and block of the train
+                break;
+            }
+        }
+
+        if (currblock == block)
+        {
+            trains_[i]->SetCommandedSpeed(speed);
+
+            return types::ERROR_NONE;
+        }
+
+    }
+
+    return types::ERROR_INVALID_BLOCK;
 }
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Meters authority)
 {
-    // Logic to set authority
-    return types::Error{  };
+    // Logic to set the authority
+
+    if (blocks_.size() < block)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+    if (block <= 0)
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
+
+    //loop through train models
+    for (int i = 0; i < trains_.size(); i++)
+    {
+        //calculate block this train is on
+        types::Meters d_traveled = trains_[i]->GetDistanceTraveled();
+        types::Meters d_iterator = 0;
+
+        types::BlockId currblock;
+
+        for (int j = 0; j < blocks_.size(); j++)
+        {
+            d_iterator += blocks_[j].length;
+
+            currblock = blocks_[j].block;
+
+            if (d_iterator >= d_traveled)
+            {
+                //we now have the location and block of the train
+                break;
+            }
+        }
+
+        if (currblock == block)
+        {
+            trains_[i]->SetAuthority(authority);
+
+            return types::ERROR_NONE;
+        }
+
+    }
+
+    return types::ERROR_INVALID_BLOCK;
 }
 
 types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, bool &occupied) const
@@ -336,6 +421,9 @@ types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId blo
     //setting TC fail
     blocks_[block].track_circuit_failure = track_circuit_failure;
 
+    //setting block occupancy
+    blocks_[block].occupied = track_circuit_failure;
+
     return types::ERROR_NONE;
 }
 
@@ -353,7 +441,7 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
         return types::ERROR_INVALID_BLOCK;
     }
 
-    //setting TC fail
+    //setting power fail
     blocks_[block].power_failure = power_failure;
 
     //occupancy
