@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package controller_messages;
+
+message TrackCircuitData {
+    double speed_meters_per_second = 1;
+    uint32 authority = 2;
+}

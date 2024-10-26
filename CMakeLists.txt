@@ -14,6 +14,7 @@ add_compile_definitions(
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(COMMON_DIR ${SRC_DIR}/common)
+set(CONTROLLER_NETWORK_DIR ${SRC_DIR}/controller_network)
 set(MODULES_DIR ${SRC_DIR}/modules)
 set(CTC_DIR ${MODULES_DIR}/ctc)
 set(WAYSIDE_CONTROLLER_DIR ${MODULES_DIR}/wayside_controller)
@@ -26,6 +27,7 @@ set(UI_DIR ${CMAKE_SOURCE_DIR}/ui)
 set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/tools)
 
 set(COMMON_INC_DIR ${COMMON_DIR}/inc)
+set(CONTROLLER_NETWORK_INC_DIR ${CONTROLLER_NETWORK_DIR}/inc)
 set(CTC_INC_DIR ${CTC_DIR}/inc)
 set(WAYSIDE_CONTROLLER_INC_DIR ${WAYSIDE_CONTROLLER_DIR}/inc)
 set(TRACK_MODEL_INC_DIR ${TRACK_MODEL_DIR}/inc)
@@ -34,6 +36,7 @@ set(TRAIN_CONTROLLER_INC_DIR ${TRAIN_CONTROLLER_DIR}/inc)
 set(SIMULATOR_INC_DIR ${SIMULATOR_DIR}/inc)
 set(INC_DIRS
     ${COMMON_INC_DIR}
+    ${CONTROLLER_NETWORK_INC_DIR}
     ${CTC_INC_DIR}
     ${WAYSIDE_CONTROLLER_INC_DIR}
     ${TRACK_MODEL_INC_DIR}
@@ -44,6 +47,12 @@ set(INC_DIRS
 
 file(GLOB COMMON_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${COMMON_DIR}/src/*.cc"
+)
+file(GLOB CONTROLLER_NETWORK_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    "${CONTROLLER_NETWORK_DIR}/src/*.cc"
+)
+file(GLOB CONTROLLER_NETWORK_MESSAGE_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    "${CONTROLLER_NETWORK_DIR}/messages/*.proto"
 )
 file(GLOB CTC_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${CTC_DIR}/src/*.cc"
@@ -69,6 +78,7 @@ file(GLOB_RECURSE TEST_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
 
 set(TRAINS_SRCS
     ${COMMON_SRCS}
+    ${CONTROLLER_NETWORK_SRCS}
     ${CTC_SRCS}
     ${WAYSIDE_CONTROLLER_SRCS}
     ${TRACK_MODEL_SRCS}
@@ -94,15 +104,21 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 ################################################################################
+# Controller Messages
+################################################################################
+find_package(Protobuf REQUIRED)
+protobuf_generate_cpp(CONTROLLER_MESSAGE_SRCS CONTROLLER_MESSAGE_HDRS ${CONTROLLER_NETWORK_MESSAGE_SRCS})
+
+################################################################################
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
 else()
-    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
 endif()
-target_include_directories(trains PRIVATE ${INC_DIRS})
-target_link_libraries(trains PRIVATE Slint::Slint)
+target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(trains PRIVATE Slint::Slint ${Protobuf_LIBRARIES})
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
     add_custom_command(TARGET trains POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:trains> $<TARGET_FILE_DIR:trains> COMMAND_EXPAND_LISTS)
@@ -116,13 +132,13 @@ include(GoogleTest)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS ${TEST_NAME} ${TEST_SRC})
-    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS})
+    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
-    target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS})
-    target_link_libraries(${TEST_NAME} GTest::gtest_main)
+    target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+    target_link_libraries(${TEST_NAME} GTest::gtest_main ${Protobuf_LIBRARIES})
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 
