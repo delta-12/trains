@@ -253,7 +253,12 @@ void SoftwareTrainController::CalculateCommandedPower()
 
     if(commanded_speed_ > block_speed_limit)
     {
-        commanded_speed_ =block_speed_limit;
+        commanded_speed_ = block_speed_limit;
+    }
+
+    if(driver_speed_ > block_speed_limit)
+    {
+        driver_speed_ = block_speed_limit;
     }
     
     types::MetersPerSecond setpoint_speed;
@@ -266,13 +271,6 @@ void SoftwareTrainController::CalculateCommandedPower()
     else // manual
     {
         setpoint_speed = driver_speed_;
-    }
-
-    
-
-    if (setpoint_speed > block_speed_limit)
-    {
-        setpoint_speed = block_speed_limit;
     }
 
     // Calculating speed_error
@@ -301,7 +299,6 @@ void SoftwareTrainController::CalculateCommandedPower()
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)
     {
-        std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         integral_sum_ = 0;
 
         commanded_power_ = 0;
@@ -314,14 +311,12 @@ void SoftwareTrainController::CalculateCommandedPower()
     //Checking if Service brake is on
     else if (service_brake_percentage_ > 0)
     {
-        std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
         integral_sum_    = 0;
         commanded_power_ = 0;
     }
     //Normal power calculation
     else
     {
-        std::cout << "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
         commanded_power_ = kp_term + ki_term;
 
         if (commanded_power_ > max_power_)

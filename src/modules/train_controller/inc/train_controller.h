@@ -111,8 +111,8 @@ class SoftwareTrainController : public TrainController
         void SetActualInternalTemperature(const types::DegreesFahrenheit temperature);
         void SetAuthority(const types::Meters authority);
         void SetArrived(const bool arrived);
-        void SetKP(const uint16_t ki);
-        void SetKI(const uint16_t kp);
+        void SetKP(const uint16_t kp);
+        void SetKI(const uint16_t ki);
         void SetOperationMode(const bool operation_mode);
 
         //local functions
