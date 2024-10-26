@@ -16,6 +16,8 @@
 #include "wayside_controller.h"
 #include "wayside_controller_gateway.h"
 #include "graph.h"
+#include "windows.h"
+#include "commdlg.h"
 
 namespace ctc
 {

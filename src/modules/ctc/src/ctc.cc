@@ -1,15 +1,13 @@
 /*****************************************************************************
-* @file ctc.h
+* @file ctc.cc
 *
 * @brief Implements the CTC backend.
 *****************************************************************************/
-#ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_CC
-#define TRAINS_SRC_MODULES_CTC_INC_CTC_CC
+#ifndef TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
+#define TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
 
 #include "wayside_controller_gateway.h"
 #include "ctc.h"
-#include "windows.h"
-#include "commdlg.h"
 
 #include <sstream>
 #include "unordered_map"
@@ -282,7 +280,7 @@ void GraphBuilder::BuildGreenLine(void)
 std::vector<types::Block> GraphBuilder::BuildSection(types::SectionId section_id)
 {
     std::vector<types::Block> section;
-    for (types::Block &block : block_list_)
+    for (const types::Block &block : block_list_)
     {
         if (block.section == section_id)
         {
@@ -444,17 +442,6 @@ types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id
     return error;
 }
 
-std::vector<wayside_controller::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
-{
-    std::vector<wayside_controller::TrackCircuitData> track_circuit_data_signals;
-    for (ctc::Train &train : train_schedules_)
-    {
-        // wayside_controller::TrackCircuitData track_circuit_data(train.current_position, train.suggested_speed, train.authority.size());
-        // track_circuit_data_signals.push_back(track_circuit_data);
-    }
-    return track_circuit_data_signals;
-}
-
 static std::string ExtractFileName(const std::string& full_path)
 {
     // Find the last occurrence of backslash
@@ -560,4 +547,4 @@ void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 
 } // namespace ctc
 
-#endif // TRAINS_SRC_MODULES_CTC_INC_CTC_CC
+#endif // TRAINS_SRC_MODULES_CTC_SRC_CTC_CC
