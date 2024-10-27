@@ -16,10 +16,10 @@ TEST(BlockBuilderTests, GetSize)
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords());
-    ASSERT_EQ(bb.GetSize(), 150);
+    ASSERT_EQ(bb.GetSize(), 151);
 
     std::vector<types::Block> result = bb.GetBlocks();
-    ASSERT_EQ(result.size(), 150);
+    ASSERT_EQ(result.size(), 151);
     bb.Reset();
     ASSERT_EQ(bb.GetSize(), 0);
 }
@@ -31,7 +31,7 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
     BlockBuilder                          bb;
-    types::Block                          block = bb.ConvertRecordToBlock(records[88]);
+    types::Block                          block = bb.ConvertRecordToBlock(records[89]);
 
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Poplar");
@@ -45,7 +45,7 @@ TEST(BlockBuilderTests, AssignBlockInfrastructure)
     std::vector<std::vector<std::string>> records = parser.GetRecords();
 
     BlockBuilder bb;
-    types::Block block = bb.ConvertRecordToBlock(records[88]);
+    types::Block block = bb.ConvertRecordToBlock(records[89]);
 
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Poplar");
