@@ -125,7 +125,6 @@ class Ctc
 
         /* Train Specific */
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
-        void UpdateAuthority(const types::TrainId train_id);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> FindRoute(const types::BlockId start, const types::BlockId end);
         types::Tick GetTrainDepartureTime(const ctc::Train);
