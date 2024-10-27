@@ -36,6 +36,20 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
     ASSERT_EQ(block.station_name, "Poplar");
 }
 
+TEST(BlockBuilderTests, ConvertRecordToBlockCTC)
+{
+    std::filesystem::path                 base_path = std::filesystem::current_path();
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    CsvParser                             parser(path);
+    std::vector<std::vector<std::string>> records = parser.GetRecords();
+    BlockBuilder                          bb;
+    types::Block                          block = bb.ConvertRecordToBlockCTC(records[73]);
+
+    ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.station_name, "Dormont");
+    ASSERT_EQ(static_cast<int>(block.total_time_to_station.count()), 150);
+}
+
 TEST(BlockBuilderTests, AssignBlockInfrastructure)
 {
     std::filesystem::path                 base_path = std::filesystem::current_path();

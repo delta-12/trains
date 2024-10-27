@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
 
@@ -22,7 +23,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records,
     }
     else if (module == Module::MODULE_CTC)
     {
-        for (size_t i = 0; i < records.size(); ++i)
+        for (size_t i = 1; i < records.size(); ++i)
         {
             const std::vector<std::string> &record = records[i];
             types::Block                    block  = ConvertRecordToBlockCTC(record);
@@ -102,8 +103,15 @@ types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string
     block.block       = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER]);
     block.length      = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH]);
     block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
-    block.speed_limit = std::stod(record[BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT]);
+    block.speed_limit = std::stod(record[BLOCK_BUILDER_SCHEDULE_FIELD_SPEED_LIMIT]);
     AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
+
+    if (block.has_station)
+    {
+        double                        t = std::stod(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
+        std::chrono::duration<double> total_time_to_station(t * 60);
+        block.total_time_to_station = total_time_to_station;
+    }
 
     return block;
 }

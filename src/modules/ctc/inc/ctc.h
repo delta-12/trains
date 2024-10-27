@@ -43,11 +43,12 @@ struct Station
     Station(void) : station_name(""), block_id(0)
     {
     };
-    Station(std::string station_name, types::BlockId block_id) : station_name(station_name), block_id(block_id)
+    Station(std::string station_name, types::BlockId block_id, std::chrono::duration<double> t) : station_name(station_name), block_id(block_id), total_time_to_station_with_dwell(t)
     {
     };
     std::string station_name;
     types::BlockId block_id;
+    std::chrono::duration<double> total_time_to_station_with_dwell;
 };
 
 struct DestinationAndArrivalTime

@@ -308,7 +308,7 @@ Graph<types::BlockId, types::Meters> GraphBuilder::GetGraph(void)
 void Ctc::SetTrackLayout(void)
 {
     CsvParser                 parser(schedule_file_path_);
-    BlockBuilder              bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
+    BlockBuilder              bb(parser.GetRecords(), Module::MODULE_CTC);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
@@ -321,7 +321,7 @@ void Ctc::SetStations(std::vector<types::Block> &blocks)
     {
         if (block.has_station)
         {
-            ctc::Station station(block.station_name, block.block);
+            ctc::Station station(block.station_name, block.block, block.total_time_to_station);
             stations_.push_back(station);
         }
     }
@@ -519,6 +519,11 @@ std::size_t Ctc::GetTrainAuthority(types::TrainId train_id) const
 std::size_t Ctc::GetNumStation(void) const
 {
     return stations_.size();
+}
+
+std::vector<ctc::Station> Ctc::GetStations(void) const
+{
+    return stations_;
 }
 
 /*------------------------------ Setters ------------------------------*/
