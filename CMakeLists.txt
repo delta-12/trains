@@ -107,18 +107,23 @@ FetchContent_MakeAvailable(googletest)
 # Controller Messages
 ################################################################################
 find_package(Protobuf REQUIRED)
-protobuf_generate_cpp(CONTROLLER_MESSAGE_SRCS CONTROLLER_MESSAGE_HDRS ${CONTROLLER_NETWORK_MESSAGE_SRCS})
+protobuf_generate_cpp(
+    CONTROLLER_MESSAGE_SRCS
+    CONTROLLER_MESSAGE_HDRS
+    ${CONTROLLER_NETWORK_MESSAGE_SRCS}
+)
+add_library(controller_messages ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
 
 ################################################################################
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
+    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
 else()
-    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
+    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
 endif()
 target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(trains PRIVATE Slint::Slint ${Protobuf_LIBRARIES})
+target_link_libraries(trains PRIVATE Slint::Slint controller_messages)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
     add_custom_command(TARGET trains POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:trains> $<TARGET_FILE_DIR:trains> COMMAND_EXPAND_LISTS)
@@ -132,13 +137,13 @@ include(GoogleTest)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS ${TEST_NAME} ${TEST_SRC})
-    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS} ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
+    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TEST_NAME} GTest::gtest_main ${Protobuf_LIBRARIES})
+    target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main controller_messages)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 

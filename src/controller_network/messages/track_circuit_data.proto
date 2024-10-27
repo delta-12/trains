@@ -2,7 +2,15 @@ syntax = "proto3";
 
 package controller_messages;
 
+enum TrackId
+{
+    TRACK_ID_RED = 0;
+    TRACK_ID_GREEN = 1;
+}
+
 message TrackCircuitData {
-    double speed_meters_per_second = 1;
-    uint32 authority = 2;
+    TrackId track = 1;
+    uint32 block = 2;
+    double speed_meters_per_second = 3;
+    uint32 authority = 4;
 }
