@@ -1,12 +1,16 @@
 #include "train_controller.h"
 
-#include "convert.h"
+#include <cstdint>
+#include <chrono>
+
 #include "types.h"
+#include "convert.h"
+#include "tick_source.h"
 
 namespace train_controller
 {
 //Constructor
-SoftwareTrainController::SoftwareTrainController()
+SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
     // Initializing variables
     ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
@@ -33,6 +37,10 @@ SoftwareTrainController::SoftwareTrainController()
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
+    last_tick_updated_           = (*clock_).GetTick();
+
+
+    Update();
 }
 
 
@@ -206,7 +214,7 @@ void SoftwareTrainController::SetKP(const uint16_t kp)
 {
     kp_ = kp;
 }
-void SoftwareTrainController::setKI(const uint16_t ki)
+void SoftwareTrainController::SetKI(const uint16_t ki)
 {
     ki_ = ki;
 }
@@ -216,17 +224,34 @@ void SoftwareTrainController::SetArrived(const bool arrived)
     arrived_ = arrived;
 }
 
-void SoftwareTrainController::CalculateCommandedPower()
+
+
+void SoftwareTrainController::Update()
+{
+
+
+    std::chrono::milliseconds elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
+
+    types::Second delta_time = std::chrono::duration_cast<types::Second>(elapsed_time);
+
+    last_tick_updated_ = (*clock_).GetTick();
+
+    CalculateCommandedPower(delta_time);
+    UpdateDistanceTravelled(delta_time);
+
+    delta_time_ = delta_time;
+}
+
+
+void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_time)
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    float block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    types::MetersPerSecond block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
 
     // Defining Vcmd and Actual speed in m/s
     types::MetersPerSecond setpoint_speed = driver_speed_;
-
-
 
     // convert to m/s from km/hr
     block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
@@ -237,19 +262,17 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 
     // Calculating speed_error
-    double speed_error = setpoint_speed - current_speed_;
+    types::MetersPerSecond speed_error = setpoint_speed - current_speed_;
 
     // Calculating Kp term
-    float kp_term = speed_error * kp_;
+    double kp_term = speed_error * kp_;
 
-    // Temp time passed since last update
-    float delta_time = DEFAULT_DELTA_TIME; // TODO - NNF-181: Implement Tick Source functionality here.
 
     // This section is where the integral section of the equation will be calculated
-    integral_sum_ += speed_error * delta_time;
+    integral_sum_ += speed_error * delta_time.count();
 
     // Calculating Ki term
-    float ki_term = ki_ * integral_sum_;
+    double ki_term = ki_ * integral_sum_;
 
 
     if ((emergency_brake_ == true) || arrived_)
@@ -289,7 +312,7 @@ void SoftwareTrainController::CalculateCommandedPower()
     }
 }
 
-void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
+void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed_difference)
 {
     types::MetersPerSecond maximum_speed = convert::KilometersPerHourToMetersPerSecond(train_max_speed_);
     //Bins to increment service brake percentage by 10%
@@ -340,8 +363,13 @@ void SoftwareTrainController::CalculateServiceBrake(double speed_difference)
     }
 }
 
-void SoftwareTrainController::UpdateDistanceTravelled(long interval)
+void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_time)
 {
-    distance_travelled_ += current_speed_ * interval;
+    distance_travelled_ += current_speed_ * delta_time.count();
+}
+
+types::Second SoftwareTrainController::GetDeltaTime(void) const
+{
+    return delta_time_;
 }
 }
