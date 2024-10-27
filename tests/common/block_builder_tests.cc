@@ -8,6 +8,7 @@
 
 #include "csv_parser.h"
 #include "block_builder.h"
+#include "types.h"
 
 TEST(BlockBuilderTests, GetSize)
 {
@@ -104,10 +105,14 @@ TEST(BlockBuilderTests, GreenLine)
     BlockBuilder          bb(parser.GetRecords());
     types::Block          block;
 
-    ASSERT_EQ(bb.GetSize(), 150);
+    ASSERT_EQ(bb.GetSize(), 151);
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(1, block));
     ASSERT_EQ(block.has_crossing, false);
+    ASSERT_EQ(block.has_switch, true);
+    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
+    std::cout << block.direction;
+    ASSERT_EQ(block.switch_connection, 13);
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(2, block));
     ASSERT_EQ(block.block, 2);
@@ -118,7 +123,8 @@ TEST(BlockBuilderTests, GreenLine)
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(62, block));
     ASSERT_EQ(block.has_crossing, false);
-    ASSERT_EQ(block.has_switch, true);
+    ASSERT_EQ(block.has_switch, false);
+    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
     ASSERT_EQ(block.has_station, false);
     ASSERT_EQ(block.has_light, false);
 

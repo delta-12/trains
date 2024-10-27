@@ -1,6 +1,10 @@
 #include "block_builder.h"
+#include "types.h"
 
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
+#include <string>
+#include <sstream>
+#include <algorithm>
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
 
@@ -78,6 +82,19 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
     }
     block.elevation            = std::stod(record[BLOCK_BUILDER_CSV_FIELD_ELEVATION]);
     block.cumulative_elevation = std::stod(record[BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION]);
+    if (record[BLOCK_BUILDER_CSV_FIELD_CONNECTION] != "")
+    {
+        block.switch_connection = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_CONNECTION]);
+    }
+    std::string block_direction = record[BLOCK_BUILDER_CSV_FIELD_DIRECTION];
+    if (block_direction.find("UNIDIRECTIONAL") != std::string::npos)
+    {
+        block.direction = types::BLOCKDIRECTION_UNIDIRECTIONAL;
+    }
+    else
+    {
+        block.direction = types::BLOCKDIRECTION_BIDIRECTIONAL;
+    }
 
     return block;
 }
