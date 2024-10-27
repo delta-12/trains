@@ -532,4 +532,9 @@ types::Block SoftwareTrackModel::GetBlock(const types::BlockId block)
     return blocks_[block];
 }
 
+std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlocks(void)
+{
+    return occupied_train_blocks_;
+}
+
 } // namespace track_model

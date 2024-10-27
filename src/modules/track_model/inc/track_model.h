@@ -31,6 +31,7 @@ class TrackModel
         virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed) = 0;
         virtual types::Error SetAuthority(const types::BlockId block, const types::Blocks authority)           = 0;
         virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const               = 0;
+        virtual std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void)                          = 0;
 };
 
 class SoftwareTrackModel : public TrackModel
@@ -57,6 +58,7 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
         types::Error SetTrainBlock(const types::BlockId block);
         types::Block GetBlock(const types::BlockId block);
+        std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
 
     private:
         types::TrackId track_;
