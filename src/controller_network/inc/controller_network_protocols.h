@@ -1,0 +1,60 @@
+/*****************************************************************************
+* @file controller_network_protocols.h
+*
+* @brief Defines the Controller Message and Link Protocols.
+*****************************************************************************/
+#ifndef TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
+#define TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
+
+namespace controller_network
+{
+
+typedef enum
+{
+    MESSAGEHEADERBYTE_VERSION,
+    MESSAGEHEADERBYTE_TYPE,
+    MESSAGEHEADERBYTE_PAYLOAD_LENGTH_HI,
+    MESSAGEHEADERBYTE_PAYLOAD_LENGTH_LO,
+    MESSAGEHEADERBYTE_HEADER_MAX
+} MessageHeaderByte;
+
+typedef enum
+{
+    MESSAGEPROTOCOLVERSION_0
+} MessageProtocolVersion;
+
+typedef enum
+{
+    MESSAGETYPE_CONTROLLER_ID,
+    MESSAGETYPE_TRACK_CIRCUIT_DATA,
+    MESSAGETYPE_MAINTENANCE_MODE,
+    MESSAGETYPE_SUGGESTED_SWITCH_STATE,
+    MESSAGETYPE_BLOCK_STATES,
+    MESSAGETYPE_BLOCK_OUTPUTS,
+    MESSAGETYPE_BLOCK_OCCUPANCIES,
+    MESSAGETYPE_TRAIN_FAILURES,
+    MESSAGETYPE_TRAIN_FEEDBACK,
+    MESSAGETYPE_BEACON_DATA,
+    MESSAGETYPE_TRAIN_COMMAND,
+    MESSAGETYPE_TRACK_INFORMATION,
+    MESSAGETYPE_MAX
+} MessageType;
+
+typedef enum
+{
+    FRAMEHEADERBYTE_VERSION,
+    FRAMEHEADERBYTE_CRC_LENGTH_HI,
+    FRAMEHEADERBYTE_CRC_LENGTH_LO,
+    FRAMEHEADERBYTE_PAYLOAD_LENGTH_HI,
+    FRAMEHEADERBYTE_PAYLOAD_LENGTH_LO,
+    FRAMEHEADERBYTE_HEADER_MAX
+} FrameHeaderByte;
+
+typedef enum
+{
+    LINKPROTOCOLVERSION_0
+} LinkProtocolVersion;
+
+} // namespace controller_network
+
+#endif // TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
