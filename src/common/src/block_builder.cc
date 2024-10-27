@@ -4,6 +4,7 @@
 //#include <bits/stdc++.h>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
 
@@ -86,7 +87,7 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
         block.switch_connection = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_CONNECTION]);
     }
     std::string block_direction = record[BLOCK_BUILDER_CSV_FIELD_DIRECTION];
-    if (block_direction == "UNIDIRECTIONAL")
+    if (block_direction.find("UNIDIRECTIONAL") != std::string::npos)
     {
         block.direction = types::BLOCKDIRECTION_UNIDIRECTIONAL;
     }

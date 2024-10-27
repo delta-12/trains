@@ -110,7 +110,7 @@ TEST(BlockBuilderTests, GreenLine)
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(1, block));
     ASSERT_EQ(block.has_crossing, false);
     ASSERT_EQ(block.has_switch, true);
-    //ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
+    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
     std::cout << block.direction;
     ASSERT_EQ(block.switch_connection, 13);
 
@@ -124,7 +124,7 @@ TEST(BlockBuilderTests, GreenLine)
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(62, block));
     ASSERT_EQ(block.has_crossing, false);
     ASSERT_EQ(block.has_switch, false);
-    //ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
+    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
     ASSERT_EQ(block.has_station, false);
     ASSERT_EQ(block.has_light, false);
 
