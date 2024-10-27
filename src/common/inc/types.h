@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <chrono>
 
 #define TYPES_BEACON_DATA_SIZE 128U
 
@@ -32,6 +33,7 @@ typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
+typedef std::chrono::duration<double>               Second;
 
 
 typedef enum

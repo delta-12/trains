@@ -143,7 +143,7 @@ slint_target_sources(train_model_tests_ui ${UI_DIR}/train_model_ui.slint NAMESPA
 # Train Controller UI test build
 ################################################################################
 add_executable(train_controller_tests_ui
-    ${TESTS_DIR}/modules/train_controller_tests_ui.cc
+    ${TESTS_DIR}/modules/train_controller/train_controller_tests_ui.cc
     ${TRAIN_CONTROLLER_SRCS}
     ${COMMON_SRCS}
 )
