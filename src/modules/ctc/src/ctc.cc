@@ -394,8 +394,7 @@ types::Error Ctc::OpenFileExplorer(std::string &file)
     if (GetOpenFileName(&ofn))
     {
         SetScheduleFilePath(ofn.lpstrFile);
-        file = ExtractFileName(ofn.lpstrFile);
-        std::cout << "File Name: " << file << std::endl;
+        file  = ExtractFileName(ofn.lpstrFile);
         error = types::Error::ERROR_NONE;
     }
     else
@@ -411,7 +410,6 @@ types::Error Ctc::OpenFileExplorer(std::string &file)
 void Ctc::ManualDispatch(types::BlockId destination)
 {
     ctc::Train train;
-    std::cout << "Train is created! Train ID: " << train.train_id << std::endl;
     AddTrainToTrainSchedule(train);
     std::vector<types::BlockId> route = FindRoute(0, destination);
     AssignAuthority(route, train.train_id);

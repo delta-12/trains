@@ -121,7 +121,7 @@ class Ctc
 
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<wayside_controller::BlockState> &block_states);
-        std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void);
+        std::vector<wayside_controller::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
         /* Train Specific */
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
@@ -157,7 +157,6 @@ class Ctc
         void SetGreenLineGraph(void);
 
     private:
-        /* Variables */
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
         std::vector<ctc::Train> train_schedules_;
