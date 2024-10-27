@@ -152,7 +152,9 @@ class Port
 {
     public:
         virtual size_t Send(const uint8_t *const buffer, const size_t size) = 0;
-        virtual void Receive(uint8_t *const buffer, const size_t size)      = 0;
+        virtual size_t SendAvailable(void)                                  = 0;
+        virtual size_t Receive(uint8_t *const buffer, const size_t size)    = 0;
+        virtual size_t ReceiveAvailable(void)                               = 0;
 };
 
 } // namespace types
