@@ -69,7 +69,7 @@ TEST(BlockBuilderTests, BlueBline)
     BlockBuilder          bb(parser.GetRecords());
     types::Block          block;
 
-    ASSERT_EQ(bb.GetSize(), 15);
+    ASSERT_EQ(bb.GetSize(), 16);
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(1, block));
     ASSERT_EQ(block.block, 1);
 
