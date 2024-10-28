@@ -7,9 +7,10 @@
 #define TRAINS_SRC_COMMON_INC_TYPES_H
 
 #include <array>
+#include <chrono>
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <vector>
 
 #define TYPES_BEACON_DATA_SIZE 128U
 #define TYPES_END_BLOCK_ID     0U
@@ -36,6 +37,7 @@ typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
+typedef std::chrono::duration<double>               Second;
 
 typedef enum
 {
