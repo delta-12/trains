@@ -1,10 +1,10 @@
 #include "block_builder.h"
-#include "types.h"
 
-//#include <bits/stdc++.h>
 #include <string>
 #include <sstream>
 #include <algorithm>
+
+#include "types.h"
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
 
