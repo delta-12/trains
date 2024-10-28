@@ -143,7 +143,7 @@ foreach(TEST_SRC ${TEST_SRCS})
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main controller_messages)
+    target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GTest::gmock controller_messages)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 
