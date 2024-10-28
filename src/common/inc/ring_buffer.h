@@ -48,7 +48,7 @@ size_t RingBuffer<T, buffer_size>::Write(const T*const data, const size_t size)
     {
         while ((write_counter_ < buffer_.size()) && (write_count < size))
         {
-            buffer[(read_pointer_ + write_counter_) % buffer_.size()] = *(data + write_count);
+            buffer_[(read_pointer_ + write_counter_) % buffer_.size()] = *(data + write_count);
 
             write_count++;
             write_counter_++;
@@ -71,7 +71,7 @@ size_t RingBuffer<T, buffer_size>::Read(T*const data, const size_t size)
     {
         while ((write_counter_ > 0) && (read_count < size))
         {
-            *(data + read_count) = buffer[read_pointer_];
+            *(data + read_count) = buffer_[read_pointer_];
 
             read_pointer_ = (read_pointer_ + 1) % buffer_size;
             write_counter_--;
