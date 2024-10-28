@@ -60,96 +60,78 @@ void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model:
 
 void SoftwareTrackModel::Update(void)
 {
-    // Update the state of the track model
 
-    //loop through all trains on the blocks_
     for (int i = 0; i < trains_.size(); i++)
     {
-        //TODO: CALCULATE ALL BLOCKS THAT THIS TRAIN IS OCCUPYING
-        types::BlockId front_of_train_block;
+        types::Meters  new_distance = trains_[i]->GetDistanceTraveled();
+        types::Meters  d_iterator   = 0;
+        types::BlockId currblock    = 0;
 
-        //using distance traveled to determine what block the front of the trian is on
-        types::Meters new_distance = trains_[i]->GetDistanceTraveled();
-        types::Meters d_iterator   = 0;
-
-        types::BlockId currblock;
-
-        for (int j = occupied_train_blocks_[i][0]; j < blocks_.size(); j++)
+        // Find the current block based on the distance traveled
+        for (currblock = occupied_train_blocks_[i][0]; currblock < blocks_.size(); currblock++)
         {
-            d_iterator += blocks_[j].length;
+            if (blocks_[currblock - 1].switched == 1)
+            {
+                currblock = blocks_[currblock].switch_connection;
+            }
 
-            currblock = blocks_[j].block;
+            d_iterator += blocks_[currblock].length;
 
             if (d_iterator >= new_distance)
             {
-                //we now have the location and block of the train, we can stop
-                break;
-            }
-
-            //check if block is switched
-            if (blocks_[j].switched == 1)
-            {
-                //change j to skip there
-                j = blocks_[j].switch_connection;
+                break; // Train is in the current block
             }
         }
 
-        //clear old occupancies for this train specifically
-        for (int k = 0; k < occupied_train_blocks_[i].size(); k++)
+        // If the train is beyond the last block, we set currblock to the last block
+        if (currblock >= blocks_.size())
         {
-            int pos = occupied_train_blocks_[i][k];
-            blocks_[pos].occupied = 0;
+            currblock = blocks_.size() - 1;
         }
 
-        //clear and set currblock
+        // Clear old occupancies for this train
+        for (int m = 0; m < occupied_train_blocks_[i].size(); m++)
+        {
+            types::BlockId occupied_spot = occupied_train_blocks_[i][m];
+            blocks_[occupied_spot].occupied = 0;
+        }
         occupied_train_blocks_[i].clear();
+
+        // Update the current block occupancy
+        blocks_[currblock].occupied = 1;
         occupied_train_blocks_[i].push_back(currblock);
 
-        //check the length of the block the train is occupying, and see if the train is longer (if it isnt on the yard)
-        if (blocks_[currblock].length < train_length_ && currblock != 0)
+        // Check if the train length occupies more than just the current block
+        types::Meters  sizeofblocks = blocks_[currblock].length;
+        types::BlockId j            = currblock - 1;
+
+        // Loop backwards to account for the full length of the train
+        while (sizeofblocks < train_length_ && j >= 0)
         {
-            //looping until the full length of the train is accounted for
-            auto sizeofblocks = blocks_[currblock].length;
-            int  j            = currblock - 1;
-            while (sizeofblocks < train_length_)
+            if (blocks_[j].switched == 1)
             {
-                //checking if the block behind this is connected to another block
-                if (blocks_[j].switched == 1)
+                // Handle switched block
+                for (int k = 0; k < blocks_.size(); k++)
                 {
-                    //adding size of block it is actually connected to
-                    //check what block comes before this one
-                    for (int m = 0; m < blocks_.size(); m++)
+                    if (blocks_[k].switch_connection == currblock)
                     {
-                        if (blocks_[m].switch_connection == j + 1)
-                        {
-                            j = m;
-                            break;
-                        }
+                        j = k;
                     }
-
-
                 }
-                //checking if block behind this is yard
-                if (j == 0)
+                if (j < 0 || j >= blocks_.size())
                 {
-                    break;
+                    break; // Prevent out-of-bounds
                 }
-
-                //adding the size of the block behind it
-                sizeofblocks += blocks_[j].length;
-
-                //adding this block to the vector of occupancies
-                blocks_[j].occupied = 1;
-
-                //adding to current train blocks
-                occupied_train_blocks_[i].push_back(j);
-
-                //increment
-                j--;
             }
+
+            // Add the size of the block and mark it as occupied
+            sizeofblocks       += blocks_[j].length;
+            blocks_[j].occupied = 1;
+            occupied_train_blocks_[i].push_back(j);
+            j--;
         }
 
-        //if this train is at a station, update boarding
+        // Check if the current block has a station and update deboarding
         if (blocks_[currblock].has_station == 1)
         {
             uint16_t traindeb = trains_[i]->GetPassengersDeboarding();

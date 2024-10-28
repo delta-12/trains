@@ -5,9 +5,11 @@
 *****************************************************************************/
 
 #include <gtest/gtest.h>
+#include <memory>
 
 #include "csv_parser.h"
 #include "block_builder.h"
+#include "train_model.h"
 #include "types.h"
 #include "track_model.h"
 
@@ -19,6 +21,7 @@ TEST(TrackModelTests, GreenLine)
     BlockBuilder                    bb(parser.GetRecords());
     types::Block                    block;
     track_model::SoftwareTrackModel track;
+    train_model::TrainModelImpl     train;
     track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks());
 
     bool occupancy1;
@@ -57,4 +60,37 @@ TEST(TrackModelTests, GreenLine)
 
     ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(-1, block));
     ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(151, block));
+}
+
+TEST(TrackModelTests, TrainAuthority)
+{
+    std::filesystem::path           base_path = std::filesystem::current_path();
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                       parser(path);
+    BlockBuilder                    bb(parser.GetRecords());
+    types::Block                    block;
+    track_model::SoftwareTrackModel track;
+    train_model::TrainModelImpl     train;
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks());
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    track.AddTrainModel(ptr);
+
+    std::vector<std::shared_ptr<train_model::TrainModel>> trains;
+
+    track.GetTrainModels(trains);
+
+    ASSERT_EQ(trains.size(), 1);
+
+
+
+    // Set initial authority and update
+    ASSERT_EQ(track.SetAuthority(2, 5), types::ERROR_NONE);
+    track.Update();
+
+    /*
+
+       // Check if authority was correctly assigned
+       // You can add assertions to check the authority of the train model
+       // Example:
+       ASSERT_EQ(train.GetAuthority(), 5);*/
 }
