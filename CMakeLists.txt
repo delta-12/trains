@@ -122,7 +122,7 @@ foreach(TEST_SRC ${TEST_SRCS})
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS})
-    target_link_libraries(${TEST_NAME} GTest::gtest_main)
+    target_link_libraries(${TEST_NAME} GTest::gtest_main GTest::gmock)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 

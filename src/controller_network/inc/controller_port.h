@@ -29,7 +29,7 @@ template <size_t buffer_size>
 class BasicControllerPort : public ControllerPort
 {
     public:
-        BasicControllerPort(const std::unique_ptr<types::Port> port);
+        BasicControllerPort(std::unique_ptr<types::Port> port);
         BasicControllerPort(const BasicControllerPort &)            = delete;
         BasicControllerPort &operator=(const BasicControllerPort &) = delete;
         BasicControllerPort(BasicControllerPort &&)                 = delete;
@@ -45,7 +45,7 @@ class BasicControllerPort : public ControllerPort
 };
 
 template <size_t buffer_size>
-BasicControllerPort<buffer_size>::BasicControllerPort(const std::unique_ptr<types::Port> port) : port_(port), bytes_received_(0)
+BasicControllerPort<buffer_size>::BasicControllerPort(std::unique_ptr<types::Port> port) : port_(std::move(port)), bytes_received_(0)
 {
 }
 
@@ -72,7 +72,10 @@ size_t BasicControllerPort<buffer_size>::SendMessage(const MessageType type, con
 
         std::copy(message, (message + size), (std::begin(send_buffer_) + MESSAGEHEADERBYTE_HEADER_MAX));
 
-        message_bytes_sent = port_->Send(send_buffer_.data(), message_size);
+        if (port_->Send(send_buffer_.data(), message_size) == message_size)
+        {
+            message_bytes_sent = size;
+        }
     }
 
     return message_bytes_sent;
@@ -84,16 +87,16 @@ size_t BasicControllerPort<buffer_size>::ReceiveMessage(MessageType &type, uint8
     size_t message_bytes_received = 0;
 
     // Receive message header
-    if (bytes_received_ < FRAMEHEADERBYTE_HEADER_MAX)
+    if (bytes_received_ < MESSAGEHEADERBYTE_HEADER_MAX)
     {
-        bytes_received_ += port_->Receive((receive_buffer_.data() + bytes_received_), (FRAMEHEADERBYTE_HEADER_MAX - bytes_received_));
+        bytes_received_ += port_->Receive((receive_buffer_.data() + bytes_received_), (MESSAGEHEADERBYTE_HEADER_MAX - bytes_received_));
     }
 
-    size_t payload_size = convert::MakeUint16(receive_buffer_[FRAMEHEADERBYTE_PAYLOAD_LENGTH_HI], receive_buffer_[FRAMEHEADERBYTE_PAYLOAD_LENGTH_LO]);
-    size_t message_size = FRAMEHEADERBYTE_HEADER_MAX + payload_size;
+    size_t payload_size = convert::MakeUint16(receive_buffer_[MESSAGEHEADERBYTE_PAYLOAD_LENGTH_HI], receive_buffer_[MESSAGEHEADERBYTE_PAYLOAD_LENGTH_LO]);
+    size_t message_size = MESSAGEHEADERBYTE_HEADER_MAX + payload_size;
 
     // Receive message payload
-    if (bytes_received_ >= FRAMEHEADERBYTE_HEADER_MAX)
+    if (bytes_received_ >= MESSAGEHEADERBYTE_HEADER_MAX)
     {
         bytes_received_ += port_->Receive((receive_buffer_.data() + bytes_received_), (message_size - bytes_received_));
     }
@@ -101,7 +104,7 @@ size_t BasicControllerPort<buffer_size>::ReceiveMessage(MessageType &type, uint8
     // Copy payload to message buffer
     if ((nullptr != message) && (bytes_received_ >= message_size))
     {
-        type                   = receive_buffer_[MESSAGEHEADERBYTE_TYPE];
+        type                   = static_cast<MessageType>(receive_buffer_[MESSAGEHEADERBYTE_TYPE]);
         message_bytes_received = payload_size;
 
         if (size < payload_size)
@@ -109,7 +112,7 @@ size_t BasicControllerPort<buffer_size>::ReceiveMessage(MessageType &type, uint8
             message_bytes_received = size;
         }
 
-        std::copy(receive_buffer_.begin(), (receive_buffer_.begin() + message_bytes_received), message);
+        std::copy((receive_buffer_.begin() + MESSAGEHEADERBYTE_HEADER_MAX), (receive_buffer_.begin() + bytes_received_), message);
 
         bytes_received_ = 0;
     }

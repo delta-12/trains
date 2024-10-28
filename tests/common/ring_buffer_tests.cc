@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include <ring_buffer.h>
+#include "ring_buffer.h"
 
 TEST(RingBufferTests, WriteTest)
 {
