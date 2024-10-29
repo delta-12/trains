@@ -62,7 +62,7 @@ TEST(TrackModelTests, GreenLine)
     ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(151, block));
 }
 
-TEST(TrackModelTests, TrainAuthority)
+TEST(TrackModelTests, TrainSpeedAuthority)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
     std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
@@ -71,7 +71,19 @@ TEST(TrackModelTests, TrainAuthority)
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
+
     track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks());
+    Graph<types::BlockId, types::Meters> graph;
+    auto                                 bbtemp = bb.GetBlocks().size();
+
+    for (int i = 0; i < bbtemp; i++)
+    {
+        // every edge is really the length of the second block
+        graph.AddEdge(i, i + 1, bb.GetBlocks()[i + 1].length);
+    }
+
+    ASSERT_EQ(graph.BreadthFirstSearch(0).size(), 152);
+
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
     track.AddTrainModel(ptr);
 
@@ -81,16 +93,31 @@ TEST(TrackModelTests, TrainAuthority)
 
     ASSERT_EQ(trains.size(), 1);
 
-
-
-    // Set initial authority and update
-    ASSERT_EQ(track.SetAuthority(2, 5), types::ERROR_NONE);
+    //update
     track.Update();
 
-    /*
+    // Set authority and speed
+    ASSERT_EQ(track.SetAuthority(2, 5), types::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(2, 50), types::ERROR_NONE);
 
-       // Check if authority was correctly assigned
-       // You can add assertions to check the authority of the train model
-       // Example:
-       ASSERT_EQ(train.GetAuthority(), 5);*/
+    //check that authority is set
+    ASSERT_EQ(ptr->GetAuthority(), 5);
+    //check speed is set
+    ASSERT_EQ(ptr->GetCommandedSpeed(), 50);
+
+    //check passenger count
+    ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+
+    //UPDATE 2
+    track.Update();
+
+    // Set authority and speed
+    ASSERT_EQ(track.SetAuthority(4, 8), types::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(4, 90), types::ERROR_NONE);
+
+    //check that authority is set
+    ASSERT_EQ(ptr->GetAuthority(), 8);
+    //check speed is set
+    ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
+
 }

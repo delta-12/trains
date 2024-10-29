@@ -45,7 +45,7 @@ std::size_t TrainModelImpl::GetBeaconData(types::BeaconData &data) const
     return sizeof(data);
 }
 
-types::Meters TrainModelImpl::GetAuthority(void) const
+types::Blocks TrainModelImpl::GetAuthority(void) const
 {
     return authority_;
 }
@@ -139,13 +139,19 @@ void TrainModelImpl::SetBlockId(const types::BlockId block)
 
 uint16_t TrainModelImpl::GetPassengersDeboarding(void)
 {
-    return passengers_deboarding_;
+    if (current_passengers_ == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 5;
+    }
 }
 
 types::Meters TrainModelImpl::GetDistanceTraveled(void)
 {
-    distance_traveled_ += 50;
-    return distance_traveled_;
+    return 200;
 }
 
 void TrainModelImpl::SetCommandedSpeed(const types::MetersPerSecond speed)
@@ -153,18 +159,14 @@ void TrainModelImpl::SetCommandedSpeed(const types::MetersPerSecond speed)
     commanded_speed_ = speed;
 }
 
-void TrainModelImpl::SetAuthority(const types::Meters meters)
+void TrainModelImpl::SetAuthority(const types::Blocks blocks)
 {
-    authority_ = meters;
+    authority_ = blocks;
 }
 
 void TrainModelImpl::SetPassengersBoarding(const uint16_t passengers)
 {
-    // Ensure not exceeding max passengers
-    if (passengers + current_passengers_ <= TRAIN_MODEL_MAXIMUM_PASSENGERS)
-    {
-        current_passengers_ += passengers;
-    }
+    current_passengers_ += passengers;
 }
 
 void TrainModelImpl::SetTrackPolarity(const types::Polarity polarity)

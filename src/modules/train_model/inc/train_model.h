@@ -28,7 +28,7 @@ class TrainModel
         virtual void SetSignalPickupFailure(const bool signal_pickup_failure)                = 0;
         virtual bool GetBrakeFailure(void) const                                             = 0;
         virtual std::size_t GetBeaconData(types::BeaconData &data) const                     = 0;
-        virtual types::Meters GetAuthority(void) const                                       = 0;
+        virtual types::Blocks GetAuthority(void) const                                       = 0;
         virtual types::MetersPerSecond GetCommandedSpeed(void) const                         = 0;
         virtual types::MetersPerSecond GetActualSpeed(void) const                            = 0;
         virtual bool GetEngineFailure(void) const                                            = 0;
@@ -49,7 +49,7 @@ class TrainModel
         virtual uint16_t GetPassengersDeboarding(void)                                       = 0;
         virtual types::Meters GetDistanceTraveled(void)                                      = 0;
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                   = 0;
-        virtual void SetAuthority(const types::Meters meters)                                = 0;
+        virtual void SetAuthority(const types::Blocks blocks)                                = 0;
         virtual void SetPassengersBoarding(const uint16_t passegners)                        = 0;
         virtual void SetTrackPolarity(const types::Polarity polarity)                        = 0;
         virtual void SetBeaconData(const types::BeaconData &data, std::size_t &size)         = 0;
@@ -67,7 +67,7 @@ class TrainModelImpl : public TrainModel
         void SetSignalPickupFailure(const bool signal_pickup_failure);
         bool GetBrakeFailure(void) const;
         std::size_t GetBeaconData(types::BeaconData &data) const;
-        types::Meters GetAuthority(void) const;
+        types::Blocks GetAuthority(void) const;
         types::MetersPerSecond GetCommandedSpeed(void) const;
         types::MetersPerSecond GetActualSpeed(void) const;
         bool GetEngineFailure(void) const;
@@ -88,7 +88,7 @@ class TrainModelImpl : public TrainModel
         uint16_t GetPassengersDeboarding(void);
         types::Meters GetDistanceTraveled(void);
         void SetCommandedSpeed(const types::MetersPerSecond speed);
-        void SetAuthority(const types::Meters meters);
+        void SetAuthority(const types::Blocks blocks);
         void SetPassengersBoarding(const uint16_t passengers);
         void SetTrackPolarity(const types::Polarity polarity);
         void SetBeaconData(const types::BeaconData &data, std::size_t &size);
@@ -101,7 +101,7 @@ class TrainModelImpl : public TrainModel
         bool signal_pickup_failure_;
         types::Meters commanded_speed_;
         types::MetersPerSecond actual_speed_;
-        types::Meters authority_;
+        types::Blocks authority_;
         types::Meters distance_traveled_;
         uint16_t passengers_deboarding_;
         uint16_t current_passengers_ = 0;

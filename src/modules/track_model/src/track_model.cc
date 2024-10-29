@@ -47,6 +47,12 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
     //add model
     trains_.push_back(train);
 
+    //populate occupied train block 2d vector with a new vector for this train
+    occupied_train_blocks_.push_back({0});
+
+    //populate passenger count vector
+    passenger_counts_.push_back(0);
+
     return types::ERROR_NONE;
 }
 
@@ -60,82 +66,53 @@ void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model:
 
 void SoftwareTrackModel::Update(void)
 {
-
+    //loop through train models
     for (int i = 0; i < trains_.size(); i++)
     {
-        types::Meters  new_distance = trains_[i]->GetDistanceTraveled();
-        types::Meters  d_iterator   = 0;
-        types::BlockId currblock    = 0;
+        //fetch distance traveled
+        types::MetersPerSecond d_traveled = trains_[i]->GetDistanceTraveled();
 
-        // Find the current block based on the distance traveled
-        for (currblock = occupied_train_blocks_[i][0]; currblock < blocks_.size(); currblock++)
+        types::MetersPerSecond temp_distance = 0;
+
+        types::BlockId current_block;
+
+        //find all blocks connected to the block the train is currently on
+        auto connections = graph.BreadthFirstSearch(occupied_train_blocks_[i][0]);
+
+        std::vector<types::BlockId> connections_vector(connections.begin(), connections.end());
+
+        std::reverse(connections_vector.begin(), connections_vector.end());
+
+        //traverse graph from current block to account for this length
+        for (const auto& element : connections_vector)
         {
-            if (blocks_[currblock - 1].switched == 1)
+            if (element > occupied_train_blocks_[i][0])
             {
-                currblock = blocks_[currblock].switch_connection;
-            }
+                std::cout << std::endl << element << std::endl;
+                //add distance
+                current_block = element;
 
-            d_iterator += blocks_[currblock].length;
+                temp_distance += blocks_[current_block].length;
 
-            if (d_iterator >= new_distance)
-            {
-                break; // Train is in the current block
-            }
-        }
-
-        // If the train is beyond the last block, we set currblock to the last block
-        if (currblock >= blocks_.size())
-        {
-            currblock = blocks_.size() - 1;
-        }
-
-        // Clear old occupancies for this train
-        for (int m = 0; m < occupied_train_blocks_[i].size(); m++)
-        {
-            types::BlockId occupied_spot = occupied_train_blocks_[i][m];
-            blocks_[occupied_spot].occupied = 0;
-        }
-        occupied_train_blocks_[i].clear();
-
-        // Update the current block occupancy
-        blocks_[currblock].occupied = 1;
-        occupied_train_blocks_[i].push_back(currblock);
-
-        // Check if the train length occupies more than just the current block
-        types::Meters  sizeofblocks = blocks_[currblock].length;
-        types::BlockId j            = currblock - 1;
-
-        // Loop backwards to account for the full length of the train
-        while (sizeofblocks < train_length_ && j >= 0)
-        {
-            if (blocks_[j].switched == 1)
-            {
-                // Handle switched block
-                for (int k = 0; k < blocks_.size(); k++)
+                //check if we have accounted for the distance traveled yet
+                if (temp_distance >= d_traveled)
                 {
-                    if (blocks_[k].switch_connection == currblock)
-                    {
-                        j = k;
-                    }
-                }
-                if (j < 0 || j >= blocks_.size())
-                {
-                    break; // Prevent out-of-bounds
+                    //update occupied blocks vector
+                    occupied_train_blocks_[i].insert(occupied_train_blocks_[i].begin(), current_block);
+
+                    break;
                 }
             }
 
-            // Add the size of the block and mark it as occupied
-            sizeofblocks       += blocks_[j].length;
-            blocks_[j].occupied = 1;
-            occupied_train_blocks_[i].push_back(j);
-            j--;
         }
 
         // Check if the current block has a station and update deboarding
-        if (blocks_[currblock].has_station == 1)
+        types::BlockId station_check = occupied_train_blocks_[i][0];
+
+        if (blocks_[station_check].has_station == 1)
         {
             uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
-            SetPassengersDeboarding(trains_[i]->GetTrainId(), traindeb);
+            SetPassengersDeboarding(i, traindeb);
         }
     }
 }
@@ -291,9 +268,6 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-
-    // Logic to set the commanded speed
-
     if (blocks_.size() < block)
     {
         return types::ERROR_INVALID_BLOCK;
@@ -303,20 +277,17 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
         return types::ERROR_INVALID_BLOCK;
     }
 
-    //loop through train models
+    //loop through trains
     for (int i = 0; i < trains_.size(); i++)
     {
-        //loop through blocks the train is on
-        for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+        //does speed get sent to the block the (front of the) train is on?
+        if (occupied_train_blocks_[i][0] == block)
         {
-            if (occupied_train_blocks_[i][j] == block)
-            {
-                //pass commanded speed to train
-                trains_[i]->SetCommandedSpeed(speed);
+            trains_[i]->SetCommandedSpeed(speed);
 
-                return types::ERROR_NONE;
-            }
+            return types::ERROR_NONE;
         }
+
     }
 
     return types::ERROR_INVALID_BLOCK;
@@ -335,21 +306,17 @@ types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const 
         return types::ERROR_INVALID_BLOCK;
     }
 
-
-    //loop through train models
+    //loop through trains
     for (int i = 0; i < trains_.size(); i++)
     {
-        //loop through blocks the train is on
-        for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+        //does authority get sent to the block the (front of the) train is on?
+        if (occupied_train_blocks_[i][0] == block)
         {
-            if (occupied_train_blocks_[i][j] == block)
-            {
-                //pass authority to train
-                trains_[i]->SetAuthority(authority);
+            trains_[i]->SetAuthority(authority);
 
-                return types::ERROR_NONE;
-            }
+            return types::ERROR_NONE;
         }
+
     }
 
     return types::ERROR_INVALID_BLOCK;
@@ -490,7 +457,7 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId tr
     const uint16_t deboarding = passengers;
 
     //subtract from total passengers
-    uint16_t vacancy = 222 - passenger_counts_[train - 1] + deboarding;
+    uint16_t vacancy = 222 - passenger_counts_[train] + deboarding;
 
     //generate random number within bounds for boarding
     std::random_device              rd;              // Seed
@@ -501,10 +468,10 @@ types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId tr
     int randomNumber = dis(gen);
 
     //set passengers boarding
-    trains_[train - 1]->SetPassengersBoarding(randomNumber);
+    trains_[train]->SetPassengersBoarding(randomNumber);
 
     //update passengers on board
-    passenger_counts_[train - 1] = passenger_counts_[train - 1] - deboarding + randomNumber;
+    passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
 
     return types::ERROR_NONE;
 }
