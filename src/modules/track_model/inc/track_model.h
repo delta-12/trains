@@ -56,7 +56,6 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
         types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
         types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
-        types::Error SetTrainBlock(const types::BlockId block);
         types::Block GetBlock(const types::BlockId block);
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
 
