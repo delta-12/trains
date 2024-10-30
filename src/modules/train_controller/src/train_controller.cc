@@ -259,6 +259,10 @@ void SoftwareTrainController::CalculateCommandedPower()
     if(driver_speed_ > block_speed_limit)
     {
         driver_speed_ = block_speed_limit;
+    } 
+    else if (driver_speed_ < 0) 
+    {
+        driver_speed_ = 0;
     }
     
     types::MetersPerSecond setpoint_speed;

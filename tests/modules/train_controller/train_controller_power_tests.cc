@@ -140,6 +140,59 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
     ASSERT_GT(TC.GetCommandedPower(), 0);
 }
 
+TEST(TrainControllerPowerTests, NegativeDriverSpeed)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // go to manual mode
+    TC.SetOperationMode(1);
+
+    // assert manual mode
+    ASSERT_EQ(1, TC.GetOperationMode());
+    
+    // random current speed
+    TC.SetCurrentSpeed(18);
+
+    // negative driver speed
+    TC.SetDriverSpeed(-5);
+
+    // calculate power
+    TC.CalculateCommandedPower();
+
+    // assert driver speed and power = 0 and service brake is on
+    ASSERT_EQ(TC.GetDriverSpeed(), 0);
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+}
+
+TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // go to manual mode
+    TC.SetOperationMode(1);
+
+    // assert manual mode
+    ASSERT_EQ(1, TC.GetOperationMode());
+    
+    // random current speed
+    TC.SetCurrentSpeed(0);
+
+    // driver speed above speed limit
+    TC.SetDriverSpeed(700);
+
+    // calculate power
+    TC.CalculateCommandedPower();
+
+    // assert driver speed and power = 0 and service brake is on
+    ASSERT_NEAR(TC.GetDriverSpeed(), 31.0599, 0.05); 
+    // ^ 31 b/c set driver capped at 13.8889 m/s (assuming 50 km/hr speed limit)
+    // 13.889 * 2.23694 (conv for m/s to mph) ~= 31
+
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+}
+
 TEST(TrainControllerPowerTests, EngineFailure)
 {
     train_controller::SoftwareTrainController TC;
