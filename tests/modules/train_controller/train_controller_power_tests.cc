@@ -136,7 +136,72 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
     // call power calculation
     TC.CalculateCommandedPower();
 
-    // std::cout << TC.GetCommandedPower();
     // assert power is greater than 0
     ASSERT_GT(TC.GetCommandedPower(), 0);
+}
+
+TEST(TrainControllerPowerTests, EngineFailure)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // make train have some power output and speed
+    TC.SetCurrentSpeed(10);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn on engine failure
+    TC.SetEngineFailure(true);
+
+    // call failure state check 
+    TC.CheckFailureStates();
+
+    // assert power = 0
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+
+    // assert emergency brake is on
+    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
+}
+
+TEST(TrainControllerPowerTests, BrakeFailure)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // make train have some power output and speed
+    TC.SetCurrentSpeed(10);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn on engine failure
+    TC.SetBrakeFailure(true);
+
+    // call failure state check 
+    TC.CheckFailureStates();
+
+    // assert power = 0
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+
+    // assert emergency brake is on
+    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
+}
+
+TEST(TrainControllerPowerTests, SignalPickupFailure)
+{
+    train_controller::SoftwareTrainController TC;
+
+    // make train have some power output and speed
+    TC.SetCurrentSpeed(10);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn on engine failure
+    TC.SetSignalPickupFailure(true);
+
+    // call failure state check 
+    TC.CheckFailureStates();
+
+    // assert power = 0
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+
+    // assert emergency brake is on
+    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
 }

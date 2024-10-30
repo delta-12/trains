@@ -384,6 +384,10 @@ void SoftwareTrainController::CheckFailureStates(void)
     if ((engine_failure_ == true) || (signal_pickup_failure_ == true) || (brake_failure_ == true))
     {
         emergency_brake_ = true;
+        
+        // ASK IF THIS IS RIGHT
+        // this was because in the failure tests, this had to be called again to update power to 0
+        CalculateCommandedPower();
     }
 }
 }
