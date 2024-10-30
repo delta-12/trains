@@ -53,6 +53,8 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
     //populate passenger count vector
     passenger_counts_.push_back(0);
 
+    blocks_visited_.push_back({0});
+
     return types::ERROR_NONE;
 }
 
@@ -88,7 +90,6 @@ void SoftwareTrackModel::Update(void)
         {
             if (element > occupied_train_blocks_[i][0])
             {
-                std::cout << std::endl << element << std::endl;
                 //add distance
                 current_block = element;
 
@@ -97,8 +98,14 @@ void SoftwareTrackModel::Update(void)
                 //check if we have accounted for the distance traveled yet
                 if (temp_distance >= d_traveled)
                 {
-                    //update occupied blocks vector
-                    occupied_train_blocks_[i].insert(occupied_train_blocks_[i].begin(), current_block);
+                    //unoccupy old block
+                    types::BlockId oldblock = occupied_train_blocks_[i][0];
+                    blocks_[oldblock].occupied = 0;
+
+                    //update new block occupancy
+                    occupied_train_blocks_[i][0]    = current_block;
+                    blocks_[current_block].occupied = 1;
+                    blocks_visited_[i].insert(blocks_visited_[i].begin(), current_block);
 
                     break;
                 }

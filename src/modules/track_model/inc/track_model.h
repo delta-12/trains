@@ -65,6 +65,7 @@ class SoftwareTrackModel : public TrackModel
         std::vector<types::Block> blocks_;
         std::vector<std::shared_ptr<train_model::TrainModel>> trains_;
         std::vector<std::vector<types::BlockId>> occupied_train_blocks_;
+        std::vector<std::vector<types::BlockId>> blocks_visited_;
         std::vector<uint16_t> passenger_counts_;
         types::DegreesFahrenheit external_temperature_;
         types::Meters train_length_ = 32;
