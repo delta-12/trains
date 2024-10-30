@@ -10,6 +10,7 @@
 #include <string>
 
 #include "types.h"
+#include "tick_source.h"
 
 namespace train_model
 {
@@ -17,6 +18,9 @@ namespace train_model
 class TrainModel
 {
     public:
+        TrainModel();
+        TrainModel(std::shared_ptr<TickSource> clk);
+        virtual void Update()                                                            = 0;
         virtual void SetTrainId(const types::TrainId train)                                  = 0;
         virtual types::TrainId GetTrainId(void) const                                        = 0;
         virtual void SetEmergencyBrake(const bool emergency_brake)                           = 0;
@@ -52,6 +56,7 @@ class TrainModel
         virtual void SetPassengersBoarding(const uint16_t passengers)                        = 0;
         virtual void SetTrackPolarity(const types::Polarity polarity)                        = 0;
         virtual void SetBeaconData(const types::BeaconData &data, std::size_t &size)         = 0;
+        virtual void SpeedCalc(float delta_time)                                             = 0;
 
         private:
         //internal variables(model specific)
@@ -76,7 +81,6 @@ class TrainModel
         float train_mass = 81800;//lbs
         float mass;
         float force;
-        float clk_frequency;
         float grade;//can get this from moaz or just have it
         bool emergency_brake;
         bool brake_failure;
@@ -91,6 +95,7 @@ class TrainModel
         std::string station_announcement;
         double service_brake;
         types::Watts power;
+        std::shared_ptr<TickSource> CLK;
 };
 
 } // namespace train_model

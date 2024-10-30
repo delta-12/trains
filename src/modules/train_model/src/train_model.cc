@@ -1,13 +1,64 @@
 #include "train_model.h"
+#include "tick_source.h"
+
 #include <random>
 #include <iostream>
+#include <cstdint>
+#include <chrono>
 
 namespace train_model
 {
-train_model::TrainModel::TrainModel()
+train_model::TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
 {
 
+        passengers_on_board  = 0;
+        ext_light = 0;
+        int_light = 0;
+        right_door = 0;
+        left_door = 0;
+        track_pol;//must have starting polarity
+        max_force = 120000;//maximum force of the engine
+        prev_acceleration = 0;
+        acceleration = 0;
+        max_dec_limit = -2.73;//meters per second ^2
+        max_acc_limit = .5;//meters per second ^2
+        velocity = 0;
+        prev_velocity = 0;
+        max_vel = 43.496;//mph
+        max_passengers = 222;
+        passengers_boarding = 0;
+        crew_count = 9;//NEED TO CHECK HOW MANY THERE ARE
+        train_mass = 37103.856;//kgs
+        mass = 37103.856;
+        force = 0;
+        grade = 0;//can get this from moaz or just have it
+        emergency_brake = 0;
+        brake_failure = 0;
+        engine_failure = 0;
+        signal_pickup_failure = 0;
+        beacon_data;
+        authority = 0;
+        comm_speed = 0;
+        train_id = 0;
+        distance_traveled = 0;
+        int_temp = 0;
+        station_announcement = "Steel Plaza Station";
+        service_brake = 0.0;
+        power = 0;
+
 }
+        void TrainModel::Update()
+        {
+            auto last_time = (*CLK).GetTick();
+
+            auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+
+            float delta_time = static_cast<float>(delta_time_in_seconds.count());
+
+            mass = train_mass + ((TrainModel::GetPassengersCount() + crew_count) * 68.039);
+            TrainModel::SpeedCalc(delta_time);
+
+        }
         void TrainModel::SetTrainId(const types::TrainId train)
         {
             TrainModel::train_id = train;
@@ -168,5 +219,32 @@ train_model::TrainModel::TrainModel()
         void TrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
         {
             TrainModel::beacon_data = data;
+        }
+        void TrainModel::SpeedCalc(float delta_time)
+        {
+            if (velocity == 0 && power != 0)//avoids dividing by 0
+            {
+                TrainModel::force = TrainModel::max_force;
+            }
+            else{
+                TrainModel::force = TrainModel::power/TrainModel::velocity;
+            }
+
+            if (TrainModel::emergency_brake == true)
+            {
+                acceleration = -2.73;
+            }
+            else if (TrainModel::service_brake != 0)
+            {
+                acceleration = (-1.2 * TrainModel::service_brake);
+            }
+            else
+            {
+            TrainModel::acceleration = force/mass;
+            }
+            TrainModel::prev_acceleration = acceleration;
+        
+            prev_velocity = velocity;
+            velocity = prev_velocity + (delta_time/2) * (prev_acceleration + acceleration);
         }
 }
