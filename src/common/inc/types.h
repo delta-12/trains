@@ -60,7 +60,8 @@ typedef enum
 typedef enum
 {
     LIGHTCOLOR_RED,
-    LIGHTCOLOR_GREEN
+    LIGHTCOLOR_GREEN,
+    LIGHTCOLOR_NONE
 } LightColor;
 
 typedef enum
@@ -72,7 +73,8 @@ typedef enum
 typedef enum
 {
     TRACKID_RED,
-    TRACKID_GREEN
+    TRACKID_GREEN,
+    TRACKID_BLUE
 } TrackId;
 
 typedef enum
