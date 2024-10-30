@@ -159,7 +159,30 @@ TEST(TrainControllerPowerTests, EngineFailure)
     ASSERT_EQ(TC.GetCommandedPower(), 0);
 
     // assert emergency brake is on
-    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+
+    // turn off emeergency brake and brake failure
+    TC.SetEmergencyBrake(false);
+    TC.SetBrakeFailure(false);
+
+    // make train have service brake
+    TC.SetCurrentSpeed(18);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn brake failure back on 
+    TC.SetEngineFailure(true);
+    
+    // make sure service brake is on
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+
+    // call failure state check
+    TC.CheckFailureStates();
+
+    // assert service brake is off, emergency brake is on and power is 0
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
 }
 
 TEST(TrainControllerPowerTests, BrakeFailure)
@@ -181,7 +204,30 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     ASSERT_EQ(TC.GetCommandedPower(), 0);
 
     // assert emergency brake is on
-    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+
+    // turn off emeergency brake and brake failure
+    TC.SetEmergencyBrake(false);
+    TC.SetBrakeFailure(false);
+
+    // make train have service brake
+    TC.SetCurrentSpeed(18);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn brake failure back on 
+    TC.SetBrakeFailure(true);
+    
+    // make sure service brake is on
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+
+    // call failure state check
+    TC.CheckFailureStates();
+
+    // assert service brake is off, emergency brake is on and power is 0
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
 }
 
 TEST(TrainControllerPowerTests, SignalPickupFailure)
@@ -203,5 +249,28 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     ASSERT_EQ(TC.GetCommandedPower(), 0);
 
     // assert emergency brake is on
-    ASSERT_EQ(TC.GetEmergencyBrake(), 1);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+
+    // turn off emeergency brake and brake failure
+    TC.SetEmergencyBrake(false);
+    TC.SetBrakeFailure(false);
+
+    // make train have service brake
+    TC.SetCurrentSpeed(18);
+    TC.SetCommandedSpeed(15); 
+    TC.CalculateCommandedPower();
+
+    // turn brake failure back on 
+    TC.SetSignalPickupFailure(true);
+    
+    // make sure service brake is on
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+
+    // call failure state check
+    TC.CheckFailureStates();
+
+    // assert service brake is off, emergency brake is on and power is 0
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+    ASSERT_EQ(TC.GetEmergencyBrake(), true);
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
 }
