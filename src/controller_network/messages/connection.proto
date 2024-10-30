@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package controller_messages;
+
+message Connection {
+    uint64 controller_id = 1;
+}
