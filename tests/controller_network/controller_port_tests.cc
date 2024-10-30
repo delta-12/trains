@@ -31,6 +31,10 @@ class SoftwarePort : public types::Port
         {
             return buffer_.Size();
         }
+        bool Connected(void)
+        {
+            return true;
+        }
 
     private:
         RingBuffer<uint8_t, 1024> buffer_;
@@ -90,4 +94,11 @@ TEST(BasicControllerTests, ReceiveMessageTest)
     ASSERT_EQ(sizeof(send_data), controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, send_data, sizeof(send_data)));
     ASSERT_EQ(sizeof(send_data), controller_port.ReceiveMessage(message_type, receive_data, sizeof(receive_data)));
     ASSERT_THAT(receive_data, testing::ElementsAreArray(send_data));
+}
+
+TEST(BasicControllerTests, PortConnectedTest)
+{
+    controller_network::BasicControllerPort<1024> controller_port(std::make_unique<SoftwarePort>());
+
+    ASSERT_TRUE(controller_port.Connected());
 }

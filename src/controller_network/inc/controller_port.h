@@ -23,6 +23,7 @@ class ControllerPort
     public:
         virtual size_t SendMessage(const MessageType type, const uint8_t *const message, const uint16_t size) = 0;
         virtual size_t ReceiveMessage(MessageType &type, uint8_t *const message, const uint16_t size)         = 0;
+        virtual bool Connected(void) const                                                                    = 0;
 };
 
 template <size_t buffer_size>
@@ -36,6 +37,7 @@ class BasicControllerPort : public ControllerPort
         BasicControllerPort &operator=(BasicControllerPort &&)      = delete;
         size_t SendMessage(const MessageType type, const uint8_t *const message, const uint16_t size);
         size_t ReceiveMessage(MessageType &type, uint8_t *const message, const uint16_t size);
+        bool Connected(void) const;
 
     private:
         std::unique_ptr<types::Port> port_;
@@ -118,6 +120,12 @@ size_t BasicControllerPort<buffer_size>::ReceiveMessage(MessageType &type, uint8
     }
 
     return message_bytes_received;
+}
+
+template <size_t buffer_size>
+bool BasicControllerPort<buffer_size>::Connected(void) const
+{
+    return port_->Connected();
 }
 
 } // namespace controller_network

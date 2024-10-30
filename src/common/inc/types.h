@@ -38,6 +38,7 @@ typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
 typedef std::chrono::duration<double>               Second;
+typedef uint64_t                                    ControllerId;
 
 typedef enum
 {
@@ -153,6 +154,7 @@ class Port
         virtual size_t SendAvailable(void)                                  = 0;
         virtual size_t Receive(uint8_t *const buffer, const size_t size)    = 0;
         virtual size_t ReceiveAvailable(void)                               = 0;
+        virtual bool Connected(void)                                        = 0;
 };
 
 } // namespace types
