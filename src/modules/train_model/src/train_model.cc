@@ -151,7 +151,7 @@ uint16_t TrainModelImpl::GetPassengersDeboarding(void)
 
 types::Meters TrainModelImpl::GetDistanceTraveled(void)
 {
-    return 200;
+    return 110;
 }
 
 void TrainModelImpl::SetCommandedSpeed(const types::MetersPerSecond speed)

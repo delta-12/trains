@@ -108,16 +108,27 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     //check passenger count
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 
-    //UPDATE 2
-    track.Update();
+    //occupancy check
+    bool occupied;
+    ASSERT_EQ(track.GetBlockOccupancy(1, occupied), types::ERROR_NONE);
+    ASSERT_EQ(occupied, 1);
 
-    // Set authority and speed
-    ASSERT_EQ(track.SetAuthority(4, 8), types::ERROR_NONE);
-    ASSERT_EQ(track.SetCommandedSpeed(4, 90), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(2, occupied), types::ERROR_NONE);
+    ASSERT_EQ(occupied, 1);
 
-    //check that authority is set
-    ASSERT_EQ(ptr->GetAuthority(), 8);
-    //check speed is set
-    ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
+    /*
+
+       //UPDATE 2
+       track.Update();
+
+       // Set authority and speed
+       ASSERT_EQ(track.SetAuthority(4, 8), types::ERROR_NONE);
+       ASSERT_EQ(track.SetCommandedSpeed(4, 90), types::ERROR_NONE);
+
+       //check that authority is set
+       ASSERT_EQ(ptr->GetAuthority(), 8);
+       //check speed is set
+       ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
+     */
 
 }

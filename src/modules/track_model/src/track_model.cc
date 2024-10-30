@@ -55,6 +55,9 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
 
     blocks_visited_.push_back({0});
 
+    train_head_block_length_.push_back(0);
+    //train_tail_length_.push_back(0);
+
     return types::ERROR_NONE;
 }
 
@@ -76,7 +79,7 @@ void SoftwareTrackModel::Update(void)
 
         types::MetersPerSecond temp_distance = 0;
 
-        types::BlockId current_block;
+        types::BlockId current_block = occupied_train_blocks_[i][0];
 
         //find all blocks connected to the block the train is currently on
         auto connections = graph.BreadthFirstSearch(occupied_train_blocks_[i][0]);
@@ -84,6 +87,9 @@ void SoftwareTrackModel::Update(void)
         std::vector<types::BlockId> connections_vector(connections.begin(), connections.end());
 
         std::reverse(connections_vector.begin(), connections_vector.end());
+
+        //first, account for the rest of the length of the block that the head of the train is on
+        temp_distance += train_head_block_length_[i];
 
         //traverse graph from current block to account for this length
         for (const auto& element : connections_vector)
@@ -95,17 +101,55 @@ void SoftwareTrackModel::Update(void)
 
                 temp_distance += blocks_[current_block].length;
 
+                blocks_visited_[i].insert(blocks_visited_[i].begin(), current_block);
+
                 //check if we have accounted for the distance traveled yet
                 if (temp_distance >= d_traveled)
                 {
-                    //unoccupy old block
-                    types::BlockId oldblock = occupied_train_blocks_[i][0];
-                    blocks_[oldblock].occupied = 0;
+                    //unoccupy old blocks
+                    std::vector<types::BlockId> oldblocks = occupied_train_blocks_[i];
+                    for (int j = 0; j < oldblocks.size(); j++)
+                    {
+                        blocks_[oldblocks[j]].occupied = 0;
+                    }
+                    occupied_train_blocks_[i].clear();
 
                     //update new block occupancy
-                    occupied_train_blocks_[i][0]    = current_block;
+                    occupied_train_blocks_[i]       = {current_block};
                     blocks_[current_block].occupied = 1;
-                    blocks_visited_[i].insert(blocks_visited_[i].begin(), current_block);
+
+                    //account for full length of train
+                    train_head_block_length_[i] = temp_distance - d_traveled;
+
+                    //initialize train length to be the portion of the current block that the train takes up
+                    types::MetersPerSecond train_length = blocks_[current_block].length - train_head_block_length_[i];
+
+                    size_t j = 1;
+
+                    std::cout << std::endl << train_length << std::endl;
+
+                    for (int k = 0; k < blocks_visited_[i].size(); k++)
+                    {
+                        std::cout << std::endl << blocks_visited_[i][k] << std::endl;
+                    }
+
+                    while (train_length < 32)
+                    {
+                        //go to the block behind it (if the train has actually visited that block before)
+                        if (blocks_visited_[i].size() >= j)
+                        {
+                            train_length       += blocks_visited_[i][j];
+                            blocks_[j].occupied = 1;
+                            occupied_train_blocks_[i].push_back(j);
+
+                            j++;
+
+                        }
+                        else //back of train is at yard
+                        {
+                            break;
+                        }
+                    }
 
                     break;
                 }
@@ -121,6 +165,8 @@ void SoftwareTrackModel::Update(void)
             uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
             SetPassengersDeboarding(i, traindeb);
         }
+
+        //TODO: OCCUPY THE BLOCKS BEHIND THE TRAIN BLOCK IF THE LENGTH OF TRAIN > LENGTH OF CURRENT BLOCK
     }
 }
 
