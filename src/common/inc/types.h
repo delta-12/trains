@@ -115,6 +115,7 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+    Second total_time_to_station;
 };
 
 struct TrackCircuitData

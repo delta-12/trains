@@ -23,14 +23,24 @@
 #define BLOCK_BUILDER_CSV_FIELD_CONNECTION           11
 #define BLOCK_BUILDER_CSV_FIELD_DIRECTION            12
 
+#define BLOCK_BUILDER_SCHEDULE_FIELD_SPEED_LIMIT           11
+#define BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION 23
+
+typedef enum
+{
+    MODULE_TRACK_MODEL,
+    MODULE_CTC,
+} Module;
+
 class BlockBuilder
 {
     public:
         BlockBuilder(void);
-        BlockBuilder(const std::vector<std::vector<std::string>> &records);
+        BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module);
         std::size_t GetSize(void) const;
         void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
         types::Block ConvertRecordToBlock(const std::vector<std::string> &record);
+        types::Block ConvertRecordToBlockCTC(const std::vector<std::string> &record);
         types::Error GetBlock(const types::BlockId block_id, types::Block &block);
         std::vector<types::Block> GetBlocks(void) const;
 
