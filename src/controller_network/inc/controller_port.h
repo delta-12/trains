@@ -57,7 +57,7 @@ size_t BasicControllerPort<buffer_size>::SendMessage(const MessageType type, con
     size_t message_bytes_sent = 0;
     size_t message_size       = MESSAGEHEADERBYTE_HEADER_MAX + size;
 
-    if ((nullptr == message) || (0 == size))
+    if ((nullptr == message) || (MESSAGETYPE_NONE == type))
     {
         // No message to send, do nothing
     }
@@ -87,6 +87,7 @@ template <size_t buffer_size>
 size_t BasicControllerPort<buffer_size>::ReceiveMessage(MessageType &type, uint8_t *const message, const uint16_t size)
 {
     size_t message_bytes_received = 0;
+    type = MESSAGETYPE_NONE;
 
     // Receive message header
     if (bytes_received_ < MESSAGEHEADERBYTE_HEADER_MAX)

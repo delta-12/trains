@@ -48,11 +48,14 @@ TEST(BasicControllerTests, SendMessageTest)
     // Nullptr
     ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, nullptr, sizeof(send_data)));
 
+    // Type none
+    ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_NONE, send_data, sizeof(send_data)));
+
+    // Nullptr and type none
+    ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_NONE, nullptr, sizeof(send_data)));
+
     // Size 0
     ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, send_data, 0));
-
-    // Nullptr and size 0
-    ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, nullptr, 0));
 
     // Insufficient send_buffer_ space
     ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, send_data, 1025));
