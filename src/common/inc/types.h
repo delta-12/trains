@@ -77,6 +77,7 @@ typedef enum
     TRACKID_NONE,
     TRACKID_RED,
     TRACKID_GREEN,
+    TRACKID_BLUE
 } TrackId;
 
 typedef enum
