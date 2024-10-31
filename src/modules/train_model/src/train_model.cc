@@ -54,33 +54,33 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
             types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
             //internal calculations
-            mass_ = train_mass_ + ((SoftwareTrainModel::GetPassengersCount() + crew_count_) * 68.039);
-            SoftwareTrainModel::SpeedCalc(delta);
+            mass_ = train_mass_ + ((GetPassengersCount() + crew_count_) * 68.039);
+            SpeedCalc(delta);
 
         }
         void SoftwareTrainModel::SetTrainId(const types::TrainId train)
         {
-            SoftwareTrainModel::train_id_ = train;
+            train_id_ = train;
         }
         types::TrainId SoftwareTrainModel::GetTrainId(void) const
         {
-            return SoftwareTrainModel::train_id_;
+            return train_id_;
         }
         void SoftwareTrainModel::SetEmergencyBrake(const bool emergency_brake)
         {
-            SoftwareTrainModel::emergency_brake_ = emergency_brake;
+            emergency_brake_ = emergency_brake;
         }
         void SoftwareTrainModel::SetEngineFailure(const bool engine_failure)
         {
-            SoftwareTrainModel::engine_failure_ = engine_failure;
+            engine_failure_ = engine_failure;
         }
         void SoftwareTrainModel::SetBrakeFailure(const bool brake_failure)
         {
-            SoftwareTrainModel::brake_failure_ = brake_failure;
+            brake_failure_ = brake_failure;
         }
         void SoftwareTrainModel::SetSignalPickupFailure(const bool signal_pickup_failure)
         {
-            SoftwareTrainModel::signal_pickup_failure_ = signal_pickup_failure;
+            signal_pickup_failure_ = signal_pickup_failure;
         }
         bool SoftwareTrainModel::GetBrakeFailure() const
         {
@@ -100,75 +100,75 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         }
         types::Blocks SoftwareTrainModel::GetAuthority(void) const
         {
-            return SoftwareTrainModel::authority_;
+            return authority_;
         }
         void SoftwareTrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
         {
-            SoftwareTrainModel::commanded_speed_ = speed;
+            commanded_speed_ = speed;
         }
         types::MilesPerHour SoftwareTrainModel::GetCommandedSpeed(void) const
         {
-            return SoftwareTrainModel::commanded_speed_;
+            return commanded_speed_;
         }
         types::MetersPerSecond SoftwareTrainModel::GetActualSpeed(void) const
         {
-            return SoftwareTrainModel::velocity_;
+            return velocity_;
         }
         types::Watts SoftwareTrainModel::GetActualPower(void) const
         {
-            return SoftwareTrainModel::power_;
+            return power_;
         }
         void SoftwareTrainModel::SetActualPower(const types::Watts watts)
         {
-            SoftwareTrainModel::power_ = watts;
+            power_ = watts;
         }
         types::DegreesFahrenheit SoftwareTrainModel::GetActualInternalTemperature(void) const
         {
-            return SoftwareTrainModel::internal_temperature_;
+            return internal_temperature_;
         }
         types::Polarity SoftwareTrainModel::GetTrackPolarity(void) const
         {
-            return SoftwareTrainModel::track_polarity_;
+            return track_polarity_;
         }
         void SoftwareTrainModel::SetStationAnnouncement(const std::string announcement)
         {
-            SoftwareTrainModel::station_announcement_ = announcement;
+            station_announcement_ = announcement;
         }
         void SoftwareTrainModel::SetGrade(const double grade)
         {
-            SoftwareTrainModel::grade_ = grade;
+            grade_ = grade;
         }
         void SoftwareTrainModel::SetBrake(const double brake)
         {
-            SoftwareTrainModel::service_brake_ = brake;
+            service_brake_ = brake;
         }
         void SoftwareTrainModel::SetHeadlights(const bool on)
         {
-            SoftwareTrainModel::headlights_ = on;
+            headlights_ = on;
         }
         void SoftwareTrainModel::SetInternalLights(const bool on)
         {
-            SoftwareTrainModel::interior_light_ = on;
+            interior_light_ = on;
         }
         void SoftwareTrainModel::SetLeftDoorsState(const bool open)
         {
-            SoftwareTrainModel::left_door_ = open;
+            left_door_ = open;
         }
         void SoftwareTrainModel::SetRightDoorsState(const bool open)
         {
-            SoftwareTrainModel::right_door_ = open;
+            right_door_ = open;
         }
         void SoftwareTrainModel::SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees)
         {
-            SoftwareTrainModel::internal_temperature_ = degrees;
+            internal_temperature_ = degrees;
         }
         types::Meters SoftwareTrainModel::GetDistanceTraveled(void) const
         {
-            return SoftwareTrainModel::distance_traveled_;
+            return distance_traveled_;
         }
         void SoftwareTrainModel::SetDistanceTraveled(const types::Meters distance)
         {
-            SoftwareTrainModel::distance_traveled_ = distance;
+            distance_traveled_ = distance;
         }
         uint16_t SoftwareTrainModel::GetPassengersLeaving(void) const
         {
@@ -184,52 +184,52 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         }
         void SoftwareTrainModel::SetPassengersBoarding(const uint16_t passengers)
         {
-            SoftwareTrainModel::passengers_boarding_ = passengers;
+            passengers_boarding_ = passengers;
         }
         uint16_t SoftwareTrainModel::GetPassengersCount(void)
         {
             //adds new passengers
-            SoftwareTrainModel::passengers_on_board_ += passengers_boarding_;
+            passengers_on_board_ += passengers_boarding_;
             //removes old passengers
-            SoftwareTrainModel::passengers_on_board_ -= SoftwareTrainModel::GetPassengersLeaving();
+            passengers_on_board_ -= GetPassengersLeaving();
             //returns passengers on board (should be called and updated only when at station)
-            return SoftwareTrainModel::passengers_on_board_;
+            return passengers_on_board_;
         }
         void SoftwareTrainModel::SetAuthority(const types::Blocks blocks)
         {
-            SoftwareTrainModel::authority_ = blocks;
+            authority_ = blocks;
         }
         void SoftwareTrainModel::SetTrackPolarity(const types::Polarity polarity)
         {
-            SoftwareTrainModel::track_polarity_ = polarity;
+            track_polarity_ = polarity;
         }
         void SoftwareTrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
         {
-            SoftwareTrainModel::beacon_data_ = data;
+            beacon_data_ = data;
         }
         void SoftwareTrainModel::SpeedCalc(types::Second delta)
         {
             if (velocity_ == 0 && power_ != 0)//avoids dividing by 0
             {
-                SoftwareTrainModel::force_ = SoftwareTrainModel::maximum_force_;
+                force_ = maximum_force_;
             }
             else{
-                SoftwareTrainModel::force_ = SoftwareTrainModel::power_/SoftwareTrainModel::velocity_;
+                force_ = power_/velocity_;
             }
 
-            if (SoftwareTrainModel::emergency_brake_ == true)
+            if (emergency_brake_ == true)
             {
                 acceleration_ = -2.73;
             }
-            else if (SoftwareTrainModel::service_brake_ != 0)
+            else if (service_brake_ != 0)
             {
-                acceleration_ = (-1.2 * SoftwareTrainModel::service_brake_);
+                acceleration_ = (-1.2 * service_brake_);
             }
             else
             {
-            SoftwareTrainModel::acceleration_ = force_/mass_;
+            acceleration_ = force_/mass_;
             }
-            SoftwareTrainModel::previous_acceleration_ = acceleration_;
+            previous_acceleration_ = acceleration_;
         
             previous_velocity_ = velocity_;
             velocity_ = previous_velocity_ + ((delta.count()/2) * (previous_acceleration_ + acceleration_));

@@ -40,19 +40,19 @@ class TrainModel
         virtual void SetActualPower(const types::Watts watts) = 0;
         
         //getters
-        virtual types::TrainId GetTrainId(void) const;
-        virtual bool GetBrakeFailure(void) const;
-        virtual bool GetEngineFailure(void) const;
-        virtual bool GetSignalPickupFailure(void) const;
-        virtual types::BeaconData GetBeaconData(void) const;
-        virtual types::Blocks GetAuthority(void) const;
-        virtual types::MilesPerHour GetCommandedSpeed(void) const;
-        virtual types::MetersPerSecond GetActualSpeed(void) const;
-        virtual types::Watts GetActualPower(void) const;
-        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const;
-        virtual types::Polarity GetTrackPolarity(void) const;
-        virtual types::Meters GetDistanceTraveled(void) const;
-        virtual uint16_t GetPassengersCount(void);
+        virtual types::TrainId GetTrainId(void) const = 0;
+        virtual bool GetBrakeFailure(void) const = 0;
+        virtual bool GetEngineFailure(void) const = 0;
+        virtual bool GetSignalPickupFailure(void) const = 0;
+        virtual types::BeaconData GetBeaconData(void) const = 0;
+        virtual types::Blocks GetAuthority(void) const = 0;
+        virtual types::MilesPerHour GetCommandedSpeed(void) const = 0;
+        virtual types::MetersPerSecond GetActualSpeed(void) const = 0;
+        virtual types::Watts GetActualPower(void) const = 0;
+        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const = 0;
+        virtual types::Polarity GetTrackPolarity(void) const = 0;
+        virtual types::Meters GetDistanceTraveled(void) const = 0;
+        virtual uint16_t GetPassengersCount(void) = 0;
 };
 
 
