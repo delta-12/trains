@@ -24,7 +24,7 @@ class TrainModel
         virtual void SetBrakeFailure(const bool brake_failure) = 0;
         virtual void SetSignalPickupFailure(const bool signal_pickup_failure) = 0;
         virtual void SetGrade(const double grade) = 0;
-        virtual void SetBrake(const double brake);
+        virtual void SetBrake(const double brake) = 0;
         virtual void SetStationAnnouncement(std::string announcement) = 0;
         virtual void SetHeadlights(const bool on) = 0;
         virtual void SetInternalLights(const bool on) = 0;
