@@ -9,6 +9,61 @@
 #include "graph.h"
 #include "types.h"
 
+TEST(GraphTests, CopyConstructor)
+{
+    Graph<types::BlockId, types::Meters> graph;
+
+    Graph<types::BlockId, types::Meters> graph_copy_0(graph);
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    graph.AddEdge(0, 1, 1);
+    graph.AddEdge(1, 2, 1);
+    graph.AddEdge(1, 3, 1);
+    graph.AddEdge(2, 3, 1);
+    graph.AddEdge(3, 0, 1);
+    ASSERT_NE(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    Graph<types::BlockId, types::Meters> graph_copy_1(graph);
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_1.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+}
+
+TEST(GraphTests, CopyAssignment)
+{
+    Graph<types::BlockId, types::Meters> graph;
+
+    Graph<types::BlockId, types::Meters> graph_copy_0;
+    graph_copy_0 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    graph.AddEdge(0, 1, 1);
+    graph.AddEdge(1, 2, 1);
+    graph.AddEdge(1, 3, 1);
+    graph.AddEdge(2, 3, 1);
+    graph.AddEdge(3, 0, 1);
+    ASSERT_NE(graph.GetEdgeCount(), graph_copy_0.GetEdgeCount());
+
+    Graph<types::BlockId, types::Meters> graph_copy_1;
+    graph_copy_1 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_1.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+
+    Graph<types::BlockId, types::Meters> graph_copy_2 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_2.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_1.AddEdge(0, 1, 1));
+
+    Graph<types::BlockId, types::Meters> graph_copy_3;
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 6, 1));
+    graph_copy_3 = graph;
+    ASSERT_EQ(graph.GetEdgeCount(), graph_copy_3.GetEdgeCount());
+    ASSERT_FALSE(graph_copy_3.AddEdge(5, 6, 1));
+    ASSERT_FALSE(graph_copy_3.AddEdge(5, 7, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(7, 0, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 0, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 6, 1));
+    ASSERT_TRUE(graph_copy_3.AddEdge(5, 7, 1));
+}
+
 TEST(GraphTests, AddEdges)
 {
     Graph<types::BlockId, types::Meters> graph;
@@ -126,7 +181,7 @@ TEST(GraphTests, RemoveEdges)
 TEST(GraphTests, BreadthFirstSearchConnectedNodes)
 {
     Graph<types::BlockId, types::Meters> graph;
-    std::unordered_set<types::BlockId>   connected_blocks;
+    std::vector<types::BlockId>          connected_blocks;
 
     ASSERT_EQ(0, graph.BreadthFirstSearch(0).size());
 
@@ -139,26 +194,25 @@ TEST(GraphTests, BreadthFirstSearchConnectedNodes)
     ASSERT_EQ(0, graph.BreadthFirstSearch(7).size());
     connected_blocks = graph.BreadthFirstSearch(1);
     ASSERT_EQ(6, connected_blocks.size());
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(1));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(2));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(3));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(4));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(5));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(6));
+    ASSERT_EQ(1, connected_blocks[0]);
+    ASSERT_EQ(3, connected_blocks[1]);
+    ASSERT_EQ(2, connected_blocks[2]);
+    ASSERT_EQ(4, connected_blocks[3]);
+    ASSERT_EQ(6, connected_blocks[4]);
+    ASSERT_EQ(5, connected_blocks[5]);
     ASSERT_EQ(3, graph.BreadthFirstSearch(4).size());
 
     graph.RemoveEdge(3, 4);
     connected_blocks = graph.BreadthFirstSearch(1);
     ASSERT_EQ(3, connected_blocks.size());
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(1));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(2));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(3));
-    ASSERT_EQ(connected_blocks.end(), connected_blocks.find(4));
+    ASSERT_EQ(1, connected_blocks[0]);
+    ASSERT_EQ(3, connected_blocks[1]);
+    ASSERT_EQ(2, connected_blocks[2]);
     connected_blocks = graph.BreadthFirstSearch(4);
     ASSERT_EQ(3, connected_blocks.size());
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(4));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(5));
-    ASSERT_NE(connected_blocks.end(), connected_blocks.find(6));
+    ASSERT_EQ(4, connected_blocks[0]);
+    ASSERT_EQ(6, connected_blocks[1]);
+    ASSERT_EQ(5, connected_blocks[2]);
 }
 
 TEST(GraphTests, Dijkstra)

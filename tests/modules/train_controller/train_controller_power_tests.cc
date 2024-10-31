@@ -9,9 +9,14 @@
 #include <iomanip>
 #include <gtest/gtest.h>
 
+TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
+
 TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
@@ -23,7 +28,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
     TC.SetCommandedSpeed(18);
 
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // std::cout << TC.GetCommandedPower();
     // assert power is greater than 0
@@ -34,7 +39,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
 
 TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
 
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
@@ -44,8 +49,10 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
     // commanded speed passed, faster than current speed
     TC.SetCommandedSpeed(15);
 
+    usleep(3000000);
+
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.Update();
 
     // assert power is greater than 0
     ASSERT_GT(TC.GetCommandedPower(), 0);
@@ -53,7 +60,9 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
 
 TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
@@ -65,7 +74,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
     TC.SetCommandedSpeed(15);
 
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power is equal to 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
@@ -76,7 +85,9 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
 
 TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
@@ -86,7 +97,7 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
     TC.SetCommandedSpeed(10);
 
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power is 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
@@ -97,7 +108,9 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
 
 TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     TC.SetOperationMode(1);
 
@@ -111,7 +124,7 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
     TC.SetDriverSpeed(18);
 
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // std::cout << TC.GetCommandedPower();
     // assert power is greater than 0
@@ -120,7 +133,9 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 
 TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     TC.SetOperationMode(1);
 
@@ -134,7 +149,7 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
     TC.SetDriverSpeed(15);
 
     // call power calculation
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power is greater than 0
     ASSERT_GT(TC.GetCommandedPower(), 0);
@@ -142,7 +157,9 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 
 TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // go to manual mode
     TC.SetOperationMode(1);
@@ -157,7 +174,7 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
     TC.SetDriverSpeed(-5);
 
     // calculate power
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert driver speed and power = 0 and service brake is on
     ASSERT_EQ(TC.GetDriverSpeed(), 0);
@@ -167,7 +184,9 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 
 TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // go to manual mode
     TC.SetOperationMode(1);
@@ -182,7 +201,7 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
     TC.SetDriverSpeed(700);
 
     // calculate power
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert driver speed and power = 0 and service brake is on
     ASSERT_NEAR(TC.GetDriverSpeed(), 31.0599, 0.05);
@@ -195,18 +214,20 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
 
 TEST(TrainControllerPowerTests, EngineFailure)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetEngineFailure(true);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power = 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
@@ -221,7 +242,7 @@ TEST(TrainControllerPowerTests, EngineFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake failure back on
     TC.SetEngineFailure(true);
@@ -230,7 +251,7 @@ TEST(TrainControllerPowerTests, EngineFailure)
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert service brake is off, emergency brake is on and power is 0
     ASSERT_EQ(TC.GetServiceBrake(), 0);
@@ -240,18 +261,20 @@ TEST(TrainControllerPowerTests, EngineFailure)
 
 TEST(TrainControllerPowerTests, BrakeFailure)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetBrakeFailure(true);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power = 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
@@ -266,7 +289,7 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake failure back on
     TC.SetBrakeFailure(true);
@@ -275,7 +298,7 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert service brake is off, emergency brake is on and power is 0
     ASSERT_EQ(TC.GetServiceBrake(), 0);
@@ -285,18 +308,20 @@ TEST(TrainControllerPowerTests, BrakeFailure)
 
 TEST(TrainControllerPowerTests, SignalPickupFailure)
 {
-    train_controller::SoftwareTrainController TC;
+    train_controller::SoftwareTrainController TC(CLOCK);
+
+    types::Second elapsed_time1(1);
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetSignalPickupFailure(true);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert power = 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
@@ -311,7 +336,7 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
-    TC.CalculateCommandedPower();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake failure back on
     TC.SetSignalPickupFailure(true);
@@ -320,7 +345,7 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
     // call failure state check
-    TC.CheckFailureStates();
+    TC.CalculateCommandedPower(elapsed_time1);
 
     // assert service brake is off, emergency brake is on and power is 0
     ASSERT_EQ(TC.GetServiceBrake(), 0);

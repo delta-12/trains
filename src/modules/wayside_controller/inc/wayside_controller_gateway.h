@@ -30,10 +30,10 @@ class Gateway
         types::Error SetSuggestedSpeedAndAuthority(const types::TrackId track, const types::BlockId block, const types::MetersPerSecond speed, const types::Meters authority);
         types::Error SetMaintenanceMode(const types::TrackId track, const types::BlockId block, const bool maintenance);
         types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switch_state);
-        void GetBlockStates(const types::TrackId track, std::vector<BlockState> &states);
+        void GetBlockStates(const types::TrackId track, std::vector<types::BlockState> &states);
 
     private:
-        std::vector<BlockState> block_states_;
+        std::vector<types::BlockState> block_states_;
 
 };
 

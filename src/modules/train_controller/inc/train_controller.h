@@ -6,8 +6,14 @@
 #ifndef TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 #define TRAINS_SRC_MODULES_TRAIN_CONTROLLER_INC_TRAIN_CONTROLLER_H
 
+
+#include <string>
+#include <cstdint>
+
 #include "types.h"
 #include <unordered_map>
+#include "convert.h"
+#include "tick_source.h"
 
 #define TRAIN_CONTROLLER_DEFAULT_KP           (4)
 #define TRAIN_CONTROLLER_DEFAULT_KI           (2)
@@ -17,6 +23,10 @@
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
 #define DEFAULT_DELTA_TIME                    (1)
+
+
+
+
 
 namespace train_controller
 {
@@ -71,7 +81,7 @@ class SoftwareTrainController : public TrainController
 {
     public:
         // Constructor
-        SoftwareTrainController();
+        SoftwareTrainController(std::shared_ptr<TickSource> clk);
 
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
@@ -93,6 +103,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Meters GetAuthority(void) const;
         bool GetOperationMode(void) const;
+
 
         // Implementations for setters
         void SetCommandedSpeed(const types::MetersPerSecond speed);
@@ -116,8 +127,10 @@ class SoftwareTrainController : public TrainController
         void SetOperationMode(const bool operation_mode);
 
         //local functions
-        void CalculateCommandedPower(void);
-        void UpdateDistanceTravelled(long interval); // NNF-181 TODO: Update the interval application to make use of Tick Source
+        types::Second GetDeltaTime(void) const;
+        void Update(void);
+        void CalculateCommandedPower(const types::Second delta_time);
+        void UpdateDistanceTravelled(const types::Second delta_time);
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
         void CheckFailureStates(void);
 
@@ -453,7 +466,11 @@ class SoftwareTrainController : public TrainController
 
     private:
 
-        float integral_sum_;
+        std::shared_ptr<TickSource> clock_;
+        types::Tick last_tick_updated_;
+        types::Second delta_time_;
+
+        double integral_sum_;
         uint16_t kp_;
         uint16_t ki_;
 
