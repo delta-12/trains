@@ -18,27 +18,20 @@ namespace train_model
 class TrainModel
 {
     public:
-        TrainModel();
         TrainModel(std::shared_ptr<TickSource> clk);
+
+        //internal
         void Update();
+        void SpeedCalc(float delta_time);
+        uint16_t GetPassengersLeaving(void) const;
+
+        //setters
         void SetTrainId(const types::TrainId train);
-        types::TrainId GetTrainId(void) const;
         void SetEmergencyBrake(const bool emergency_brake);
         void SetEngineFailure(const bool engine_failure);
         void SetBrakeFailure(const bool brake_failure);
         void SetSignalPickupFailure(const bool signal_pickup_failure);
-        bool GetBrakeFailure(void) const;
-        bool GetEngineFailure(void) const;
-        bool GetSignalPickupFailure(void) const;
-        std::size_t GetBeaconData(types::BeaconData &data) const;
-        types::Blocks GetAuthority(void) const;
         void SetCommandedSpeed(types::MilesPerHour speed);
-        types::MilesPerHour GetCommandedSpeed(void) const;
-        types::MetersPerSecond GetActualSpeed(void) const;
-        types::Watts GetActualPower(void) const;
-        void SetActualPower(types::Watts watts);
-        types::DegreesFahrenheit GetActualInternalTemperature(void) const;
-        types::Polarity GetTrackPolarity(void) const;
         void SetGrade(const float grade);
         void SetBrake(const double brake);
         void SetStationAnnouncement(std::string announcement);
@@ -47,16 +40,28 @@ class TrainModel
         void SetLeftDoorsState(const bool open);
         void SetRightDoorsState(const bool open);
         void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees);
-        types::Meters GetDistanceTraveled(void) const;
-        void SetDistanceTraveled(const types::Meters distance);
-        uint16_t GetPassengersLeaving(void) const;
-        uint16_t GetPassengersCount(void);
         void SetCommandedSpeed(const types::MilesPerHour speed);
         void SetAuthority(const types::Blocks blocks);
         void SetPassengersBoarding(const uint16_t passengers);
         void SetTrackPolarity(const types::Polarity polarity);
         void SetBeaconData(const types::BeaconData &data, std::size_t &size);
-        void SpeedCalc(float delta_time);
+        void SetDistanceTraveled(const types::Meters distance);
+        void SetActualPower(const types::Watts watts);
+        
+        //getters
+        types::TrainId GetTrainId(void) const;
+        bool GetBrakeFailure(void) const;
+        bool GetEngineFailure(void) const;
+        bool GetSignalPickupFailure(void) const;
+        std::size_t GetBeaconData(types::BeaconData &data) const;
+        types::Blocks GetAuthority(void) const;
+        types::MilesPerHour GetCommandedSpeed(void) const;
+        types::MetersPerSecond GetActualSpeed(void) const;
+        types::Watts GetActualPower(void) const;
+        types::DegreesFahrenheit GetActualInternalTemperature(void) const;
+        types::Polarity GetTrackPolarity(void) const;
+        types::Meters GetDistanceTraveled(void) const;
+        uint16_t GetPassengersCount(void);
 
         private:
         //internal variables(model specific)

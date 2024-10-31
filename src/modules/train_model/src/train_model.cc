@@ -1,5 +1,6 @@
 #include "train_model.h"
 #include "tick_source.h"
+#include "types.h"
 
 #include <random>
 #include <iostream>
@@ -125,7 +126,7 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             return TrainModel::power;
         }
-        void TrainModel::SetActualPower(types::Watts watts)
+        void TrainModel::SetActualPower(const types::Watts watts)
         {
             TrainModel::power = watts;
         }
