@@ -182,38 +182,11 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
 
     blocks_[block].switched = Switched;
 
-    //green line end switch check
-    if (block == 57 && Switched == 1)
-    {
-        //block 57 now has the yard after it
-    }
-    else if (block == 57 && Switched == 0)
-    {
-        //block 57 now has J after it, which connects to K (starting a new loop)
-    }
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
-    // Logic to set the crossing state for the specified block
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (blocks_[block].has_crossing != 1)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    blocks_[block].crossing_state = closed;
-
     return types::Error{ };
 }
 
@@ -248,59 +221,12 @@ types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, 
 
 types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
-    // Logic to set the yellow traffic light state for the specified block
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (blocks_[block].has_light != 1)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (on == 1)
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_NONE;
-    }
-    else
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_NONE;
-    }
 
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block, const bool on)
 {
-    // Logic to set the green traffic light state for the specified block
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (blocks_[block].has_light != 1)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (on == 1)
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_GREEN;
-    }
-    else
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_NONE;
-    }
-
     return types::ERROR_NONE;
 }
 
@@ -389,44 +315,12 @@ types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const
 {
     // Logic to set the broken rail state for the specified block
 
-    //checking if block exists
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //setting broken rail
-    blocks_[block].broken_rail = broken;
-
-    //occupancy
-    blocks_[block].occupied = broken;
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure)
 {
     // Logic to set the track circuit failure state for the specified block
-
-    //checking if block exists
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //setting TC fail
-    blocks_[block].track_circuit_failure = track_circuit_failure;
-
-    //setting block occupancy
-    blocks_[block].occupied = track_circuit_failure;
 
     return types::ERROR_NONE;
 }
@@ -435,62 +329,11 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
 {
     // Logic to set the power failure state for the specified block
 
-    //checking if block exists
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //setting power fail
-    blocks_[block].power_failure = power_failure;
-
-    //occupancy
-    blocks_[block].occupied = power_failure;
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahrenheit temperature)
 {
-    //setting temperature
-    external_temperature_ = temperature;
-
-    if (temperature <= 32)
-    {
-        for (int i = 0; i < blocks_.size(); i++)
-        {
-            blocks_[i].heater_on = 1;
-        }
-    }
-    else
-    {
-        for (int i = 0; i < blocks_.size(); i++)
-        {
-            blocks_[i].heater_on = 0;
-        }
-    }
-
-    return types::ERROR_NONE;
-}
-
-types::Error SoftwareTrackModel::SetTrainBlock(const types::BlockId block)
-{
-    //checking if block exists
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //probably gonna move the logic to assign block occupancy for trains here
-
     return types::ERROR_NONE;
 }
 
