@@ -97,7 +97,7 @@ void SoftwareTrackModel::Update(void)
                 RemoveTrainModel(i);
                 break;
             }
-            else if (j == 176)
+            else if (j == 175)
             {
                 //block 57 now has J after it, which connects to K (starting a new loop)
                 j = 1;
