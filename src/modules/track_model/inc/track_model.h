@@ -38,7 +38,7 @@ class SoftwareTrackModel : public TrackModel
 {
     public:
         //ADD constructor that takes in a shared pointer to the tick source
-        types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks);
+        types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
         void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
@@ -59,20 +59,20 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetTrainBlock(const types::BlockId block);
         types::Block GetBlock(const types::BlockId block);
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
+        types::Error RemoveTrainModel(int train_element);
 
     private:
         types::TrackId track_;
         std::vector<types::Block> blocks_;
+        std::vector<types::Block> track_path_;
         std::vector<std::shared_ptr<train_model::TrainModel>> trains_;
-        std::vector<types::Meters> train_head_block_length_;
-        //std::vector<types::Meters> train_tail_length_;
         std::vector<std::vector<types::BlockId>> occupied_train_blocks_;
-        std::vector<std::vector<types::BlockId>> blocks_visited_;
+        std::vector<types::Meters> train_head_;
+        std::vector<types::BlockId> current_train_block_;
         std::vector<uint16_t> passenger_counts_;
         types::DegreesFahrenheit external_temperature_;
         types::Meters train_length_ = 32;
         std::vector<types::Meters> distance_traveled_;
-        Graph<types::BlockId, types::Meters> graph;
 };
 
 } // namespace track_model

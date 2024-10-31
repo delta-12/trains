@@ -16,13 +16,16 @@
 TEST(TrackModelTests, GreenLine)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
+    CsvParser                       parser2(path2);
     BlockBuilder                    bb(parser.GetRecords());
+    BlockBuilder                    bb2(parser2.GetRecords());
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks());
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     bool occupancy1;
     ASSERT_EQ(track.GetBlockOccupancy(2, occupancy1), types::ERROR_NONE);
@@ -32,7 +35,7 @@ TEST(TrackModelTests, GreenLine)
     ASSERT_EQ(track.GetBlockOccupancy(2, occupancy), types::ERROR_NONE);
     ASSERT_EQ(occupancy, 1);
 
-    ASSERT_EQ(bb.GetSize(), 151);
+    ASSERT_EQ(bb2.GetSize(), 151);
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(1, block));
     ASSERT_EQ(block.has_crossing, false);
@@ -65,24 +68,18 @@ TEST(TrackModelTests, GreenLine)
 TEST(TrackModelTests, TrainSpeedAuthority)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
+    CsvParser                       parser2(path2);
     BlockBuilder                    bb(parser.GetRecords());
+    BlockBuilder                    bb2(parser2.GetRecords());
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
 
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks());
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
     Graph<types::BlockId, types::Meters> graph;
-    auto                                 bbtemp = bb.GetBlocks().size();
-
-    for (int i = 0; i < bbtemp; i++)
-    {
-        // every edge is really the length of the second block
-        graph.AddEdge(i, i + 1, bb.GetBlocks()[i + 1].length);
-    }
-
-    ASSERT_EQ(graph.BreadthFirstSearch(0).size(), 152);
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
     track.AddTrainModel(ptr);
@@ -97,8 +94,8 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     track.Update();
 
     // Set authority and speed
-    ASSERT_EQ(track.SetAuthority(2, 5), types::ERROR_NONE);
-    ASSERT_EQ(track.SetCommandedSpeed(2, 50), types::ERROR_NONE);
+    ASSERT_EQ(track.SetAuthority(63, 5), types::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(63, 50), types::ERROR_NONE);
 
     //check that authority is set
     ASSERT_EQ(ptr->GetAuthority(), 5);
@@ -106,29 +103,42 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(ptr->GetCommandedSpeed(), 50);
 
     //check passenger count
-    ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+    ASSERT_EQ(ptr->GetPassengersDeboarding(), 0);
 
     //occupancy check
     bool occupied;
-    ASSERT_EQ(track.GetBlockOccupancy(1, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    ASSERT_EQ(track.GetBlockOccupancy(2, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    /*
+    //UPDATE 2
+    track.Update();
 
-       //UPDATE 2
-       track.Update();
+    // Set authority and speed
+    ASSERT_EQ(track.SetAuthority(65, 8), types::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(65, 90), types::ERROR_NONE);
 
-       // Set authority and speed
-       ASSERT_EQ(track.SetAuthority(4, 8), types::ERROR_NONE);
-       ASSERT_EQ(track.SetCommandedSpeed(4, 90), types::ERROR_NONE);
+    //check that authority is set
+    ASSERT_EQ(ptr->GetAuthority(), 8);
+    //check speed is set
+    ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
 
-       //check that authority is set
-       ASSERT_EQ(ptr->GetAuthority(), 8);
-       //check speed is set
-       ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
-     */
+    bool occupancy65;
+    bool occupancy64;
+    bool occupancy63;
+    track.GetBlockOccupancy(65, occupancy65);
+    track.GetBlockOccupancy(64, occupancy64);
+    track.GetBlockOccupancy(63, occupancy63);
+    ASSERT_EQ(occupancy64, 1);
+    ASSERT_EQ(occupancy65, 1);
+    ASSERT_EQ(occupancy63, 0);
+
+    // auto otb = track.GetOccupiedTrainBlocks();
+    // for (int i=0;i<otb[0].size();i++)
+    // {
+    //     std::cout << std::endl << otb[0][i] << std::endl;
+    // }
 
 }
