@@ -135,10 +135,70 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(occupancy65, 1);
     ASSERT_EQ(occupancy63, 0);
 
+    //update 3 (longer)
+    for (int i=0;i<36;i++)
+    {
+        track.Update();
+    }
+
+    auto otb=track.GetOccupiedTrainBlocks();
+
+    // auto otb = track.GetOccupiedTrainBlocks();
+    for (int i=0;i<otb[0].size();i++)
+    {
+        std::cout << std::endl << otb[0][i] << std::endl;
+    }
+
+    //update 4 (takes u to the end)
+    for (int i=0;i<145;i++)
+    {
+        track.Update();
+    }
+
+    //occupancy check when we loop back around
+    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
+    ASSERT_EQ(occupied, 1);
+
+    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::ERROR_NONE);
+    ASSERT_EQ(occupied, 1);
+
+    otb=track.GetOccupiedTrainBlocks();
+
+    //switching so we go back to the yard instead of looping around
+    track.SetSwitchState(57, 1);
+
+    track.Update();
+    track.Update();
+    for (int i=0;i<36;i++)
+    {
+        track.Update();
+    }
+
+    otb=track.GetOccupiedTrainBlocks();
+
     // auto otb = track.GetOccupiedTrainBlocks();
     // for (int i=0;i<otb[0].size();i++)
     // {
     //     std::cout << std::endl << otb[0][i] << std::endl;
     // }
 
+    //update 4 (longer)
+    for (int i=0;i<145;i++)
+    {
+        track.Update();
+    }
+
+    otb=track.GetOccupiedTrainBlocks();
+
+    // auto otb = track.GetOccupiedTrainBlocks();
+    for (int i=0;i<otb[0].size();i++)
+    {
+        std::cout << std::endl << otb[0][i] << std::endl;
+    }
+
+    std::vector<std::shared_ptr<train_model::TrainModel>> trainsempty;
+
+    //make sure the train no longer exists
+    track.GetTrainModels(trainsempty);
+    ASSERT_EQ(trainsempty.size(), 0);
 }
