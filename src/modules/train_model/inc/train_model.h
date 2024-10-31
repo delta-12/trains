@@ -106,7 +106,7 @@ class SoftwareTrainModel : public TrainModel
         private:
         //internal variables(model specific)
         int passengers_on_board_;
-        bool exterior_light_;
+        bool headlights_;
         bool interior_light_;
         bool right_door_;
         bool left_door_;

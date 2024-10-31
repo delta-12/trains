@@ -12,7 +12,7 @@ namespace train_model
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
         passengers_on_board_ = 0;
-        exterior_light_ = 0;
+        headlights_ = 0;
         interior_light_ = 0;
         right_door_ = 0;
         left_door_ = 0;
@@ -146,11 +146,11 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         }
         void SoftwareTrainModel::SetHeadlights(const bool on)
         {
-            SoftwareTrainModel::exterior_light_ = on;
+            SoftwareTrainModel::headlights_ = on;
         }
         void SoftwareTrainModel::SetInternalLights(const bool on)
         {
-            SoftwareTrainModel::internal_light_ = on;
+            SoftwareTrainModel::interior_light_ = on;
         }
         void SoftwareTrainModel::SetLeftDoorsState(const bool open)
         {
