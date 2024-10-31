@@ -93,7 +93,6 @@ void SoftwareTrackModel::Update(void)
             if (j == 172 && blocks_[57].switched == 1)
             {
                 //block 57 now has the yard after it, and the front of the train is now at the yard
-                j = 0;
                 RemoveTrainModel(i);
                 break;
             }
