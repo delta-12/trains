@@ -132,7 +132,7 @@ slint_target_sources(track_model_tests_ui ${UI_DIR}/track_model_ui.slint NAMESPA
 # Train Model UI test build
 ################################################################################
 add_executable(train_model_tests_ui
-    ${TESTS_DIR}/modules/train_model_tests_ui.cc
+    ${TESTS_DIR}/modules/train_model/train_model_tests_ui.cc
     ${TRAIN_MODEL_SRCS}
 )
 target_include_directories(train_model_tests_ui PRIVATE ${INC_DIRS})

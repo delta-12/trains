@@ -9,45 +9,45 @@
 
 namespace train_model
 {
-TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
+SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
-        passengers_on_board  = 0;
-        ext_light = 0;
-        int_light = 0;
-        right_door = 0;
-        left_door = 0;
+        passengers_on_board_ = 0;
+        exterior_light_ = 0;
+        interior_light_ = 0;
+        right_door_ = 0;
+        left_door_ = 0;
         //track_pol;//must have starting polarity
-        max_force = 120000;//maximum force of the engine
-        prev_acceleration = 0;
-        acceleration = 0;
-        max_dec_limit = -2.73;//meters per second ^2
-        max_acc_limit = .5;//meters per second ^2
-        velocity = 0;
-        prev_velocity = 0;
-        max_vel = 43.496;//mph
-        max_passengers = 222;
-        passengers_boarding = 0;
-        crew_count = 9;//NEED TO CHECK HOW MANY THERE ARE
-        train_mass = 37103.856;//kgs
-        mass = 37103.856;
-        force = 0;
-        grade = 0;//can get this from moaz or just have it
-        emergency_brake = 0;
-        brake_failure = 0;
-        engine_failure = 0;
-        signal_pickup_failure = 0;
-        beacon_data;
-        authority = 0;
-        comm_speed = 0;
-        train_id = 0;
-        distance_traveled = 0;
-        int_temp = 0;
-        station_announcement = "Steel Plaza Station";
-        service_brake = 0.0;
-        power = 0;
+        max_force_ = 120000;//maximum force of the engine
+        previous_acceleration_ = 0;
+        acceleration_ = 0;
+        maximum_deceleration_limit_ = -2.73;//meters per second ^2
+        maximum_acceleration_limit_ = .5;//meters per second ^2
+        velocity_ = 0;
+        previous_velocity_ = 0;
+        maximum_velocity_ = 43.496;//mph
+        maximum_passengers_ = 222;
+        passengers_boarding_ = 0;
+        crew_count_ = 9;//NEED TO CHECK HOW MANY THERE ARE
+        train_mass_ = 37103.856;//kgs
+        mass_ = 37103.856;
+        force_ = 0;
+        grade_ = 0;//can get this from moaz or just have it
+        emergency_brake_ = 0;
+        brake_failure_ = 0;
+        engine_failure_ = 0;
+        signal_pickup_failure_ = 0;
+        beacon_data_;//beacon data needs instantiation
+        authority_ = 0;
+        commanded_speed_ = 0;
+        train_id_ = 0;
+        distance_traveled_ = 0;
+        internal_temperature_ = 0;
+        station_announcement_ = "Steel Plaza Station";
+        service_brake_ = 0.0;
+        power_ = 0;
         last_tick_updated_ = (*clock_).GetTick();
 }
-        void TrainModel::Update()
+        void SoftwareTrainModel::Update()
         {
             std::chrono::milliseconds elapsed_time_ = (*clock_).GetElapsedTime(last_tick_updated_);
 
@@ -56,184 +56,184 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
             
 
             //internal calculations
-            mass = train_mass + ((TrainModel::GetPassengersCount() + crew_count) * 68.039);
-            TrainModel::SpeedCalc(delta);
+            mass_ = train_mass_ + ((SoftwareTrainModel::GetPassengersCount() + crew_count_) * 68.039);
+            SoftwareTrainModel::SpeedCalc(delta);
 
         }
-        void TrainModel::SetTrainId(const types::TrainId train)
+        void SoftwareTrainModel::SetTrainId(const types::TrainId train)
         {
-            TrainModel::train_id = train;
+            SoftwareTrainModel::train_id_ = train;
         }
-        types::TrainId TrainModel::GetTrainId(void) const
+        types::TrainId SoftwareTrainModel::GetTrainId(void) const
         {
-            return TrainModel::train_id;
+            return SoftwareTrainModel::train_id_;
         }
-        void TrainModel::SetEmergencyBrake(const bool emergency_brake)
+        void SoftwareTrainModel::SetEmergencyBrake(const bool emergency_brake)
         {
-            TrainModel::emergency_brake = emergency_brake;
+            SoftwareTrainModel::emergency_brake_ = emergency_brake;
         }
-        void TrainModel::SetEngineFailure(const bool engine_failure)
+        void SoftwareTrainModel::SetEngineFailure(const bool engine_failure)
         {
-            TrainModel::engine_failure = engine_failure;
+            SoftwareTrainModel::engine_failure_ = engine_failure;
         }
-        void TrainModel::SetBrakeFailure(const bool brake_failure)
+        void SoftwareTrainModel::SetBrakeFailure(const bool brake_failure)
         {
-            TrainModel::brake_failure = brake_failure;
+            SoftwareTrainModel::brake_failure_ = brake_failure;
         }
-        void TrainModel::SetSignalPickupFailure(const bool signal_pickup_failure)
+        void SoftwareTrainModel::SetSignalPickupFailure(const bool signal_pickup_failure)
         {
-            TrainModel::signal_pickup_failure = signal_pickup_failure;
+            SoftwareTrainModel::signal_pickup_failure_ = signal_pickup_failure;
         }
-        bool TrainModel::GetBrakeFailure() const
+        bool SoftwareTrainModel::GetBrakeFailure() const
         {
-            return brake_failure;
+            return brake_failure_;
         }
-        bool TrainModel::GetEngineFailure() const
+        bool SoftwareTrainModel::GetEngineFailure() const
         {
-            return engine_failure;
+            return engine_failure_;
         }
-        bool TrainModel::GetSignalPickupFailure() const
+        bool SoftwareTrainModel::GetSignalPickupFailure() const
         {
-            return signal_pickup_failure;
+            return signal_pickup_failure_;
         }
-        types::BeaconData TrainModel::GetBeaconData(void) const
+        types::BeaconData SoftwareTrainModel::GetBeaconData(void) const
         {
-            return beacon_data;
+            return beacon_data_;
         }
-        types::Blocks TrainModel::GetAuthority(void) const
+        types::Blocks SoftwareTrainModel::GetAuthority(void) const
         {
-            return TrainModel::authority;
+            return SoftwareTrainModel::authority_;
         }
-        void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
+        void SoftwareTrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
         {
-            TrainModel::comm_speed = speed;
+            SoftwareTrainModel::commanded_speed_ = speed;
         }
-        types::MilesPerHour TrainModel::GetCommandedSpeed(void) const
+        types::MilesPerHour SoftwareTrainModel::GetCommandedSpeed(void) const
         {
-            return TrainModel::comm_speed;
+            return SoftwareTrainModel::commanded_speed_;
         }
-        types::MetersPerSecond TrainModel::GetActualSpeed(void) const
+        types::MetersPerSecond SoftwareTrainModel::GetActualSpeed(void) const
         {
-            return TrainModel::velocity;
+            return SoftwareTrainModel::velocity_;
         }
-        types::Watts TrainModel::GetActualPower(void) const
+        types::Watts SoftwareTrainModel::GetActualPower(void) const
         {
-            return TrainModel::power;
+            return SoftwareTrainModel::power_;
         }
-        void TrainModel::SetActualPower(const types::Watts watts)
+        void SoftwareTrainModel::SetActualPower(const types::Watts watts)
         {
-            TrainModel::power = watts;
+            SoftwareTrainModel::power_ = watts;
         }
-        types::DegreesFahrenheit TrainModel::GetActualInternalTemperature(void) const
+        types::DegreesFahrenheit SoftwareTrainModel::GetActualInternalTemperature(void) const
         {
-            return TrainModel::int_temp;
+            return SoftwareTrainModel::internal_temperature_;
         }
-        types::Polarity TrainModel::GetTrackPolarity(void) const
+        types::Polarity SoftwareTrainModel::GetTrackPolarity(void) const
         {
-            return TrainModel::track_pol;
+            return SoftwareTrainModel::track_polarity_;
         }
-        void TrainModel::SetStationAnnouncement(const std::string announcement)
+        void SoftwareTrainModel::SetStationAnnouncement(const std::string announcement)
         {
-            TrainModel::station_announcement = announcement;
+            SoftwareTrainModel::station_announcement_ = announcement;
         }
-        void TrainModel::SetGrade(const float grade)
+        void SoftwareTrainModel::SetGrade(const float grade)
         {
-            TrainModel::grade = grade;
+            SoftwareTrainModel::grade_ = grade;
         }
-        void TrainModel::SetBrake(const double brake)
+        void SoftwareTrainModel::SetBrake(const double brake)
         {
-            TrainModel::service_brake = brake;
+            SoftwareTrainModel::service_brake_ = brake;
         }
-        void TrainModel::SetHeadlights(const bool on)
+        void SoftwareTrainModel::SetHeadlights(const bool on)
         {
-            TrainModel::ext_light = on;
+            SoftwareTrainModel::exterior_light_ = on;
         }
-        void TrainModel::SetInternalLights(const bool on)
+        void SoftwareTrainModel::SetInternalLights(const bool on)
         {
-            TrainModel::int_light = on;
+            SoftwareTrainModel::internal_light_ = on;
         }
-        void TrainModel::SetLeftDoorsState(const bool open)
+        void SoftwareTrainModel::SetLeftDoorsState(const bool open)
         {
-            TrainModel::left_door = open;
+            SoftwareTrainModel::left_door_ = open;
         }
-        void TrainModel::SetRightDoorsState(const bool open)
+        void SoftwareTrainModel::SetRightDoorsState(const bool open)
         {
-            TrainModel::right_door = open;
+            SoftwareTrainModel::right_door_ = open;
         }
-        void TrainModel::SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees)
+        void SoftwareTrainModel::SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees)
         {
-            TrainModel::int_temp = degrees;
+            SoftwareTrainModel::internal_temperature_ = degrees;
         }
-        types::Meters TrainModel::GetDistanceTraveled(void) const
+        types::Meters SoftwareTrainModel::GetDistanceTraveled(void) const
         {
-            return TrainModel::distance_traveled;
+            return SoftwareTrainModel::distance_traveled_;
         }
-        void TrainModel::SetDistanceTraveled(const types::Meters distance)
+        void SoftwareTrainModel::SetDistanceTraveled(const types::Meters distance)
         {
-            TrainModel::distance_traveled = distance;
+            SoftwareTrainModel::distance_traveled_ = distance;
         }
-        uint16_t TrainModel::GetPassengersLeaving(void) const
+        uint16_t SoftwareTrainModel::GetPassengersLeaving(void) const
         {
             //generate random number within bounds for leaving
             std::random_device              rd;              // Seed
             std::mt19937                    gen(rd());       // Mersenne Twister engine
-            std::uniform_int_distribution<> dis(0, passengers_on_board); // Uniform distribution between 0 and board
+            std::uniform_int_distribution<> dis(0, passengers_on_board_); // Uniform distribution between 0 and board
 
             // Generate a random number for passengers leaving
             uint16_t randomNumber = dis(gen);
 
             return randomNumber;
         }
-        void TrainModel::SetPassengersBoarding(const uint16_t passengers)
+        void SoftwareTrainModel::SetPassengersBoarding(const uint16_t passengers)
         {
-            TrainModel::passengers_boarding = passengers;
+            SoftwareTrainModel::passengers_boarding_ = passengers;
         }
-        uint16_t TrainModel::GetPassengersCount(void)
+        uint16_t SoftwareTrainModel::GetPassengersCount(void)
         {
             //adds new passengers
-            TrainModel::passengers_on_board += passengers_boarding;
+            SoftwareTrainModel::passengers_on_board_ += passengers_boarding_;
             //removes old passengers
-            TrainModel::passengers_on_board -= TrainModel::GetPassengersLeaving();
+            SoftwareTrainModel::passengers_on_board_ -= SoftwareTrainModel::GetPassengersLeaving();
             //returns passengers on board (should be called and updated only when at station)
-            return TrainModel::passengers_on_board;
+            return SoftwareTrainModel::passengers_on_board_;
         }
-        void TrainModel::SetAuthority(const types::Blocks blocks)
+        void SoftwareTrainModel::SetAuthority(const types::Blocks blocks)
         {
-            TrainModel::authority = blocks;
+            SoftwareTrainModel::authority_ = blocks;
         }
-        void TrainModel::SetTrackPolarity(const types::Polarity polarity)
+        void SoftwareTrainModel::SetTrackPolarity(const types::Polarity polarity)
         {
-            TrainModel::track_pol = polarity;
+            SoftwareTrainModel::track_polarity_ = polarity;
         }
-        void TrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
+        void SoftwareTrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
         {
-            TrainModel::beacon_data = data;
+            SoftwareTrainModel::beacon_data_ = data;
         }
-        void TrainModel::SpeedCalc(types::Second delta)
+        void SoftwareTrainModel::SpeedCalc(types::Second delta)
         {
-            if (velocity == 0 && power != 0)//avoids dividing by 0
+            if (velocity_ == 0 && power_ != 0)//avoids dividing by 0
             {
-                TrainModel::force = TrainModel::max_force;
+                SoftwareTrainModel::force_ = SoftwareTrainModel::maximum_force_;
             }
             else{
-                TrainModel::force = TrainModel::power/TrainModel::velocity;
+                SoftwareTrainModel::force_ = SoftwareTrainModel::power_/SoftwareTrainModel::velocity_;
             }
 
-            if (TrainModel::emergency_brake == true)
+            if (SoftwareTrainModel::emergency_brake_ == true)
             {
-                acceleration = -2.73;
+                acceleration_ = -2.73;
             }
-            else if (TrainModel::service_brake != 0)
+            else if (SoftwareTrainModel::service_brake_ != 0)
             {
-                acceleration = (-1.2 * TrainModel::service_brake);
+                acceleration_ = (-1.2 * SoftwareTrainModel::service_brake_);
             }
             else
             {
-            TrainModel::acceleration = force/mass;
+            SoftwareTrainModel::acceleration_ = force_/mass_;
             }
-            TrainModel::prev_acceleration = acceleration;
+            SoftwareTrainModel::previous_acceleration_ = acceleration_;
         
-            prev_velocity = velocity;
-            velocity = prev_velocity + (delta/2) * (prev_acceleration + acceleration);
+            previous_velocity_ = velocity_;
+            velocity_ = previous_velocity_ + ((delta.count()/2) * (previous_acceleration_ + acceleration_));
         }
 }
