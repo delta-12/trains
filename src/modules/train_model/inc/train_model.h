@@ -22,7 +22,7 @@ class TrainModel
 
         //internal
         void Update();
-        void SpeedCalc(float delta_time);
+        void SpeedCalc(types::Second delta);
         uint16_t GetPassengersLeaving(void) const;
 
         //setters
@@ -99,7 +99,8 @@ class TrainModel
         std::string station_announcement;
         double service_brake;
         types::Watts power;
-        std::shared_ptr<TickSource> CLK;
+        std::shared_ptr<TickSource> clock_;
+        types::Tick last_tick_updated_;
 };
 
 } // namespace train_model

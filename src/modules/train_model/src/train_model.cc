@@ -9,7 +9,7 @@
 
 namespace train_model
 {
-TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
+TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
         passengers_on_board  = 0;
         ext_light = 0;
@@ -45,18 +45,19 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         station_announcement = "Steel Plaza Station";
         service_brake = 0.0;
         power = 0;
+        last_tick_updated_ = (*clock_).GetTick();
 }
         void TrainModel::Update()
         {
-            auto last_time = (*CLK).GetTick();
+            std::chrono::milliseconds elapsed_time_ = (*clock_).GetElapsedTime(last_tick_updated_);
 
-            auto delta_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds> ((*CLK).GetElapsedTime(last_time));
+            types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
-            float delta_time = static_cast<float>(delta_time_in_seconds.count());
+            
 
             //internal calculations
             mass = train_mass + ((TrainModel::GetPassengersCount() + crew_count) * 68.039);
-            TrainModel::SpeedCalc(delta_time);
+            TrainModel::SpeedCalc(delta);
 
         }
         void TrainModel::SetTrainId(const types::TrainId train)
@@ -208,7 +209,7 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             TrainModel::beacon_data = data;
         }
-        void TrainModel::SpeedCalc(float delta_time)
+        void TrainModel::SpeedCalc(types::Second delta)
         {
             if (velocity == 0 && power != 0)//avoids dividing by 0
             {
@@ -233,6 +234,6 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
             TrainModel::prev_acceleration = acceleration;
         
             prev_velocity = velocity;
-            velocity = prev_velocity + (delta_time/2) * (prev_acceleration + acceleration);
+            velocity = prev_velocity + (delta/2) * (prev_acceleration + acceleration);
         }
 }
