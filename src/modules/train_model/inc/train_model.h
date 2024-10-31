@@ -52,7 +52,7 @@ class TrainModel
         bool GetBrakeFailure(void) const;
         bool GetEngineFailure(void) const;
         bool GetSignalPickupFailure(void) const;
-        std::size_t GetBeaconData(types::BeaconData &data) const;
+        types::BeaconData GetBeaconData(void) const;
         types::Blocks GetAuthority(void) const;
         types::MilesPerHour GetCommandedSpeed(void) const;
         types::MetersPerSecond GetActualSpeed(void) const;

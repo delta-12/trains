@@ -16,7 +16,7 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         int_light = 0;
         right_door = 0;
         left_door = 0;
-        track_pol;//must have starting polarity
+        //track_pol;//must have starting polarity
         max_force = 120000;//maximum force of the engine
         prev_acceleration = 0;
         acceleration = 0;
@@ -86,26 +86,26 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             return brake_failure;
         }
-        bool TrainModel::GetEngineFailure() const
+        //bool TrainModel::GetEngineFailure() const
+        //{
+        //    return engine_failure;
+        //}
+        //bool TrainModel::GetSignalPickupFailure() const
+        //{
+        //    return signal_pickup_failure;
+        //}
+        types::BeaconData TrainModel::GetBeaconData(void) const
         {
-            return engine_failure;
-        }
-        bool TrainModel::GetSignalPickupFailure() const
-        {
-            return signal_pickup_failure;
-        }
-        std::size_t TrainModel::GetBeaconData(types::BeaconData &data) const
-        {
-            //IDK WHAT TO DO HERE
+            return beacon_data;
         }
         types::Blocks TrainModel::GetAuthority(void) const
         {
             return TrainModel::authority;
         }
-        void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
-        {
-            TrainModel::comm_speed = speed;
-        }
+        //void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
+        //{
+        //    TrainModel::comm_speed = speed;
+        //}
         types::MilesPerHour TrainModel::GetCommandedSpeed(void) const
         {
             return TrainModel::comm_speed;
