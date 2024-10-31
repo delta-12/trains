@@ -31,7 +31,6 @@ class TrainModel
         void SetEngineFailure(const bool engine_failure);
         void SetBrakeFailure(const bool brake_failure);
         void SetSignalPickupFailure(const bool signal_pickup_failure);
-        void SetCommandedSpeed(const types::MilesPerHour speed);
         void SetGrade(const float grade);
         void SetBrake(const double brake);
         void SetStationAnnouncement(std::string announcement);
@@ -80,6 +79,7 @@ class TrainModel
         types::MilesPerHour velocity = 0;
         types::MilesPerHour prev_velocity = 0;
         types::MilesPerHour max_vel = 43.496;//mph
+        types::MilesPerHour comm_speed;
         int max_passengers = 222;
         int passengers_boarding;
         int crew_count;
@@ -93,7 +93,6 @@ class TrainModel
         bool signal_pickup_failure;
         types::BeaconData beacon_data;
         types::Blocks authority;
-        types::MilesPerHour comm_speed;
         types::TrainId train_id;
         types::Meters distance_traveled;
         types::DegreesFahrenheit int_temp;
