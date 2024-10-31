@@ -53,8 +53,6 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
 
             types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
-            
-
             //internal calculations
             mass_ = train_mass_ + ((SoftwareTrainModel::GetPassengersCount() + crew_count_) * 68.039);
             SoftwareTrainModel::SpeedCalc(delta);
@@ -136,7 +134,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             SoftwareTrainModel::station_announcement_ = announcement;
         }
-        void SoftwareTrainModel::SetGrade(const float grade)
+        void SoftwareTrainModel::SetGrade(const double grade)
         {
             SoftwareTrainModel::grade_ = grade;
         }

@@ -23,7 +23,7 @@ class TrainModel
         virtual void SetEngineFailure(const bool engine_failure) = 0;
         virtual void SetBrakeFailure(const bool brake_failure) = 0;
         virtual void SetSignalPickupFailure(const bool signal_pickup_failure) = 0;
-        virtual void SetGrade(const float grade) = 0;
+        virtual void SetGrade(const double grade) = 0;
         virtual void SetBrake(const double brake);
         virtual void SetStationAnnouncement(std::string announcement) = 0;
         virtual void SetHeadlights(const bool on) = 0;
@@ -72,7 +72,7 @@ class SoftwareTrainModel : public TrainModel
         void SetEngineFailure(const bool engine_failure);
         void SetBrakeFailure(const bool brake_failure);
         void SetSignalPickupFailure(const bool signal_pickup_failure);
-        void SetGrade(const float grade);
+        void SetGrade(const double grade);
         void SetBrake(const double brake);
         void SetStationAnnouncement(std::string announcement);
         void SetHeadlights(const bool on);
@@ -112,7 +112,7 @@ class SoftwareTrainModel : public TrainModel
         bool left_door_;
         types::Polarity track_polarity_;
         //internal variables(calculations)
-        float maximum_force_;
+        double maximum_force_;
         types::MetersPerSecondSquared previous_acceleration_;
         types::MetersPerSecondSquared acceleration_;
         types::MetersPerSecondSquared maximum_deceleration_limit_;
@@ -124,10 +124,10 @@ class SoftwareTrainModel : public TrainModel
         int maximum_passengers_;
         int passengers_boarding_;
         int crew_count_;
-        float train_mass_;
-        float mass_;
-        float force_;
-        float grade_;//can get this from moaz or just have it
+        double train_mass_;
+        double mass_;
+        double force_;
+        double grade_;//can get this from moaz or just have it
         bool emergency_brake_;
         bool brake_failure_;
         bool engine_failure_;
