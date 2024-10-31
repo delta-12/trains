@@ -8,9 +8,8 @@
 
 namespace train_model
 {
-train_model::TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
+TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
 {
-
         passengers_on_board  = 0;
         ext_light = 0;
         int_light = 0;
@@ -45,7 +44,6 @@ train_model::TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         station_announcement = "Steel Plaza Station";
         service_brake = 0.0;
         power = 0;
-
 }
         void TrainModel::Update()
         {
