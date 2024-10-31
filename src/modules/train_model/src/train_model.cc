@@ -86,14 +86,14 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             return brake_failure;
         }
-        //bool TrainModel::GetEngineFailure() const
-        //{
-        //    return engine_failure;
-        //}
-        //bool TrainModel::GetSignalPickupFailure() const
-        //{
-        //    return signal_pickup_failure;
-        //}
+        bool TrainModel::GetEngineFailure() const
+        {
+            return engine_failure;
+        }
+        bool TrainModel::GetSignalPickupFailure() const
+        {
+            return signal_pickup_failure;
+        }
         types::BeaconData TrainModel::GetBeaconData(void) const
         {
             return beacon_data;
@@ -102,10 +102,10 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             return TrainModel::authority;
         }
-        //void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
-        //{
-        //    TrainModel::comm_speed = speed;
-        //}
+        void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
+        {
+            TrainModel::comm_speed = speed;
+        }
         types::MilesPerHour TrainModel::GetCommandedSpeed(void) const
         {
             return TrainModel::comm_speed;
@@ -113,14 +113,6 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         types::MetersPerSecond TrainModel::GetActualSpeed(void) const
         {
             return TrainModel::velocity;
-        }
-        bool TrainModel::GetEngineFailure(void) const
-        {
-            return TrainModel::engine_failure;
-        }
-        bool TrainModel::GetSignalPickupFailure(void) const
-        {
-            return TrainModel::signal_pickup_failure;
         }
         types::Watts TrainModel::GetActualPower(void) const
         {
@@ -202,10 +194,6 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
             TrainModel::passengers_on_board -= TrainModel::GetPassengersLeaving();
             //returns passengers on board (should be called and updated only when at station)
             return TrainModel::passengers_on_board;
-        }
-        void TrainModel::SetCommandedSpeed(const types::MetersPerSecond speed)
-        {
-            TrainModel::comm_speed = speed;
         }
         void TrainModel::SetAuthority(const types::Blocks blocks)
         {
