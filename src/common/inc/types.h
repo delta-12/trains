@@ -32,13 +32,14 @@ typedef int64_t                                     Tick;
 typedef char                                        SectionId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    Blocks;
-typedef uint16_t                                    TrainId;
+typedef uint16_t                                    ControllerId;
+typedef ControllerId                                TrainId;
+typedef ControllerId                                WaysideId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
 typedef std::chrono::duration<double>               Second;
-typedef uint64_t                                    ControllerId;
 
 typedef enum
 {
