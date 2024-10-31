@@ -6,7 +6,8 @@ namespace controller_network
 types::Error LookupWaysideController(types::WaysideId &wayside, const types::TrackId track, const types::BlockId block)
 {
     // TODO
-    return types::ERROR_INVALID_TRACK;
+    wayside = 0;
+    return types::ERROR_NONE;
 }
 
 } // namespace controller_network
