@@ -112,7 +112,7 @@ class SoftwareTrainModel : public TrainModel
         bool left_door_;
         types::Polarity track_polarity_;
         //internal variables(calculations)
-        float max_force_;
+        float maximum_force_;
         types::MetersPerSecondSquared previous_acceleration_;
         types::MetersPerSecondSquared acceleration_;
         types::MetersPerSecondSquared maximum_deceleration_limit_;

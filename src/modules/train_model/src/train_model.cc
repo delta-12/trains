@@ -17,7 +17,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         right_door_ = 0;
         left_door_ = 0;
         //track_pol;//must have starting polarity
-        max_force_ = 120000;//maximum force of the engine
+        maximum_force_ = 120000;//maximum force of the engine
         previous_acceleration_ = 0;
         acceleration_ = 0;
         maximum_deceleration_limit_ = -2.73;//meters per second ^2
