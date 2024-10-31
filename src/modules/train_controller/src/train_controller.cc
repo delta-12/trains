@@ -251,20 +251,20 @@ void SoftwareTrainController::CalculateCommandedPower()
 
     //types::MetersPerSecond block_speed_limit = commanded_speed_; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
 
-    if(commanded_speed_ > block_speed_limit)
+    if (commanded_speed_ > block_speed_limit)
     {
         commanded_speed_ = block_speed_limit;
     }
 
-    if(driver_speed_ > block_speed_limit)
+    if (driver_speed_ > block_speed_limit)
     {
         driver_speed_ = block_speed_limit;
-    } 
-    else if (driver_speed_ < 0) 
+    }
+    else if (driver_speed_ < 0)
     {
         driver_speed_ = 0;
     }
-    
+
     types::MetersPerSecond setpoint_speed;
 
     // Defining Vcmd and Actual speed in m/s
@@ -388,7 +388,7 @@ void SoftwareTrainController::CheckFailureStates(void)
     if ((engine_failure_ == true) || (signal_pickup_failure_ == true) || (brake_failure_ == true))
     {
         emergency_brake_ = true;
-        
+
         // ASK IF THIS IS RIGHT
         // this was because in the failure tests, this had to be called again to update power to 0
         CalculateCommandedPower();

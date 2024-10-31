@@ -14,13 +14,13 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
     train_controller::SoftwareTrainController TC;
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode()); 
+    ASSERT_EQ(0, TC.GetOperationMode());
 
     // train stopped
     TC.SetCurrentSpeed(0);
 
     // commanded speed passed, faster than current speed
-    TC.SetCommandedSpeed(18); 
+    TC.SetCommandedSpeed(18);
 
     // call power calculation
     TC.CalculateCommandedPower();
@@ -37,12 +37,12 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
     train_controller::SoftwareTrainController TC;
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode()); 
+    ASSERT_EQ(0, TC.GetOperationMode());
 
     TC.SetCurrentSpeed(10);
 
     // commanded speed passed, faster than current speed
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
 
     // call power calculation
     TC.CalculateCommandedPower();
@@ -56,13 +56,13 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
     train_controller::SoftwareTrainController TC;
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode()); 
+    ASSERT_EQ(0, TC.GetOperationMode());
 
     // train going faster than commanded speed that will be input
     TC.SetCurrentSpeed(18);
 
     // commanded speed passed, slower than current speed
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
 
     // call power calculation
     TC.CalculateCommandedPower();
@@ -88,14 +88,14 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
     // call power calculation
     TC.CalculateCommandedPower();
 
-    // assert power is 0 
+    // assert power is 0
     ASSERT_EQ(TC.GetCommandedPower(), 0);
 
     // assert service brake is 0
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 }
 
-TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary) 
+TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 {
     train_controller::SoftwareTrainController TC;
 
@@ -108,7 +108,7 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
     TC.SetCurrentSpeed(0);
 
     // commanded speed passed, faster than current speed
-    TC.SetDriverSpeed(18); 
+    TC.SetDriverSpeed(18);
 
     // call power calculation
     TC.CalculateCommandedPower();
@@ -118,7 +118,7 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
     ASSERT_GT(TC.GetCommandedPower(), 0);
 }
 
-TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving) 
+TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 {
     train_controller::SoftwareTrainController TC;
 
@@ -131,7 +131,7 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
     TC.SetCurrentSpeed(5);
 
     // commanded speed passed, faster than current speed
-    TC.SetDriverSpeed(15); 
+    TC.SetDriverSpeed(15);
 
     // call power calculation
     TC.CalculateCommandedPower();
@@ -149,7 +149,7 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 
     // assert manual mode
     ASSERT_EQ(1, TC.GetOperationMode());
-    
+
     // random current speed
     TC.SetCurrentSpeed(18);
 
@@ -174,7 +174,7 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
 
     // assert manual mode
     ASSERT_EQ(1, TC.GetOperationMode());
-    
+
     // random current speed
     TC.SetCurrentSpeed(0);
 
@@ -185,7 +185,7 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
     TC.CalculateCommandedPower();
 
     // assert driver speed and power = 0 and service brake is on
-    ASSERT_NEAR(TC.GetDriverSpeed(), 31.0599, 0.05); 
+    ASSERT_NEAR(TC.GetDriverSpeed(), 31.0599, 0.05);
     // ^ 31 b/c set driver capped at 13.8889 m/s (assuming 50 km/hr speed limit)
     // 13.889 * 2.23694 (conv for m/s to mph) ~= 31
 
@@ -199,13 +199,13 @@ TEST(TrainControllerPowerTests, EngineFailure)
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
     // turn on engine failure
     TC.SetEngineFailure(true);
 
-    // call failure state check 
+    // call failure state check
     TC.CheckFailureStates();
 
     // assert power = 0
@@ -220,12 +220,12 @@ TEST(TrainControllerPowerTests, EngineFailure)
 
     // make train have service brake
     TC.SetCurrentSpeed(18);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
-    // turn brake failure back on 
+    // turn brake failure back on
     TC.SetEngineFailure(true);
-    
+
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
@@ -244,13 +244,13 @@ TEST(TrainControllerPowerTests, BrakeFailure)
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
     // turn on engine failure
     TC.SetBrakeFailure(true);
 
-    // call failure state check 
+    // call failure state check
     TC.CheckFailureStates();
 
     // assert power = 0
@@ -265,12 +265,12 @@ TEST(TrainControllerPowerTests, BrakeFailure)
 
     // make train have service brake
     TC.SetCurrentSpeed(18);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
-    // turn brake failure back on 
+    // turn brake failure back on
     TC.SetBrakeFailure(true);
-    
+
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
@@ -289,13 +289,13 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
 
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
     // turn on engine failure
     TC.SetSignalPickupFailure(true);
 
-    // call failure state check 
+    // call failure state check
     TC.CheckFailureStates();
 
     // assert power = 0
@@ -310,12 +310,12 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
 
     // make train have service brake
     TC.SetCurrentSpeed(18);
-    TC.SetCommandedSpeed(15); 
+    TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower();
 
-    // turn brake failure back on 
+    // turn brake failure back on
     TC.SetSignalPickupFailure(true);
-    
+
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
