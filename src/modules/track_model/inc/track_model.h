@@ -38,7 +38,7 @@ class SoftwareTrackModel : public TrackModel
 {
     public:
         //ADD constructor that takes in a shared pointer to the tick source
-        types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks);
+        types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
         void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
@@ -56,8 +56,10 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
         types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
         types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
+        types::Error SetTrainBlock(const types::BlockId block);
         types::Block GetBlock(const types::BlockId block);
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
+        types::Error RemoveTrainModel(int train_element);
 
     private:
         types::TrackId track_;
