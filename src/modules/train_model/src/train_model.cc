@@ -102,7 +102,7 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
         {
             return TrainModel::authority;
         }
-        void TrainModel::SetCommandedSpeed(types::MilesPerHour speed)
+        void TrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
         {
             TrainModel::comm_speed = speed;
         }

@@ -31,7 +31,7 @@ class TrainModel
         void SetEngineFailure(const bool engine_failure);
         void SetBrakeFailure(const bool brake_failure);
         void SetSignalPickupFailure(const bool signal_pickup_failure);
-        void SetCommandedSpeed(types::MilesPerHour speed);
+        void SetCommandedSpeed(const types::MilesPerHour speed);
         void SetGrade(const float grade);
         void SetBrake(const double brake);
         void SetStationAnnouncement(std::string announcement);
