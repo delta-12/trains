@@ -118,9 +118,9 @@ add_library(controller_messages ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains WIN32 ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 else()
-    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
 target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(trains PRIVATE Slint::Slint protobuf controller_messages)
