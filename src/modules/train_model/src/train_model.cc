@@ -54,6 +54,7 @@ TrainModel::TrainModel(std::shared_ptr<TickSource> clk) : CLK(clk)
 
             float delta_time = static_cast<float>(delta_time_in_seconds.count());
 
+            //internal calculations
             mass = train_mass + ((TrainModel::GetPassengersCount() + crew_count) * 68.039);
             TrainModel::SpeedCalc(delta_time);
 
