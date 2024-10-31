@@ -75,7 +75,7 @@ types::Error Gateway::SetSwitchState(const types::TrackId track, const types::Bl
     return types::ERROR_INVALID_TRACK;
 }
 
-void Gateway::GetBlockStates(const types::TrackId track, std::vector<BlockState> &states)
+void Gateway::GetBlockStates(const types::TrackId track, std::vector<types::BlockState> &states)
 {
     // TODO NNF-172
     LOGGER_UNUSED(track);  // temporary fix to remove compiler warnings
