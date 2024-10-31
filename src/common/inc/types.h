@@ -7,13 +7,17 @@
 #define TRAINS_SRC_COMMON_INC_TYPES_H
 
 #include <array>
+#include <chrono>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #define TYPES_BEACON_DATA_SIZE 128U
+#define TYPES_END_BLOCK_ID     0U
 
 namespace types
 {
+
 typedef double                                      KilometersPerHour;
 typedef double                                      Kilometers;
 typedef double                                      MetersPerSecond;
@@ -30,7 +34,10 @@ typedef uint16_t                                    BlockId;
 typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
-
+typedef struct Block                                Block;
+typedef struct TrackCircuitData                     TrackCircuitData;
+typedef struct BlockState                           BlockState;
+typedef std::chrono::duration<double>               Second;
 
 typedef enum
 {
@@ -53,7 +60,8 @@ typedef enum
 typedef enum
 {
     LIGHTCOLOR_RED,
-    LIGHTCOLOR_GREEN
+    LIGHTCOLOR_GREEN,
+    LIGHTCOLOR_NONE
 } LightColor;
 
 typedef enum
@@ -65,11 +73,24 @@ typedef enum
 typedef enum
 {
     TRACKID_RED,
-    TRACKID_GREEN
+    TRACKID_GREEN,
+    TRACKID_BLUE
 } TrackId;
 
-typedef struct
+typedef enum
 {
+    STATIONSIDE_LEFT,
+    STATIONSIDE_RIGHT,
+    STATIONSIDE_BOTH
+} StationSide;
+
+struct Block
+{
+    Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
+              power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), speed_limit(0), elevation(0), cumulative_elevation(0),
+              section('\0'), heater_on(false), has_station(false), underground(false)
+    {
+    };
     BlockId block;
     bool occupied;
     bool has_switch;
@@ -90,10 +111,39 @@ typedef struct
     SectionId section;
     bool heater_on;
     bool has_station;
+    std::string station_name;
+    StationSide station_side;
     BlockDirection direction;
     bool underground;
-} Block;
+};
 
+struct TrackCircuitData
+{
+    public:
+        TrackCircuitData(void) : block(0), speed(0.0), authority(0)
+        {
+        }
+        TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const size_t authority) : block(block), speed(speed), authority(authority)
+        {
+        }
+        types::BlockId block;
+        types::MetersPerSecond speed;
+        size_t authority;
+};
+
+struct BlockState
+{
+    public:
+        BlockState(void) : block(0), occupied(false), track_failure(false)
+        {
+        }
+        BlockState(const types::BlockId block, const bool occupied, const bool track_failure) : block(block), occupied(occupied), track_failure(track_failure)
+        {
+        }
+        types::BlockId block;
+        bool occupied;
+        bool track_failure;
+};
 
 class Port
 {
