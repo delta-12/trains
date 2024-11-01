@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package controller_messages;
+
+import "common.proto";
+
+enum TrafficLightColor
+{
+    TRAFFIC_LIGHT_COLOR_RED = 0;
+    TRAFFIC_LIGHT_COLOR_GREEN = 1;
+}
+
+message BlockOutputs {
+    TrackId track = 1;
+    uint32 block = 2;
+    optional bool switched = 3;
+    optional bool crossing = 4;
+    optional TrafficLightColor traffic_light_color = 5;
+}

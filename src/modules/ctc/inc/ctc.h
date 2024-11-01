@@ -10,7 +10,6 @@
 
 #include "types.h"
 #include "wayside_controller.h"
-#include "wayside_controller_gateway.h"
 
 namespace ctc
 {

@@ -11,10 +11,8 @@
 #include <vector>
 
 #include "track_model.h"
-#include "train_controller_gateway.h"
 #include "train_model.h"
 #include "types.h"
-#include "wayside_controller_gateway.h"
 
 namespace simulator
 {
@@ -26,8 +24,11 @@ class Simulator
         types::Error DeleteTrackModel(const types::TrackId track);
         void GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const;
         types::Error AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train);
-        void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
+        // void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
         types::Error SetTrackCircuitData(const types::TrackCircuitData &data);
+        types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched);
+        types::Error SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed);
+        types::Error SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color);
     // TODO add methods for each set communication between modules
 
     private:

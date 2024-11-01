@@ -96,4 +96,71 @@ types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
     return error;
 }
 
+types::Error Simulator::SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched)
+{
+    types::Error error = types::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        error = tracks_[track]->SetSwitchState(block, switched);
+    }
+
+    return error;
+}
+
+types::Error Simulator::SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed)
+{
+    types::Error error = types::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        error = tracks_[track]->SetCrossingState(block, closed);
+    }
+
+    return error;
+}
+
+types::Error Simulator::SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color)
+{
+    types::Error error = types::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        switch (color)
+        {
+        case types::TRAFFICLIGHTCOLOR_RED:
+            error = tracks_[track]->SetRedTrafficLight(block, true);
+            if (types::ERROR_NONE == error)
+            {
+                error = tracks_[track]->SetGreenTrafficLight(block, false);
+            }
+            break;
+        case types::TRAFFICLIGHTCOLOR_GREEN:
+            error = tracks_[track]->SetGreenTrafficLight(block, true);
+            if (types::ERROR_NONE == error)
+            {
+                error = tracks_[track]->SetRedTrafficLight(block, false);
+            }
+            break;
+        default:
+            error = types::ERROR_INVALID_FORMAT;
+            break;
+        }
+    }
+
+    return error;
+}
+
 } // namespace simulator

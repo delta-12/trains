@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "block_outputs.pb.h"
 #include "block_states.pb.h"
 #include "connection.pb.h"
 #include "controller_network_protocols.h"
@@ -51,6 +52,7 @@ class ControllerHandler
         types::Error SendMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
         types::Error HandleBlockStates(const size_t message_size, ctc::Ctc &ctc_office);
         types::Error HandleTrackCircuitData(const size_t message_size, simulator::Simulator &world_simulator);
+        types::Error HandleBlockOutputs(const size_t message_size, simulator::Simulator &world_simulator);
         types::Error SendTrackCircuitData(const ctc::Ctc &ctc_office);
 
         std::vector<std::unique_ptr<ControllerPort>> unmapped_ports_;
@@ -133,7 +135,7 @@ void ControllerHandler<buffer_size>::MapConnections(void)
             }
             else if (!connected_controllers_[connection_message.controller_type()].contains(connection_message.controller_id()))
             {
-                // TODO send success/error message back to controller
+                // TODO NNF-228 send success/error message back to controller
                 connected_controllers_[connection_message.controller_type()].emplace(connection_message.controller_id(), std::move(port));
 
                 controller_connected = true;
@@ -149,8 +151,7 @@ void ControllerHandler<buffer_size>::RemoveDisconnectedPorts(void)
     unmapped_ports_.erase(std::remove_if(unmapped_ports_.begin(), unmapped_ports_.end(), [](const std::unique_ptr<ControllerPort> &port)
         {
             return !port->Connected();
-        }),
-                          unmapped_ports_.end());
+        }), unmapped_ports_.end());
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
@@ -239,9 +240,11 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
         case MESSAGETYPE_TRACK_CIRCUIT_DATA:
             error = HandleTrackCircuitData(message_size, world_simulator);
             break;
-        // TODO receive block outputs from wayside controller
-        // TODO receive train command from train controller
-        // TODO receive track information from train controller
+        case MESSAGETYPE_BLOCK_OUTPUTS:
+            error = HandleBlockOutputs(message_size, world_simulator);
+            break;
+        // TODO NNF-229 receive train command from train controller
+        // TODO NNF-229 receive track information from train controller
         default:
             break;
         }
@@ -255,9 +258,17 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office)
 {
     types::Error error = SendTrackCircuitData(ctc_office);
 
-    // TODO send maintenance mode to wayside controller
-    // TODO send suggested switch states to wayside controller
-    // TODO send train dispatch to train controller
+    if (types::ERROR_NONE == error)
+    {
+        // TODO send maintenance mode to wayside controller
+    }
+
+    if (types::ERROR_NONE == error)
+    {
+        // TODO send suggested switch states to wayside controller
+    }
+
+    // TODO NNF-229 send train dispatch to train controller
 
     return error;
 }
@@ -267,11 +278,11 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
 {
     types::Error error = SendMessages(ctc_office);
 
-    // TODO send block occupancies to wayside controller
-    // TODO send train feedback to train controller
-    // TODO send train failures to train controller
-    // TODO send beacon data to train controller
-    // TODO send track circuit data to train controller
+    // TODO NNF-230 send block occupancies to wayside controller
+    // TODO NNF-229 send train feedback to train controller
+    // TODO NNF-229 send train failures to train controller
+    // TODO NNF-229 send beacon data to train controller
+    // TODO NNF-229 send track circuit data to train controller
 
     return error;
 }
@@ -323,6 +334,38 @@ types::Error ControllerHandler<buffer_size>::HandleTrackCircuitData(const size_t
                                                    track_circuit_data_message.authority());
 
         error = world_simulator.SetTrackCircuitData(track_circuit_data);
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::HandleBlockOutputs(const size_t message_size, simulator::Simulator &world_simulator)
+{
+    types::Error                      error = types::ERROR_NONE;
+    controller_messages::BlockOutputs block_outputs_message;
+
+    if (!block_outputs_message.ParseFromArray(message_buffer_.data(), message_size))
+    {
+        error = types::ERROR_INVALID_FORMAT;
+    }
+    else
+    {
+        types::TrackId track = static_cast<types::TrackId>(block_outputs_message.track());
+        types::BlockId block = block_outputs_message.block();
+
+        if (block_outputs_message.has_switched())
+        {
+            error = world_simulator.SetSwitchState(track, block, block_outputs_message.switched());
+        }
+        if ((block_outputs_message.has_crossing()) && (types::ERROR_NONE == error))
+        {
+            error = world_simulator.SetCrossingState(track, block, block_outputs_message.crossing());
+        }
+        if ((block_outputs_message.has_traffic_light_color()) && (types::ERROR_NONE == error))
+        {
+            error = world_simulator.SetTrafficLight(track, block, static_cast<types::TrafficLightColor>(block_outputs_message.traffic_light_color()));
+        }
     }
 
     return error;
