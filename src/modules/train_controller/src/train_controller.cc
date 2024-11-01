@@ -39,7 +39,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
-    operation_mode_              = 0;
+    operation_mode_              = false;
     last_tick_updated_           = (*clock_).GetTick();
 
 
@@ -240,7 +240,7 @@ void SoftwareTrainController::SetArrived(const bool arrived)
 
 void SoftwareTrainController::SetOperationMode(const bool mode)
 {
-    if (operation_mode_ == 0 && mode == 1)
+    if (operation_mode_ == false && mode == true)
     {
         driver_speed_   = commanded_speed_;
         operation_mode_ = mode; // cannot switch back to auto
@@ -290,7 +290,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     }
 
     // Defining Vcmd and Actual speed in m/s
-    if (operation_mode_ == 0) // automatic
+    if (operation_mode_ == false) // automatic
     {
         setpoint_speed = commanded_speed_;
     }

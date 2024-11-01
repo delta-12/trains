@@ -18,7 +18,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
     types::Second elapsed_time1(1);
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode());
+    ASSERT_EQ(false, TC.GetOperationMode());
 
     // train stopped
     TC.SetCurrentSpeed(0);
@@ -43,7 +43,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
     train_controller::SoftwareTrainController TC(CLOCK);
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode());
+    ASSERT_EQ(false, TC.GetOperationMode());
 
     TC.SetCurrentSpeed(10);
 
@@ -68,7 +68,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
     types::Second elapsed_time1(1);
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode());
+    ASSERT_EQ(false, TC.GetOperationMode());
 
     // train going faster than commanded speed that will be input
     TC.SetCurrentSpeed(18);
@@ -95,7 +95,7 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
     types::Second elapsed_time1(1);
 
     // assert automatic mode
-    ASSERT_EQ(0, TC.GetOperationMode());
+    ASSERT_EQ(false, TC.GetOperationMode());
 
     // set current speed and commanded speed to same value
     TC.SetCurrentSpeed(10);
@@ -119,10 +119,10 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 
     types::Second elapsed_time1(1);
 
-    TC.SetOperationMode(1);
+    TC.SetOperationMode(true);
 
     // assert manual mode
-    ASSERT_EQ(1, TC.GetOperationMode());
+    ASSERT_EQ(true, TC.GetOperationMode());
 
     // train stopped
     TC.SetCurrentSpeed(0);
@@ -146,10 +146,10 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 
     types::Second elapsed_time1(1);
 
-    TC.SetOperationMode(1);
+    TC.SetOperationMode(true);
 
     // assert manual mode
-    ASSERT_EQ(1, TC.GetOperationMode());
+    ASSERT_EQ(true, TC.GetOperationMode());
 
     // train moving
     TC.SetCurrentSpeed(5);
@@ -173,10 +173,10 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
     types::Second elapsed_time1(1);
 
     // go to manual mode
-    TC.SetOperationMode(1);
+    TC.SetOperationMode(true);
 
     // assert manual mode
-    ASSERT_EQ(1, TC.GetOperationMode());
+    ASSERT_EQ(true, TC.GetOperationMode());
 
     // random current speed
     TC.SetCurrentSpeed(18);
@@ -202,10 +202,10 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
     types::Second elapsed_time1(1);
 
     // go to manual mode
-    TC.SetOperationMode(1);
+    TC.SetOperationMode(true);
 
     // assert manual mode
-    ASSERT_EQ(1, TC.GetOperationMode());
+    ASSERT_EQ(true, TC.GetOperationMode());
 
     // random current speed
     TC.SetCurrentSpeed(0);
