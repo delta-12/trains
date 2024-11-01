@@ -490,7 +490,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit actual_internal_temperature_;
         types::Meters distance_travelled_;
         bool arrived_;
-        bool operation_mode_; // 0: automatic, 1: manual
+        bool operation_mode_; // false: automatic, true: manual
 };
 
 } // namespace train_controller
