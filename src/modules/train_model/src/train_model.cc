@@ -36,7 +36,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         brake_failure_ = 0;
         engine_failure_ = 0;
         signal_pickup_failure_ = 0;
-        beacon_data_;//beacon data needs instantiation
+        //beacon_data_;//beacon data needs instantiation
         authority_ = 0;
         commanded_speed_ = 0;
         train_id_ = 0;

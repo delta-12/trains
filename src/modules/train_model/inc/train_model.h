@@ -102,7 +102,7 @@ class SoftwareTrainModel : public TrainModel
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Polarity GetTrackPolarity(void) const;
         types::Meters GetDistanceTraveled(void) const;
-        uint16_t GetPassengersDeboarding(void) const;
+        uint16_t GetPassengersDeboarding(void);
         uint16_t GetPassengersCount(void);
         types::Meters GetDistanceTravelled(void) const;
 
@@ -136,7 +136,7 @@ class SoftwareTrainModel : public TrainModel
         bool brake_failure_;
         bool engine_failure_;
         bool signal_pickup_failure_;
-        types::BeaconData beacon_data_;
+        //types::BeaconData beacon_data_;
         types::Blocks authority_;
         types::TrainId train_id_;
         types::Meters distance_traveled_;
