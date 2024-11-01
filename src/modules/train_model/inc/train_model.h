@@ -6,11 +6,12 @@
 #ifndef TRAINS_SRC_MODULES_TRAIN_MODEL_INC_TRAIN_MODEL_H
 #define TRAINS_SRC_MODULES_TRAIN_MODEL_INC_TRAIN_MODEL_H
 
+#include "tick_source.h"
+
 #include <cstdint>
 #include <string>
 
 #include "types.h"
-#include "tick_source.h"
 
 namespace train_model
 {
@@ -60,6 +61,7 @@ class SoftwareTrainModel : public TrainModel
 {
     public:
         SoftwareTrainModel(std::shared_ptr<TickSource> clk);
+
 
         //internal
         void Update();
