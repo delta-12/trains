@@ -16,8 +16,8 @@ namespace train_controller
 SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
     // Initializing variables
-    ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
-    kp_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    ki_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    kp_                             = TRAIN_CONTROLLER_DEFAULT_KP;
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
@@ -274,16 +274,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
     types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(DEFAULT_BLOCK_SPEED_LIMIT);
 
-
-
-    // Defining Vcmd and Actual speed in m/s
-    types::MetersPerSecond setpoint_speed = driver_speed_;
-
-
-
-    // convert to m/s from km/hr
-    block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
-
+    types::MetersPerSecond setpoint_speed;
 
     if (commanded_speed_ > block_speed_limit)
     {
@@ -323,7 +314,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     double ki_term = ki_ * integral_sum_;
 
     CheckFailureStates();
-    
+
     if (emergency_brake_ == true)
     {
         integral_sum_             = 0;

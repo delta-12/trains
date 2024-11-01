@@ -9,13 +9,12 @@
 #include <iomanip>
 #include <gtest/gtest.h>
 
-TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
-std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
-
 TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
-
+    
     types::Second elapsed_time1(1);
 
     // assert automatic mode
@@ -39,8 +38,10 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
 
 TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
-
+    
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
 
@@ -60,6 +61,8 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
 
 TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -85,6 +88,8 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
 
 TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -108,6 +113,8 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
 
 TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -133,6 +140,8 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
 
 TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -157,6 +166,8 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
 
 TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -184,6 +195,8 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 
 TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -214,6 +227,8 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
 
 TEST(TrainControllerPowerTests, EngineFailure)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -237,7 +252,7 @@ TEST(TrainControllerPowerTests, EngineFailure)
 
     // turn off emeergency brake and brake failure
     TC.SetEmergencyBrake(false);
-    TC.SetBrakeFailure(false);
+    TC.SetEngineFailure(false);
 
     // make train have service brake
     TC.SetCurrentSpeed(18);
@@ -261,6 +276,8 @@ TEST(TrainControllerPowerTests, EngineFailure)
 
 TEST(TrainControllerPowerTests, BrakeFailure)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -291,8 +308,9 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     TC.SetCommandedSpeed(15);
     TC.CalculateCommandedPower(elapsed_time1);
 
-    // turn brake failure back on
+    // turn brake faialure back on
     TC.SetBrakeFailure(true);
+    std::cout << TC.GetServiceBrake();
 
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
@@ -308,6 +326,8 @@ TEST(TrainControllerPowerTests, BrakeFailure)
 
 TEST(TrainControllerPowerTests, SignalPickupFailure)
 {
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
 
     types::Second elapsed_time1(1);
@@ -329,9 +349,9 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     // assert emergency brake is on
     ASSERT_EQ(TC.GetEmergencyBrake(), true);
 
-    // turn off emeergency brake and brake failure
+    // turn off emergency brake and brake failure
     TC.SetEmergencyBrake(false);
-    TC.SetBrakeFailure(false);
+    TC.SetSignalPickupFailure(false);
 
     // make train have service brake
     TC.SetCurrentSpeed(18);
