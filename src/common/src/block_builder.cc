@@ -124,7 +124,7 @@ types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string
     if (block.has_station)
     {
         double t = std::stod(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
-        t = t * 60 * 1000;
+        t = t * BLOCK_BUILDER_MINUTE_TO_SECOND_CONVERSION_FACTOR * BLOCK_BUILDER_SECOND_TO_MILISECONDS_CONVERSION_FACTOR;
         int                       time = int(t);
         std::chrono::milliseconds total_time_to_station(time);
         block.total_time_to_station = total_time_to_station;
