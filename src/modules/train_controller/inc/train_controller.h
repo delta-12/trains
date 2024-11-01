@@ -136,16 +136,16 @@ class SoftwareTrainController : public TrainController
          *
          */
 
-// map for block data -->
-// key:
-//          block number
-// values:
-//          index 0: block length           (m)
-//          index 1: block grade            (%)
-//          index 2: speed limit            (Km/Hr)
-//          index 3: elevation              (m)
-//          index 4: cumulative elevation   (m)
-//          index 5: underground            (0: no, 1: yes)
+        // map for block data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: block length           (m)
+        //          index 1: block grade            (%)
+        //          index 2: speed limit            (Km/Hr)
+        //          index 3: elevation              (m)
+        //          index 4: cumulative elevation   (m)
+        //          index 5: underground            (0: no, 1: yes)
 
         const std::unordered_map<int, std::vector<double>> red_block_data_map_ = {
             {1,  {50, 0.5, 40, 0.25, 0.25, 0}},
@@ -226,12 +226,12 @@ class SoftwareTrainController : public TrainController
             {76, {50, 0, 55, 0.00, -1.24, 1}}
         };
 
-// map for block infrastructure data -->
-// key:
-//          block number
-// values:
-//          index 0: infrastructure string
-//          index 1: station side
+        // map for block infrastructure data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: infrastructure string
+        //          index 1: station side
 
         const std::unordered_map<int, std::vector<std::string>> red_infrastructure_data_map_ = {
             {7,  {"STATION: SHADYSIDE", "Left/Right"}},
@@ -254,22 +254,22 @@ class SoftwareTrainController : public TrainController
         };
 
 
-/*
- *
- *** GREEN LINE MAP IMPLEMENTATION ***
- *
- */
+        /*
+        *
+        *** GREEN LINE MAP IMPLEMENTATION ***
+        *
+        */
 
-// map for block data -->
-// key:
-//          block number
-// values:
-//          index 0: block length           (m)
-//          index 1: block grade            (%)
-//          index 2: speed limit            (Km/Hr)
-//          index 3: elevation              (m)
-//          index 4: cumulative elevation   (m)
-//          index 5: underground            (0: no, 1: yes)
+        // map for block data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: block length           (m)
+        //          index 1: block grade            (%)
+        //          index 2: speed limit            (Km/Hr)
+        //          index 3: elevation              (m)
+        //          index 4: cumulative elevation   (m)
+        //          index 5: underground            (0: no, 1: yes)
 
         std::unordered_map<int, std::vector<double>> green_block_data_map_ = {
             {1,  {100, 0.5, 45, 0.5, 0.5, 0}},
@@ -424,12 +424,12 @@ class SoftwareTrainController : public TrainController
             {150, {35, 0, 20, 0, 0.5, 0}}
         };
 
-// map for block infrastructure data -->
-// key:
-//          block number
-// values:
-//          index 0: infrastructure string
-//          index 1: station side
+        // map for block infrastructure data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: infrastructure string
+        //          index 1: station side
 
         std::unordered_map<int, std::vector<std::string>> green_infrastructure_data_map_ = {
             {2,  {"STATION; PIONEER", "Left"}},
@@ -458,6 +458,61 @@ class SoftwareTrainController : public TrainController
             {123, {"STATION; OVERBROOK", "Right"}},
             {132, {"STATION; INGLEWOOD", "Left"}},
             {141, {"STATION; CENTRAL", "Right"}}
+        };
+
+        // vector for default green line route
+        // values represent block IDs
+        // path:
+        //      starts at section K from the yard
+        //      loops all the way through to section I
+        //      does another loop so it passes through section J
+        //      finishes in the yard after section I
+
+        std::vector<int> green_default_route_vector_ = {
+            63, 64, 65, 66, 67, 68, 69, 70, 71, 72,         /* K to Q fowards */
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+            93, 94, 95, 96, 97, 98, 99, 100, 
+            85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
+            101, 102, 103, 104, 105, 106, 107, 108,         /* R to Z forwards */
+            109, 110, 111, 112, 113, 114, 115, 116,
+            117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132,
+            133, 134, 135, 136, 137, 138, 139, 140,
+            141, 142, 143, 144, 145, 146, 147, 148,
+            149, 150,
+            28, 27, 26,25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            19, 18, 17, 16, 15, 14, 13, 12, 11,
+            10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+            13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
+            22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 44, 45, 46, 47, 48,
+            49, 50, 51, 52, 53, 54, 55, 56, 57,
+            58, 59, 60, 61, 62,                                       /* Section J */
+
+                                                                                                    /* Loop 2 */
+
+            63, 64, 65, 66, 67, 68, 69, 70, 71, 72,     /* K to Q fowards */
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+            93, 94, 95, 96, 97, 98, 99, 100, 
+            85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
+            101, 102, 103, 104, 105, 106, 107, 108,     /* R to Z forwards */
+            109, 110, 111, 112, 113, 114, 115, 116,
+            117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132,
+            133, 134, 135, 136, 137, 138, 139, 140,
+            141, 142, 143, 144, 145, 146, 147, 148,
+            149, 150,
+            28, 27, 26,25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            19, 18, 17, 16, 15, 14, 13, 12, 11,
+            10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+            13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
+            22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 44, 45, 46, 47, 48,
+            49, 50, 51, 52, 53, 54, 55, 56, 57,
         };
 
     private:
