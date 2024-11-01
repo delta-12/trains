@@ -170,7 +170,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             distance_traveled_ = distance;
         }
-        uint16_t SoftwareTrainModel::GetPassengersDeboarding(void) const
+        uint16_t SoftwareTrainModel::GetPassengersDeboarding(void)
         {
             //generate random number within bounds for leaving
             std::random_device              rd;              // Seed

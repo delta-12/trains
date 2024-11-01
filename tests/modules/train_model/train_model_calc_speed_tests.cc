@@ -30,7 +30,7 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
     EXPECT_DOUBLE_EQ(0, TM.GetActualSpeed());
 
     ////Setting power to 60000 W
-    TM.SetActualPower(60000);
+    TM.SetCommandedPower(60000);
     TM.SpeedCalc(elapsed_time2);
 
     ////Checking if the velocity corresponds to the time passed and the current speed
