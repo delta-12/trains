@@ -17,5 +17,5 @@ types::Meters MilesToMeters(const types::Miles miles);
 types::Miles MetersToMiles(const types::Meters meters);
 types::MetersPerSecond KilometersPerHourToMetersPerSecond(const types::KilometersPerHour kilometers_per_hour);
 types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters meters_per_second);
-
+types::Milisecond ConvertMinuteToMiliseconds(const std::string& minute_string);
 } // namespace convert

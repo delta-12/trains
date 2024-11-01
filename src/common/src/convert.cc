@@ -8,6 +8,8 @@
 #define CONVERT_METERS_TO_MILES                          (0.000621373)
 #define CONVERT_KILOMETERS_PER_HOUR_TO_METERS_PER_SECOND (0.27777)
 #define CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR (3.6)
+#define MINUTE_TO_SECOND_CONVERSION_FACTOR               (60)
+#define SECOND_TO_MILISECONDS_CONVERSION_FACTOR          (1000)
 
 namespace convert
 {
@@ -52,4 +54,12 @@ types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters 
     return meters_per_second * CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR;
 }
 
+types::Milisecond ConvertMinuteToMiliseconds(const std::string& minute_string)
+{
+    double t = std::stod(minute_string);
+    t = t * MINUTE_TO_SECOND_CONVERSION_FACTOR * SECOND_TO_MILISECONDS_CONVERSION_FACTOR;
+    int                       time = int(t);
+    std::chrono::milliseconds total_time_to_station(time);
+    return total_time_to_station;
+}
 } // namespace convert

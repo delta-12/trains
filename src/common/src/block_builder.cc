@@ -7,7 +7,6 @@
 #include "types.h"
 
 static std::vector<std::string> SplitBySemicolon(const std::string& input);
-static std::chrono::milliseconds ConvertMinuteToMiliseconds(const std::string& minute_string);
 
 BlockBuilder::BlockBuilder(void)
 {
@@ -124,7 +123,7 @@ types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string
 
     if (block.has_station)
     {
-        std::chrono::milliseconds total_time_to_station = ConvertMinuteToMiliseconds(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
+        std::chrono::milliseconds total_time_to_station = convert::ConvertMinuteToMiliseconds(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
         block.total_time_to_station = total_time_to_station;
     }
 
@@ -182,13 +181,4 @@ static std::vector<std::string> SplitBySemicolon(const std::string& input)
     }
 
     return result;
-}
-
-static std::chrono::milliseconds ConvertMinuteToMiliseconds(const std::string& minute_string)
-{
-    double t = std::stod(minute_string);
-    t = t * BLOCK_BUILDER_MINUTE_TO_SECOND_CONVERSION_FACTOR * BLOCK_BUILDER_SECOND_TO_MILISECONDS_CONVERSION_FACTOR;
-    int                       time = int(t);
-    std::chrono::milliseconds total_time_to_station(time);
-    return total_time_to_station;
 }

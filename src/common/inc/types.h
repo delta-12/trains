@@ -38,6 +38,7 @@ typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
 typedef std::chrono::duration<double>               Second;
+typedef std::chrono::milliseconds                   Milisecond;
 
 typedef enum
 {

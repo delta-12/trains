@@ -9,6 +9,7 @@
 #include <string>
 
 #include "types.h"
+#include "convert.h"
 
 #define BLOCK_BUILDER_CSV_FIELD_LINE                 0
 #define BLOCK_BUILDER_CSV_FIELD_SECTION              1
