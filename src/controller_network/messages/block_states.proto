@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package controller_messages;
+
+import "common.proto";
+
+message BlockState
+{
+    uint32 block = 1;
+    bool occupied = 2;
+    bool track_failure = 3;
+}
+
+message BlockStates {
+    TrackId track = 1;
+    repeated BlockState states = 2;
+}

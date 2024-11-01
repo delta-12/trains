@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package controller_messages;
+
+enum TrackId
+{
+    TRACK_ID_RED = 0;
+    TRACK_ID_GREEN = 1;
+}

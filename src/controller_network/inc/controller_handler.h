@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "block_states.pb.h"
 #include "connection.pb.h"
 #include "controller_network_protocols.h"
 #include "controller_port.h"
@@ -48,8 +49,9 @@ class ControllerHandler
         types::Error ReceiveMessageFromPort(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, const std::unique_ptr<ControllerPort> &port);
         types::Error SendMessages(ctc::Ctc &ctc_office);
         types::Error SendMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
+        types::Error HandleBlockStates(const size_t message_size, ctc::Ctc &ctc_office);
         types::Error HandleTrackCircuitData(const size_t message_size, simulator::Simulator &world_simulator);
-        types::Error SendTrackCircuitData(const types::TrackCircuitData &data);
+        types::Error SendTrackCircuitData(const ctc::Ctc &ctc_office);
 
         std::vector<std::unique_ptr<ControllerPort>> unmapped_ports_;
         std::array<std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>, CONTROLLERTYPE_MAX> connected_controllers_;
@@ -172,7 +174,14 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 {
     types::Error error = types::ERROR_NONE;
 
-    // TODO
+    for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
+    {
+        for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = connected_controllers_map.begin(); i != connected_controllers_map.end(); ++i)
+        {
+            // TODO error handling
+            error = ReceiveMessageFromPort(ctc_office, i->second);
+        }
+    }
 
     return error;
 }
@@ -197,13 +206,29 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ctc_office, const std::unique_ptr<ControllerPort> &port)
 {
-    return types::ERROR_INVALID_FORMAT;
+    types::Error error        = types::ERROR_NONE;
+    MessageType  message_type = MESSAGETYPE_NONE;
+    size_t       message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
+
+    if ((message_size > 0) && (MESSAGETYPE_NONE != message_type))
+    {
+        switch (message_type)
+        {
+        case MESSAGETYPE_BLOCK_STATES:
+            error = HandleBlockStates(message_size, ctc_office);
+            break;
+        default:
+            break;
+        }
+    }
+
+    return error;
 }
 
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, const std::unique_ptr<ControllerPort> &port)
 {
-    types::Error error        = types::ERROR_NONE;
+    types::Error error        = ReceiveMessageFromPort(ctc_office, port);
     MessageType  message_type = MESSAGETYPE_NONE;
     size_t       message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
 
@@ -214,6 +239,9 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
         case MESSAGETYPE_TRACK_CIRCUIT_DATA:
             error = HandleTrackCircuitData(message_size, world_simulator);
             break;
+        // TODO receive block outputs from wayside controller
+        // TODO receive train command from train controller
+        // TODO receive track information from train controller
         default:
             break;
         }
@@ -225,9 +253,11 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = SendTrackCircuitData(ctc_office);
 
-    // TODO
+    // TODO send maintenance mode to wayside controller
+    // TODO send suggested switch states to wayside controller
+    // TODO send train dispatch to train controller
 
     return error;
 }
@@ -235,16 +265,42 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office)
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = SendMessages(ctc_office);
 
-    std::vector<types::TrackCircuitData> track_circuit_data = ctc_office.GetSuggestedSpeedsAndAuthorities();
-    for (const types::TrackCircuitData &data : track_circuit_data)
+    // TODO send block occupancies to wayside controller
+    // TODO send train feedback to train controller
+    // TODO send train failures to train controller
+    // TODO send beacon data to train controller
+    // TODO send track circuit data to train controller
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::HandleBlockStates(const size_t message_size, ctc::Ctc &ctc_office)
+{
+    types::Error                     error = types::ERROR_NONE;
+    controller_messages::BlockStates block_states_message;
+
+    if (!block_states_message.ParseFromArray(message_buffer_.data(), message_size))
     {
-        // TODO error handle
-        error = SendTrackCircuitData(data);
+        error = types::ERROR_INVALID_FORMAT;
     }
+    else
+    {
+        size_t                         states = block_states_message.states_size();
+        std::vector<types::BlockState> block_states;
+        block_states.reserve(states);
 
-    // TODO
+        for (size_t i = 0; i < states; i++)
+        {
+            const controller_messages::BlockState &block_state = block_states_message.states(i);
+
+            block_states.emplace_back(block_state.block(), block_state.occupied(), block_state.track_failure());
+        }
+
+        error = ctc_office.SetBlockStates(static_cast<types::TrackId>(block_states_message.track()), block_states);
+    }
 
     return error;
 }
@@ -273,34 +329,45 @@ types::Error ControllerHandler<buffer_size>::HandleTrackCircuitData(const size_t
 }
 
 template <size_t buffer_size>
-types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const types::TrackCircuitData &data)
+types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const ctc::Ctc &ctc_office)
 {
-    types::WaysideId wayside;
-    types::Error     error = LookupWaysideController(wayside, data.track, data.block);
+    types::Error                         error              = types::ERROR_NONE;
+    std::vector<types::TrackCircuitData> track_circuit_data = ctc_office.GetSuggestedSpeedsAndAuthorities();
 
-    controller_messages::TrackCircuitData message;
-    message.set_track(static_cast<controller_messages::TrackId>(data.track));
-    message.set_block(data.block);
-    message.set_speed_meters_per_second(data.speed);
-    message.set_authority(data.authority);
-    size_t message_size = message.ByteSizeLong();
+    for (const types::TrackCircuitData &data : track_circuit_data)
+    {
+        types::WaysideId wayside;
+        error = LookupWaysideController(wayside, data.track, data.block);
 
-    if (types::ERROR_NONE != error)
-    {
-        // Failed to lookup wayside controller, do nothing
-    }
-    else if (!connected_controllers_[CONTROLLERTYPE_WAYSIDE].contains(wayside))
-    {
-        // Wayside controller is not connected, do nothing
-    }
-    else if (!message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
-    {
-        // Failed to serialize message, do nothing
-    }
-    else
-    {
-        // TODO error handle
-        connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size);
+        controller_messages::TrackCircuitData message;
+        message.set_track(static_cast<controller_messages::TrackId>(data.track));
+        message.set_block(data.block);
+        message.set_speed_meters_per_second(data.speed);
+        message.set_authority(data.authority);
+        size_t message_size = message.ByteSizeLong();
+
+        if (types::ERROR_NONE != error)
+        {
+            // Failed to lookup wayside controller, do nothing
+        }
+        else if (!connected_controllers_[CONTROLLERTYPE_WAYSIDE].contains(wayside))
+        {
+            // Wayside controller is not connected, do nothing
+        }
+        else if (!message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
+        {
+            // Failed to serialize message, do nothing
+        }
+        else
+        {
+            // TODO error handle
+            connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size);
+        }
+
+        if (types::ERROR_NONE != error)
+        {
+            break;
+        }
     }
 
     return error;
