@@ -1,5 +1,7 @@
 #include "train_controller.h"
 
+#include <iostream>
+#include <unistd.h>
 #include <cstdint>
 #include <chrono>
 
@@ -13,8 +15,8 @@ namespace train_controller
 SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
     // Initializing variables
-    ki_                             = TRAIN_CONTROLLER_DEFAULT_KP;
-    kp_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    ki_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    kp_                             = TRAIN_CONTROLLER_DEFAULT_KP;
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
@@ -37,6 +39,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_ = 0;
     distance_travelled_          = 0;
     arrived_                     = 0;
+    operation_mode_              = false;
     last_tick_updated_           = (*clock_).GetTick();
 
 
@@ -134,6 +137,11 @@ types::Meters SoftwareTrainController::GetAuthority() const
     return authority_;
 }
 
+bool SoftwareTrainController::GetOperationMode() const
+{
+    return operation_mode_;
+}
+
 // Setters
 void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
 {
@@ -212,16 +220,31 @@ void SoftwareTrainController::SetAuthority(const types::Meters authority)
 
 void SoftwareTrainController::SetKP(const uint16_t kp)
 {
-    kp_ = kp;
+    if (distance_travelled_ == 0)
+    {
+        kp_ = kp;
+    }
 }
 void SoftwareTrainController::SetKI(const uint16_t ki)
 {
-    ki_ = ki;
+    if (distance_travelled_ == 0)
+    {
+        ki_ = ki;
+    }
 }
 
 void SoftwareTrainController::SetArrived(const bool arrived)
 {
     arrived_ = arrived;
+}
+
+void SoftwareTrainController::SetOperationMode(const bool mode)
+{
+    if (operation_mode_ == false && mode == true)
+    {
+        driver_speed_   = commanded_speed_;
+        operation_mode_ = mode; // cannot switch back to auto
+    }
 }
 
 
@@ -248,17 +271,32 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    types::MetersPerSecond block_speed_limit = DEFAULT_BLOCK_SPEED_LIMIT; // TODO - NNF-182: Add hashmap with track data to work with the correct tracj parameters.
+    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(DEFAULT_BLOCK_SPEED_LIMIT);
+
+    types::MetersPerSecond setpoint_speed;
+
+    if (commanded_speed_ > block_speed_limit)
+    {
+        commanded_speed_ = block_speed_limit;
+    }
+
+    if (driver_speed_ > block_speed_limit)
+    {
+        driver_speed_ = block_speed_limit;
+    }
+    else if (driver_speed_ < 0)
+    {
+        driver_speed_ = 0;
+    }
 
     // Defining Vcmd and Actual speed in m/s
-    types::MetersPerSecond setpoint_speed = driver_speed_;
-
-    // convert to m/s from km/hr
-    block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
-
-    if (setpoint_speed > block_speed_limit)
+    if (operation_mode_ == false) // automatic
     {
-        setpoint_speed = block_speed_limit;
+        setpoint_speed = commanded_speed_;
+    }
+    else // manual
+    {
+        setpoint_speed = driver_speed_;
     }
 
     // Calculating speed_error
@@ -274,21 +312,23 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     // Calculating Ki term
     double ki_term = ki_ * integral_sum_;
 
+    CheckFailureStates();
 
-    if ((emergency_brake_ == true) || arrived_)
+    if (emergency_brake_ == true)
     {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
+        integral_sum_             = 0;
+        commanded_power_          = 0;
+        service_brake_percentage_ =  0;
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
-    else if (current_speed_ > driver_speed_)
+    else if (current_speed_ > setpoint_speed)
     {
         integral_sum_ = 0;
 
         commanded_power_ = 0;
 
-        types::MetersPerSecond speed_difference = current_speed_ - driver_speed_;
+        types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
 
         //Function to to assign service brake
         CalculateServiceBrake(speed_difference);
@@ -302,7 +342,6 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     //Normal power calculation
     else
     {
-
         commanded_power_ = kp_term + ki_term;
 
         if (commanded_power_ > max_power_)
@@ -316,9 +355,6 @@ void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed
 {
     types::MetersPerSecond maximum_speed = convert::KilometersPerHourToMetersPerSecond(train_max_speed_);
     //Bins to increment service brake percentage by 10%
-
-    // speed diff <= train_max_mps*0.1
-
 
     //TODO - NNF-184: Rework this if-else statement into a single calculation
     if ((speed_difference > 0)  && (speed_difference <= (maximum_speed * 0.1)))
@@ -371,5 +407,13 @@ void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_
 types::Second SoftwareTrainController::GetDeltaTime(void) const
 {
     return delta_time_;
+}
+
+void SoftwareTrainController::CheckFailureStates(void)
+{
+    if ((engine_failure_ == true) || (signal_pickup_failure_ == true) || (brake_failure_ == true))
+    {
+        emergency_brake_ = true;
+    }
 }
 }

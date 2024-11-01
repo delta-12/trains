@@ -94,64 +94,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 ################################################################################
-# CTC UI test build
-################################################################################
-add_executable(ctc_tests_ui
-    ${TESTS_DIR}/modules/ctc/ctc_tests_ui.cc
-    ${CTC_SRCS}
-    ${COMMON_SRCS}
-)
-target_include_directories(ctc_tests_ui PRIVATE ${INC_DIRS})
-target_link_libraries(ctc_tests_ui PRIVATE Slint::Slint)
-slint_target_sources(ctc_tests_ui ${UI_DIR}/ctc_ui.slint NAMESPACE ui)
-
-################################################################################
-# Wayside Controller UI test build
-################################################################################
-add_executable(wayside_controller_tests_ui
-    ${TESTS_DIR}/modules/wayside_controller/wayside_controller_tests_ui.cc
-    ${WAYSIDE_CONTROLLER_SRCS}
-    ${COMMON_SRCS}
-)
-target_include_directories(wayside_controller_tests_ui PRIVATE ${INC_DIRS})
-target_link_libraries(wayside_controller_tests_ui PRIVATE Slint::Slint)
-slint_target_sources(wayside_controller_tests_ui ${UI_DIR}/wayside_controller_ui.slint NAMESPACE ui)
-
-################################################################################
-# Track Model UI test build
-################################################################################
-add_executable(track_model_tests_ui
-    ${TESTS_DIR}/modules/track_model_tests_ui.cc
-    ${TRACK_MODEL_SRCS}
-)
-target_include_directories(track_model_tests_ui PRIVATE ${INC_DIRS})
-target_link_libraries(track_model_tests_ui PRIVATE Slint::Slint)
-slint_target_sources(track_model_tests_ui ${UI_DIR}/track_model_ui.slint NAMESPACE ui)
-
-################################################################################
-# Train Model UI test build
-################################################################################
-add_executable(train_model_tests_ui
-    ${TESTS_DIR}/modules/train_model_tests_ui.cc
-    ${TRAIN_MODEL_SRCS}
-)
-target_include_directories(train_model_tests_ui PRIVATE ${INC_DIRS})
-target_link_libraries(train_model_tests_ui PRIVATE Slint::Slint)
-slint_target_sources(train_model_tests_ui ${UI_DIR}/train_model_ui.slint NAMESPACE ui)
-
-################################################################################
-# Train Controller UI test build
-################################################################################
-add_executable(train_controller_tests_ui
-    ${TESTS_DIR}/modules/train_controller/train_controller_tests_ui.cc
-    ${TRAIN_CONTROLLER_SRCS}
-    ${COMMON_SRCS}
-)
-target_include_directories(train_controller_tests_ui PRIVATE ${INC_DIRS})
-target_link_libraries(train_controller_tests_ui PRIVATE Slint::Slint)
-slint_target_sources(train_controller_tests_ui ${UI_DIR}/train_controller_ui.slint NAMESPACE ui)
-
-################################################################################
 # Trains build
 ################################################################################
 if (WIN32)
