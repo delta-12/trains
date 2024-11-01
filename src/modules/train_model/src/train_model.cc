@@ -94,19 +94,19 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             return signal_pickup_failure_;
         }
-        types::BeaconData SoftwareTrainModel::GetBeaconData(void) const
-        {
-            return beacon_data_;
-        }
+        //types::BeaconData SoftwareTrainModel::GetBeaconData(void) const
+        //{
+        //    return beacon_data_;
+        //}
         types::Blocks SoftwareTrainModel::GetAuthority(void) const
         {
             return authority_;
         }
-        void SoftwareTrainModel::SetCommandedSpeed(const types::MilesPerHour speed)
+        void SoftwareTrainModel::SetCommandedSpeed(const types::MetersPerSecond speed)
         {
             commanded_speed_ = speed;
         }
-        types::MilesPerHour SoftwareTrainModel::GetCommandedSpeed(void) const
+        types::MetersPerSecond SoftwareTrainModel::GetCommandedSpeed(void) const
         {
             return commanded_speed_;
         }
@@ -118,7 +118,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             return power_;
         }
-        void SoftwareTrainModel::SetActualPower(const types::Watts watts)
+        void SoftwareTrainModel::SetCommandedPower(const types::Watts watts)
         {
             power_ = watts;
         }
@@ -130,7 +130,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             return track_polarity_;
         }
-        void SoftwareTrainModel::SetStationAnnouncement(const std::string announcement)
+        void SoftwareTrainModel::SetStationAnnouncement(const std::string &announcement)
         {
             station_announcement_ = announcement;
         }
@@ -170,7 +170,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             distance_traveled_ = distance;
         }
-        uint16_t SoftwareTrainModel::GetPassengersLeaving(void) const
+        uint16_t SoftwareTrainModel::GetPassengersDeboarding(void) const
         {
             //generate random number within bounds for leaving
             std::random_device              rd;              // Seed
@@ -186,12 +186,16 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             passengers_boarding_ = passengers;
         }
+        types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
+        {
+            return distance_travelled_;
+        }
         uint16_t SoftwareTrainModel::GetPassengersCount(void)
         {
             //adds new passengers
             passengers_on_board_ += passengers_boarding_;
             //removes old passengers
-            passengers_on_board_ -= GetPassengersLeaving();
+            passengers_on_board_ -= GetPassengersDeboarding();
             //returns passengers on board (should be called and updated only when at station)
             return passengers_on_board_;
         }
@@ -203,10 +207,10 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
         {
             track_polarity_ = polarity;
         }
-        void SoftwareTrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
-        {
-            beacon_data_ = data;
-        }
+        //void SoftwareTrainModel::SetBeaconData(const types::BeaconData &data, std::size_t &size)
+        //{
+        //    beacon_data_ = data;
+        //}
         void SoftwareTrainModel::SpeedCalc(types::Second delta)
         {
             if (velocity_ == 0 && power_ != 0)//avoids dividing by 0
