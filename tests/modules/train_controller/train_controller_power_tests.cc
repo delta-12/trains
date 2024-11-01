@@ -14,7 +14,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
-    
+
     types::Second elapsed_time1(1);
 
     // assert automatic mode
@@ -41,7 +41,7 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
-    
+
     // assert automatic mode
     ASSERT_EQ(0, TC.GetOperationMode());
 
