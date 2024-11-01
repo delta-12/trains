@@ -11,7 +11,9 @@
 
 #include "train_model.h"
 #include "types.h"
-#include "graph.h"
+
+const types::Meters length_of_train = 32;
+const uint16_t      train_capacity  = 222;
 
 namespace track_model
 {
@@ -31,7 +33,6 @@ class TrackModel
         virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed) = 0;
         virtual types::Error SetAuthority(const types::BlockId block, const types::Blocks authority)           = 0;
         virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const               = 0;
-        virtual std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void)                          = 0;
 };
 
 class SoftwareTrackModel : public TrackModel
@@ -57,7 +58,6 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
         types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
         types::Error SetTrainBlock(const types::BlockId block);
-        types::Block GetBlock(const types::BlockId block);
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
         types::Error RemoveTrainModel(int train_element);
 
@@ -71,7 +71,6 @@ class SoftwareTrackModel : public TrackModel
         std::vector<types::BlockId> current_train_block_;
         std::vector<uint16_t> passenger_counts_;
         types::DegreesFahrenheit external_temperature_;
-        types::Meters train_length_ = 32;
         std::vector<types::Meters> distance_traveled_;
 };
 

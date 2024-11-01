@@ -15,13 +15,10 @@ namespace track_model
 //constructor for when a track is passsed in
 types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder)
 {
-    //setting trackID
     track_ = track;
 
-    //fill vector with blocks
     track_path_ = blocks;
 
-    //fill blocks_ vector
     blocks_ = inorder;
 
     return types::ERROR_NONE;
@@ -29,27 +26,19 @@ types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, cons
 
 types::TrackId SoftwareTrackModel::GetTrackId(void)
 {
-    // Implementation logic to get the Track ID
     return track_;
 }
 
 types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::TrainModel> train)
 {
-    // Implementation logic to add a train model
-
-    //TODO: ADD FAILURE STATES
-
-    //add model
     trains_.push_back(train);
 
-    //populate occupied train block 2d vector with a new vector for this train
     occupied_train_blocks_.push_back({0});
 
     current_train_block_.push_back(0);
 
     train_head_.push_back(0);
 
-    //populate passenger count vector
     passenger_counts_.push_back(0);
 
     return types::ERROR_NONE;
@@ -58,17 +47,14 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
 
 void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const
 {
-    // Populating the trains vector with current train models
     trains = trains_;
 }
 
 
 void SoftwareTrackModel::Update(void)
 {
-    //loop through train models
     for (int i = 0; i < trains_.size(); i++)
     {
-        //fetch distance traveled
         types::MetersPerSecond d_traveled = trains_[i]->GetDistanceTraveled();
 
         types::MetersPerSecond temp_distance = 0;
@@ -83,7 +69,7 @@ void SoftwareTrackModel::Update(void)
             types::BlockId oldblock = occupied_train_blocks_[i][k];
             blocks_[oldblock].occupied = 0;
         }
-        //clear occupancies
+
         occupied_train_blocks_[i].clear();
 
         //traverse graph from current block to account for this length
@@ -119,13 +105,12 @@ void SoftwareTrackModel::Update(void)
 
                 current_train_block_[i] = j;
 
-                //calculate head
                 train_head_[i] = temp_distance - d_traveled;
 
                 //loop to account for length of train
                 types::Meters current_length = blocks_[current_block].length - train_head_[i];
 
-                while (current_length < 32)
+                while (current_length < length_of_train)
                 {
                     //did we hit the yard?
                     if (track_path_[j].block == 0)
@@ -161,27 +146,24 @@ void SoftwareTrackModel::Update(void)
             }
         }
     }
-    //TODO: OCCUPY THE BLOCKS BEHIND THE TRAIN BLOCK IF THE LENGTH OF TRAIN > LENGTH OF CURRENT BLOCK
 
 }
 
 
 
-types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, const bool Switched)
+types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, const bool switched)
 {
-    // Logic to set the Switch state for the specified block
-    if (blocks_.size() < block)
+    if (blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1)
     {
-        return types::ERROR_INVALID_BLOCK;
+        blocks_[block].switched = switched;
+
+        return types::ERROR_NONE;
     }
-    if (block <= 0)
+    else
     {
         return types::ERROR_INVALID_BLOCK;
     }
 
-    blocks_[block].switched = Switched;
-
-    return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
@@ -191,36 +173,11 @@ types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, co
 
 types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, const bool on)
 {
-    // Logic to set the red traffic light state for the specified block
-    if (blocks_.size() < block)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (blocks_[block].has_light != 1)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    if (on == 1)
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_RED;
-    }
-    else
-    {
-        blocks_[block].light_color = types::LIGHTCOLOR_NONE;
-    }
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
-
     return types::ERROR_NONE;
 }
 
@@ -231,103 +188,78 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-    if (blocks_.size() < block)
+    if (blocks_.size() > block && block > 0)
     {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //loop through trains
-    for (int i = 0; i < trains_.size(); i++)
-    {
-        //does speed get sent to the block the (front of the) train is on?
-        for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+        for (int i = 0; i < trains_.size(); i++)
         {
-            if (occupied_train_blocks_[i][j] == block)
+            for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
-                trains_[i]->SetCommandedSpeed(speed);
-
-                return types::ERROR_NONE;
+                if (occupied_train_blocks_[i][j] == block)
+                {
+                    trains_[i]->SetCommandedSpeed(speed);
+                }
             }
         }
-    }
 
-    return types::ERROR_INVALID_BLOCK;
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Blocks authority)
 {
-    // Logic to set the authority
-
-    if (blocks_.size() < block)
+    if (blocks_.size() > block && block > 0)
     {
-        return types::ERROR_INVALID_BLOCK;
-    }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    //loop through trains
-    for (int i = 0; i < trains_.size(); i++)
-    {
-        //does authority get sent to the block the (front of the) train is on?
-        for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+        for (int i = 0; i < trains_.size(); i++)
         {
-            //std::cout << std::endl << occupied_train_blocks_[i][j] << std::endl;
-            if (occupied_train_blocks_[i][j] == block)
+            for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
-                trains_[i]->SetAuthority(authority);
-
-                return types::ERROR_NONE;
+                if (occupied_train_blocks_[i][j] == block)
+                {
+                    trains_[i]->SetAuthority(authority);
+                }
             }
+
         }
 
+        return types::ERROR_NONE;
     }
-
-    return types::ERROR_INVALID_BLOCK;
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, bool &occupied) const
 {
-    // Logic to determine block occupancy and set the occupied variable
-
     //checking if block exists
-    if (blocks_.size() < block)
+    if (blocks_.size() > block && block > 0)
+    {
+        occupied = blocks_[block].occupied;
+
+        return types::ERROR_NONE;
+    }
+    else
     {
         return types::ERROR_INVALID_BLOCK;
     }
-    if (block <= 0)
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
-
-    occupied = blocks_[block].occupied;
-
-    return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const bool broken)
 {
-    // Logic to set the broken rail state for the specified block
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure)
 {
-    // Logic to set the track circuit failure state for the specified block
-
     return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, const bool power_failure)
 {
-    // Logic to set the power failure state for the specified block
-
     return types::ERROR_NONE;
 }
 
@@ -339,32 +271,30 @@ types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahr
 //is this getting callled only when deboarding is gonna happen?
 types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers)
 {
-    //get the passengers deboarding
-    const uint16_t deboarding = passengers;
+    if (trains_.size() > train)
+    {
+        const uint16_t deboarding = passengers;
 
-    //subtract from total passengers
-    uint16_t vacancy = 222 - passenger_counts_[train] + deboarding;
+        //subtract from total passengers
+        uint16_t vacancy = train_capacity - passenger_counts_[train] + deboarding;
 
-    //generate random number within bounds for boarding
-    std::random_device              rd;              // Seed
-    std::mt19937                    gen(rd());       // Mersenne Twister engine
-    std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and vacancy
+        //generate random number within bounds for boarding
+        std::random_device              rd;              // Seed
+        std::mt19937                    gen(rd());       // Mersenne Twister engine
+        std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and vacancy
 
-    // Generate a random number
-    int randomNumber = dis(gen);
+        int randomNumber = dis(gen);
 
-    //set passengers boarding
-    trains_[train]->SetPassengersBoarding(randomNumber);
+        trains_[train]->SetPassengersBoarding(randomNumber);
 
-    //update passengers on board
-    passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
+        passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
 
-    return types::ERROR_NONE;
-}
-
-types::Block SoftwareTrackModel::GetBlock(const types::BlockId block)
-{
-    return blocks_[block];
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_TRAIN;
+    }
 }
 
 std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlocks(void)
@@ -374,14 +304,24 @@ std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlo
 
 types::Error SoftwareTrackModel::RemoveTrainModel(int train_element)
 {
-    if (trains_.size() <= train_element)
+    if (trains_.size() > train_element)
+    {
+        trains_.erase(trains_.begin() + train_element);
+
+        occupied_train_blocks_.erase(occupied_train_blocks_.begin() + train_element);
+
+        current_train_block_.erase(current_train_block_.begin() + train_element);
+
+        train_head_.erase(train_head_.begin() + train_element);
+
+        passenger_counts_.erase(passenger_counts_.begin() + train_element);
+
+        return types::ERROR_NONE;
+    }
+    else
     {
         return types::ERROR_INVALID_TRAIN;
     }
-
-    trains_.erase(trains_.begin() + train_element);
-
-    return types::ERROR_NONE;
 }
 
 } // namespace track_model
