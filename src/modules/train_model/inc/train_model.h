@@ -18,42 +18,43 @@ namespace train_model
 class TrainModel
 {
     public:
-        //setters
-        virtual void SetTrainId(const types::TrainId train) = 0;
-        virtual void SetEmergencyBrake(const bool emergency_brake) = 0;
-        virtual void SetEngineFailure(const bool engine_failure) = 0;
-        virtual void SetBrakeFailure(const bool brake_failure) = 0;
-        virtual void SetSignalPickupFailure(const bool signal_pickup_failure) = 0;
-        virtual void SetGrade(const double grade) = 0;
-        virtual void SetBrake(const double brake) = 0;
-        virtual void SetStationAnnouncement(std::string announcement) = 0;
-        virtual void SetHeadlights(const bool on) = 0;
-        virtual void SetInternalLights(const bool on) = 0;
-        virtual void SetLeftDoorsState(const bool open) = 0;
-        virtual void SetRightDoorsState(const bool open) = 0;
+        virtual void SetTrainId(const types::TrainId train)                                  = 0;
+        virtual void SetEmergencyBrake(const bool emergency_brake)                           = 0;
+        virtual void SetEngineFailure(const bool engine_failure)                             = 0;
+        virtual void SetBrakeFailure(const bool brake_failure)                               = 0;
+        virtual void SetSignalPickupFailure(const bool signal_pickup_failure)                = 0;
+
+        virtual bool GetBrakeFailure(void) const                                             = 0;
+        virtual std::size_t GetBeaconData(types::BeaconData &data) const                     = 0;
+        virtual types::Blocks GetAuthority(void) const                                       = 0;
+        virtual types::MetersPerSecond GetCommandedSpeed(void) const                         = 0;
+        virtual types::MetersPerSecond GetActualSpeed(void) const                            = 0;
+        virtual bool GetEngineFailure(void) const                                            = 0;
+        virtual bool GetSignalPickupFailure(void) const                                      = 0;
+        virtual types::Watts GetActualPower(void) const                                      = 0;
+        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const            = 0;
+        virtual types::Polarity GetTrackPolarity(void) const                                 = 0;
+        virtual uint16_t GetPassengersDeboarding(void)                                       = 0;
+        virtual types::BlockId GetBlockId(void)                                              = 0;
+        virtual types::TrainId GetTrainId(void) const                                        = 0;
+        virtual types::TrainId GetDistanceTravelled(void) const                              = 0;
+
+        virtual void SetStationAnnouncement(const std::string &announcement)                 = 0;
+        virtual void SetGrade(const float grade)                                             = 0;
+        virtual void SetBrake(const float brake)                                             = 0;
+        virtual void SetHeadlights(const bool on)                                            = 0;
+        virtual void SetInternalLights(const bool on)                                        = 0;
+        virtual void SetLeftDoorsState(const bool open)                                      = 0;
+        virtual void SetRightDoorsState(const bool open)                                     = 0;
+        virtual void SetCommandedPower(const types::Watts power)                             = 0;
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees) = 0;
-        virtual void SetCommandedSpeed(const types::MilesPerHour speed) = 0;
-        virtual void SetAuthority(const types::Blocks blocks) = 0;
-        virtual void SetPassengersBoarding(const uint16_t passengers) = 0;
-        virtual void SetTrackPolarity(const types::Polarity polarity) = 0;
-        virtual void SetBeaconData(const types::BeaconData &data, std::size_t &size) = 0;
-        virtual void SetDistanceTraveled(const types::Meters distance) = 0;
-        virtual void SetActualPower(const types::Watts watts) = 0;
-        
-        //getters
-        virtual types::TrainId GetTrainId(void) const = 0;
-        virtual bool GetBrakeFailure(void) const = 0;
-        virtual bool GetEngineFailure(void) const = 0;
-        virtual bool GetSignalPickupFailure(void) const = 0;
-        virtual types::BeaconData GetBeaconData(void) const = 0;
-        virtual types::Blocks GetAuthority(void) const = 0;
-        virtual types::MilesPerHour GetCommandedSpeed(void) const = 0;
-        virtual types::MetersPerSecond GetActualSpeed(void) const = 0;
-        virtual types::Watts GetActualPower(void) const = 0;
-        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const = 0;
-        virtual types::Polarity GetTrackPolarity(void) const = 0;
-        virtual types::Meters GetDistanceTraveled(void) const = 0;
-        virtual uint16_t GetPassengersCount(void) = 0;
+        virtual void SetDistanceTraveled(const types::Meters distance)                       = 0;
+        virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                   = 0;
+        virtual void SetAuthority(const types::Blocks blocks)                                = 0;
+        virtual void SetPassengersBoarding(const uint16_t passegners)                        = 0;
+        virtual void SetTrackPolarity(const types::Polarity polarity)                        = 0;
+        virtual void SetBeaconData(const types::BeaconData &data, std::size_t &size)         = 0;
+
 };
 
 
