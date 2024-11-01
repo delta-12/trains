@@ -260,12 +260,12 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office)
 
     if (types::ERROR_NONE == error)
     {
-        // TODO send maintenance mode to wayside controller
+        // TODO NNF-230 send maintenance mode to wayside controller
     }
 
     if (types::ERROR_NONE == error)
     {
-        // TODO send suggested switch states to wayside controller
+        // TODO NNF-230 send suggested switch states to wayside controller
     }
 
     // TODO NNF-229 send train dispatch to train controller

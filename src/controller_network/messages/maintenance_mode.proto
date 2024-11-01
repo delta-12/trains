@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package controller_messages;
+
+import "common.proto";
+
+message MaintenanceMode {
+    TrackId track = 1;
+    uint32 block = 2;
+    bool maintenance = 3;
+}

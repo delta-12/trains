@@ -64,17 +64,22 @@ types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_pt
     return error;
 }
 
-// void Simulator::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const
-// {
-//     std::vector<std::shared_ptr<train_model::TrainModel>> track_trains;
+std::shared_ptr<train_model::TrainModel> Simulator::GetTrainModel(const types::TrainId train)
+{
+    std::shared_ptr<train_model::TrainModel> model(nullptr);
 
-//     for (std::vector<std::shared_ptr<track_model::TrackModel>>::const_iterator i = tracks_.begin(); i != tracks_.end(); ++i)
-//     {
-//         i->get()->GetTrainModels(track_trains);
+    for (const std::pair<types::TrackId, std::shared_ptr<track_model::TrackModel>> track_model : tracks_)
+    {
+        model = track_model.second->GetTrainModel(train);
 
-//         trains.insert(std::end(trains), std::begin(track_trains), std::end(track_trains));
-//     }
-// }
+        if (nullptr != model)
+        {
+            break;
+        }
+    }
+
+    return model;
+}
 
 types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
 {

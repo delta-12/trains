@@ -24,12 +24,11 @@ class Simulator
         types::Error DeleteTrackModel(const types::TrackId track);
         void GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const;
         types::Error AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train);
-        // void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
+        std::shared_ptr<train_model::TrainModel> GetTrainModel(const types::TrainId train);
         types::Error SetTrackCircuitData(const types::TrackCircuitData &data);
         types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched);
         types::Error SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed);
         types::Error SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color);
-    // TODO add methods for each set communication between modules
 
     private:
         std::unordered_map<types::TrackId, std::shared_ptr<track_model::TrackModel>> tracks_;
