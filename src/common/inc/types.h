@@ -117,6 +117,7 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+    types::Polarity polarity;
 };
 
 struct TrackCircuitData

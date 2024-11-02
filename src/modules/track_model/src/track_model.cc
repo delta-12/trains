@@ -105,6 +105,8 @@ void SoftwareTrackModel::Update(void)
 
                 current_train_block_[i] = j;
 
+                trains_[i]->SetTrackPolarity(track_path_[j].polarity);
+
                 train_head_[i] = temp_distance - d_traveled;
 
                 //loop to account for length of train

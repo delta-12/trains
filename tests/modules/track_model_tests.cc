@@ -517,6 +517,61 @@ TEST(TrackModelTests, Boarding)
     ASSERT_EQ(test_block.has_station, 1);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+}
 
+TEST(TrackModelTests, Polarity)
+{
+    std::filesystem::path           base_path = std::filesystem::current_path();
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                       parser(path);
+    CsvParser                       parser2(path2);
+    BlockBuilder                    bb(parser.GetRecords());
+    BlockBuilder                    bb2(parser2.GetRecords());
+    types::Block                    block;
+    track_model::SoftwareTrackModel track;
+    train_model::TrainModelImpl     train;
 
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+
+    track.AddTrainModel(ptr);
+
+    std::vector<std::shared_ptr<train_model::TrainModel>> trains;
+
+    track.GetTrainModels(trains);
+
+    ASSERT_EQ(trains.size(), 1);
+
+    types::Polarity current_polarity;
+
+    track.Update();
+
+    current_polarity = ptr->GetTrackPolarity();
+
+    ASSERT_EQ(current_polarity, types::POLARITY_NEGATIVE);
+
+    track.Update();
+
+    auto otb = track.GetOccupiedTrainBlocks();
+
+    // auto otb = track.GetOccupiedTrainBlocks();
+    // for (int i = 0; i < otb[0].size(); i++)
+    // {
+    //     std::cout << std::endl << otb[0][i] << std::endl;
+    // }
+
+    //train is now on block 65, where polarity is 1
+    types::Block test_block;
+
+    ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
+
+    ASSERT_EQ(test_block.has_station, 1);
+
+    current_polarity = ptr->GetTrackPolarity();
+
+    ASSERT_EQ(current_polarity, types::POLARITY_POSITIVE);
+
+    ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 }
