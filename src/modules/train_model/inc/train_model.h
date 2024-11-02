@@ -18,25 +18,25 @@ namespace train_model
 class TrainModel
 {
     public:
-        virtual void SetTrainId(const types::TrainId train)                                  = 0;
-        virtual void SetEmergencyBrake(const bool emergency_brake)                           = 0;
-        virtual void SetEngineFailure(const bool engine_failure)                             = 0;
-        virtual void SetBrakeFailure(const bool brake_failure)                               = 0;
-        virtual void SetSignalPickupFailure(const bool signal_pickup_failure)                = 0;
+        virtual void SetTrainId(const types::TrainId train)                   = 0;
+        virtual void SetEmergencyBrake(const bool emergency_brake)            = 0;
+        virtual void SetEngineFailure(const bool engine_failure)              = 0;
+        virtual void SetBrakeFailure(const bool brake_failure)                = 0;
+        virtual void SetSignalPickupFailure(const bool signal_pickup_failure) = 0;
 
-        virtual bool GetBrakeFailure(void) const                                             = 0;
+        virtual bool GetBrakeFailure(void) const = 0;
         //virtual std::size_t GetBeaconData(types::BeaconData &data) const                     = 0;
-        virtual types::Blocks GetAuthority(void) const                                       = 0;
-        virtual types::MetersPerSecond GetCommandedSpeed(void) const                         = 0;
-        virtual types::MetersPerSecond GetActualSpeed(void) const                            = 0;
-        virtual bool GetEngineFailure(void) const                                            = 0;
-        virtual bool GetSignalPickupFailure(void) const                                      = 0;
-        virtual types::Watts GetActualPower(void) const                                      = 0;
-        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const            = 0;
-        virtual types::Polarity GetTrackPolarity(void) const                                 = 0;
-        virtual uint16_t GetPassengersDeboarding(void)                                       = 0;
-        virtual types::TrainId GetTrainId(void) const                                        = 0;
-        virtual types::Meters GetDistanceTravelled(void) const                               = 0;
+        virtual types::Blocks GetAuthority(void) const                            = 0;
+        virtual types::MetersPerSecond GetCommandedSpeed(void) const              = 0;
+        virtual types::MetersPerSecond GetActualSpeed(void) const                 = 0;
+        virtual bool GetEngineFailure(void) const                                 = 0;
+        virtual bool GetSignalPickupFailure(void) const                           = 0;
+        virtual types::Watts GetActualPower(void) const                           = 0;
+        virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const = 0;
+        virtual types::Polarity GetTrackPolarity(void) const                      = 0;
+        virtual uint16_t GetPassengersDeboarding(void)                            = 0;
+        virtual types::TrainId GetTrainId(void) const                             = 0;
+        virtual types::Meters GetDistanceTravelled(void) const                    = 0;
 
         virtual void SetStationAnnouncement(const std::string &announcement)                 = 0;
         virtual void SetGrade(const double grade)                                            = 0;
@@ -88,7 +88,7 @@ class SoftwareTrainModel : public TrainModel
         void SetBeaconData(const types::BeaconData &data, std::size_t &size);
         void SetDistanceTraveled(const types::Meters distance);
         void SetCommandedPower(const types::Watts watts);
-        
+
         //getters
         types::TrainId GetTrainId(void) const;
         bool GetBrakeFailure(void) const;
@@ -106,7 +106,7 @@ class SoftwareTrainModel : public TrainModel
         uint16_t GetPassengersCount(void);
         types::Meters GetDistanceTravelled(void) const;
 
-        private:
+    private:
         //internal variables(model specific)
         int passengers_on_board_;
         bool headlights_;
