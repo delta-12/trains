@@ -135,15 +135,11 @@ void SoftwareTrackModel::Update(void)
         }
 
         // Check if the current block has a station and update deboarding
-        for (int m = 0; m < occupied_train_blocks_[i].size(); m++)
+        types::BlockId possible_station_block = current_train_block_[i];
+        if (blocks_[possible_station_block].has_station == 1)
         {
-            types::BlockId station_check = occupied_train_blocks_[i][m];
-
-            if (blocks_[station_check].has_station == 1)
-            {
-                uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
-                SetPassengersDeboarding(i, traindeb);
-            }
+            uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
+            SetPassengersDeboarding(i, traindeb);
         }
     }
 
@@ -321,6 +317,20 @@ types::Error SoftwareTrackModel::RemoveTrainModel(int train_element)
     else
     {
         return types::ERROR_INVALID_TRAIN;
+    }
+}
+
+types::Error SoftwareTrackModel::GetBlock(types::BlockId block_number, types::Block &block)
+{
+    if (block_number > 0 && blocks_.size() > block_number)
+    {
+        block = blocks_[block_number];
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
     }
 }
 
