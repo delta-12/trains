@@ -15,6 +15,10 @@
 
 namespace train_model
 {
+
+typedef double Newtons;
+typedef double Kilograms;
+
 class TrainModel
 {
     public:
@@ -65,6 +69,7 @@ class SoftwareTrainModel : public TrainModel
 
         //internal
         void Update();
+        void UpdatePassengers();
         void SpeedCalc(types::Second delta);
 
         //setters
@@ -115,22 +120,16 @@ class SoftwareTrainModel : public TrainModel
         bool left_door_;
         types::Polarity track_polarity_;
         //internal variables(calculations)
-        double maximum_force_;
         types::MetersPerSecondSquared previous_acceleration_;
         types::MetersPerSecondSquared acceleration_;
-        types::MetersPerSecondSquared maximum_deceleration_limit_;
-        types::MetersPerSecondSquared maximum_acceleration_limit_;
         types::MilesPerHour velocity_;
         types::MilesPerHour previous_velocity_;
-        types::MilesPerHour maximum_velocity_;
         types::MetersPerSecond commanded_speed_;
         types::Meters distance_travelled_;
-        int maximum_passengers_;
         int passengers_boarding_;
-        int crew_count_;
-        double train_mass_;
-        double mass_;
-        double force_;
+        int passengers_deboarding_;
+        Kilograms mass_;
+        Newtons force_;
         double grade_;//can get this from moaz or just have it
         bool emergency_brake_;
         bool brake_failure_;

@@ -9,41 +9,46 @@
 
 namespace train_model
 {
+
+const Newtons                       kMaximumForce             = 120000;
+const types::MetersPerSecondSquared kMaximumDecelerationLimit = -2.73;
+const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
+const types::MilesPerHour           kMaximumVelocity          = 43.496;
+const int                           kMaximumPassengers        = 222;
+const int                           kCrewCount                = 7;
+const Kilograms                     kTrainMass                = 37103;
+const Kilograms                     kAvgPassengerWeight       = 68.039;
+
+
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
-    passengers_on_board_        = 0;
-    headlights_                 = 0;
-    interior_light_             = 0;
-    right_door_                 = 0;
-    left_door_                  = 0;
-    maximum_force_              = 120000;//maximum force of the engine
-    previous_acceleration_      = 0;
-    acceleration_               = 0;
-    maximum_deceleration_limit_ = -2.73; //meters per second ^2
-    maximum_acceleration_limit_ = .5;    //meters per second ^2
-    velocity_                   = 0;
-    previous_velocity_          = 0;
-    maximum_velocity_           = 43.496;//mph
-    maximum_passengers_         = 222;
-    passengers_boarding_        = 0;
-    crew_count_                 = 7;
-    train_mass_                 = 37103.856; //kgs
-    mass_                       = 37103.856;
-    force_                      = 0;
-    grade_                      = 0;//can get this from moaz or just have it
-    emergency_brake_            = 0;
-    brake_failure_              = 0;
-    engine_failure_             = 0;
-    signal_pickup_failure_      = 0;
-    authority_                  = 0;
-    commanded_speed_            = 0;
-    train_id_                   = 0;
-    distance_traveled_          = 0;
-    internal_temperature_       = 0;
-    station_announcement_       = "Steel Plaza Station";
-    service_brake_              = 0.0;
-    power_                      = 0;
-    last_tick_updated_          = (*clock_).GetTick();
+    passengers_on_board_   = 0;
+    headlights_            = 0;
+    interior_light_        = 0;
+    right_door_            = 0;
+    left_door_             = 0;
+    previous_acceleration_ = 0;
+    acceleration_          = 0;
+    velocity_              = 0;
+    previous_velocity_     = 0;
+    passengers_boarding_   = 0;
+    passengers_deboarding_ = 0;
+    mass_                  = kTrainMass;
+    force_                 = 0;
+    grade_                 = 0;     //can get this from moaz or just have it
+    emergency_brake_       = 0;
+    brake_failure_         = 0;
+    engine_failure_        = 0;
+    signal_pickup_failure_ = 0;
+    authority_             = 0;
+    commanded_speed_       = 0;
+    train_id_              = 0;
+    distance_traveled_     = 0;
+    internal_temperature_  = 0;
+    station_announcement_  = "Steel Plaza Station";
+    service_brake_         = 0.0;
+    power_                 = 0;
+    last_tick_updated_     = (*clock_).GetTick();
     //beacon_data_;//beacon data needs instantiation
     //track_pol;//must have starting polarity
 }
@@ -54,7 +59,7 @@ void SoftwareTrainModel::Update()
     types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
     //internal calculations
-    mass_ = train_mass_ + ((GetPassengersCount() + crew_count_) * 68.039);
+    mass_ = kTrainMass + ((GetPassengersCount() + kCrewCount) * kAvgPassengerWeight);
     SpeedCalc(delta);
 
 }
@@ -180,11 +185,15 @@ uint16_t SoftwareTrainModel::GetPassengersDeboarding(void)
     // Generate a random number for passengers leaving
     uint16_t randomNumber = dis(gen);
 
-    return randomNumber;
+    passengers_deboarding_ = randomNumber;
+
+    return passengers_deboarding_;
 }
 void SoftwareTrainModel::SetPassengersBoarding(const uint16_t passengers)
 {
     passengers_boarding_ = passengers;
+
+    UpdatePassengers();
 }
 types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
 {
@@ -192,12 +201,15 @@ types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
 }
 uint16_t SoftwareTrainModel::GetPassengersCount(void)
 {
-    //adds new passengers
-    passengers_on_board_ += passengers_boarding_;
+    return passengers_on_board_;
+}
+void SoftwareTrainModel::UpdatePassengers()
+{
     //removes old passengers
     passengers_on_board_ -= GetPassengersDeboarding();
+    //adds new passengers
+    passengers_on_board_ += passengers_boarding_;
     //returns passengers on board (should be called and updated only when at station)
-    return passengers_on_board_;
 }
 void SoftwareTrainModel::SetAuthority(const types::Blocks blocks)
 {
@@ -215,7 +227,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
 {
     if (velocity_ == 0 && power_ != 0)        //avoids dividing by 0
     {
-        force_ = maximum_force_;
+        force_ = kMaximumForce;
     }
     else if (velocity_ == 0 && power_ == 0)
     {
