@@ -452,7 +452,7 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
 void SoftwareTrainController::CalculateDistanceToStopping()
 {
-    if(abs(authority_- usable_authority_) > 1)
+    if((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1))
     {
         usable_authority_ = authority_;
 
