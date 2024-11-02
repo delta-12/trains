@@ -18,21 +18,23 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
     std::shared_ptr<TickSource>     CLOCK = std::make_shared<TickSource>(tick_source);
     train_model::SoftwareTrainModel TM(CLOCK);
 
-
     types::Second elapsed_time0(0);
     types::Second elapsed_time1(1);
     types::Second elapsed_time2(2);
     types::Second elapsed_time3(3);
 
+    EXPECT_DOUBLE_EQ(0.0, TM.GetActualSpeed());
 
     TM.SpeedCalc(elapsed_time0);
     //checking velocity is zero
-    EXPECT_DOUBLE_EQ(0, TM.GetActualSpeed());
+    EXPECT_DOUBLE_EQ(0.0, TM.GetActualSpeed());
 
-    ////Setting power to 60000 W
+    ////Setting power to 60000 W and checking
     TM.SetCommandedPower(60000);
-    TM.SpeedCalc(elapsed_time2);
+    EXPECT_DOUBLE_EQ(60000, TM.GetActualPower());
+
+    TM.SpeedCalc(elapsed_time1);
 
     ////Checking if the velocity corresponds to the time passed and the current speed
-    EXPECT_DOUBLE_EQ(3.2341652, TM.GetActualSpeed());
+    EXPECT_DOUBLE_EQ(3.2341652037459396, TM.GetActualSpeed());
 }

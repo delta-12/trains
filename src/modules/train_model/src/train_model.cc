@@ -11,12 +11,11 @@ namespace train_model
 {
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
-    passengers_on_board_ = 0;
-    headlights_          = 0;
-    interior_light_      = 0;
-    right_door_          = 0;
-    left_door_           = 0;
-    //track_pol;//must have starting polarity
+    passengers_on_board_        = 0;
+    headlights_                 = 0;
+    interior_light_             = 0;
+    right_door_                 = 0;
+    left_door_                  = 0;
     maximum_force_              = 120000;//maximum force of the engine
     previous_acceleration_      = 0;
     acceleration_               = 0;
@@ -27,7 +26,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     maximum_velocity_           = 43.496;//mph
     maximum_passengers_         = 222;
     passengers_boarding_        = 0;
-    crew_count_                 = 9;         //NEED TO CHECK HOW MANY THERE ARE
+    crew_count_                 = 7;         
     train_mass_                 = 37103.856; //kgs
     mass_                       = 37103.856;
     force_                      = 0;
@@ -36,16 +35,17 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     brake_failure_              = 0;
     engine_failure_             = 0;
     signal_pickup_failure_      = 0;
+    authority_                  = 0;
+    commanded_speed_            = 0;
+    train_id_                   = 0;
+    distance_traveled_          = 0;
+    internal_temperature_       = 0;
+    station_announcement_       = "Steel Plaza Station";
+    service_brake_              = 0.0;
+    power_                      = 0;
+    last_tick_updated_          = (*clock_).GetTick();
     //beacon_data_;//beacon data needs instantiation
-    authority_            = 0;
-    commanded_speed_      = 0;
-    train_id_             = 0;
-    distance_traveled_    = 0;
-    internal_temperature_ = 0;
-    station_announcement_ = "Steel Plaza Station";
-    service_brake_        = 0.0;
-    power_                = 0;
-    last_tick_updated_    = (*clock_).GetTick();
+    //track_pol;//must have starting polarity
 }
 void SoftwareTrainModel::Update()
 {
@@ -217,16 +217,20 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     {
         force_ = maximum_force_;
     }
+    else if (velocity_ == 0 && power_ == 0)
+    {
+        force_ = 0;
+    }
     else
     {
         force_ = power_ / velocity_;
     }
 
-    if (emergency_brake_ == true)
+    if (emergency_brake_ == true && velocity_ >= 0)
     {
         acceleration_ = -2.73;
     }
-    else if (service_brake_ != 0)
+    else if (service_brake_ != 0 && velocity_ >= 0)
     {
         acceleration_ = (-1.2 * service_brake_);
     }
