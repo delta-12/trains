@@ -48,6 +48,8 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     polarity_ = types::Polarity::POLARITY_NEGATIVE;
     last_polarity_ = polarity_;
     usable_authority_ = authority_;
+    authority_counter_ = authority_;
+    new_authority = false;
 
     Update();
 }
@@ -336,8 +338,9 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         service_brake_percentage_ =  0;
     }
     // Checking if we've reached a distance to start slowing down for authority
-    else if((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down)
+    else if(((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down) && new_authority)
     {
+        new_authority = false;
         //Add code here that calculates percentage of service brake that needs to be applied
         // 0 = current_speed^2 + 2*a*((distance_to_stopping_ - (distance_travelled_ - distance_prior_to_current_authority_))
     }
@@ -444,6 +447,7 @@ void SoftwareTrainController::UpdateTrainPosition(void)
     if(last_polarity_ != polarity_)
     {
         set_route_position_++;
+        authority_counter_--;
         double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
 
 
@@ -460,9 +464,11 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
 void SoftwareTrainController::CalculateDistanceToStopping()
 {
-    if((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1))
+    if((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1) || (authority_counter_ < authority_))
     {
         usable_authority_ = authority_;
+        authority_counter_ = authority_;
+        new_authority = true;
 
         distance_prior_to_current_authority_ = distance_travelled_;
 
