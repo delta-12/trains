@@ -24,12 +24,6 @@ typedef struct Station                   Station;
 
 typedef enum
 {
-    SectionDirection_Forward,
-    SectionDirection_Reverse,
-} SectionDirection;
-
-typedef enum
-{
     AUTOMATIC_MODE,
     MANUAL_MODE,
     MAINTENANCE_MODE
@@ -56,32 +50,6 @@ struct DestinationAndArrivalTime
     };
     ctc::Station station;
     types::Tick arrival_time;
-};
-
-class ScheduleBuilder
-{
-    public:
-        ScheduleBuilder(void);
-        ScheduleBuilder(std::filesystem::path &file_path);
-};
-
-class GraphBuilder
-{
-    public:
-        GraphBuilder(void);
-        GraphBuilder(std::vector<types::Block> &blocks);
-        void BuildGreenLine(void);
-        std::vector<types::Block> BuildSection(types::SectionId section_id);
-        void AddSection(std::vector<types::Block> section, types::BlockDirection direction);
-
-        std::size_t GetBlockList(void) const;
-        types::BlockId GetSectionBegin(void) const;
-        types::BlockId GetSectionEnd(void) const;
-        Graph<types::BlockId, types::Meters> GetGraph(void);
-
-    private:
-        std::vector<types::Block> block_list_;
-        Graph<types::BlockId, types::Meters> graph_;
 };
 
 struct Train
@@ -149,8 +117,6 @@ class Ctc
         Graph<types::BlockId, types::Meters> graph_;
         std::vector<types::BlockId> default_route_;
 };
-
-std::vector<std::string> SplitBySemicolon(const std::string& input);
 
 } // namespace ctc
 
