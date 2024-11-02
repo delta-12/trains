@@ -436,12 +436,16 @@ void SoftwareTrainController::UpdateTrainPosition(void)
     if(last_polarity_ != polarity_)
     {
         set_route_position_++;
+        double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+
 
         last_polarity_ = polarity_;
 
+        total_blocks_accessed_length_ += block_length;
+
         if(set_route_position_ > green_default_route_vector_.size()-1)
         {
-            set_route_position_ = -1; //resetting to yard
+            set_route_position_ = 0; //to beggining of route
         }
     }
 }
@@ -454,20 +458,20 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 
         temp_distance_ = distance_travelled_;
 
-        for (size_t i = set_route_position_+1; i < set_route_position_+12; i++)
+        for (size_t i = set_route_position_+1; i < set_route_position_+ usable_authority_ + 1; i++)
         {
             double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
 
-            if(i == set_route_position_+11)
+            if(i == set_route_position_+ usable_authority_)
             {
                 distance_to_stopping_ += block_length/2;
+                distance_to_stopping_ += total_blocks_accessed_length_-temp_distance_;
             }
             else
             {
                 distance_to_stopping_ += block_length;
             }
-        }
-        
+        } 
     }
 }
 
