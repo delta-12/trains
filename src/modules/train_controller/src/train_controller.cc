@@ -331,6 +331,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     else if((distance_travelled_ - temp_distance_)>= (distance_to_stopping_ - 236.196))
     {
         //Add code here that calculates percentage of service brake that needs to be applied
+        // 0 = current_speed^2 + 2*a*distance_before_stopping
     }
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)
