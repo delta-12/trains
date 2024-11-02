@@ -469,6 +469,7 @@ void SoftwareTrainController::CalculateDistanceToStopping()
         usable_authority_ = authority_;
         authority_counter_ = authority_;
         new_authority = true;
+        service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
 
         distance_prior_to_current_authority_ = distance_travelled_;
 
