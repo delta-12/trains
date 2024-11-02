@@ -63,6 +63,7 @@ typedef enum
 
 typedef enum
 {
+    TRAFFICLIGHTCOLOR_NONE,
     TRAFFICLIGHTCOLOR_RED,
     TRAFFICLIGHTCOLOR_GREEN
 } TrafficLightColor;
