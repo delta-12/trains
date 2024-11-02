@@ -8,6 +8,10 @@
 #define CONVERT_METERS_TO_MILES                          (0.000621373)
 #define CONVERT_KILOMETERS_PER_HOUR_TO_METERS_PER_SECOND (0.27777)
 #define CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR (3.6)
+#define MINUTE_TO_SECOND_CONVERSION_FACTOR               (60)
+#define SECOND_TO_MILISECONDS_CONVERSION_FACTOR          (1000)
+#define CONVERT_1_BYTE_BIT_SHIFT                         (8)
+#define CONVERT_BYTE_MASK                                (0xFF)
 
 namespace convert
 {
@@ -50,6 +54,29 @@ types::Meters KilometersPerHourToMetersPerSecond(const types::KilometersPerHour 
 types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters meters_per_second)
 {
     return meters_per_second * CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR;
+}
+
+types::Milisecond ConvertMinuteToMiliseconds(const std::string& minute_string)
+{
+    double t = std::stod(minute_string);
+    t = t * MINUTE_TO_SECOND_CONVERSION_FACTOR * SECOND_TO_MILISECONDS_CONVERSION_FACTOR;
+    int                       time = int(t);
+    std::chrono::milliseconds total_time_to_station(time);
+    return total_time_to_station;
+}
+uint8_t GetLowByte(const uint16_t data)
+{
+    return (data & CONVERT_BYTE_MASK);
+}
+
+uint8_t GetHighByte(const uint16_t data)
+{
+    return ((data >> CONVERT_1_BYTE_BIT_SHIFT) & CONVERT_BYTE_MASK);
+}
+
+uint16_t MakeUint16(const uint8_t high, const uint8_t low)
+{
+    return ((high << CONVERT_1_BYTE_BIT_SHIFT) | low);
 }
 
 } // namespace convert

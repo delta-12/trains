@@ -38,11 +38,13 @@ typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
 typedef std::chrono::duration<double>               Second;
+typedef std::chrono::milliseconds                   Milisecond;
 
 typedef enum
 {
     ERROR_NONE,
     ERROR_INVALID_TRACK,
+    ERROR_DUPLICATE_TRACK,
     ERROR_INVALID_BLOCK,
     ERROR_INVALID_TRAIN,
     ERROR_INVALID_MODE,
@@ -59,10 +61,10 @@ typedef enum
 
 typedef enum
 {
-    LIGHTCOLOR_RED,
-    LIGHTCOLOR_GREEN,
-    LIGHTCOLOR_NONE
-} LightColor;
+    TRAFFICLIGHTCOLOR_NONE,
+    TRAFFICLIGHTCOLOR_RED,
+    TRAFFICLIGHTCOLOR_GREEN
+} TrafficLightColor;
 
 typedef enum
 {
@@ -72,6 +74,7 @@ typedef enum
 
 typedef enum
 {
+    TRACKID_NONE,
     TRACKID_RED,
     TRACKID_GREEN,
     TRACKID_BLUE
@@ -99,7 +102,7 @@ struct Block
     bool has_crossing;
     bool crossing_state;
     bool has_light;
-    LightColor light_color;
+    TrafficLightColor light_color;
     bool power_failure;
     bool track_circuit_failure;
     bool broken_rail;
@@ -115,19 +118,21 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+    Second total_time_to_station;
 };
 
 struct TrackCircuitData
 {
     public:
-        TrackCircuitData(void) : block(0), speed(0.0), authority(0)
+        TrackCircuitData(void) : track(TRACKID_RED), block(0), speed(0.0), authority(0)
         {
         }
-        TrackCircuitData(const types::BlockId block, const types::MetersPerSecond speed, const size_t authority) : block(block), speed(speed), authority(authority)
+        TrackCircuitData(const TrackId track, const BlockId block, const MetersPerSecond speed, const size_t authority) : track(track), block(block), speed(speed), authority(authority)
         {
         }
-        types::BlockId block;
-        types::MetersPerSecond speed;
+        TrackId track;
+        BlockId block;
+        MetersPerSecond speed;
         size_t authority;
 };
 
@@ -137,10 +142,10 @@ struct BlockState
         BlockState(void) : block(0), occupied(false), track_failure(false)
         {
         }
-        BlockState(const types::BlockId block, const bool occupied, const bool track_failure) : block(block), occupied(occupied), track_failure(track_failure)
+        BlockState(const BlockId block, const bool occupied, const bool track_failure) : block(block), occupied(occupied), track_failure(track_failure)
         {
         }
-        types::BlockId block;
+        BlockId block;
         bool occupied;
         bool track_failure;
 };
@@ -148,8 +153,10 @@ struct BlockState
 class Port
 {
     public:
-        virtual void Send(const std::vector<uint8_t> &buffer) = 0;
-        virtual void Receive(std::vector<uint8_t> &buffer)    = 0;
+        virtual size_t Send(const uint8_t *const buffer, const size_t size) = 0;
+        virtual size_t SendAvailable(void)                                  = 0;
+        virtual size_t Receive(uint8_t *const buffer, const size_t size)    = 0;
+        virtual size_t ReceiveAvailable(void)                               = 0;
 };
 
 } // namespace types
