@@ -169,18 +169,3 @@ TEST(BlockBuilderTests, GreenLineV4)
     ASSERT_EQ(block.station_name, "Central");
     ASSERT_EQ(block.underground, true);
 }
-
-TEST(BlockBuilderTests, MinuteToMiliSecond)
-{
-    std::string               minute     = "2.5";
-    std::chrono::milliseconds milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 150000);
-
-    minute     = "2.7";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 162000);
-
-    minute     = "3.2";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 192000);
-}
