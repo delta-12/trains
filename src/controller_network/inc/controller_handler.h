@@ -46,6 +46,8 @@ class ControllerHandler
         void RemoveDisconnectedPorts(void);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
+        types::Error ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers);
+        types::Error ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers);
         types::Error ReceiveMessageFromPort(ctc::Ctc &ctc_office, const std::unique_ptr<ControllerPort> &port);
         types::Error ReceiveMessageFromPort(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, const std::unique_ptr<ControllerPort> &port);
         types::Error SendMessages(ctc::Ctc &ctc_office);
@@ -177,10 +179,11 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
-        for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = connected_controllers_map.begin(); i != connected_controllers_map.end(); ++i)
+        error = ReceiveMessagesFromControllers(ctc_office, connected_controllers_map);
+
+        if (types::ERROR_NONE != error)
         {
-            // TODO error handling
-            error = ReceiveMessageFromPort(ctc_office, i->second);
+            break;
         }
     }
 
@@ -194,10 +197,47 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
-        for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = connected_controllers_map.begin(); i != connected_controllers_map.end(); ++i)
+        error = ReceiveMessagesFromControllers(ctc_office, world_simulator, connected_controllers_map);
+
+        if (types::ERROR_NONE != error)
         {
-            // TODO error handling
-            error = ReceiveMessageFromPort(ctc_office, world_simulator, i->second);
+            break;
+        }
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers)
+{
+    types::Error error = types::ERROR_NONE;
+
+    for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = controllers.begin(); i != controllers.end(); ++i)
+    {
+        error = ReceiveMessageFromPort(ctc_office, i->second);
+
+        if (types::ERROR_NONE != error)
+        {
+            break;
+        }
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers)
+{
+    types::Error error = types::ERROR_NONE;
+
+    for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = controllers.begin(); i != controllers.end(); ++i)
+    {
+        error = ReceiveMessageFromPort(ctc_office, world_simulator, i->second);
+
+        if (types::ERROR_NONE != error)
+        {
+            break;
         }
     }
 
