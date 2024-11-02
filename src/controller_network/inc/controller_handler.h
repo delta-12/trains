@@ -395,16 +395,15 @@ types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const ctc::Ctc
         }
         else if (!connected_controllers_[CONTROLLERTYPE_WAYSIDE].contains(wayside))
         {
-            // Wayside controller is not connected, do nothing
+            error = types::ERROR_INVALID_CONTROLLER;
         }
         else if (!message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
         {
-            // Failed to serialize message, do nothing
+            error = types::ERROR_INVALID_FORMAT;
         }
-        else
+        else if (message_size != connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size))
         {
-            // TODO error handle
-            connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size);
+            error = types::ERROR_INVALID_SIZE;
         }
 
         if (types::ERROR_NONE != error)
