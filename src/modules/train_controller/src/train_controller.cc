@@ -20,7 +20,10 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
-
+    set_route_position_ = -1; // -1 is the yard
+    
+    
+    distance_to_stopping_ = 0;
     integral_sum_                = 0;
     commanded_speed_             = 0;
     driver_speed_                = 0;
@@ -42,6 +45,9 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     operation_mode_              = false;
     last_tick_updated_           = (*clock_).GetTick();
 
+    polarity_ = types::Polarity::POLARITY_NEGATIVE;
+    last_polarity_ = polarity_;
+    usable_authority_ = authority_;
 
     Update();
 }
@@ -132,7 +138,7 @@ types::MilesPerHour SoftwareTrainController::GetCurrentSpeed() const
     return convert::MetersPerSecondToMilesPerHour(current_speed_);
 }
 
-types::Meters SoftwareTrainController::GetAuthority() const
+types::Blocks SoftwareTrainController::GetAuthority() const
 {
     return authority_;
 }
@@ -213,7 +219,7 @@ void SoftwareTrainController::SetActualInternalTemperature(const types::DegreesF
     actual_internal_temperature_ = temp;
 }
 
-void SoftwareTrainController::SetAuthority(const types::Meters authority)
+void SoftwareTrainController::SetAuthority(const types::Blocks authority)
 {
     authority_ = authority;
 }
@@ -259,6 +265,7 @@ void SoftwareTrainController::Update()
 
     last_tick_updated_ = (*clock_).GetTick();
 
+    UpdateTrainPosition();
     CalculateCommandedPower(delta_time);
     UpdateDistanceTravelled(delta_time);
 
@@ -270,8 +277,9 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
-
-    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(DEFAULT_BLOCK_SPEED_LIMIT);
+    
+    double block_speed_limit = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[2];
+    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
 
     types::MetersPerSecond setpoint_speed;
 
@@ -320,7 +328,10 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         commanded_power_          = 0;
         service_brake_percentage_ =  0;
     }
-
+    else if((distance_travelled_ - temp_distance_)>= (distance_to_stopping_ - 236.196))
+    {
+        //Add code here that calculates percentage of service brake that needs to be applied
+    }
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)
     {
@@ -333,12 +344,14 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         //Function to to assign service brake
         CalculateServiceBrake(speed_difference);
     }
+
     //Checking if Service brake is on
     else if (service_brake_percentage_ > 0)
     {
         integral_sum_    = 0;
         commanded_power_ = 0;
     }
+
     //Normal power calculation
     else
     {
@@ -416,4 +429,45 @@ void SoftwareTrainController::CheckFailureStates(void)
         emergency_brake_ = true;
     }
 }
+
+void SoftwareTrainController::UpdateTrainPosition(void)
+{
+    if(last_polarity_ != polarity_)
+    {
+        set_route_position_++;
+
+        last_polarity_ = polarity_;
+
+        if(set_route_position_ > green_default_route_vector_.size()-1)
+        {
+            set_route_position_ = -1; //resetting to yard
+        }
+    }
+}
+
+void SoftwareTrainController::CalculateDistanceToStopping()
+{
+    if(abs(authority_- usable_authority_) > 1)
+    {
+        usable_authority_ = authority_;
+
+        temp_distance_ = distance_travelled_;
+
+        for (size_t i = set_route_position_+1; i < set_route_position_+12; i++)
+        {
+            double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+
+            if(i == set_route_position_+11)
+            {
+                distance_to_stopping_ += block_length/2;
+            }
+            else
+            {
+                distance_to_stopping_ += block_length;
+            }
+        }
+        
+    }
+}
+
 }

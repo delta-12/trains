@@ -48,7 +48,7 @@ class TrainController
         virtual bool GetEngineFailure(void) const                                    = 0;
         virtual types::DegreesFahrenheit GetCommandedInternalTemperature(void) const = 0;
         virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const    = 0;
-        virtual types::Meters GetAuthority(void) const                               = 0;
+        virtual types::Blocks GetAuthority(void) const                               = 0;
         virtual bool GetOperationMode(void) const                                    = 0;
 
         // Setter declarations
@@ -66,10 +66,11 @@ class TrainController
         virtual void SetEngineFailure(const bool state)                                          = 0;
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature) = 0;
         virtual void SetActualInternalTemperature(const types::DegreesFahrenheit temperature)    = 0;
-        virtual void SetAuthority(const types::Meters authority)                                 = 0;
+        virtual void SetAuthority(const types::Blocks authority)                                 = 0;
         virtual void SetKP(const uint16_t kp)                                                    = 0;
         virtual void SetKI(const uint16_t ki)                                                    = 0;
         virtual void SetOperationMode(const bool operation_mode)                                 = 0;
+        virtual void SetPolartity(const types::Polarity polarity)                                = 0;
 };
 
 
@@ -97,7 +98,7 @@ class SoftwareTrainController : public TrainController
         bool GetEngineFailure(void) const;
         types::DegreesFahrenheit GetCommandedInternalTemperature(void) const;
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
-        types::Meters GetAuthority(void) const;
+        types::Blocks GetAuthority(void) const;
         bool GetOperationMode(void) const;
 
 
@@ -116,7 +117,7 @@ class SoftwareTrainController : public TrainController
         void SetEngineFailure(const bool state);
         void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature);
         void SetActualInternalTemperature(const types::DegreesFahrenheit temperature);
-        void SetAuthority(const types::Meters authority);
+        void SetAuthority(const types::Blocks authority);
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t kp);
         void SetKI(const uint16_t ki);
@@ -129,6 +130,8 @@ class SoftwareTrainController : public TrainController
         void UpdateDistanceTravelled(const types::Second delta_time);
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
         void CheckFailureStates(void);
+        void UpdateTrainPosition(void);
+        void CalculateDistanceToStopping();
 
         /*
          *
@@ -532,7 +535,8 @@ class SoftwareTrainController : public TrainController
         types::MetersPerSecond current_speed_;
         double service_brake_percentage_;
         types::Watts commanded_power_;
-        types::Meters authority_;
+        types::Blocks authority_;
+        types::Blocks usable_authority_;
         bool emergency_brake_;
         bool headlights_;
         bool interior_lights_;
@@ -544,8 +548,13 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit commanded_internal_temperature_;
         types::DegreesFahrenheit actual_internal_temperature_;
         types::Meters distance_travelled_;
+        types::Meters distance_to_stopping_;
+        types::Meters temp_distance_;
         bool arrived_;
         bool operation_mode_; // false: automatic, true: manual
+        uint8_t set_route_position_;
+        types::Polarity polarity_;
+        types::Polarity last_polarity_;
 };
 
 } // namespace train_controller
