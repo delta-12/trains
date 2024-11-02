@@ -166,22 +166,76 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
-    return types::Error{ };
+    if (blocks_.size() > block && block > 0 && blocks_[block].has_crossing == 1)
+    {
+        blocks_[block].crossing_state = closed;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, const bool on)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 1)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_RED;
+
+        return types::ERROR_NONE;
+    }
+    else if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 0)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_NONE;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 1)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_YELLOW;
+
+        return types::ERROR_NONE;
+    }
+    else if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 0)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_NONE;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block, const bool on)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 1)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_GREEN;
+
+        return types::ERROR_NONE;
+    }
+    else if (blocks_.size() > block && block > 0 && blocks_[block].has_light == 1 && on == 0)
+    {
+        blocks_[block].light_color = types::TRAFFICLIGHTCOLOR_NONE;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
@@ -248,22 +302,79 @@ types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, b
 
 types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const bool broken)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0)
+    {
+        blocks_[block].broken_rail = broken;
+
+        blocks_[block].occupied = broken;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0)
+    {
+        blocks_[block].track_circuit_failure = track_circuit_failure;
+
+        blocks_[block].occupied = track_circuit_failure;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, const bool power_failure)
 {
-    return types::ERROR_NONE;
+    if (blocks_.size() > block && block > 0)
+    {
+        blocks_[block].power_failure = power_failure;
+
+        blocks_[block].occupied = power_failure;
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_BLOCK;
+    }
 }
 
 types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahrenheit temperature)
 {
-    return types::ERROR_NONE;
+    if (temperature <= 103 && temperature > -22)
+    {
+        external_temperature_ = temperature;
+
+        if (temperature <= 32)
+        {
+            for (int i = 0; i < blocks_.size(); i++)
+            {
+                blocks_[i].heater_on = 1;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < blocks_.size(); i++)
+            {
+                blocks_[i].heater_on = 0;
+            }
+        }
+
+        return types::ERROR_NONE;
+    }
+    else
+    {
+        return types::ERROR_INVALID_FORMAT;
+    }
 }
 
 //is this getting callled only when deboarding is gonna happen?

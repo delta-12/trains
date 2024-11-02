@@ -575,3 +575,47 @@ TEST(TrackModelTests, Polarity)
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 }
+
+TEST(TrackModelTests, TrackFailures)
+{
+    std::filesystem::path           base_path = std::filesystem::current_path();
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                       parser(path);
+    CsvParser                       parser2(path2);
+    BlockBuilder                    bb(parser.GetRecords());
+    BlockBuilder                    bb2(parser2.GetRecords());
+    types::Block                    block;
+    track_model::SoftwareTrackModel track;
+    train_model::TrainModelImpl     train;
+
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+
+    track.AddTrainModel(ptr);
+
+    track.GetTrainModels(trains);
+
+    auto otb = track.GetOccupiedTrainBlocks();
+
+    ASSERT_EQ(otb.size(), 0);
+
+    types::Block block_15;
+    types::Block block_25;
+    types::Block block_81;
+
+    ASSERT_EQ(track.SetBrokenRail(15, 1), types: ERROR_NONE);
+    ASSERT_EQ(track.SetTrackCircuitFailure(25, 1), types: ERROR_NONE);
+    ASSERT_EQ(track.SetPowerFailure(82, 1), types: ERROR_NONE);
+
+    otb = track.GetOccupiedTrainBlocks();
+
+    ASSERT_EQ(otb.size(), 3);
+
+    ASSERT_EQ(track.GetBlock(15, block_15), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(25, block_25), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(81, block_81), types::ERROR_NONE);
+
+    ASSERT_EQ(test_block.has_station, 1);
+
+    ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+}
