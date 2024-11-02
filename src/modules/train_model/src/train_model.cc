@@ -26,7 +26,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     maximum_velocity_           = 43.496;//mph
     maximum_passengers_         = 222;
     passengers_boarding_        = 0;
-    crew_count_                 = 7;         
+    crew_count_                 = 7;
     train_mass_                 = 37103.856; //kgs
     mass_                       = 37103.856;
     force_                      = 0;
