@@ -14,6 +14,7 @@
 #include "types.h"
 
 RingBuffer<uint8_t, 1024> ring_buffer;
+bool                      connected = true;
 
 class SoftwarePort : public types::Port
 {
@@ -36,11 +37,11 @@ class SoftwarePort : public types::Port
         }
         bool Connected(void)
         {
-            return true;
+            return connected;
         }
 };
 
-TEST(ControllerHandlerTests, IsConnectedTest)
+TEST(ControllerHandlerTests, IsConnectedTestWayside0)
 {
     ctc::Ctc                                                       ctc_office;
     controller_network::ControllerHandler<1024>                    controller_handler;
@@ -49,7 +50,28 @@ TEST(ControllerHandlerTests, IsConnectedTest)
 
     controller_handler.Update(ctc_office);
 
-    // TODO test with wayside, ID 0
+    std::array<uint8_t, 1024>       message_buffer;
+    controller_messages::Connection connection_message;
+    connection_message.set_controller_id(0);
+    connection_message.set_controller_type(controller_messages::CONTROLLER_TYPE_WAYSIDE);
+    connection_message.SerializeToArray(message_buffer.data(), message_buffer.size());
+    client_port->SendMessage(controller_network::MESSAGETYPE_CONNECTION, message_buffer.data(), connection_message.ByteSizeLong());
+    controller_handler.Update(ctc_office);
+    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 0));
+    connected = false;
+    controller_handler.Update(ctc_office);
+    ASSERT_FALSE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 0));
+    connected = true;
+}
+
+TEST(ControllerHandlerTests, IsConnectedTestWayside1)
+{
+    ctc::Ctc                                                       ctc_office;
+    controller_network::ControllerHandler<1024>                    controller_handler;
+    std::unique_ptr<controller_network::BasicControllerPort<1024>> client_port = std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>());
+    controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
+
+    controller_handler.Update(ctc_office);
 
     std::array<uint8_t, 1024>       message_buffer;
     controller_messages::Connection connection_message;
@@ -59,6 +81,10 @@ TEST(ControllerHandlerTests, IsConnectedTest)
     client_port->SendMessage(controller_network::MESSAGETYPE_CONNECTION, message_buffer.data(), connection_message.ByteSizeLong());
     controller_handler.Update(ctc_office);
     ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 1));
+    connected = false;
+    controller_handler.Update(ctc_office);
+    ASSERT_FALSE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 1));
+    connected = true;
 }
 
 TEST(ControllerHandlerTests, TrackCircuitDataTest)
@@ -71,15 +97,13 @@ TEST(ControllerHandlerTests, TrackCircuitDataTest)
 
     controller_handler.Update(ctc_office, world_simulator);
 
-    // TODO test with wayside, ID 0
-
     std::array<uint8_t, 1024>       message_buffer;
     controller_messages::Connection connection_message;
-    connection_message.set_controller_id(1);
+    connection_message.set_controller_id(0);
     connection_message.set_controller_type(controller_messages::CONTROLLER_TYPE_WAYSIDE);
     connection_message.SerializeToArray(message_buffer.data(), message_buffer.size());
     client_port->SendMessage(controller_network::MESSAGETYPE_CONNECTION, message_buffer.data(), connection_message.ByteSizeLong());
     controller_handler.Update(ctc_office, world_simulator);
-    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 1));
-    ASSERT_FALSE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_MAX, 1));
+    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 0));
+    ASSERT_FALSE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_MAX, 0));
 }
