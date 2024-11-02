@@ -14,7 +14,7 @@
 TEST(BlockBuilderTests, GetSize)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     ASSERT_EQ(bb.GetSize(), 151);
@@ -28,7 +28,7 @@ TEST(BlockBuilderTests, GetSize)
 TEST(BlockBuilderTests, ConvertRecordToBlock)
 {
     std::filesystem::path                 base_path = std::filesystem::current_path();
-    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
     BlockBuilder                          bb;
@@ -41,7 +41,7 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
 TEST(BlockBuilderTests, ConvertRecordToBlockCTC)
 {
     std::filesystem::path                 base_path = std::filesystem::current_path();
-    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
     BlockBuilder                          bb;
@@ -55,7 +55,7 @@ TEST(BlockBuilderTests, ConvertRecordToBlockCTC)
 TEST(BlockBuilderTests, AssignBlockInfrastructure)
 {
     std::filesystem::path                 base_path = std::filesystem::current_path();
-    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
 
@@ -79,7 +79,7 @@ TEST(BlockBuilderTests, AssignBlockInfrastructure)
 TEST(BlockBuilderTests, BlueBline)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line_track_layout.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     types::Block          block;
@@ -115,7 +115,7 @@ TEST(BlockBuilderTests, BlueBline)
 TEST(BlockBuilderTests, GreenLine)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser             parser(path);
     BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
     types::Block          block;
@@ -153,7 +153,7 @@ TEST(BlockBuilderTests, GreenLine)
 TEST(BlockBuilderTests, GreenLineV4)
 {
     std::filesystem::path                 base_path = std::filesystem::current_path();
-    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
     BlockBuilder                          bb(parser.GetRecords(), Module::MODULE_CTC);
