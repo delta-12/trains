@@ -278,8 +278,8 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
     
-    double block_speed_limit = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[2];
-    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit);
+    types::KilometersPerHour block_speed_limit_temp = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[2];
+    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit_temp);
 
     types::MetersPerSecond setpoint_speed;
 
