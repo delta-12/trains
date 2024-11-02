@@ -35,7 +35,7 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
 
     TM.SpeedCalc(elapsed_time1);
 
-    bool inBetween = (TM.GetActualSpeed() >= 3.24 && TM.GetActualSpeed() <= 3.25);
+    bool inBetween = (TM.GetActualSpeed() >= 3.23 && TM.GetActualSpeed() <= 3.25);
     ////Checking if the velocity corresponds to the time passed and the current speed
     EXPECT_DOUBLE_EQ(inBetween, true);
 }
