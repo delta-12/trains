@@ -548,9 +548,9 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit commanded_internal_temperature_;
         types::DegreesFahrenheit actual_internal_temperature_;
         types::Meters distance_travelled_;
-        types::Meters distance_to_stopping_;
+        types::Meters distance_of_authority_in_meters;
         types::Meters total_blocks_accessed_length_;
-        types::Meters temp_distance_;
+        types::Meters distance_prior_to_current_authority_;
         bool arrived_;
         bool operation_mode_; // false: automatic, true: manual
         uint8_t set_route_position_;

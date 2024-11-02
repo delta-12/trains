@@ -23,7 +23,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     set_route_position_ = -1; // -1 is the yard
     
     
-    distance_to_stopping_ = 0;
+    distance_of_authority_in_meters = 0;
     integral_sum_                = 0;
     commanded_speed_             = 0;
     driver_speed_                = 0;
@@ -322,16 +322,24 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
     CheckFailureStates();
 
+    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters - 236.196;
+
+    if(distance_to_start_slowing_down < 0)
+    {
+        distance_to_start_slowing_down = 0;
+    }
+
     if (emergency_brake_ == true)
     {
         integral_sum_             = 0;
         commanded_power_          = 0;
         service_brake_percentage_ =  0;
     }
-    else if((distance_travelled_ - temp_distance_)>= (distance_to_stopping_ - 236.196))
+    // Checking if we've reached a distance to start slowing down for authority
+    else if((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down)
     {
         //Add code here that calculates percentage of service brake that needs to be applied
-        // 0 = current_speed^2 + 2*a*distance_before_stopping
+        // 0 = current_speed^2 + 2*a*((distance_to_stopping_ - (distance_travelled_ - distance_prior_to_current_authority_))
     }
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)
@@ -456,7 +464,7 @@ void SoftwareTrainController::CalculateDistanceToStopping()
     {
         usable_authority_ = authority_;
 
-        temp_distance_ = distance_travelled_;
+        distance_prior_to_current_authority_ = distance_travelled_;
 
         for (size_t i = set_route_position_+1; i < set_route_position_+ usable_authority_ + 1; i++)
         {
@@ -464,12 +472,12 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 
             if(i == set_route_position_+ usable_authority_)
             {
-                distance_to_stopping_ += block_length/2;
-                distance_to_stopping_ += total_blocks_accessed_length_-temp_distance_;
+                distance_of_authority_in_meters += block_length/2;
+                distance_of_authority_in_meters += total_blocks_accessed_length_-distance_prior_to_current_authority_;
             }
             else
             {
-                distance_to_stopping_ += block_length;
+                distance_of_authority_in_meters += block_length;
             }
         } 
     }
