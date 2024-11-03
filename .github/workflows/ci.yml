@@ -102,6 +102,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }} # Put the name of your token here
         run: |
           sonar-scanner \
+            -Dsonar.projectKey=delta-12_trains \
+            -Dsonar.organization=delta-12 \
             --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
             --define sonar.coverageReportPaths=coverage.xml
   uncrustify:
