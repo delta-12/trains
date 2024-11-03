@@ -137,7 +137,9 @@ endforeach()
 ################################################################################
 # Coverage
 ################################################################################
-find_program(GCOVR_PATH gcovr)
+find_program(GCOVR_PATH gcovr
+    HINTS ~/.local/bin/
+)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GCOVR_PATH)
         message(STATUS "Found Gcovr at: ${GCOVR_PATH}")
