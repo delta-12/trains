@@ -20,36 +20,37 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
-    set_route_position_ = -1; // -1 is the yard
-    
-    
-    distance_of_authority_in_meters = 0;
-    integral_sum_                = 0;
-    commanded_speed_             = 0;
-    driver_speed_                = 0;
-    current_speed_               = 0;
-    service_brake_percentage_    = 0;
-    commanded_power_             = 0;
-    authority_                   = 0;
-    emergency_brake_             = 0;
-    headlights_                  = 0;
-    interior_lights_             = 0;
-    left_door_                   = 0;
-    right_door_                  = 0;
-    brake_failure_               = 0;
-    signal_pickup_failure_       = 0;
-    engine_failure_              = 0;
-    actual_internal_temperature_ = 0;
-    distance_travelled_          = 0;
-    arrived_                     = 0;
-    operation_mode_              = false;
-    last_tick_updated_           = (*clock_).GetTick();
+    set_route_position_             = 0; // -1 is the yard
 
-    polarity_ = types::Polarity::POLARITY_NEGATIVE;
-    last_polarity_ = polarity_;
-    usable_authority_ = authority_;
+
+    distance_of_authority_in_meters_     = 0;
+    integral_sum_                        = 0;
+    commanded_speed_                     = 0;
+    driver_speed_                        = 0;
+    current_speed_                       = 0;
+    service_brake_percentage_            = 0;
+    commanded_power_                     = 0;
+    authority_                           = 0;
+    emergency_brake_                     = 0;
+    headlights_                          = 0;
+    interior_lights_                     = 0;
+    left_door_                           = 0;
+    right_door_                          = 0;
+    brake_failure_                       = 0;
+    signal_pickup_failure_               = 0;
+    engine_failure_                      = 0;
+    actual_internal_temperature_         = 0;
+    distance_travelled_                  = 0;
+    distance_prior_to_current_authority_ = 0;
+    arrived_                             = 0;
+    operation_mode_                      = false;
+    last_tick_updated_                   = (*clock_).GetTick();
+
+    polarity_          = types::Polarity::POLARITY_NEGATIVE;
+    last_polarity_     = polarity_;
+    usable_authority_  = authority_;
     authority_counter_ = authority_;
-    new_authority = false;
+    new_authority      = false;
 
     Update();
 }
@@ -285,9 +286,9 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 {
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
-    
+
     types::KilometersPerHour block_speed_limit_temp = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[2];
-    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(block_speed_limit_temp);
+    types::MetersPerSecond   block_speed_limit      = convert::KilometersPerHourToMetersPerSecond(block_speed_limit_temp);
 
     types::MetersPerSecond setpoint_speed;
 
@@ -330,39 +331,42 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
     CheckFailureStates();
 
-    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters - 236.196;
+    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters_ - 236.196;
 
-    if(distance_to_start_slowing_down < 0)
+    if (distance_to_start_slowing_down < 0)
     {
         distance_to_start_slowing_down = 0;
     }
 
+    //checking if emergency brake is active.
     if (emergency_brake_ == true)
     {
         integral_sum_             = 0;
         commanded_power_          = 0;
         service_brake_percentage_ =  0;
     }
+
     // Checking if we've reached a distance to start slowing down for authority
-    else if(((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down))
+    else if (((distance_travelled_ - distance_prior_to_current_authority_) >= distance_to_start_slowing_down))
     {
-        if(new_authority)
+        if (new_authority)
         {
             // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
-            types::MetersPerSecondSquared required_acceleration = (-1*(current_speed_*current_speed_))/(2*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))));
+            types::MetersPerSecondSquared required_acceleration = (-1 * (current_speed_ * current_speed_)) / (2 * ((distance_of_authority_in_meters_ - (distance_travelled_ - distance_prior_to_current_authority_))));
 
-            if(required_acceleration/MAXIMUM_DECELERATION > 1)
+            if (required_acceleration / MAXIMUM_DECELERATION > 1)
             {
                 service_brake_percentage_ = 1;
             }
             else
             {
-                service_brake_percentage_ = required_acceleration/MAXIMUM_DECELERATION;
+                service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
             }
 
             new_authority = false;
         }
     }
+
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)
     {
@@ -463,7 +467,7 @@ void SoftwareTrainController::CheckFailureStates(void)
 
 void SoftwareTrainController::UpdateTrainPosition(void)
 {
-    if(last_polarity_ != polarity_)
+    if (last_polarity_ != polarity_)
     {
         set_route_position_++;
         authority_counter_--;
@@ -474,7 +478,7 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
         total_blocks_accessed_length_ += block_length;
 
-        if(set_route_position_ > green_default_route_vector_.size()-1)
+        if (set_route_position_ > green_default_route_vector_.size() - 1)
         {
             set_route_position_ = 0; //to beggining of route
         }
@@ -483,29 +487,29 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
 void SoftwareTrainController::CalculateDistanceToStopping()
 {
-    if((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1) || (authority_counter_ < authority_))
+    if ((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1) || (authority_counter_ < authority_))
     {
-        usable_authority_ = authority_;
-        authority_counter_ = authority_;
-        new_authority = true;
+        usable_authority_         = authority_;
+        authority_counter_        = authority_;
+        new_authority             = true;
         service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
 
         distance_prior_to_current_authority_ = distance_travelled_;
 
-        for (size_t i = set_route_position_+1; i < set_route_position_+ usable_authority_ + 1; i++)
+        for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
         {
             double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
 
-            if(i == set_route_position_+ usable_authority_)
+            if (i == set_route_position_ + usable_authority_)
             {
-                distance_of_authority_in_meters += block_length/2;
-                distance_of_authority_in_meters += total_blocks_accessed_length_-distance_prior_to_current_authority_;
+                distance_of_authority_in_meters_ += block_length / 2;
+                distance_of_authority_in_meters_ += total_blocks_accessed_length_ - distance_prior_to_current_authority_;
             }
             else
             {
-                distance_of_authority_in_meters += block_length;
+                distance_of_authority_in_meters_ += block_length;
             }
-        } 
+        }
     }
 }
 

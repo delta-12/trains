@@ -124,7 +124,7 @@ class SoftwareTrainController : public TrainController
         void SetKI(const uint16_t ki);
         void SetOperationMode(const bool operation_mode);
         void SetPolartity(const types::Polarity polarity);
-        
+
         //local functions
         types::Second GetDeltaTime(void) const;
         void Update(void);
@@ -260,10 +260,10 @@ class SoftwareTrainController : public TrainController
 
 
         /*
-        *
-        *** GREEN LINE MAP IMPLEMENTATION ***
-        *
-        */
+         *
+         *** GREEN LINE MAP IMPLEMENTATION ***
+         *
+         */
 
         // map for block data -->
         // key:
@@ -475,18 +475,18 @@ class SoftwareTrainController : public TrainController
 
         std::vector<int> green_default_route_vector_ = {
             63, 64, 65, 66, 67, 68, 69, 70, 71, 72,         /* K to Q fowards */
-            73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 
-            83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
-            93, 94, 95, 96, 97, 98, 99, 100, 
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92,
+            93, 94, 95, 96, 97, 98, 99, 100,
             85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
-            101, 102, 103, 104, 105, 106, 107, 108,         /* R to Z forwards */
+            101, 102, 103, 104, 105, 106, 107, 108,     /* R to Z forwards */
             109, 110, 111, 112, 113, 114, 115, 116,
             117, 118, 119, 120, 121, 122, 123, 124,
             125, 126, 127, 128, 129, 130, 131, 132,
             133, 134, 135, 136, 137, 138, 139, 140,
             141, 142, 143, 144, 145, 146, 147, 148,
             149, 150,
-            28, 27, 26,25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            28, 27, 26, 25, 24, 23, 22, 21, 20,          /* F to A backwards */
             19, 18, 17, 16, 15, 14, 13, 12, 11,
             10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
             13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
@@ -496,12 +496,12 @@ class SoftwareTrainController : public TrainController
             49, 50, 51, 52, 53, 54, 55, 56, 57,
             58, 59, 60, 61, 62,                                       /* Section J */
 
-                                                                                                    /* Loop 2 */
+            /* Loop 2 */
 
             63, 64, 65, 66, 67, 68, 69, 70, 71, 72,     /* K to Q fowards */
-            73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 
-            83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
-            93, 94, 95, 96, 97, 98, 99, 100, 
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92,
+            93, 94, 95, 96, 97, 98, 99, 100,
             85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
             101, 102, 103, 104, 105, 106, 107, 108,     /* R to Z forwards */
             109, 110, 111, 112, 113, 114, 115, 116,
@@ -510,7 +510,7 @@ class SoftwareTrainController : public TrainController
             133, 134, 135, 136, 137, 138, 139, 140,
             141, 142, 143, 144, 145, 146, 147, 148,
             149, 150,
-            28, 27, 26,25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            28, 27, 26, 25, 24, 23, 22, 21, 20,          /* F to A backwards */
             19, 18, 17, 16, 15, 14, 13, 12, 11,
             10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
             13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
@@ -552,7 +552,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit commanded_internal_temperature_;
         types::DegreesFahrenheit actual_internal_temperature_;
         types::Meters distance_travelled_;
-        types::Meters distance_of_authority_in_meters;
+        types::Meters distance_of_authority_in_meters_;
         types::Meters total_blocks_accessed_length_;
         types::Meters distance_prior_to_current_authority_;
         bool arrived_;
