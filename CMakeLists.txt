@@ -141,15 +141,20 @@ find_program(GCOVR_PATH gcovr)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GCOVR_PATH)
         message(STATUS "Found Gcovr at: ${GCOVR_PATH}")
-        set(GCOVR_ARGS -r ${CMAKE_BINARY_DIR} -f ${SRC_DIR} --exclude-throw-branches --html-details --html-theme github.dark-green -o coverage.html)
+        set(GCOVR_ARGS -r ${CMAKE_BINARY_DIR} -f ${SRC_DIR} --exclude-throw-branches)
         if(DEFINED ENV{GCOV_EXECUTABLE})
             set(GCOVR_ARGS --gcov-executable $ENV{GCOV_EXECUTABLE} ${GCOVR_ARGS})
         endif()
         add_custom_target(
             coverage
-            COMMAND ${GCOVR_PATH} ${GCOVR_ARGS}
+            COMMAND ${GCOVR_PATH} ${GCOVR_ARGS} --html-details --html-theme github.dark-green -o coverage.html
             COMMENT "Generating code coverage report..."
             DEPENDS test
+        )
+        add_custom_target(
+            sonarqube-coverage
+            COMMAND ${GCOVR_PATH} ${GCOVR_ARGS} --sonarqube -o coverage.xml
+            COMMENT "Generating code coverage report..."
         )
     else()
         message(WARNING "Gcovr not found.")
