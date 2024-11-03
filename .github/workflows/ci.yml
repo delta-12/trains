@@ -61,12 +61,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          cache: "pip"
       - name: Install gcovr
-        run: pip3 install gcovr
+        run: pipx install gcovr
       - name: Install sonar-scanner and build-wrapper
         uses: sonarsource/sonarcloud-github-c-cpp@v3
       - name: Cache CMake files
