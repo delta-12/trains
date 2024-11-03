@@ -123,7 +123,8 @@ class SoftwareTrainController : public TrainController
         void SetKP(const uint16_t kp);
         void SetKI(const uint16_t ki);
         void SetOperationMode(const bool operation_mode);
-
+        void SetPolartity(const types::Polarity polarity);
+        
         //local functions
         types::Second GetDeltaTime(void) const;
         void Update(void);

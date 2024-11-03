@@ -255,6 +255,12 @@ void SoftwareTrainController::SetOperationMode(const bool mode)
     }
 }
 
+void SoftwareTrainController::SetPolartity(const types::Polarity polarity)
+{
+    polarity_ = polarity;
+}
+
+
 
 
 void SoftwareTrainController::Update()
