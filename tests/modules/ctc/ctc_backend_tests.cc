@@ -45,6 +45,13 @@ TEST(CtcBackEndTest, SetStations)
     ASSERT_EQ(total_time_to_Pioneer, 138);
 }
 
+TEST(CtcBackEndTest, SetManualMode)
+{
+    ctc::Ctc ctc;
+    ctc.SetManualMode();
+    ASSERT_EQ(ctc.GetOperationMode(), ctc::MANUAL_MODE);
+}
+
 TEST(CtcBackEndTest, ManualDispatchToBlock)
 {
     ctc::Ctc              ctc;
@@ -55,25 +62,31 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
 
     ASSERT_EQ(ctc.GetNumStation(), 18);
     ctc.ManualDispatch(105);
-    ctc::Train* train1 = ctc.GetTrainPointerById(1);
-
-    ASSERT_EQ(train1->authority.front(), 0);
-    ctc.UpdateSuggestedSpeedAndAuthority(1);
-    ASSERT_EQ(train1->authority.front(), 63);
-    ASSERT_EQ(train1->suggested_speed, 19);
+    ctc::Train train1 = ctc.GetTrainById(1);
+    ASSERT_EQ(train1.authority.front(), 0);
 
     ctc.UpdateSuggestedSpeedAndAuthority(1);
-    ASSERT_EQ(train1->authority.front(), 64);
+    train1 = ctc.GetTrainById(1);
+    ASSERT_EQ(train1.authority.front(), 63);
+    ASSERT_EQ(train1.suggested_speed, 19);
+
     ctc.UpdateSuggestedSpeedAndAuthority(1);
-    ASSERT_EQ(train1->authority.front(), 65);
+    train1 = ctc.GetTrainById(1);
+    ASSERT_EQ(train1.authority.front(), 64);
+
     ctc.UpdateSuggestedSpeedAndAuthority(1);
-    ASSERT_EQ(train1->authority.front(), 66);
+    train1 = ctc.GetTrainById(1);
+    ASSERT_EQ(train1.authority.front(), 65);
+
+    ctc.UpdateSuggestedSpeedAndAuthority(1);
+    train1 = ctc.GetTrainById(1);
+    ASSERT_EQ(train1.authority.front(), 66);
 
     std::vector<types::BlockId> authority;
-    while (!train1->authority.empty())
+    while (!train1.authority.empty())
     {
-        authority.push_back(train1->authority.front());
-        train1->authority.pop();
+        authority.push_back(train1.authority.front());
+        train1.authority.pop();
     }
     ASSERT_EQ(authority[authority.size() - 1], 105);
 }

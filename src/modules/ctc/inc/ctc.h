@@ -14,6 +14,15 @@
 #include "csv_parser.h"
 #include "block_builder.h"
 
+#define CTC_YARD_BLOCK_0        0
+#define CTC_SECTION_D_BLOCK_13  13
+#define CTC_SECTION_F_BLOCK_28  28
+#define CTC_SECTION_J_BLOCK_58  58
+#define CTC_SECTION_K_BLOCK_63  63
+#define CTC_SECTION_M_BLOCK_76  76
+#define CTC_SECTION_N_BLOCK_85  85
+#define CTC_SECTION_R_BLOCK_101 101
+
 namespace ctc
 {
 
@@ -79,21 +88,19 @@ struct Train
 class Ctc
 {
     public:
-        void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule);
-        void SetManualMode(void);
+        /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
         std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
         /* Train Dispatch Specific */
-        void ManualDispatch(types::BlockId destination);
-        void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
-        std::vector<types::BlockId> GetRoute(const types::BlockId destination);
-        void AddTrainToTrainSchedule(ctc::Train train);
+        void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
+        void ManualDispatch(types::BlockId destination);                                                      // Manual Dispatch to Block (not station)
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
 
         /* Setters */
         void SetTrackLayout(void);
         void SetScheduleFilePath(std::filesystem::path path);
+        void SetManualMode(void);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;
@@ -101,13 +108,17 @@ class Ctc
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
         ctc::Train GetTrainById(const types::TrainId train_id) const;
-        ctc::Train* GetTrainPointerById(const types::TrainId train_id);
+        ctc::CtcOperationMode GetOperationMode(void) const;
 
     private:
         void SetBlocks(std::vector<types::Block> &blocks);
         void SetStations(std::vector<types::Block> &blocks);
         void SetDefaultRoute(void);
-
+        void AddTrainToTrainSchedule(ctc::Train train);
+        void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
+        std::vector<types::BlockId> GetRoute(const types::BlockId destination);
+        ctc::Train& GetTrainReferenceById(const types::TrainId train_id);
+        types::Error GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer);
 
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;

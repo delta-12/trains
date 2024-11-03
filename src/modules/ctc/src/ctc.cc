@@ -20,7 +20,7 @@ namespace ctc
 void Ctc::SetTrackLayout(void)
 {
     CsvParser                 parser(schedule_file_path_);
-    BlockBuilder              bb(parser.GetRecords(), Module::MODULE_CTC);
+    BlockBuilder              bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_CTC);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
@@ -55,18 +55,14 @@ void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 
 types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id)
 {
-    types::Error error = types::ERROR_NONE;
-    ctc::Train*  train = GetTrainPointerById(train_id);
-    if (train != nullptr)
+    types::Error                error = types::ERROR_NONE;
+    std::shared_ptr<ctc::Train> train = std::make_shared<ctc::Train>();
+    if (GetTrainPointerById(train_id, train) == types::ERROR_NONE)
     {
         train->authority.pop();
         types::BlockId current_block_id = train->authority.front();
         types::Block   current_block    = GetBlockById(current_block_id);
         train->suggested_speed = current_block.speed_limit;
-    }
-    else
-    {
-        error = types::ERROR_INVALID_TRAIN;
     }
     return error;
 }
@@ -105,24 +101,24 @@ void Ctc::SetDefaultRoute(void)
     types::BlockId yard = 0;
     default_route_.push_back(yard);
     // Add K, L, M, N, O, P, Q
-    for (std::size_t i = 63; i < 101; ++i)
+    for (std::size_t i = CTC_SECTION_K_BLOCK_63; i < CTC_SECTION_R_BLOCK_101; ++i)
     {
         default_route_.push_back(blocks_[i].block);
     }
     // Add N
-    for (std::size_t i = 85; i > 76; --i)
+    for (std::size_t i = CTC_SECTION_N_BLOCK_85; i > CTC_SECTION_M_BLOCK_76; --i)
     {
         default_route_.push_back(blocks_[i].block);
     }
-    for (std::size_t i = 101; i < blocks_.size(); ++i)
+    for (std::size_t i = CTC_SECTION_R_BLOCK_101; i < blocks_.size(); ++i)
     {
         default_route_.push_back(blocks_[i].block);
     }
-    for (std::size_t i = 28; i > 0; --i)
+    for (std::size_t i = CTC_SECTION_F_BLOCK_28; i > CTC_YARD_BLOCK_0; --i)
     {
         default_route_.push_back(blocks_[i].block);
     }
-    for (std::size_t i = 13; i < 58; ++i)
+    for (std::size_t i = CTC_SECTION_D_BLOCK_13; i < CTC_SECTION_J_BLOCK_58; ++i)
     {
         default_route_.push_back(blocks_[i].block);
     }
@@ -176,17 +172,19 @@ std::vector<types::BlockId> Ctc::GetRoute(const types::BlockId destination)
     return route;
 }
 
-ctc::Train* Ctc::GetTrainPointerById(const types::TrainId train_id)
+types::Error Ctc::GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer)
 {
-    ctc::Train* train_pointer;
+    types::Error error = types::ERROR_INVALID_TRAIN;
     for (ctc::Train &train : train_schedules_)
     {
         if (train.train_id == train_id)
         {
-            train_pointer = &train;
+            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train*) {
+                });
+            error = types::ERROR_NONE;
         }
     }
-    return train_pointer;
+    return error;
 }
 
 ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
@@ -200,6 +198,11 @@ ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
         }
     }
     return result;
+}
+
+ctc::CtcOperationMode Ctc::GetOperationMode(void) const
+{
+    return ctc_mode_;
 }
 
 } // namespace ctc
