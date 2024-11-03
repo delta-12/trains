@@ -63,6 +63,8 @@ jobs:
           submodules: "recursive"
       - name: Install gcovr
         run: pipx install gcovr
+      - name: Install unzip
+        run: apt update && apt install unzip
       - name: Install sonar-scanner and build-wrapper
         uses: sonarsource/sonarcloud-github-c-cpp@v3
       - name: Cache CMake files
