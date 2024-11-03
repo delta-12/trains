@@ -341,8 +341,18 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     else if(((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down) && new_authority)
     {
         new_authority = false;
-        //Add code here that calculates percentage of service brake that needs to be applied
-        // 0 = current_speed^2 + 2*a*((distance_to_stopping_ - (distance_travelled_ - distance_prior_to_current_authority_))
+
+        // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
+        types::MetersPerSecondSquared required_acceleration = (-1*(current_speed_*current_speed_))/(2*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))));
+
+        if(required_acceleration/MAXIMUM_DECELERATION > 1)
+        {
+            service_brake_percentage_ = 1;
+        }
+        else
+        {
+            service_brake_percentage_ = required_acceleration/MAXIMUM_DECELERATION;
+        }
     }
     //Checking if Current Train Velocity is greater than Setpoint speed
     else if (current_speed_ > setpoint_speed)

@@ -23,6 +23,7 @@
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
 #define DEFAULT_DELTA_TIME                    (1)
+#define MAXIMUM_DECELERATION                  (1.2)
 
 namespace train_controller
 {
