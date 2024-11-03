@@ -338,20 +338,23 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         service_brake_percentage_ =  0;
     }
     // Checking if we've reached a distance to start slowing down for authority
-    else if(((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down) && new_authority)
+    else if(((distance_travelled_ - distance_prior_to_current_authority_)>= distance_to_start_slowing_down))
     {
-        new_authority = false;
-
-        // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
-        types::MetersPerSecondSquared required_acceleration = (-1*(current_speed_*current_speed_))/(2*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))));
-
-        if(required_acceleration/MAXIMUM_DECELERATION > 1)
+        if(new_authority)
         {
-            service_brake_percentage_ = 1;
-        }
-        else
-        {
-            service_brake_percentage_ = required_acceleration/MAXIMUM_DECELERATION;
+            // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
+            types::MetersPerSecondSquared required_acceleration = (-1*(current_speed_*current_speed_))/(2*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))));
+
+            if(required_acceleration/MAXIMUM_DECELERATION > 1)
+            {
+                service_brake_percentage_ = 1;
+            }
+            else
+            {
+                service_brake_percentage_ = required_acceleration/MAXIMUM_DECELERATION;
+            }
+
+            new_authority = false;
         }
     }
     //Checking if Current Train Velocity is greater than Setpoint speed
