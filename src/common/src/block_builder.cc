@@ -83,7 +83,7 @@ void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::st
 
     for (std::vector<std::vector<std::string>>::const_iterator i = (records.begin() + 1); i != records.end(); ++i)
     {
-        blocks_.emplace_back(types::Block());
+        blocks_.emplace_back();
 
         types::Block &                  block  = *(blocks_.end() - 1);
         const std::vector<std::string> &record = *i;
@@ -111,7 +111,7 @@ void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std:
 
     for (std::vector<std::vector<std::string>>::const_iterator i = (records.begin() + 1); i != records.end(); ++i)
     {
-        blocks_.emplace_back(types::Block());
+        blocks_.emplace_back();
 
         types::Block &                  block  = *(blocks_.end() - 1);
         const std::vector<std::string> &record = *i;
