@@ -279,7 +279,7 @@ TEST(TrackModelTests, GreenLine)
 
     bool occupancy1;
 
-    ASSERT_EQ(GetTrackId(), types::TRACKID_GREEN);
+    ASSERT_EQ(track.GetTrackId(), types::TRACKID_GREEN);
 
     ASSERT_EQ(bb2.GetSize(), 151);
 
@@ -338,6 +338,12 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     //update
     track.Update();
 
+    //fake authority and speed
+    ASSERT_EQ(track.SetAuthority(200, 5), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetCommandedSpeed(200, 50), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetAuthority(-1, 5), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetCommandedSpeed(-1, 50), types::ERROR_INVALID_BLOCK);
+
     // Set authority and speed
     ASSERT_EQ(track.SetAuthority(63, 5), types::ERROR_NONE);
     ASSERT_EQ(track.SetCommandedSpeed(63, 50), types::ERROR_NONE);
@@ -352,6 +358,9 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     //occupancy check
     bool occupied;
+    ASSERT_EQ(track.GetBlockOccupancy(190, occupied), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlockOccupancy(-1, occupied), types::ERROR_INVALID_BLOCK);
+
     ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
@@ -388,12 +397,6 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     auto otb = track.GetOccupiedTrainBlocks();
 
-    // auto otb = track.GetOccupiedTrainBlocks();
-    for (int i = 0; i < otb[0].size(); i++)
-    {
-        std::cout << std::endl << otb[0][i] << std::endl;
-    }
-
     //update 4 (takes u to the end)
     for (int i = 0; i < 145; i++)
     {
@@ -410,7 +413,9 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     otb = track.GetOccupiedTrainBlocks();
 
     //switching so we go back to the yard instead of looping around
-    track.SetSwitchState(57, 1);
+    ASSERT_EQ(track.SetSwitchState(57, 1), types::ERROR_NONE);
+
+    ASSERT_EQ(track.SetSwitchState(58, 1), types::ERROR_INVALID_BLOCK);
 
     track.Update();
     track.Update();
@@ -498,14 +503,6 @@ TEST(TrackModelTests, Boarding)
     track.Update();
     track.Update();
 
-    auto otb = track.GetOccupiedTrainBlocks();
-
-    // auto otb = track.GetOccupiedTrainBlocks();
-    // for (int i = 0; i < otb[0].size(); i++)
-    // {
-    //     std::cout << std::endl << otb[0][i] << std::endl;
-    // }
-
     //train is now on block 3, where there is a station
     types::Block test_block;
     ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
@@ -513,6 +510,9 @@ TEST(TrackModelTests, Boarding)
     ASSERT_EQ(test_block.has_station, 1);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+
+    ASSERT_EQ(track.RemoveTrainModel(2), types::ERROR_INVALID_TRAIN);
+    ASSERT_EQ(track.RemoveTrainModel(0), types::ERROR_NONE);
 }
 
 TEST(TrackModelTests, Polarity)
@@ -550,17 +550,11 @@ TEST(TrackModelTests, Polarity)
 
     track.Update();
 
-    auto otb = track.GetOccupiedTrainBlocks();
-
-    // auto otb = track.GetOccupiedTrainBlocks();
-    // for (int i = 0; i < otb[0].size(); i++)
-    // {
-    //     std::cout << std::endl << otb[0][i] << std::endl;
-    // }
-
     //train is now on block 65, where polarity is 1
     types::Block test_block;
 
+    ASSERT_EQ(track.GetBlock(-1, test_block), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlock(200, test_block), types::ERROR_INVALID_BLOCK);
     ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
@@ -570,4 +564,34 @@ TEST(TrackModelTests, Polarity)
     ASSERT_EQ(current_polarity, types::POLARITY_POSITIVE);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
+}
+
+TEST(TrackModelTests, PlaceHolderFunctions)
+{
+    std::filesystem::path           base_path = std::filesystem::current_path();
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    CsvParser                       parser(path);
+    CsvParser                       parser2(path2);
+    BlockBuilder                    bb(parser.GetRecords());
+    BlockBuilder                    bb2(parser2.GetRecords());
+    types::Block                    block;
+    track_model::SoftwareTrackModel track;
+    train_model::TrainModelImpl     train;
+    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+
+    bool occupancy1;
+
+    ASSERT_EQ(track.GetTrackId(), types::TRACKID_GREEN);
+
+    ASSERT_EQ(bb2.GetSize(), 151);
+
+    ASSERT_EQ(track.SetCrossingState(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetRedTrafficLight(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetYellowTrafficLight(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetGreenTrafficLight(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetBrokenRail(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetTrackCircuitFailure(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetPowerFailure(5, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetExternalTemperature(60), types::ERROR_NONE);
 }

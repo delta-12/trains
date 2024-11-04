@@ -269,24 +269,20 @@ types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahr
 //is this getting callled only when deboarding is gonna happen?
 types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers)
 {
-    bool isValid = trains_.size() > train;
-    if (isValid)
-    {
-        const uint16_t deboarding = passengers;
+    const uint16_t deboarding = passengers;
 
-        //subtract from total passengers
-        uint16_t vacancy = kMaximumCapacity - passenger_counts_[train] + deboarding;
+    //subtract from total passengers
+    uint16_t vacancy = kMaximumCapacity - passenger_counts_[train] + deboarding;
 
-        RandomNumberGenerator rng;
+    RandomNumberGenerator rng;
 
-        uint16_t randomNumber = rng.generate(vacancy);
+    uint16_t randomNumber = rng.generate(vacancy);
 
-        trains_[train]->SetPassengersBoarding(randomNumber);
+    trains_[train]->SetPassengersBoarding(randomNumber);
 
-        passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
-    }
+    passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
 
-    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_TRAIN;
+    return types::ERROR_NONE;
 }
 
 std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlocks(void)
