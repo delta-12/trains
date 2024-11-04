@@ -278,12 +278,8 @@ TEST(TrackModelTests, GreenLine)
     track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     bool occupancy1;
-    // ASSERT_EQ(track.GetBlockOccupancy(2, occupancy1), types::ERROR_NONE);
-    // ASSERT_EQ(occupancy1, 0);
-    // ASSERT_EQ(track.SetTrackCircuitFailure(2, 1), types::ERROR_NONE);
-    // bool occupancy;
-    // ASSERT_EQ(track.GetBlockOccupancy(2, occupancy), types::ERROR_NONE);
-    // ASSERT_EQ(occupancy, 1);
+
+    ASSERT_EQ(GetTrackId(), types::TRACKID_GREEN);
 
     ASSERT_EQ(bb2.GetSize(), 151);
 

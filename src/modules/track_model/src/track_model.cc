@@ -7,10 +7,17 @@
 #include "train_model.h"
 #include "types.h"
 #include "block_builder.h"
-#include "graph.h"
+#include "random_number_generator.h"
 
 namespace track_model
 {
+
+const types::Meters  kTrainLength     = 32;
+const uint16_t       kMaximumCapacity = 222;
+const types::BlockId kPathEnd         = 172;
+const types::BlockId kYardSwitch      = 57;
+const types::BlockId kLoopAround      = 175;
+
 
 //constructor for when a track is passsed in
 types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder)
@@ -76,13 +83,13 @@ void SoftwareTrackModel::Update(void)
         for (int j = current_train_block_[i]; j < track_path_.size(); j++)
         {
             //green line end switch check
-            if (j == 172 && blocks_[57].switched == 1)
+            if (j == kPathEnd && blocks_[kYardSwitch].switched == 1)
             {
                 //block 57 now has the yard after it, and the front of the train is now at the yard
                 RemoveTrainModel(i);
                 break;
             }
-            else if (j == 175)
+            else if (j == kLoopAround)
             {
                 //block 57 now has J after it, which connects to K (starting a new loop)
                 j = 1;
@@ -112,7 +119,7 @@ void SoftwareTrackModel::Update(void)
                 //loop to account for length of train
                 types::Meters current_length = blocks_[current_block].length - train_head_[i];
 
-                while (current_length < length_of_train)
+                while (current_length < kTrainLength)
                 {
                     //did we hit the yard?
                     if (track_path_[j].block == 0)
@@ -151,22 +158,19 @@ void SoftwareTrackModel::Update(void)
 
 types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, const bool switched)
 {
-    if (blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1)
+    bool isValid = blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1;
+    if (isValid)
     {
         blocks_[block].switched = switched;
+    }
 
-        return types::ERROR_NONE;
-    }
-    else
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_BLOCK;
 
 }
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
-    return types::Error{ };
+    return types::ERROR_NONE;
 }
 
 types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, const bool on)
@@ -186,7 +190,9 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-    if (blocks_.size() > block && block > 0)
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid)
     {
         for (int i = 0; i < trains_.size(); i++)
         {
@@ -198,18 +204,16 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
                 }
             }
         }
+    }
 
-        return types::ERROR_NONE;
-    }
-    else
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_BLOCK;
 }
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Blocks authority)
 {
-    if (blocks_.size() > block && block > 0)
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid)
     {
         for (int i = 0; i < trains_.size(); i++)
         {
@@ -223,27 +227,23 @@ types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const 
 
         }
 
-        return types::ERROR_NONE;
     }
-    else
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
+
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_BLOCK;
 }
 
 types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, bool &occupied) const
 {
     //checking if block exists
-    if (blocks_.size() > block && block > 0)
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid)
     {
         occupied = blocks_[block].occupied;
 
-        return types::ERROR_NONE;
     }
-    else
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
+
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_BLOCK;
 }
 
 types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const bool broken)
@@ -269,30 +269,24 @@ types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahr
 //is this getting callled only when deboarding is gonna happen?
 types::Error SoftwareTrackModel::SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers)
 {
-    if (trains_.size() > train)
+    bool isValid = trains_.size() > train;
+    if (isValid)
     {
         const uint16_t deboarding = passengers;
 
         //subtract from total passengers
-        uint16_t vacancy = train_capacity - passenger_counts_[train] + deboarding;
+        uint16_t vacancy = kMaximumCapacity - passenger_counts_[train] + deboarding;
 
-        //generate random number within bounds for boarding
-        std::random_device              rd;              // Seed
-        std::mt19937                    gen(rd());       // Mersenne Twister engine
-        std::uniform_int_distribution<> dis(0, vacancy); // Uniform distribution between 0 and vacancy
+        RandomNumberGenerator rng;
 
-        int randomNumber = dis(gen);
+        uint16_t randomNumber = rng.generate(vacancy);
 
         trains_[train]->SetPassengersBoarding(randomNumber);
 
         passenger_counts_[train] = passenger_counts_[train] - deboarding + randomNumber;
+    }
 
-        return types::ERROR_NONE;
-    }
-    else
-    {
-        return types::ERROR_INVALID_TRAIN;
-    }
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_TRAIN;
 }
 
 std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlocks(void)
@@ -300,9 +294,11 @@ std::vector<std::vector<types::BlockId>> SoftwareTrackModel::GetOccupiedTrainBlo
     return occupied_train_blocks_;
 }
 
-types::Error SoftwareTrackModel::RemoveTrainModel(int train_element)
+types::Error SoftwareTrackModel::RemoveTrainModel(size_t train_element)
 {
-    if (trains_.size() > train_element)
+    bool isValid = trains_.size() > train_element;
+
+    if (isValid)
     {
         trains_.erase(trains_.begin() + train_element);
 
@@ -313,27 +309,22 @@ types::Error SoftwareTrackModel::RemoveTrainModel(int train_element)
         train_head_.erase(train_head_.begin() + train_element);
 
         passenger_counts_.erase(passenger_counts_.begin() + train_element);
+    }
 
-        return types::ERROR_NONE;
-    }
-    else
-    {
-        return types::ERROR_INVALID_TRAIN;
-    }
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_TRAIN;
 }
 
 types::Error SoftwareTrackModel::GetBlock(types::BlockId block_number, types::Block &block)
 {
-    if (block_number > 0 && blocks_.size() > block_number)
+    bool isValid = block_number > 0 && blocks_.size() > block_number;
+
+    if (isValid)
     {
         block = blocks_[block_number];
 
-        return types::ERROR_NONE;
     }
-    else
-    {
-        return types::ERROR_INVALID_BLOCK;
-    }
+
+    return isValid ? types::ERROR_NONE : types::ERROR_INVALID_BLOCK;
 }
 
 } // namespace track_model

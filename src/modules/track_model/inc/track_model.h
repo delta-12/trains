@@ -12,9 +12,6 @@
 #include "train_model.h"
 #include "types.h"
 
-const types::Meters length_of_train = 32;
-const uint16_t      train_capacity  = 222;
-
 namespace track_model
 {
 
@@ -38,7 +35,7 @@ class TrackModel
 class SoftwareTrackModel : public TrackModel
 {
     public:
-        //ADD constructor that takes in a shared pointer to the tick source
+        //NNF-234 ADD constructor that takes in a shared pointer to the tick source
         types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
@@ -59,7 +56,7 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
         types::Error SetTrainBlock(const types::BlockId block);
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
-        types::Error RemoveTrainModel(int train_element);
+        types::Error RemoveTrainModel(size_t train_element);
         types::Error GetBlock(types::BlockId block_number, types::Block &block);
 
     private:
