@@ -6,10 +6,11 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_H
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_H
 
-#include <unordered_map>
+#include <queue>
 
 #include "block_builder.h"
 #include "csv_parser.h"
+#include "graph.h"
 #include "types.h"
 
 #define CTC_YARD_BLOCK_0        0

@@ -19,7 +19,7 @@ namespace ctc
 void Ctc::SetTrackLayout(void)
 {
     CsvParser                 parser(schedule_file_path_);
-    BlockBuilder              bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_CTC);
+    BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
