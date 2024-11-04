@@ -9,13 +9,14 @@
 #include "csv_parser.h"
 #include "block_builder.h"
 #include "types.h"
+#include "convert.h"
 
 TEST(BlockBuilderTests, GetSize)
 {
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     ASSERT_EQ(bb.GetSize(), 151);
 
     std::vector<types::Block> result = bb.GetBlocks();
@@ -35,6 +36,20 @@ TEST(BlockBuilderTests, ConvertRecordToBlock)
 
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Poplar");
+}
+
+TEST(BlockBuilderTests, ConvertRecordToBlockCTC)
+{
+    std::filesystem::path                 base_path = std::filesystem::current_path();
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    CsvParser                             parser(path);
+    std::vector<std::vector<std::string>> records = parser.GetRecords();
+    BlockBuilder                          bb;
+    types::Block                          block = bb.ConvertRecordToBlockCTC(records[73]);
+
+    ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.station_name, "Dormont");
+    ASSERT_EQ(static_cast<int>(block.total_time_to_station.count()), 150);
 }
 
 TEST(BlockBuilderTests, AssignBlockInfrastructure)
@@ -66,7 +81,7 @@ TEST(BlockBuilderTests, BlueBline)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 16);
@@ -102,7 +117,7 @@ TEST(BlockBuilderTests, GreenLine)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords());
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 151);
@@ -133,4 +148,24 @@ TEST(BlockBuilderTests, GreenLine)
 
     ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(-1, block));
     ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(151, block));
+}
+
+TEST(BlockBuilderTests, GreenLineV4)
+{
+    std::filesystem::path                 base_path = std::filesystem::current_path();
+    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    CsvParser                             parser(path);
+    std::vector<std::vector<std::string>> records = parser.GetRecords();
+    BlockBuilder                          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_CTC);
+
+    types::Block block;
+    ASSERT_EQ(bb.GetSize(), 150);
+    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(16, block));
+    ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.station_name, "Downtown");
+
+    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(141, block));
+    ASSERT_EQ(block.has_station, true);
+    ASSERT_EQ(block.station_name, "Central");
+    ASSERT_EQ(block.underground, true);
 }

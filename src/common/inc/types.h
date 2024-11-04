@@ -38,6 +38,7 @@ typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
 typedef struct BlockState                           BlockState;
 typedef std::chrono::duration<double>               Second;
+typedef std::chrono::milliseconds                   Milisecond;
 
 typedef enum
 {
@@ -117,6 +118,7 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+    Second total_time_to_station;
     types::Polarity polarity;
 };
 

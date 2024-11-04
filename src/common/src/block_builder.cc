@@ -12,13 +12,25 @@ BlockBuilder::BlockBuilder(void)
 {
 }
 
-BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records)
+BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, SystemModule module)
 {
-    for (size_t i = 1; i < records.size(); ++i)
+    if (module == SystemModule::SYSTEM_MODULE_TRACK_MODEL)
     {
-        const std::vector<std::string> &record = records[i];
-        types::Block                    block  = ConvertRecordToBlock(record);
-        blocks_.push_back(block);
+        for (size_t i = 1; i < records.size(); ++i)
+        {
+            const std::vector<std::string> &record = records[i];
+            types::Block                    block  = ConvertRecordToBlock(record);
+            blocks_.push_back(block);
+        }
+    }
+    else if (module == SystemModule::SYSTEM_MODULE_CTC)
+    {
+        for (size_t i = 1; i < records.size(); ++i)
+        {
+            const std::vector<std::string> &record = records[i];
+            types::Block                    block  = ConvertRecordToBlockCTC(record);
+            blocks_.push_back(block);
+        }
     }
 }
 
@@ -106,6 +118,25 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
         {
             block.polarity = types::POLARITY_NEGATIVE;
         }
+    }
+
+    return block;
+}
+
+types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string> &record)
+{
+    types::Block block;
+    block.section     = record[1][0];
+    block.block       = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER]);
+    block.length      = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH]);
+    block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
+    block.speed_limit = std::stod(record[BLOCK_BUILDER_SCHEDULE_FIELD_SPEED_LIMIT]);
+    AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
+
+    if (block.has_station)
+    {
+        std::chrono::milliseconds total_time_to_station = convert::ConvertMinuteToMiliseconds(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
+        block.total_time_to_station = total_time_to_station;
     }
 
     return block;

@@ -37,8 +37,6 @@ class TrainModelImpl : public TrainModel
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Polarity GetTrackPolarity(void) const;
         void SetStationAnnouncement(const std::string &announcement);
-        void SetGrade(const float grade);
-        void SetBrake(const float brake);
         void SetHeadlights(const bool on);
         void SetInternalLights(const bool on);
         void SetLeftDoorsState(const bool open);
@@ -47,13 +45,15 @@ class TrainModelImpl : public TrainModel
         void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees);
         void SetBlockId(const types::BlockId block);
         uint16_t GetPassengersDeboarding(void);
-        types::Meters GetDistanceTraveled(void);
+        types::Meters GetDistanceTraveled(void) const;
         void SetCommandedSpeed(const types::MetersPerSecond speed);
         void SetAuthority(const types::Blocks blocks);
         void SetPassengersBoarding(const uint16_t passengers);
         void SetTrackPolarity(const types::Polarity polarity);
         void SetBeaconData(const types::BeaconData &data, std::size_t &size);
         void SetDistanceTraveled(const types::Meters distance);
+        void SetGrade(const double grade);
+        void SetBrake(const double brake);
 
     private:
         types::TrainId train_id_;
@@ -72,12 +72,22 @@ class TrainModelImpl : public TrainModel
         types::Watts actual_power_;
         types::Polarity track_polarity_;
         std::string announcement_;
-        float grade_;
-        float brake_;
         bool headlights_on_;
         bool internal_lights_on_;
         types::BlockId block_id_;
+        double grade_;
+        double brake_;
 };
+
+void TrainModelImpl::SetGrade(const double grade)
+{
+    grade_ = grade;
+}
+
+void TrainModelImpl::SetBrake(const double brake)
+{
+    brake_ = brake;
+}
 
 void TrainModelImpl::SetTrainId(const types::TrainId train)
 {
@@ -170,17 +180,6 @@ void TrainModelImpl::SetStationAnnouncement(const std::string &announcement)
     announcement_ = announcement;
 }
 
-void TrainModelImpl::SetGrade(const float grade)
-{
-    grade_ = grade;
-}
-
-void TrainModelImpl::SetBrake(const float brake)
-{
-    // Handle brake logic
-    brake_ = brake;
-}
-
 void TrainModelImpl::SetHeadlights(const bool on)
 {
     headlights_on_ = on;
@@ -229,7 +228,7 @@ uint16_t TrainModelImpl::GetPassengersDeboarding(void)
     }
 }
 
-types::Meters TrainModelImpl::GetDistanceTraveled(void)
+types::Meters TrainModelImpl::GetDistanceTraveled(void) const
 {
     return 110;
 }
@@ -270,8 +269,8 @@ TEST(TrackModelTests, GreenLine)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -318,8 +317,8 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -451,8 +450,8 @@ TEST(TrackModelTests, Switching)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -482,8 +481,8 @@ TEST(TrackModelTests, Boarding)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -522,8 +521,8 @@ TEST(TrackModelTests, Polarity)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -573,8 +572,8 @@ TEST(TrackModelTests, PlaceHolderFunctions)
     std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords());
-    BlockBuilder                    bb2(parser2.GetRecords());
+    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
