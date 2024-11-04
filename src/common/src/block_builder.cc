@@ -18,6 +18,7 @@ static const size_t kLayoutFieldElevation            = 8;
 static const size_t kLayoutFieldCumulativeElevation  = 9;
 static const size_t kLayoutFieldConnection           = 11;
 static const size_t kLayoutFieldDirection            = 12;
+static const size_t kScheduleWayside                 = 7;
 static const size_t kScheduleFieldSpeedLimit         = 11;
 static const size_t kScheduleFieldTotalTimeToStation = 23;
 
@@ -92,6 +93,7 @@ void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::st
         block.length      = std::stod(record[kLayoutFieldBlockLength]);
         block.grade       = std::stod(record[kLayoutFieldBlockGrade]);
         block.speed_limit = std::stod(record[kScheduleFieldSpeedLimit]);
+        block.wayside     = std::stoi(record[kScheduleWayside]);
 
         AssignBlockInfrastructure(block, record[kLayoutFieldInfrastructure]);
 
@@ -140,7 +142,7 @@ void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std:
 
         if (record[kLayoutFieldConnection] != "")
         {
-            block.switch_connection = std::stoi(record[kLayoutFieldConnection]);
+            block.switch_connection = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldConnection]));
         }
 
         std::string block_direction = record[kLayoutFieldDirection];
