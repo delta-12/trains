@@ -13,18 +13,19 @@
 
 
 
-TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown)
+TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown1Block)
 {
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
     (*CLOCK).Start();
+    (*CLOCK).SetMultiplier(2);
 
     TC.SetAuthority(1);
     TC.SetCurrentSpeed(0);
     TC.SetCommandedSpeed(18);
 
-    usleep(1000000);
+    usleep(500000);
     TC.Update();
 
     ASSERT_GT(TC.GetCommandedPower(), 0);
@@ -33,12 +34,52 @@ TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown)
 
     TC.SetCurrentSpeed(10);
 
-    usleep(10000000);
+    usleep(5000000);
     TC.Update();
 
     std::cout <<  "\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
     std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
     std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n";
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+}
+
+
+TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDownForAStation2BlocksAway)
+{
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
+    (*CLOCK).Start();
+    (*CLOCK).SetMultiplier(2);
+
+    TC.SetAuthority(2);
+    TC.SetCurrentSpeed(0);
+    TC.SetCommandedSpeed(18);
+
+    usleep(500000);
+    TC.Update();
+
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetDistanceTravelled(),0);
+
+
+    TC.SetCurrentSpeed(10);
+
+    usleep(3000000);
+    TC.Update();
+
+    std::cout <<  "\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
+    std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n";
+
+    usleep(200000);
+    TC.Update();
+
+    std::cout <<  "\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
+    std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n";
+
     ASSERT_EQ(TC.GetCommandedPower(), 0);
     ASSERT_GT(TC.GetServiceBrake(), 0);
 }

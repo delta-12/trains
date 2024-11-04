@@ -512,7 +512,7 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 
         for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
         {
-            double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+            double block_length = (green_block_data_map_[green_default_route_vector_[i]])[0];
 
             if (i == set_route_position_ + usable_authority_)
             {
@@ -524,7 +524,9 @@ void SoftwareTrainController::CalculateDistanceToStopping()
                 distance_of_authority_in_meters_ += block_length;
             }
 
+            //std::cout << "\n" << block_length;
         }
+        
     }
 
     
