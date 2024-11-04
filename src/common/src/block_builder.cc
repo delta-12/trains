@@ -107,6 +107,18 @@ types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &
     {
         block.direction = types::BLOCKDIRECTION_BIDIRECTIONAL;
     }
+    if (record[BLOCK_BUILDER_CSV_FIELD_POLARITY] != "")
+    {
+        std::string block_polarity = record[BLOCK_BUILDER_CSV_FIELD_POLARITY];
+        if (block_polarity.find("1") != std::string::npos)
+        {
+            block.polarity = types::POLARITY_POSITIVE;
+        }
+        else
+        {
+            block.polarity = types::POLARITY_NEGATIVE;
+        }
+    }
 
     return block;
 }
