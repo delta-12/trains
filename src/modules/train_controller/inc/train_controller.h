@@ -540,7 +540,7 @@ class SoftwareTrainController : public TrainController
         types::Blocks authority_;
         types::Blocks usable_authority_;
         types::Blocks authority_counter_;
-        bool new_authority;
+        bool new_authority_;
         bool emergency_brake_;
         bool headlights_;
         bool interior_lights_;

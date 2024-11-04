@@ -20,7 +20,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
-    set_route_position_             = 0; // -1 is the yard
+    set_route_position_             = 0;
 
 
     distance_of_authority_in_meters_     = 0;
@@ -42,6 +42,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_         = 0;
     distance_travelled_                  = 0;
     distance_prior_to_current_authority_ = 0;
+    total_blocks_accessed_length_        = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
     arrived_                             = 0;
     operation_mode_                      = false;
     last_tick_updated_                   = (*clock_).GetTick();
@@ -50,7 +51,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     last_polarity_     = polarity_;
     usable_authority_  = authority_;
     authority_counter_ = authority_;
-    new_authority      = false;
+    new_authority_      = false;
 
     Update();
 }
@@ -275,8 +276,10 @@ void SoftwareTrainController::Update()
     last_tick_updated_ = (*clock_).GetTick();
 
     UpdateTrainPosition();
-    CalculateCommandedPower(delta_time);
     UpdateDistanceTravelled(delta_time);
+    CalculateDistanceToStopping();
+    CalculateCommandedPower(delta_time);
+    
 
     delta_time_ = delta_time;
 }
@@ -338,6 +341,10 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         distance_to_start_slowing_down = 0;
     }
 
+
+    // std::cout << "\n" << distance_to_start_slowing_down << " A\n";
+    // std::cout << "\n" << distance_travelled_ - distance_prior_to_current_authority_ << " B\n";
+
     //checking if emergency brake is active.
     if (emergency_brake_ == true)
     {
@@ -347,23 +354,25 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     }
 
     // Checking if we've reached a distance to start slowing down for authority
-    else if (((distance_travelled_ - distance_prior_to_current_authority_) >= distance_to_start_slowing_down))
+    else if (((distance_travelled_ - distance_prior_to_current_authority_) > distance_to_start_slowing_down))
     {
-        if (new_authority)
+        if (new_authority_)
         {
             // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
-            types::MetersPerSecondSquared required_acceleration = (-1 * (current_speed_ * current_speed_)) / (2 * ((distance_of_authority_in_meters_ - (distance_travelled_ - distance_prior_to_current_authority_))));
+            types::MetersPerSecondSquared required_acceleration = ((current_speed_ * current_speed_)) / (2 * ((distance_of_authority_in_meters_ - (distance_travelled_ - distance_prior_to_current_authority_))));
 
             if (required_acceleration / MAXIMUM_DECELERATION > 1)
             {
                 service_brake_percentage_ = 1;
+                commanded_power_= 0;
             }
             else
             {
                 service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
+                commanded_power_ = 0;
             }
 
-            new_authority = false;
+            new_authority_ = false;
         }
     }
 
@@ -487,11 +496,16 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
 void SoftwareTrainController::CalculateDistanceToStopping()
 {
-    if ((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) || (abs(usable_authority_ - authority_) > 1) || (authority_counter_ < authority_))
+    if ((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) ||  (authority_counter_ < authority_))
     {
+
+        // std::cout << "\n" << "acessed" << " \n";
+        // std::cout << "\n" << "usable_authority_ " << usable_authority_ << " \n";
+        // std::cout << "\n" << "authority_ " << authority_ << " \n";
+        // std::cout << "\n" << "authority_counter_ " << authority_counter_ << " \n";
         usable_authority_         = authority_;
         authority_counter_        = authority_;
-        new_authority             = true;
+        new_authority_             = true;
         service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
 
         distance_prior_to_current_authority_ = distance_travelled_;
@@ -509,8 +523,11 @@ void SoftwareTrainController::CalculateDistanceToStopping()
             {
                 distance_of_authority_in_meters_ += block_length;
             }
+
         }
     }
+
+    
 }
 
 }
