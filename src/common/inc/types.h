@@ -33,6 +33,7 @@ typedef char                                        SectionId;
 typedef uint16_t                                    BlockId;
 typedef uint16_t                                    Blocks;
 typedef uint16_t                                    TrainId;
+typedef uint32_t                                    WaysideId;
 typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
 typedef struct Block                                Block;
 typedef struct TrackCircuitData                     TrackCircuitData;
@@ -92,7 +93,7 @@ struct Block
     Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
               light_color(TRAFFICLIGHTCOLOR_NONE), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), speed_limit(0),
               elevation(0), cumulative_elevation(0), section('\0'), heater_on(false), has_station(false), station_side(STATIONSIDE_LEFT),
-              direction(BLOCKDIRECTION_UNIDIRECTIONAL), underground(false)
+              direction(BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0)
     {
     };
     BlockId block;
@@ -120,6 +121,7 @@ struct Block
     BlockDirection direction;
     bool underground;
     Second total_time_to_station;
+    WaysideId wayside;
 };
 
 struct TrackCircuitData

@@ -110,20 +110,24 @@ TEST(BlockBuilderTests, GreenLine)
 
 TEST(BlockBuilderTests, GreenLineV4)
 {
-    std::filesystem::path                 base_path = std::filesystem::current_path();
-    std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
-    CsvParser                             parser(path);
-    std::vector<std::vector<std::string>> records = parser.GetRecords();
-    BlockBuilder                          bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    std::filesystem::path base_path = std::filesystem::current_path();
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+    CsvParser             parser(path);
+    BlockBuilder          bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
 
     types::Block block;
     ASSERT_EQ(bb.GetSize(), 150);
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(16, block));
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Downtown");
+    ASSERT_EQ(0, block.wayside);
+
+    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(55, block));
+    ASSERT_EQ(1, block.wayside);
 
     ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(141, block));
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Central");
     ASSERT_EQ(block.underground, true);
+    ASSERT_EQ(0, block.wayside);
 }
