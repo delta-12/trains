@@ -92,9 +92,9 @@ enum class StationSide
 struct Block
 {
     Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
-              light_color(TRAFFICLIGHTCOLOR_NONE), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), speed_limit(0),
-              elevation(0), cumulative_elevation(0), section('\0'), heater_on(false), has_station(false), station_side(STATIONSIDE_LEFT),
-              direction(BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0)
+              light_color(TrafficLightColor::TRAFFICLIGHTCOLOR_NONE), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
+              speed_limit(0), elevation(0), cumulative_elevation(0), section('\0'), heater_on(false), has_station(false), station_side(StationSide::STATIONSIDE_LEFT),
+              direction(BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0)
     {
     };
     BlockId block;
