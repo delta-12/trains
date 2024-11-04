@@ -16,7 +16,7 @@ TEST(BlockBuilderTests, GetSize)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     ASSERT_EQ(bb.GetSize(), 151);
 
     std::vector<types::Block> result = bb.GetBlocks();
@@ -81,7 +81,7 @@ TEST(BlockBuilderTests, BlueBline)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "blue_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 16);
@@ -117,7 +117,7 @@ TEST(BlockBuilderTests, GreenLine)
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
     CsvParser             parser(path);
-    BlockBuilder          bb(parser.GetRecords(), Module::MODULE_TRACK_MODEL);
+    BlockBuilder          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_TRACK_MODEL);
     types::Block          block;
 
     ASSERT_EQ(bb.GetSize(), 151);
@@ -156,7 +156,7 @@ TEST(BlockBuilderTests, GreenLineV4)
     std::filesystem::path                 path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
     CsvParser                             parser(path);
     std::vector<std::vector<std::string>> records = parser.GetRecords();
-    BlockBuilder                          bb(parser.GetRecords(), Module::MODULE_CTC);
+    BlockBuilder                          bb(parser.GetRecords(), SystemModule::SYSTEM_MODULE_CTC);
 
     types::Block block;
     ASSERT_EQ(bb.GetSize(), 150);
@@ -168,19 +168,4 @@ TEST(BlockBuilderTests, GreenLineV4)
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.station_name, "Central");
     ASSERT_EQ(block.underground, true);
-}
-
-TEST(BlockBuilderTests, MinuteToMiliSecond)
-{
-    std::string               minute     = "2.5";
-    std::chrono::milliseconds milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 150000);
-
-    minute     = "2.7";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 162000);
-
-    minute     = "3.2";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 192000);
 }

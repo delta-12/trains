@@ -12,9 +12,9 @@ BlockBuilder::BlockBuilder(void)
 {
 }
 
-BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module)
+BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, SystemModule module)
 {
-    if (module == Module::MODULE_TRACK_MODEL)
+    if (module == SystemModule::SYSTEM_MODULE_TRACK_MODEL)
     {
         for (size_t i = 1; i < records.size(); ++i)
         {
@@ -23,7 +23,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records,
             blocks_.push_back(block);
         }
     }
-    else if (module == Module::MODULE_CTC)
+    else if (module == SystemModule::SYSTEM_MODULE_CTC)
     {
         for (size_t i = 1; i < records.size(); ++i)
         {
