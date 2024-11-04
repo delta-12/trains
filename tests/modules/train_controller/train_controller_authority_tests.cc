@@ -13,7 +13,7 @@
 
 
 
-TEST(TrainControllerAuthorityTests, PowerWithAuthority)
+TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown)
 {
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
