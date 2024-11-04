@@ -1,24 +1,25 @@
 #include "block_builder.h"
 
 #include <algorithm>
+#include <ranges>
 #include <sstream>
 #include <string>
 
 #include "convert.h"
 #include "types.h"
 
-static size_t kLayoutFieldBlockNumber          = 2;
-static size_t kLayoutFieldBlockLength          = 3;
-static size_t kLayoutFieldBlockGrade           = 4;
-static size_t kLayoutFieldSpeedLimit           = 5;
-static size_t kLayoutFieldInfrastructure       = 6;
-static size_t kLayoutFieldStationSide          = 7;
-static size_t kLayoutFieldElevation            = 8;
-static size_t kLayoutFieldCumulativeElevation  = 9;
-static size_t kLayoutFieldConnection           = 11;
-static size_t kLayoutFieldDirection            = 12;
-static size_t kScheduleFieldSpeedLimit         = 11;
-static size_t kScheduleFieldTotalTimeToStation = 23;
+static const size_t kLayoutFieldBlockNumber          = 2;
+static const size_t kLayoutFieldBlockLength          = 3;
+static const size_t kLayoutFieldBlockGrade           = 4;
+static const size_t kLayoutFieldSpeedLimit           = 5;
+static const size_t kLayoutFieldInfrastructure       = 6;
+static const size_t kLayoutFieldStationSide          = 7;
+static const size_t kLayoutFieldElevation            = 8;
+static const size_t kLayoutFieldCumulativeElevation  = 9;
+static const size_t kLayoutFieldConnection           = 11;
+static const size_t kLayoutFieldDirection            = 12;
+static const size_t kScheduleFieldSpeedLimit         = 11;
+static const size_t kScheduleFieldTotalTimeToStation = 23;
 
 static void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
 static std::vector<std::string> SplitBySemicolon(const std::string &input);
@@ -41,7 +42,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records,
 types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block &block)
 {
     types::Error                        error = types::ERROR_NONE;
-    std::vector<types::Block>::iterator it    = std::find_if(blocks_.begin(), blocks_.end(), [&block_id](const types::Block &block)
+    std::vector<types::Block>::iterator it    = std::ranges::find_if(blocks_, [&block_id](const types::Block &block)
     {
         return block.block == block_id;
     });
@@ -87,7 +88,7 @@ void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::st
         const std::vector<std::string> &record = *i;
 
         block.section     = record[1][0];
-        block.block       = std::stoi(record[kLayoutFieldBlockNumber]);
+        block.block       = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldBlockNumber]));
         block.length      = std::stod(record[kLayoutFieldBlockLength]);
         block.grade       = std::stod(record[kLayoutFieldBlockGrade]);
         block.speed_limit = std::stod(record[kScheduleFieldSpeedLimit]);
@@ -114,7 +115,7 @@ void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std:
         const std::vector<std::string> &record = *i;
 
         block.section              = record[1][0];
-        block.block                = std::stoi(record[kLayoutFieldBlockNumber]);
+        block.block                = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldBlockNumber]));
         block.length               = std::stod(record[kLayoutFieldBlockLength]);
         block.grade                = std::stod(record[kLayoutFieldBlockGrade]);
         block.speed_limit          = std::stod(record[kLayoutFieldSpeedLimit]);
@@ -168,7 +169,7 @@ static void AssignBlockInfrastructure(types::Block &block, const std::string &in
         {
             block.has_station = true;
             std::string station_name = infrastructure_list[i + 1];
-            station_name[0]    = std::toupper(station_name[0]);
+            station_name[0]    = static_cast<char>(std::toupper(station_name[0]));
             block.station_name = station_name;
         }
         if (infrastructure.find("railway") != std::string::npos)
