@@ -18,22 +18,58 @@ namespace track_model
 class TrackModel
 {
     public:
-        virtual types::TrackId GetTrackId(void)                                                                   = 0;
-        virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                        = 0;
-        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const          = 0;
-        virtual void Update(void)                                                                                 = 0;
-        virtual types::Error SetSwitchState(const types::BlockId block, const bool switched)                      = 0;
-        virtual types::Error SetCrossingState(const types::BlockId block, const bool closed)                      = 0;
-        virtual types::Error SetRedTrafficLight(const types::BlockId block, const bool on)                        = 0;
-        virtual types::Error SetYelloTrafficLight(const types::BlockId block, const bool on)                      = 0;
-        virtual types::Error SetGreenTrafficLight(const types::BlockId block, const bool on)                      = 0;
-        virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)    = 0;
-        virtual types::Error SetAuthority(const types::BlockId block, const types::Meters authority)              = 0;
-        virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const                  = 0;
-        virtual types::Error SetBrokenRail(const types::BlockId block, const bool broken)                         = 0;
-        virtual types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure) = 0;
-        virtual types::Error SetPowerFailure(const types::BlockId block, const bool power_failure)                = 0;
-        virtual types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature)                   = 0;
+        virtual types::TrackId GetTrackId(void)                                                                = 0;
+        virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                     = 0;
+        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const       = 0;
+        virtual void Update(void)                                                                              = 0;
+        virtual types::Error SetSwitchState(const types::BlockId block, const bool switched)                   = 0;
+        virtual types::Error SetCrossingState(const types::BlockId block, const bool closed)                   = 0;
+        virtual types::Error SetRedTrafficLight(const types::BlockId block, const bool on)                     = 0;
+        virtual types::Error SetYellowTrafficLight(const types::BlockId block, const bool on)                  = 0;
+        virtual types::Error SetGreenTrafficLight(const types::BlockId block, const bool on)                   = 0;
+        virtual types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed) = 0;
+        virtual types::Error SetAuthority(const types::BlockId block, const types::Blocks authority)           = 0;
+        virtual types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const               = 0;
+};
+
+class SoftwareTrackModel : public TrackModel
+{
+    public:
+        // NNF-234 ADD constructor that takes in a shared pointer to the tick source
+        types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
+        types::TrackId GetTrackId(void);
+        types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
+        void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
+        void Update(void);
+        types::Error SetSwitchState(const types::BlockId block, const bool switched);
+        types::Error SetCrossingState(const types::BlockId block, const bool closed);
+        types::Error SetRedTrafficLight(const types::BlockId block, const bool on);
+        types::Error SetYellowTrafficLight(const types::BlockId block, const bool on);
+        types::Error SetGreenTrafficLight(const types::BlockId block, const bool on);
+        types::Error SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed);
+        types::Error SetAuthority(const types::BlockId block, const types::Blocks authority);
+        types::Error GetBlockOccupancy(const types::BlockId block, bool &occupied) const;
+        types::Error SetBrokenRail(const types::BlockId block, const bool broken);
+        types::Error SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure);
+        types::Error SetPowerFailure(const types::BlockId block, const bool power_failure);
+        types::Error SetExternalTemperature(const types::DegreesFahrenheit temperature);
+        types::Error SetPassengersDeboarding(const types::TrainId train, const uint16_t passengers);
+        types::Error SetTrainBlock(const types::BlockId block);
+        std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
+        types::Error RemoveTrainModel(size_t train_element);
+        types::Error GetBlock(types::BlockId block_number, types::Block &block);
+
+    private:
+        types::TrackId track_;
+        std::vector<types::Block> blocks_;
+        std::vector<types::Block> track_path_;
+        std::vector<std::shared_ptr<train_model::TrainModel>> trains_;
+        std::vector<std::vector<types::BlockId>> occupied_train_blocks_;
+        std::vector<types::Meters> train_head_;
+        std::vector<types::BlockId> current_train_block_;
+        std::vector<uint16_t> passenger_counts_;
+        types::DegreesFahrenheit external_temperature_;
+        std::vector<types::Meters> distance_traveled_;
 };
 
 } // namespace track_model

@@ -194,10 +194,6 @@ void SoftwareTrainModel::SetPassengersBoarding(const uint16_t passengers)
 
     UpdatePassengers();
 }
-types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
-{
-    return distance_travelled_;
-}
 uint16_t SoftwareTrainModel::GetPassengersCount(void)
 {
     return passengers_on_board_;
