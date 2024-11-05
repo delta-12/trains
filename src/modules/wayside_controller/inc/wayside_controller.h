@@ -68,7 +68,7 @@ struct WaysideBlock
     public:
         WaysideBlock(void);
         WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
-                     const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied);
+                     const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const IoSignal occupancy_signal);
         types::BlockId block;
         types::BlockId primary_connection;
         types::BlockId switch_connection;
@@ -77,7 +77,7 @@ struct WaysideBlock
         InputId switch_input;
         bool has_switch;
         bool maintenance_mode;
-        bool occupied;
+        IoSignal occupancy_signal;
 };
 
 struct PlcInstruction
@@ -101,7 +101,7 @@ class WaysideController
         Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
-        std::vector<types::BlockState> GetBlockStates(void);
+        Error GetBlockStates(std::vector<types::BlockState> &block_states);
 
     private:
         static bool IsTrackCircuitInputValid(const InputId input);

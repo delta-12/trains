@@ -8,14 +8,14 @@ namespace wayside_controller
 {
 
 WaysideBlock::WaysideBlock(void) : block(0), primary_connection(0), switch_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
-    maintenance_mode(false), occupied(false)
+    maintenance_mode(false), occupancy_signal(IoSignal::IOSIGNAL_LOW)
 {
 }
 
 WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
-                           const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const bool occupied)
+                           const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const IoSignal occupancy_signal)
     : block(block), primary_connection(primary_connection), switch_connection(switch_connection), direction(direction), track_circuit_input(track_circuit_input),
-    switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupied(occupied)
+    switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupancy_signal(occupancy_signal)
 {
 }
 
@@ -207,15 +207,31 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
     return error;
 }
 
-std::vector<types::BlockState> WaysideController::GetBlockStates(void)
+Error WaysideController::GetBlockStates(std::vector<types::BlockState> &block_states)
 {
-    // TODO NNF-168
+    Error error = Error::ERROR_NONE;
+
+    block_states.clear();
+
     for (std::pair<const types::BlockId, WaysideBlock> &block : block_configuration_)
     {
-        IoSignal signal = IoSignal::IOSIGNAL_LOW;
+        IoSignal io_signal = IoSignal::IOSIGNAL_LOW;
+        error = get_input_(block.second.track_circuit_input, io_signal);
+
+        if (Error::ERROR_NONE != error)
+        {
+            break;
+        }
+        else if (io_signal != block.second.occupancy_signal)
+        {
+            block.second.occupancy_signal = io_signal;
+
+            // TODO NNF-227 report track failures
+            block_states.emplace_back(block.second.block, io_signal == IoSignal::IOSIGNAL_HIGH, false);
+        }
     }
 
-    return std::vector<types::BlockState>();
+    return error;
 }
 
 bool WaysideController::IsTrackCircuitInputValid(const InputId input)
