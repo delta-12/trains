@@ -62,10 +62,10 @@ struct DestinationAndArrivalTime
 
 struct Train
 {
-    Train(void) : train_id(GetNextId())
+    Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
-    Train(std::string train_name) : train_name(train_name)
+    Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
     types::TrainId train_id;
