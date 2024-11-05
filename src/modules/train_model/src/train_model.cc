@@ -59,7 +59,6 @@ void SoftwareTrainModel::Update()
     types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
     //internal calculations
-    mass_ = kTrainMass + ((GetPassengersCount() + kCrewCount) * kAvgPassengerWeight);
     SpeedCalc(delta);
 
 }
@@ -206,6 +205,8 @@ void SoftwareTrainModel::UpdatePassengers()
     //adds new passengers
     passengers_on_board_ += passengers_boarding_;
     //returns passengers on board (should be called and updated only when at station)
+    mass_ = kTrainMass + ((GetPassengersCount() + kCrewCount) * kAvgPassengerWeight);
+    //update the mass dependent on the new amount of passengeres on the train
 }
 void SoftwareTrainModel::SetAuthority(const types::Blocks blocks)
 {

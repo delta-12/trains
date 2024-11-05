@@ -39,3 +39,39 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
     ////Checking if the velocity corresponds to the time passed and the current speed
     EXPECT_DOUBLE_EQ(inBetween, true);
 }
+TEST(TrainModelSpeedCalcTests, SpeedCalc2)
+{
+    TickSource                      tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>     CLOCK = std::make_shared<TickSource>(tick_source);
+    train_model::SoftwareTrainModel TM(CLOCK);
+
+    (*CLOCK).Start();
+    usleep(1000000);
+    TM.Update();
+
+    //Checking train isnt moving
+    ASSERT_EQ(0, TM.GetActualSpeed());
+
+    //Setting commanded power to 40kW
+    TM.SetCommandedPower(40000);
+
+    //waiting 1 second
+    usleep(1000000);
+    TM.Update();
+
+    bool range1 = (TM.GetActualSpeed() > 6.3 && TM.GetActualSpeed() < 6.5);
+    //6.4846508368595535
+
+    //ASSERT_EQ(6, TM.GetActualSpeed()); test just to see exact value
+
+    ASSERT_EQ(range1, true);
+
+    usleep(1000000);
+    TM.Update();
+
+    bool range2 = (TM.GetActualSpeed() > 6.9 && TM.GetActualSpeed() < 7.1);
+
+    ASSERT_EQ(range2, true);
+
+    tick_source.Stop();
+}
