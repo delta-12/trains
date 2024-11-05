@@ -357,7 +357,7 @@ bool Plc::ReadSignal(const PlcInstructionArgument register_number, const PlcInst
     bool     success = false;
     IoSignal signal  = IoSignal::IOSIGNAL_LOW;
 
-    if (Error::ERROR_NONE == get_input_(input, signal))
+    if (Error::ERROR_NONE == get_input_(static_cast<InputId>(input), signal))
     {
         if (IoSignal::IOSIGNAL_HIGH == signal)
         {
@@ -384,7 +384,7 @@ bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcIns
         signal = IoSignal::IOSIGNAL_HIGH;
     }
 
-    if (Error::ERROR_NONE == set_output_(output, signal))
+    if (Error::ERROR_NONE == set_output_(static_cast<OutputId>(output), signal))
     {
         success = true;
     }
