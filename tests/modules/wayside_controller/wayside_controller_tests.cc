@@ -4,6 +4,8 @@
 * @brief Unit testing for WaysideController.
 *****************************************************************************/
 
+#include <ranges>
+
 #include <gtest/gtest.h>
 
 #include "logger.h"
@@ -42,6 +44,8 @@ wayside_controller::Error GetInput(const wayside_controller::InputId input, ways
         {
             signal = wayside_controller::IoSignal::IOSIGNAL_HIGH;
         }
+
+        error = wayside_controller::Error::ERROR_NONE;
     }
 
     return error;
@@ -231,5 +235,34 @@ TEST(WaysideControllerTests, SetSwitch)
 
 TEST(WaysideControllerTests, GetBlockStates)
 {
-    // TODO NNF-168
+    wayside_controller::WaysideController software_wayside_controller(GetInput, kBlueLineWaysideBlocks);
+    std::vector<types::BlockState>        block_states;
+
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetBlockStates(block_states));
+    ASSERT_EQ(5, block_states.size());
+
+    // Block 1 occupied
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+        return ((block_state.block == 1) && block_state.occupied);
+    }));
+
+    // Block 2 occupied
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+        return ((block_state.block == 2) && block_state.occupied);
+    }));
+
+    // Block 5 occupied
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+        return ((block_state.block == 5) && block_state.occupied);
+    }));
+
+    // Block 13 occupied
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+        return ((block_state.block == 13) && block_state.occupied);
+    }));
+
+    // Block 15 occupied
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+        return ((block_state.block == 15) && block_state.occupied);
+    }));
 }
