@@ -276,8 +276,8 @@ void SoftwareTrainController::Update()
     last_tick_updated_ = (*clock_).GetTick();
 
     UpdateTrainPosition();
-    UpdateDistanceTravelled(delta_time);
     CalculateDistanceToStopping();
+    UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
     
 
@@ -496,13 +496,10 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 
 void SoftwareTrainController::CalculateDistanceToStopping()
 {
-    if ((usable_authority_ == 0 && authority_ != 0) || (usable_authority_ < authority_) ||  (authority_counter_ < authority_))
+    // std::cout <<  "\n AC: " << authority_counter_ << "\n";
+    // std::cout <<  "\n A: " << authority_ << "\n";
+    if (authority_counter_ != authority_)
     {
-
-        // std::cout << "\n" << "acessed" << " \n";
-        // std::cout << "\n" << "usable_authority_ " << usable_authority_ << " \n";
-        // std::cout << "\n" << "authority_ " << authority_ << " \n";
-        // std::cout << "\n" << "authority_counter_ " << authority_counter_ << " \n";
         usable_authority_         = authority_;
         authority_counter_        = authority_;
         new_authority_             = true;
@@ -526,8 +523,8 @@ void SoftwareTrainController::CalculateDistanceToStopping()
             }
         }
         
-        std::cout << "\n Distance travelled " << distance_travelled_ << "\n";
-        std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
+        // std::cout << "\n DT " << distance_travelled_ << "\n";
+        //std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
     }
 
     

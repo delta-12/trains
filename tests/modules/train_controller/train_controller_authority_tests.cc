@@ -143,7 +143,7 @@ TEST(TrainControllerAuthorityTests, TestingChangingBlocksWithAuthority)
 
 
 
-TEST(TrainControllerAuthorityTests, TestingChangingAuthorityHalfway)
+TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowingDown)
 {
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
@@ -211,4 +211,58 @@ TEST(TrainControllerAuthorityTests, TestingChangingAuthorityHalfway)
     std::cout <<  "\n Authority: " << TC.GetAuthority() << "\n";
     std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
     std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n======================";
+}
+
+
+
+TEST(TrainControllerAuthorityTests, ChangingAuthorityToASmallerValueBeforeSlowingDown)
+{
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
+    (*CLOCK).Start();
+    (*CLOCK).SetMultiplier(2);
+
+    // IN Block 63
+    TC.SetAuthority(5);
+    TC.SetCurrentSpeed(0);
+    TC.SetCommandedSpeed(18);
+    usleep(500000);
+    TC.Update();
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetDistanceTravelled(),0);
+    TC.SetCurrentSpeed(10);
+    usleep(5000000);
+    TC.Update();
+
+    // IN Block 64
+    TC.SetAuthority(4);
+    TC.SetPolartity(types::POLARITY_POSITIVE);
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+    std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Authority: " << TC.GetAuthority() << "\n";
+    usleep(5000000);
+    TC.Update();
+
+    // IN Block 65
+    
+    TC.SetAuthority(1);
+    TC.SetPolartity(types::POLARITY_NEGATIVE);
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetServiceBrake(), 0);
+    std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Authority: " << TC.GetAuthority() << "\n";
+    usleep(10000000);
+    TC.Update();
+
+    TC.SetAuthority(0);
+    TC.SetPolartity(types::POLARITY_POSITIVE);
+
+    std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Authority: " << TC.GetAuthority() << "\n";
+    std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
+    std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n======================";
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+    ASSERT_GT(TC.GetServiceBrake(), 0);
 }
