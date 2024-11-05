@@ -509,6 +509,7 @@ void SoftwareTrainController::CalculateDistanceToStopping()
         service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
 
         distance_prior_to_current_authority_ = distance_travelled_;
+        distance_of_authority_in_meters_ = 0;
 
         for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
         {
@@ -523,10 +524,10 @@ void SoftwareTrainController::CalculateDistanceToStopping()
             {
                 distance_of_authority_in_meters_ += block_length;
             }
-
-            //std::cout << "\n" << block_length;
         }
         
+        std::cout << "\n Distance travelled " << distance_travelled_ << "\n";
+        std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
     }
 
     
