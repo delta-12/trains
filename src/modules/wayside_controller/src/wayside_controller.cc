@@ -19,7 +19,7 @@ WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId prim
 {
 }
 
-PlcInstruction::PlcInstruction(void) : instruction_code(PLCINSTRUCTIONCODE_NOOP), argument_0(0), argument_1(0), argument_2(0)
+PlcInstruction::PlcInstruction(void) : instruction_code(PlcInstructionCode::PLCINSTRUCTIONCODE_NOOP), argument_0(0), argument_1(0), argument_2(0)
 {
 }
 
@@ -28,11 +28,11 @@ PlcInstruction::PlcInstruction(const PlcInstructionCode instruction_code, const 
 {
 }
 
-WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input) : get_input_(get_input)
+WaysideController::WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input) : get_input_(get_input)
 {
 }
 
-WaysideController::WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<WaysideBlock> &blocks) : get_input_(get_input)
+WaysideController::WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input, const std::vector<WaysideBlock> &blocks) : get_input_(get_input)
 {
     // TODO NNF-174 error handling
     Configure(blocks);
@@ -40,7 +40,7 @@ WaysideController::WaysideController(std::function<Error(const InputId input, Io
 
 Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
 {
-    Error                       error = ERROR_NONE;
+    Error                       error = Error::ERROR_NONE;
     std::unordered_set<InputId> mapped_inputs;
 
     block_configuration_.clear();
@@ -52,35 +52,35 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
         // Validate block and track circuit input
         if (TYPES_END_BLOCK_ID == wayside_block.block)
         {
-            error = ERROR_INVALID_BLOCK;
+            error = Error::ERROR_INVALID_BLOCK;
         }
         else if (block_configuration_.contains(wayside_block.block))
         {
-            error = ERROR_DUPLICATE_BLOCK;
+            error = Error::ERROR_DUPLICATE_BLOCK;
         }
         else if (!IsTrackCircuitInputValid(wayside_block.track_circuit_input))
         {
-            error = ERROR_INVALID_INPUT;
+            error = Error::ERROR_INVALID_INPUT;
         }
         else if (mapped_inputs.contains(wayside_block.track_circuit_input))
         {
-            error = ERROR_DUPLICATE_INPUT;
+            error = Error::ERROR_DUPLICATE_INPUT;
         }
 
         // Validate switch input
-        if ((ERROR_NONE == error) && (true == wayside_block.has_switch))
+        if ((Error::ERROR_NONE == error) && (true == wayside_block.has_switch))
         {
             if (!IsSwitchInputValid(wayside_block.switch_input))
             {
-                error = ERROR_INVALID_INPUT;
+                error = Error::ERROR_INVALID_INPUT;
             }
             else if (mapped_inputs.contains(wayside_block.switch_input))
             {
-                error = ERROR_DUPLICATE_INPUT;
+                error = Error::ERROR_DUPLICATE_INPUT;
             }
         }
 
-        if (ERROR_NONE == error)
+        if (Error::ERROR_NONE == error)
         {
             block_configuration_[wayside_block.block] = wayside_block;
             mapped_inputs.insert(wayside_block.track_circuit_input);
@@ -102,7 +102,7 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
         }
     }
 
-    if (ERROR_NONE != error)
+    if (Error::ERROR_NONE != error)
     {
         block_configuration_.clear();
         block_layout_.Clear();
@@ -113,13 +113,13 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
 
 Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data)
 {
-    Error                  error     = ERROR_NONE;
+    Error                  error     = Error::ERROR_NONE;
     types::MetersPerSecond speed     = 0;
     size_t                 authority = 0;
 
     if (false == block_configuration_.contains(track_circuit_data.block))
     {
-        error = ERROR_INVALID_BLOCK;
+        error = Error::ERROR_INVALID_BLOCK;
     }
     else
     {
@@ -139,15 +139,15 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
             }
             else if (!block_configuration_.contains(*selected_block))
             {
-                error = ERROR_INVALID_BLOCK;
+                error = Error::ERROR_INVALID_BLOCK;
             }
             else
             {
                 // Occupancy check
-                IoSignal track_circuit_signal = IOSIGNAL_HIGH;
+                IoSignal track_circuit_signal = IoSignal::IOSIGNAL_HIGH;
                 error = get_input_(block_configuration_[*selected_block].track_circuit_input, track_circuit_signal);
 
-                if ((ERROR_NONE != error) || (IOSIGNAL_HIGH == track_circuit_signal))
+                if ((Error::ERROR_NONE != error) || (IoSignal::IOSIGNAL_HIGH == track_circuit_signal))
                 {
                     break;
                 }
@@ -166,11 +166,11 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
 
 Error WaysideController::SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode)
 {
-    Error error = ERROR_NONE;
+    Error error = Error::ERROR_NONE;
 
     if (!block_configuration_.contains(block))
     {
-        error = ERROR_INVALID_BLOCK;
+        error = Error::ERROR_INVALID_BLOCK;
     }
     else
     {
@@ -185,16 +185,16 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 {
     // TODO NNF-105 can be used in both auto and maintenance mode?
 
-    Error error = ERROR_NONE;
+    Error error = Error::ERROR_NONE;
 
     // TODO NNF-105 only blocks with swithes can be put into maintenance mode?
     if ((!block_configuration_.contains(block)) || (false == block_configuration_[block].has_switch))
     {
-        error = ERROR_INVALID_BLOCK;
+        error = Error::ERROR_INVALID_BLOCK;
     }
     else if (!IsSwitchInputValid(block_configuration_[block].switch_input))
     {
-        error = ERROR_INVALID_INPUT;
+        error = Error::ERROR_INVALID_INPUT;
     }
     else
     {
@@ -210,27 +210,32 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
 std::vector<types::BlockState> WaysideController::GetBlockStates(void)
 {
     // TODO NNF-168
+    for (std::pair<const types::BlockId, WaysideBlock> &block : block_configuration_)
+    {
+        IoSignal signal = IoSignal::IOSIGNAL_LOW;
+    }
 
     return std::vector<types::BlockState>();
 }
 
 bool WaysideController::IsTrackCircuitInputValid(const InputId input)
 {
-    return (input < WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT);
+    return (input < kPhysicalInputs);
 }
 
 bool WaysideController::IsSwitchInputValid(const InputId input)
 {
-    return ((input >= WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT) && (input < WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT));
+    return ((input >= kPhysicalInputs) && (input < kTotalInputs));
 }
 
-Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output)
-    : get_input_(get_input), set_output_(set_output), program_counter_(0), registers_{}     // TODO NNF-104 verify registers are initialized to 0
+Plc::Plc(const std::function<Error(const InputId input, IoSignal &signal)> &get_input, const std::function<Error(const OutputId output, const IoSignal signal)> &set_output)
+    : get_input_(get_input), set_output_(set_output)
 {
 }
 
-Plc::Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions)
-    : get_input_(get_input), set_output_(set_output), instructions_(instructions), program_counter_(0), registers_{}
+Plc::Plc(const std::function<Error(const InputId input, IoSignal &signal)> &get_input, const std::function<Error(const OutputId output, const IoSignal signal)> &set_output,
+         const std::vector<PlcInstruction> &instructions)
+    : get_input_(get_input), set_output_(set_output), instructions_(instructions)
 {
 }
 
@@ -260,14 +265,14 @@ bool Plc::Run(void)
 
         switch (instruction.instruction_code)
         {
-        case PLCINSTRUCTIONCODE_NOOP:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_NOOP:
             program_counter_++;
             break;
-        case PLCINSTRUCTIONCODE_READ_IMMEDIATE:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_READ_IMMEDIATE:
             registers_[instruction.argument_0] = instruction.argument_1;
             program_counter_++;
             break;
-        case PLCINSTRUCTIONCODE_READ_SIGNAL:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_READ_SIGNAL:
             if (ReadSignal(instruction.argument_0, instruction.argument_1))
             {
                 program_counter_++;
@@ -277,7 +282,7 @@ bool Plc::Run(void)
                 execution_success = false;
             }
             break;
-        case PLCINSTRUCTIONCODE_WRITE_SIGNAL:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_WRITE_SIGNAL:
             if (WriteSignal(instruction.argument_0, instruction.argument_1))
             {
                 program_counter_++;
@@ -287,7 +292,7 @@ bool Plc::Run(void)
                 execution_success = false;
             }
             break;
-        case PLCINSTRUCTIONCODE_EQUALS:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_EQUALS:
             if (registers_[instruction.argument_1] == registers_[instruction.argument_2])
             {
                 registers_[instruction.argument_0] = 1;
@@ -298,7 +303,7 @@ bool Plc::Run(void)
             }
             program_counter_++;
             break;
-        case PLCINSTRUCTIONCODE_OR:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_OR:
             if ((0 == registers_[instruction.argument_1]) && (0 == registers_[instruction.argument_2]))
             {
                 registers_[instruction.argument_0] = 0;
@@ -309,7 +314,7 @@ bool Plc::Run(void)
             }
             program_counter_++;
             break;
-        case PLCINSTRUCTIONCODE_BRANCH_IF:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_BRANCH_IF:
             if (registers_[instruction.argument_0] == 0)
             {
                 program_counter_ = instruction.argument_2;
@@ -319,7 +324,7 @@ bool Plc::Run(void)
                 program_counter_ = instruction.argument_1;
             }
             break;
-        case PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL:
+        case PlcInstructionCode::PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL:
             program_counter_ = instruction.argument_0;
             break;
         default:
@@ -334,11 +339,11 @@ bool Plc::Run(void)
 bool Plc::ReadSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument input)
 {
     bool     success = false;
-    IoSignal signal  = IOSIGNAL_LOW;
+    IoSignal signal  = IoSignal::IOSIGNAL_LOW;
 
-    if (ERROR_NONE == get_input_(input, signal))
+    if (Error::ERROR_NONE == get_input_(input, signal))
     {
-        if (IOSIGNAL_HIGH == signal)
+        if (IoSignal::IOSIGNAL_HIGH == signal)
         {
             registers_[register_number] = 1;
         }
@@ -356,14 +361,14 @@ bool Plc::ReadSignal(const PlcInstructionArgument register_number, const PlcInst
 bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcInstructionArgument output)
 {
     bool     success = false;
-    IoSignal signal  = IOSIGNAL_LOW;
+    IoSignal signal  = IoSignal::IOSIGNAL_LOW;
 
     if (0 != registers_[register_number])
     {
-        signal = IOSIGNAL_HIGH;
+        signal = IoSignal::IOSIGNAL_HIGH;
     }
 
-    if (ERROR_NONE == set_output_(output, signal))
+    if (Error::ERROR_NONE == set_output_(output, signal))
     {
         success = true;
     }

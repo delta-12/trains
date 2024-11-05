@@ -9,8 +9,8 @@
 #include "logger.h"
 #include "wayside_controller.h"
 
-static const std::array<bool, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
-                                                                               false, false, false, true, true, false, false, true, true, false, false, false, false, true, true, false, true, true, false, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, false, false};
+static const std::array<bool, wayside_controller::kTotalInputs> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
+                                                                           false, false, false, true, true, false, false, true, true, false, false, false, false, true, true, false, true, true, false, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, false, false};
 
 static const std::vector<wayside_controller::WaysideBlock> kBlueLineWaysideBlocks = {
     wayside_controller::WaysideBlock(1, 2, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, false, false, false),
@@ -32,15 +32,15 @@ static const std::vector<wayside_controller::WaysideBlock> kBlueLineWaysideBlock
 
 wayside_controller::Error GetInput(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
 {
-    wayside_controller::Error error = wayside_controller::ERROR_INVALID_INPUT;
+    wayside_controller::Error error = wayside_controller::Error::ERROR_INVALID_INPUT;
 
     if (input < kInputs.size())
     {
-        signal = wayside_controller::IOSIGNAL_LOW;
+        signal = wayside_controller::IoSignal::IOSIGNAL_LOW;
 
         if (kInputs[input])
         {
-            signal = wayside_controller::IOSIGNAL_HIGH;
+            signal = wayside_controller::IoSignal::IOSIGNAL_HIGH;
         }
     }
 
@@ -49,13 +49,13 @@ wayside_controller::Error GetInput(const wayside_controller::InputId input, ways
 
 wayside_controller::Error SetOutput(const wayside_controller::OutputId output, const wayside_controller::IoSignal signal)
 {
-    wayside_controller::Error error = wayside_controller::ERROR_INVALID_OUTPUT;
+    wayside_controller::Error error = wayside_controller::Error::ERROR_INVALID_OUTPUT;
 
-    if (output < WAYSIDE_CONTROLLER_TOTAL_OUTPUTS)
+    if (output < wayside_controller::kTotalOutputs)
     {
         // TODO NNF-105 set outputs
         LOGGER_UNUSED(signal); // temporary fix to remove compiler warnings
-        error = wayside_controller::ERROR_NONE;
+        error = wayside_controller::Error::ERROR_NONE;
     }
 
     return error;
@@ -67,54 +67,54 @@ TEST(WaysideControllerTests, Configure)
     wayside_controller::WaysideController         software_wayside_controller(GetInput);
 
     // Success
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.Configure(blocks));
 
     // Empty configuration
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.Configure(std::vector<wayside_controller::WaysideBlock>()));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.Configure(std::vector<wayside_controller::WaysideBlock>()));
 
     // Duplicate block ID
     blocks.push_back(wayside_controller::WaysideBlock(1, 2, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, false, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate block ID
     blocks.push_back(wayside_controller::WaysideBlock(1, 3, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, false, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid track circuit input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 78, 0, false, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid track circuit input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, -1, 0, false, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate track circuit input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, false, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 77, true, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT, true, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, wayside_controller::kTotalInputs, true, false, false));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, -1, true, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate switch input
     blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, types::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 78, true, false, false));
-    ASSERT_EQ(wayside_controller::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
+    ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 }
 
@@ -122,17 +122,17 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
 {
     // TODO NNF-144 test commanded speed
 
-    std::array<wayside_controller::IoSignal, 16>                                                                            inputs     = {wayside_controller::IOSIGNAL_LOW};
+    std::array<wayside_controller::IoSignal, 16>                                                                            inputs     = {wayside_controller::IoSignal::IOSIGNAL_LOW};
     std::function<wayside_controller::Error(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)> get_inputs =
         [&inputs](const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
         {
-            wayside_controller::Error error = wayside_controller::ERROR_INVALID_INPUT;
+            wayside_controller::Error error = wayside_controller::Error::ERROR_INVALID_INPUT;
 
             if (input < inputs.size())
             {
                 signal = inputs[input];
 
-                error = wayside_controller::ERROR_NONE;
+                error = wayside_controller::Error::ERROR_NONE;
             }
 
             return error;
@@ -145,49 +145,49 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
     track_circuit_data.block     = 1;
     track_circuit_data.speed     = 0;
     track_circuit_data.authority = 0;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
 
     // Valid authority, does not exceed given authority
     track_circuit_data.authority = 9;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(9, track_circuit_data.authority);
 
     // Valid authority, does not exceed given authority
     track_circuit_data.authority = 5;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(5, track_circuit_data.authority);
 
     // Valid authority to end of track
     track_circuit_data.authority = 10;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(10, track_circuit_data.authority);
 
     // Sets safe authority from invalid authority
     track_circuit_data.authority = 16;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(10, track_circuit_data.authority);
 
     // Sets safe authority based on occupancies
     track_circuit_data.authority = 10;
-    inputs[4]                    = wayside_controller::IOSIGNAL_HIGH;
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    inputs[4]                    = wayside_controller::IoSignal::IOSIGNAL_HIGH;
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(3, track_circuit_data.authority);
-    inputs[4] = wayside_controller::IOSIGNAL_LOW;
+    inputs[4] = wayside_controller::IoSignal::IOSIGNAL_LOW;
 
     // Invalid block
     track_circuit_data.block = -1;
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
 
     // Invalid block
     track_circuit_data.block = 0;
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
 
     // Invalid block
     track_circuit_data.block = 17;
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_BLOCK, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
 
     // Force get input error
@@ -196,12 +196,12 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
         {
             LOGGER_UNUSED(input);
             LOGGER_UNUSED(signal);
-            return wayside_controller::ERROR_INVALID_INPUT;
+            return wayside_controller::Error::ERROR_INVALID_INPUT;
         };
     wayside_controller::WaysideController software_wayside_controlle_no_inputs(get_inputs_none, kBlueLineWaysideBlocks);
     track_circuit_data.block     = 1;
     track_circuit_data.authority = 5;
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_INPUT, software_wayside_controlle_no_inputs.GetCommandedSpeedAndAuthority(track_circuit_data));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controlle_no_inputs.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
 
     // TODO NNF-105 test authority based on switch position
@@ -219,14 +219,14 @@ TEST(WaysideControllerTests, SetSwitch)
     wayside_controller::WaysideController software_wayside_controller(GetInput, kBlueLineWaysideBlocks);
 
     // Valid switch
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetSwitch(5, true));
-    ASSERT_EQ(wayside_controller::ERROR_NONE, software_wayside_controller.SetSwitch(5, false));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.SetSwitch(5, true));
+    ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.SetSwitch(5, false));
 
     // Invalid block
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.SetSwitch(17, true));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_BLOCK, software_wayside_controller.SetSwitch(17, true));
 
     // Block does not have switch
-    ASSERT_EQ(wayside_controller::ERROR_INVALID_BLOCK, software_wayside_controller.SetSwitch(1, true));
+    ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_BLOCK, software_wayside_controller.SetSwitch(1, true));
 }
 
 TEST(WaysideControllerTests, GetBlockStates)

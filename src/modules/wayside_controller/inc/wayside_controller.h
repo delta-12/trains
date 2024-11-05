@@ -14,27 +14,27 @@
 #include "graph.h"
 #include "types.h"
 
-#define WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT       78
-#define WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT        7
-#define WAYSIDE_CONTROLLER_TOTAL_INPUT_COUNT          (WAYSIDE_CONTROLLER_PHYSICAL_INPUT_COUNT + WAYSIDE_CONTROLLER_VIRTUAL_INPUT_COUNT)
-#define WAYSIDE_CONTROLLER_TRAFFIC_LIGHTS_PER_SWITCH  3
-#define WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT        7
-#define WAYSIDE_CONTROLLER_TRAFFIC_LIGHT_OUTPUT_COUNT (WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT * WAYSIDE_CONTROLLER_TRAFFIC_LIGHTS_PER_SWITCH)
-#define WAYSIDE_CONTROLLER_CROSSING_OUTPUT_COUNT      2
-#define WAYSIDE_CONTROLLER_TOTAL_OUTPUTS              (WAYSIDE_CONTROLLER_SWITCH_OUTPUT_COUNT + WAYSIDE_CONTROLLER_TRAFFIC_LIGHT_OUTPUT_COUNT + WAYSIDE_CONTROLLER_CROSSING_OUTPUT_COUNT)
-#define WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT         3
-
 namespace wayside_controller
 {
 
-typedef uint16_t               InputId;
-typedef uint16_t               OutputId;
-typedef struct WaysideBlock    WaysideBlock;
-typedef struct BlockConnection BlockConnection;
-typedef uint32_t               PlcInstructionArgument;
-typedef struct PlcInstruction  PlcInstruction;
+using InputId                =  uint16_t;
+using OutputId               =  uint16_t;
+using WaysideBlock           =  struct WaysideBlock;
+using BlockConnection        =  struct BlockConnection;
+using PlcInstructionArgument =  uint32_t;
+using PlcInstruction         =  struct PlcInstruction;
 
-typedef enum
+static const size_t kPhysicalInputs         = 78;
+static const size_t kVirtualInputs          = 7;
+static const size_t kTotalInputs            = kPhysicalInputs + kVirtualInputs;
+static const size_t kTrafficLightsPerSwitch = 2;
+static const size_t kSwitchOutputs          = 7;
+static const size_t kTrafficLightOutputs    = kSwitchOutputs * kTrafficLightsPerSwitch;
+static const size_t kCrossingOutputs        = 2;
+static const size_t kTotalOutputs           = kSwitchOutputs + kTrafficLightOutputs + kCrossingOutputs;
+static const size_t kPlcRegisters           = 3;
+
+enum class Error
 {
     ERROR_NONE,
     ERROR_INVALID_BLOCK,
@@ -42,15 +42,15 @@ typedef enum
     ERROR_INVALID_INPUT,
     ERROR_DUPLICATE_INPUT,
     ERROR_INVALID_OUTPUT
-} Error;
+};
 
-typedef enum
+enum class IoSignal
 {
     IOSIGNAL_LOW,
     IOSIGNAL_HIGH
-} IoSignal;
+};
 
-typedef enum
+enum class PlcInstructionCode
 {
     PLCINSTRUCTIONCODE_NOOP,
     PLCINSTRUCTIONCODE_READ_IMMEDIATE,
@@ -60,7 +60,7 @@ typedef enum
     PLCINSTRUCTIONCODE_OR,
     PLCINSTRUCTIONCODE_BRANCH_IF,
     PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL
-} PlcInstructionCode;
+};
 
 // TODO NNF-144 add block speed limit
 struct WaysideBlock
@@ -95,8 +95,8 @@ struct PlcInstruction
 class WaysideController
 {
     public:
-        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input);
-        WaysideController(std::function<Error(const InputId input, IoSignal &signal)> get_input, const std::vector<WaysideBlock> &blocks);
+        explicit WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input);
+        WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input, const std::vector<WaysideBlock> &blocks);
         Error Configure(const std::vector<WaysideBlock> &blocks);
         Error GetCommandedSpeedAndAuthority(types::TrackCircuitData &track_circuit_data);
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
@@ -115,8 +115,11 @@ class WaysideController
 class Plc
 {
     public:
-        Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output);
-        Plc(std::function<Error(const InputId input, IoSignal &signal)> get_input, std::function<Error(const OutputId output, const IoSignal signal)> set_output, const std::vector<PlcInstruction> &instructions);
+        Plc(const std::function<Error(const InputId input, IoSignal &signal)> &get_input,
+            const std::function<Error(const OutputId output, const IoSignal signal)> &set_output);
+        Plc(const std::function<Error(const InputId input, IoSignal &signal)> &get_input,
+            const std::function<Error(const OutputId output, const IoSignal signal)> &set_output,
+            const std::vector<PlcInstruction> &instructions);
         void SetInstructions(const std::vector<PlcInstruction> &instructions);
         uint32_t GetProgramCounter(void) const;
         PlcInstruction GetInstruction(void) const;
@@ -129,8 +132,8 @@ class Plc
         std::function<Error(const InputId input, IoSignal &signal)> get_input_;
         std::function<Error(const OutputId output, const IoSignal signal)> set_output_;
         std::vector<PlcInstruction> instructions_;
-        uint32_t program_counter_;
-        std::array<PlcInstructionArgument, WAYSIDE_CONTROLLER_PLC_REGISTER_COUNT> registers_;
+        uint32_t program_counter_ = 0;
+        std::array<PlcInstructionArgument, kPlcRegisters> registers_; // TODO NNF-104 verify registers are initialized to 0
 };
 
 } // namespace wayside_controller
