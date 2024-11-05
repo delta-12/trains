@@ -100,17 +100,20 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Add static library to avoid re-compiling sources for tests
+add_library(trains_lib STATIC ${TRAINS_SRCS})
+target_include_directories(trains_lib PRIVATE ${INC_DIRS})
 
 ################################################################################
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains WIN32 ${SRC_DIR}/main.cpp)
 else()
-    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains ${SRC_DIR}/main.cpp)
 endif()
 target_include_directories(trains PRIVATE ${INC_DIRS})
-target_link_libraries(trains PRIVATE Slint::Slint)
+target_link_libraries(trains PRIVATE Slint::Slint trains_lib)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
     add_custom_command(TARGET trains POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:trains> $<TARGET_FILE_DIR:trains> COMMAND_EXPAND_LISTS)
@@ -124,13 +127,13 @@ include(GoogleTest)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS ${TEST_NAME} ${TEST_SRC})
-    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS})
+    add_executable(${TEST_NAME} ${TEST_SRC})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS})
-    target_link_libraries(${TEST_NAME} GTest::gtest_main GTest::gmock)
+    target_link_libraries(${TEST_NAME} trains_lib GTest::gtest_main GTest::gmock)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 
