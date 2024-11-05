@@ -266,3 +266,77 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToASmallerValueBeforeSlowin
     ASSERT_EQ(TC.GetCommandedPower(), 0);
     ASSERT_GT(TC.GetServiceBrake(), 0);
 }
+
+TEST(TrainControllerAuthorityTests, CheckingThatCalculatedServiceBrakeLeadsToStoppingAtCorrectPoint)
+{
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
+    (*CLOCK).Start();
+    (*CLOCK).SetMultiplier(4);
+
+    TC.SetAuthority(1);
+    TC.SetCurrentSpeed(0);
+    TC.SetCommandedSpeed(18);
+
+    usleep(500000);
+    TC.Update();
+
+    ASSERT_GT(TC.GetCommandedPower(), 0);
+    ASSERT_EQ(TC.GetDistanceTravelled(),0);
+
+
+    TC.SetCurrentSpeed(10);
+
+    usleep(2500000);
+    TC.Update();
+
+    std::cout <<  "\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
+    std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n";
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+
+    // TrainModel recieves values
+
+    // Calculates it (Updates)
+
+    // We Get values from train model (Updated Speed)
+
+    
+    types::Tick last_tick_updated_;
+    last_tick_updated_ = (*CLOCK).GetTick();
+    types::Second delta_time;
+    double total = 0;
+    std::chrono::milliseconds elapsed_time;
+
+    while(convert::MilesPerHourToMetersPerSecond(TC.GetCurrentSpeed()) != 0)
+    {
+        elapsed_time = (*CLOCK).GetElapsedTime(last_tick_updated_);
+        delta_time = std::chrono::duration_cast<types::Second>(elapsed_time);
+        last_tick_updated_ = (*CLOCK).GetTick();
+
+        total += delta_time.count();
+        double deceleration = TC.GetServiceBrake()*-1.2;
+        double newSpeed = convert::MilesPerHourToMetersPerSecond(TC.GetCurrentSpeed()) + deceleration*delta_time.count();
+
+        if(newSpeed < 0)
+        {
+            newSpeed = 0;
+        }
+
+        TC.SetCurrentSpeed(newSpeed);
+        TC.Update();
+        
+        usleep(1000);
+    }
+
+    std::cout <<  "\n Time Passed Before Stopping: "<< total << "\n";
+    std::cout <<  "\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
+    std::cout <<  "\n Commanded Power: " << TC.GetCommandedPower() << "\n";
+    std::cout <<  "\n Service Brake: " << TC.GetServiceBrake() << "\n";
+
+    ASSERT_EQ(TC.GetCommandedPower(), 0);
+    ASSERT_GT(TC.GetServiceBrake(), 0);
+    ASSERT_NEAR(TC.GetDistanceTravelled(),150,2);
+}
