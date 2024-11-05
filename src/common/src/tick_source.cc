@@ -54,7 +54,7 @@ types::Error TickSource::SetTime(const std::string &hours_minutes_seconds)
     std::chrono::system_clock::time_point time;
     types::Error                          error = GetTimePoint(hours_minutes_seconds, time);
 
-    if (types::ERROR_NONE == error)
+    if (types::Error::ERROR_NONE == error)
     {
         SetTime(time);
     }
@@ -172,7 +172,7 @@ void TickSource::Initialize(const std::chrono::system_clock::time_point time, co
 
 types::Error TickSource::GetTimePoint(const std::string &hours_minutes_seconds, std::chrono::system_clock::time_point &time_point) const
 {
-    types::Error      error = types::ERROR_NONE;
+    types::Error      error = types::Error::ERROR_NONE;
     std::stringstream buffer;
     struct std::tm    time;
 
@@ -181,7 +181,7 @@ types::Error TickSource::GetTimePoint(const std::string &hours_minutes_seconds, 
 
     if (buffer.fail())
     {
-        error = types::ERROR_INVALID_FORMAT;
+        error = types::Error::ERROR_INVALID_FORMAT;
     }
     else
     {

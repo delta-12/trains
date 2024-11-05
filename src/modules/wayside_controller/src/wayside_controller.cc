@@ -50,7 +50,7 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
     for (const WaysideBlock &wayside_block : blocks)
     {
         // Validate block and track circuit input
-        if (TYPES_END_BLOCK_ID == wayside_block.block)
+        if (types::kEndBlock == wayside_block.block)
         {
             error = Error::ERROR_INVALID_BLOCK;
         }
@@ -86,7 +86,7 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
             mapped_inputs.insert(wayside_block.track_circuit_input);
             block_layout_.AddEdge(wayside_block.block, wayside_block.primary_connection, 1);
 
-            if (types::BLOCKDIRECTION_BIDIRECTIONAL == wayside_block.direction)
+            if (types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL == wayside_block.direction)
             {
                 block_layout_.AddEdge(wayside_block.primary_connection, wayside_block.block, 1);
             }
@@ -132,7 +132,7 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
         // Authority can only be less than or equal to initial value
         while ((authority < track_circuit_data.authority) && (blocks.end() != selected_block))
         {
-            if (TYPES_END_BLOCK_ID == *selected_block)
+            if (types::kEndBlock == *selected_block)
             {
                 // Train cannot travel further than the end of the track, should be the end of blocks
                 // Do nothing

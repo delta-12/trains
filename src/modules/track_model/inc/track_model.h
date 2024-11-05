@@ -35,7 +35,7 @@ class TrackModel
 class SoftwareTrackModel : public TrackModel
 {
     public:
-        //NNF-234 ADD constructor that takes in a shared pointer to the tick source
+        // NNF-234 ADD constructor that takes in a shared pointer to the tick source
         types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);

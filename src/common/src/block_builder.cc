@@ -42,7 +42,7 @@ BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records,
 
 types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block &block)
 {
-    types::Error                        error = types::ERROR_NONE;
+    types::Error                        error = types::Error::ERROR_NONE;
     std::vector<types::Block>::iterator it    = std::ranges::find_if(blocks_, [&block_id](const types::Block &block)
     {
         return block.block == block_id;
@@ -55,7 +55,7 @@ types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block 
     }
     else
     {
-        error = types::ERROR_INVALID_BLOCK;
+        error = types::Error::ERROR_INVALID_BLOCK;
     }
 
     return error;
@@ -148,11 +148,11 @@ void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std:
         std::string block_direction = record[kLayoutFieldDirection];
         if (block_direction.find("UNIDIRECTIONAL") != std::string::npos)
         {
-            block.direction = types::BLOCKDIRECTION_UNIDIRECTIONAL;
+            block.direction = types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL;
         }
         else
         {
-            block.direction = types::BLOCKDIRECTION_BIDIRECTIONAL;
+            block.direction = types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL;
         }
     }
 }

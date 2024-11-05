@@ -6,13 +6,12 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_H
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_H
 
-#include <unordered_map>
+#include <queue>
 
-#include "types.h"
-#include "wayside_controller.h"
-#include "wayside_controller_gateway.h"
-#include "csv_parser.h"
 #include "block_builder.h"
+#include "csv_parser.h"
+#include "graph.h"
+#include "types.h"
 
 #define CTC_YARD_BLOCK_0        0
 #define CTC_SECTION_D_BLOCK_13  13
@@ -63,10 +62,10 @@ struct DestinationAndArrivalTime
 
 struct Train
 {
-    Train(void) : train_id(GetNextId())
+    Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
-    Train(std::string train_name) : train_name(train_name)
+    Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
     types::TrainId train_id;

@@ -28,7 +28,7 @@ CsvParser::CsvParser(const std::string &input_string)
 
 types::Error CsvParser::Parse(const std::filesystem::path &file_path)
 {
-    types::Error error = types::ERROR_IO;
+    types::Error error = types::Error::ERROR_IO;
 
     std::ifstream file(file_path);
 
@@ -51,7 +51,7 @@ types::Error CsvParser::Parse(const std::stringstream &string_stream)
 
 types::Error CsvParser::Parse(const std::string &input_string)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     Reset();
 
@@ -62,18 +62,17 @@ types::Error CsvParser::Parse(const std::string &input_string)
         records_.push_back(Split(line, CSVPARSER_VALUE_DELIMITER));
     }
 
-
     // Restriction
     const std::size_t size = records_[0].size();
     for (const std::vector<std::string> &record : records_)
     {
         if (record.size() != size)
         {
-            error = types::ERROR_INVALID_FORMAT;
+            error = types::Error::ERROR_INVALID_FORMAT;
         }
     }
 
-    if (types::ERROR_NONE != error)
+    if (types::Error::ERROR_NONE != error)
     {
         Reset();
     }

@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "track_model.h"
-#include "train_controller_gateway.h"
 #include "train_model.h"
 #include "types.h"
-#include "wayside_controller_gateway.h"
 
 namespace simulator
 {
@@ -26,7 +24,6 @@ class Simulator
         void GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const;
         types::Error AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train);
         void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
-        types::Error Update(wayside_controller::Gateway &wayside_controller_gateway, train_controller::Gateway &train_controller_gateway);
 
     private:
         std::vector<std::shared_ptr<track_model::TrackModel>> tracks_;
