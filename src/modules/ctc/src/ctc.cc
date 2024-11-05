@@ -6,13 +6,10 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_CC
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_CC
 
-#include "wayside_controller_gateway.h"
 #include "ctc.h"
 
 #include <sstream>
 #include "unordered_map"
-#include <iostream>
-
 
 namespace ctc
 {
@@ -55,9 +52,9 @@ void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 
 types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id)
 {
-    types::Error                error = types::ERROR_NONE;
+    types::Error                error = types::Error::ERROR_NONE;
     std::shared_ptr<ctc::Train> train = std::make_shared<ctc::Train>();
-    if (GetTrainPointerById(train_id, train) == types::ERROR_NONE)
+    if (GetTrainPointerById(train_id, train) == types::Error::ERROR_NONE)
     {
         train->authority.pop();
         types::BlockId current_block_id = train->authority.front();
@@ -73,7 +70,7 @@ void Ctc::SetBlocks(std::vector<types::Block> &blocks)
     types::Block yard;
     yard.block = 0;
     blocks_.push_back(yard);
-    for ( types::Block &block : blocks)
+    for (types::Block &block : blocks)
     {
         blocks_.push_back(block);
     }
@@ -174,14 +171,14 @@ std::vector<types::BlockId> Ctc::GetRoute(const types::BlockId destination)
 
 types::Error Ctc::GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer)
 {
-    types::Error error = types::ERROR_INVALID_TRAIN;
+    types::Error error = types::Error::ERROR_INVALID_TRAIN;
     for (ctc::Train &train : train_schedules_)
     {
         if (train.train_id == train_id)
         {
-            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train*) {
+            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train *) {
                 });
-            error = types::ERROR_NONE;
+            error = types::Error::ERROR_NONE;
         }
     }
     return error;
