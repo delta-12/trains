@@ -12,7 +12,7 @@ TEST(CtcBackEndTest, SetTrackLayout)
 {
     ctc::Ctc              ctc;
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
     ctc.SetScheduleFilePath(path);
     ctc.SetTrackLayout();
 
@@ -32,7 +32,7 @@ TEST(CtcBackEndTest, SetStations)
 {
     ctc::Ctc              ctc;
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
     ctc.SetScheduleFilePath(path);
     ctc.SetTrackLayout();
 
@@ -56,7 +56,7 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
 {
     ctc::Ctc              ctc;
     std::filesystem::path base_path = std::filesystem::current_path();
-    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_v4.csv";
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
     ctc.SetScheduleFilePath(path);
     ctc.SetTrackLayout();
 

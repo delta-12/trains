@@ -261,16 +261,15 @@ void TrainModelImpl::SetBeaconData(const types::BeaconData &data, std::size_t &s
 
 } // namespace train_model
 
-
 TEST(TrackModelTests, GreenLine)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -313,12 +312,12 @@ TEST(TrackModelTests, GreenLine)
 TEST(TrackModelTests, TrainSpeedAuthority)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -334,10 +333,10 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     ASSERT_EQ(trains.size(), 1);
 
-    //update
+    // update
     track.Update();
 
-    //fake authority and speed
+    // fake authority and speed
     ASSERT_EQ(track.SetAuthority(200, 5), types::ERROR_INVALID_BLOCK);
     ASSERT_EQ(track.SetCommandedSpeed(200, 50), types::ERROR_INVALID_BLOCK);
     ASSERT_EQ(track.SetAuthority(-1, 5), types::ERROR_INVALID_BLOCK);
@@ -347,15 +346,15 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(track.SetAuthority(63, 5), types::ERROR_NONE);
     ASSERT_EQ(track.SetCommandedSpeed(63, 50), types::ERROR_NONE);
 
-    //check that authority is set
+    // check that authority is set
     ASSERT_EQ(ptr->GetAuthority(), 5);
-    //check speed is set
+    // check speed is set
     ASSERT_EQ(ptr->GetCommandedSpeed(), 50);
 
-    //check passenger count
+    // check passenger count
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 
-    //occupancy check
+    // occupancy check
     bool occupied;
     ASSERT_EQ(track.GetBlockOccupancy(190, occupied), types::ERROR_INVALID_BLOCK);
     ASSERT_EQ(track.GetBlockOccupancy(-1, occupied), types::ERROR_INVALID_BLOCK);
@@ -366,16 +365,16 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    //UPDATE 2
+    // UPDATE 2
     track.Update();
 
     // Set authority and speed
     ASSERT_EQ(track.SetAuthority(65, 8), types::ERROR_NONE);
     ASSERT_EQ(track.SetCommandedSpeed(65, 90), types::ERROR_NONE);
 
-    //check that authority is set
+    // check that authority is set
     ASSERT_EQ(ptr->GetAuthority(), 8);
-    //check speed is set
+    // check speed is set
     ASSERT_EQ(ptr->GetCommandedSpeed(), 90);
 
     bool occupancy65;
@@ -388,7 +387,7 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(occupancy65, 1);
     ASSERT_EQ(occupancy63, 0);
 
-    //update 3 (longer)
+    // update 3 (longer)
     for (int i = 0; i < 36; i++)
     {
         track.Update();
@@ -396,13 +395,13 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     auto otb = track.GetOccupiedTrainBlocks();
 
-    //update 4 (takes u to the end)
+    // update 4 (takes u to the end)
     for (int i = 0; i < 145; i++)
     {
         track.Update();
     }
 
-    //occupancy check when we loop back around
+    // occupancy check when we loop back around
     ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
@@ -411,7 +410,7 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     otb = track.GetOccupiedTrainBlocks();
 
-    //switching so we go back to the yard instead of looping around
+    // switching so we go back to the yard instead of looping around
     ASSERT_EQ(track.SetSwitchState(57, 1), types::ERROR_NONE);
 
     ASSERT_EQ(track.SetSwitchState(58, 1), types::ERROR_INVALID_BLOCK);
@@ -426,7 +425,7 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     otb = track.GetOccupiedTrainBlocks();
 
-    //update 4 (longer)
+    // update 4 (longer)
     for (int i = 0; i < 145; i++)
     {
         track.Update();
@@ -438,7 +437,7 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     std::vector<std::shared_ptr<train_model::TrainModel>> trainsempty;
 
-    //make sure the train no longer exists
+    // make sure the train no longer exists
     track.GetTrainModels(trainsempty);
     ASSERT_EQ(trainsempty.size(), 0);
 }
@@ -446,12 +445,12 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 TEST(TrackModelTests, Switching)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -477,12 +476,12 @@ TEST(TrackModelTests, Switching)
 TEST(TrackModelTests, Boarding)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -502,7 +501,7 @@ TEST(TrackModelTests, Boarding)
     track.Update();
     track.Update();
 
-    //train is now on block 3, where there is a station
+    // train is now on block 3, where there is a station
     types::Block test_block;
     ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
 
@@ -517,12 +516,12 @@ TEST(TrackModelTests, Boarding)
 TEST(TrackModelTests, Polarity)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
@@ -549,7 +548,7 @@ TEST(TrackModelTests, Polarity)
 
     track.Update();
 
-    //train is now on block 65, where polarity is 1
+    // train is now on block 65, where polarity is 1
     types::Block test_block;
 
     ASSERT_EQ(track.GetBlock(-1, test_block), types::ERROR_INVALID_BLOCK);
@@ -557,10 +556,11 @@ TEST(TrackModelTests, Polarity)
     ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
+    ASSERT_EQ(test_block.polarity, types::POLARITY_NEGATIVE);
 
     current_polarity = ptr->GetTrackPolarity();
 
-    ASSERT_EQ(current_polarity, types::POLARITY_POSITIVE);
+    ASSERT_EQ(current_polarity, types::POLARITY_NEGATIVE);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 }
@@ -568,12 +568,12 @@ TEST(TrackModelTests, Polarity)
 TEST(TrackModelTests, PlaceHolderFunctions)
 {
     std::filesystem::path           base_path = std::filesystem::current_path();
-    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_layout.csv";
-    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line.csv";
+    std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+    std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
     CsvParser                       parser(path);
     CsvParser                       parser2(path2);
-    BlockBuilder                    bb(parser.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
-    BlockBuilder                    bb2(parser2.GetRecords(), SYSTEM_MODULE_TRACK_MODEL);
+    BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+    BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
