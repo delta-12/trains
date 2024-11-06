@@ -486,7 +486,7 @@ TEST(TrainControllerAuthorityTests, DecreasingAuthorityWhileSlowingDown)
 }
 
 // Test an Authority that loops back to the beginning of the route
-TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown1Block)
+TEST(TrainControllerAuthorityTests, UsingAuthorityThatLoopsAround)
 {
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
