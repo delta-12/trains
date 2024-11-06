@@ -64,6 +64,53 @@ types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id
     return error;
 }
 
+types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states)
+{
+    types::Error   error     = types::Error::ERROR_INVALID_FORMAT;
+    types::TrackId ctc_track = GetTrack();
+    if (track == ctc_track)
+    {
+        for (const types::BlockState &block_state : block_states)
+        {
+            // Update block states in private data memer blocks_ which stores all blocks information
+            std::shared_ptr<types::Block> block_ptr = std::make_shared<types::Block>();
+            if (GetBlockPoitnerById(block_state.block, block_ptr) == types::Error::ERROR_NONE)
+            {
+                block_ptr->occupied = block_state.occupied;
+                if (block_state.track_failure == true)
+                {
+                    failure_blocks_.push_back(block_state.block);
+                }
+                error = types::Error::ERROR_NONE;
+            }
+
+            // Update Train current position, suggested speed and authority upon receiving block occupancy
+            std::shared_ptr<ctc::Train> train_ptr = std::make_shared<ctc::Train>();
+            if (GetTrainPointerFromBlockOccupancy(block_state.block, train_ptr) == types::Error::ERROR_NONE)
+            {
+                train_ptr->current_position = block_state.block;
+                UpdateSuggestedSpeedAndAuthority(train_ptr->train_id);
+            }
+        }
+    }
+    return error;
+}
+
+std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void) const
+{
+    std::vector<types::TrackCircuitData> suggested_speed_and_authorities;
+    for (const ctc::Train &train : train_schedules_)
+    {
+        types::TrackCircuitData data;
+        data.block     = train.current_position;
+        data.track     = GetBlockById(train.current_position).track;
+        data.authority = train.authority.size();
+        data.speed     = train.suggested_speed;
+        suggested_speed_and_authorities.push_back(data);
+    }
+    return suggested_speed_and_authorities;
+}
+
 /*------------------------------------- Setters -------------------------------------*/
 void Ctc::SetBlocks(std::vector<types::Block> &blocks)
 {
@@ -74,6 +121,7 @@ void Ctc::SetBlocks(std::vector<types::Block> &blocks)
     {
         blocks_.push_back(block);
     }
+    track_ = blocks[CTC_FIRST_BLOCK].track;
 }
 
 void Ctc::SetStations(std::vector<types::Block> &blocks)
@@ -96,7 +144,6 @@ void Ctc::SetScheduleFilePath(std::filesystem::path path)
 void Ctc::SetDefaultRoute(void)
 {
     types::BlockId yard = 0;
-    default_route_.push_back(yard);
     // Add K, L, M, N, O, P, Q
     for (std::size_t i = CTC_SECTION_K_BLOCK_63; i < CTC_SECTION_R_BLOCK_101; ++i)
     {
@@ -184,6 +231,36 @@ types::Error Ctc::GetTrainPointerById(const types::TrainId train_id, std::shared
     return error;
 }
 
+types::Error Ctc::GetTrainPointerFromBlockOccupancy(const types::BlockId block_id, std::shared_ptr<ctc::Train> &train_pointer)
+{
+    types::Error error = types::Error::ERROR_INVALID_TRAIN;
+    for (ctc::Train &train : train_schedules_)
+    {
+        if (train.authority.front() == block_id)
+        {
+            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train *) {
+                });
+            error = types::Error::ERROR_NONE;
+        }
+    }
+    return error;
+}
+
+types::Error Ctc::GetBlockPoitnerById(const types::BlockId block_id, std::shared_ptr<types::Block> &block_pointer)
+{
+    types::Error error = types::Error::ERROR_INVALID_BLOCK;
+    for (types::Block &block : blocks_)
+    {
+        if (block.block == block_id)
+        {
+            block_pointer = std::shared_ptr<types::Block>(&block, [](types::Block *) {
+                });
+            error = types::Error::ERROR_NONE;
+        }
+    }
+    return error;
+}
+
 ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
 {
     ctc::Train result;
@@ -200,6 +277,16 @@ ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
 ctc::CtcOperationMode Ctc::GetOperationMode(void) const
 {
     return ctc_mode_;
+}
+
+types::TrackId Ctc::GetTrack(void) const
+{
+    return track_;
+}
+
+std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
+{
+    return failure_blocks_;
 }
 
 } // namespace ctc
