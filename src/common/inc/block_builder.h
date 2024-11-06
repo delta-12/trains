@@ -7,36 +7,30 @@
 #define TRAINS_SRC_COMMON_INC_BLOCK_BUILDER_H
 
 #include <string>
+#include <vector>
 
 #include "types.h"
 
-#define BLOCK_BUILDER_CSV_FIELD_LINE                 0
-#define BLOCK_BUILDER_CSV_FIELD_SECTION              1
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER         2
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH         3
-#define BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE          4
-#define BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT          5
-#define BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE       6
-#define BLOCK_BUILDER_CSV_FIELD_STATION_SIDE         7
-#define BLOCK_BUILDER_CSV_FIELD_ELEVATION            8
-#define BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION 9
-#define BLOCK_BUILDER_CSV_FIELD_CONNECTION           11
-#define BLOCK_BUILDER_CSV_FIELD_DIRECTION            12
+enum class RecordType
+{
+    RECORDTYPE_NONE,
+    RECORDTYPE_SCHEDULE,
+    RECORDTYPE_TRACK_LAYOUT
+};
 
 class BlockBuilder
 {
     public:
-        BlockBuilder(void);
-        BlockBuilder(const std::vector<std::vector<std::string>> &records);
+        BlockBuilder(const std::vector<std::vector<std::string>> &records, const RecordType record_type);
         std::size_t GetSize(void) const;
-        void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
-        types::Block ConvertRecordToBlock(const std::vector<std::string> &record);
         types::Error GetBlock(const types::BlockId block_id, types::Block &block);
         std::vector<types::Block> GetBlocks(void) const;
-
         void Reset(void);
 
     private:
+        void BuildBlocksFromSchedule(const std::vector<std::vector<std::string>> &records);
+        void BuildBlocksFromTrackLayout(const std::vector<std::vector<std::string>> &records);
+
         std::vector<types::Block> blocks_;
 };
 

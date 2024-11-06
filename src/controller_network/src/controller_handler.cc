@@ -7,7 +7,7 @@ types::Error LookupWaysideController(types::WaysideId &wayside, const types::Tra
 {
     // TODO NNF-226
     wayside = 0;
-    return types::ERROR_NONE;
+    return types::Error::ERROR_NONE;
 }
 
 } // namespace controller_network

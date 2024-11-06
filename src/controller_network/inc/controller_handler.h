@@ -86,7 +86,7 @@ types::Error ControllerHandler<buffer_size>::Update(ctc::Ctc &ctc_office)
 {
     types::Error error = ReceiveMessages(ctc_office);
 
-    if (types::ERROR_NONE == error)
+    if (types::Error::ERROR_NONE == error)
     {
         error = SendMessages(ctc_office);
     }
@@ -102,7 +102,7 @@ types::Error ControllerHandler<buffer_size>::Update(ctc::Ctc &ctc_office, simula
 {
     types::Error error = ReceiveMessages(ctc_office, world_simulator);
 
-    if (types::ERROR_NONE == error)
+    if (types::Error::ERROR_NONE == error)
     {
         error = SendMessages(ctc_office, world_simulator);
     }
@@ -144,7 +144,8 @@ void ControllerHandler<buffer_size>::MapConnections(void)
             }
 
             return controller_connected;
-        }), unmapped_ports_.end());
+        }),
+                          unmapped_ports_.end());
 }
 
 template <size_t buffer_size>
@@ -153,7 +154,8 @@ void ControllerHandler<buffer_size>::RemoveDisconnectedPorts(void)
     unmapped_ports_.erase(std::remove_if(unmapped_ports_.begin(), unmapped_ports_.end(), [](const std::unique_ptr<ControllerPort> &port)
         {
             return !port->Connected();
-        }), unmapped_ports_.end());
+        }),
+                          unmapped_ports_.end());
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
@@ -175,13 +177,13 @@ void ControllerHandler<buffer_size>::RemoveDisconnectedPorts(void)
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_office)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
         error = ReceiveMessagesFromControllers(ctc_office, connected_controllers_map);
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             break;
         }
@@ -193,13 +195,13 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &connected_controllers_map : connected_controllers_)
     {
         error = ReceiveMessagesFromControllers(ctc_office, world_simulator, connected_controllers_map);
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             break;
         }
@@ -211,13 +213,13 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessages(ctc::Ctc &ctc_offic
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = controllers.begin(); i != controllers.end(); ++i)
     {
         error = ReceiveMessageFromPort(ctc_office, i->second);
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             break;
         }
@@ -229,13 +231,13 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc:
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     for (std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>::iterator i = controllers.begin(); i != controllers.end(); ++i)
     {
         error = ReceiveMessageFromPort(ctc_office, world_simulator, i->second);
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             break;
         }
@@ -247,7 +249,7 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessagesFromControllers(ctc:
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ctc_office, const std::unique_ptr<ControllerPort> &port)
 {
-    types::Error error        = types::ERROR_NONE;
+    types::Error error        = types::Error::ERROR_NONE;
     MessageType  message_type = MESSAGETYPE_NONE;
     size_t       message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
 
@@ -298,12 +300,12 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office)
 {
     types::Error error = SendTrackCircuitData(ctc_office);
 
-    if (types::ERROR_NONE == error)
+    if (types::Error::ERROR_NONE == error)
     {
         // TODO NNF-230 send maintenance mode to wayside controller
     }
 
-    if (types::ERROR_NONE == error)
+    if (types::Error::ERROR_NONE == error)
     {
         // TODO NNF-230 send suggested switch states to wayside controller
     }
@@ -330,12 +332,12 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::HandleBlockStates(const size_t message_size, ctc::Ctc &ctc_office)
 {
-    types::Error                     error = types::ERROR_NONE;
+    types::Error                     error = types::Error::ERROR_NONE;
     controller_messages::BlockStates block_states_message;
 
     if (!block_states_message.ParseFromArray(message_buffer_.data(), message_size))
     {
-        error = types::ERROR_INVALID_FORMAT;
+        error = types::Error::ERROR_INVALID_FORMAT;
     }
     else
     {
@@ -359,12 +361,12 @@ types::Error ControllerHandler<buffer_size>::HandleBlockStates(const size_t mess
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::HandleTrackCircuitData(const size_t message_size, simulator::Simulator &world_simulator)
 {
-    types::Error                          error = types::ERROR_NONE;
+    types::Error                          error = types::Error::ERROR_NONE;
     controller_messages::TrackCircuitData track_circuit_data_message;
 
     if (!track_circuit_data_message.ParseFromArray(message_buffer_.data(), message_size))
     {
-        error = types::ERROR_INVALID_FORMAT;
+        error = types::Error::ERROR_INVALID_FORMAT;
     }
     else
     {
@@ -382,12 +384,12 @@ types::Error ControllerHandler<buffer_size>::HandleTrackCircuitData(const size_t
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::HandleBlockOutputs(const size_t message_size, simulator::Simulator &world_simulator)
 {
-    types::Error                      error = types::ERROR_NONE;
+    types::Error                      error = types::Error::ERROR_NONE;
     controller_messages::BlockOutputs block_outputs_message;
 
     if (!block_outputs_message.ParseFromArray(message_buffer_.data(), message_size))
     {
-        error = types::ERROR_INVALID_FORMAT;
+        error = types::Error::ERROR_INVALID_FORMAT;
     }
     else
     {
@@ -398,11 +400,11 @@ types::Error ControllerHandler<buffer_size>::HandleBlockOutputs(const size_t mes
         {
             error = world_simulator.SetSwitchState(track, block, block_outputs_message.switched());
         }
-        if ((block_outputs_message.has_crossing()) && (types::ERROR_NONE == error))
+        if ((block_outputs_message.has_crossing()) && (types::Error::ERROR_NONE == error))
         {
             error = world_simulator.SetCrossingState(track, block, block_outputs_message.crossing());
         }
-        if ((block_outputs_message.has_traffic_light_color()) && (types::ERROR_NONE == error))
+        if ((block_outputs_message.has_traffic_light_color()) && (types::Error::ERROR_NONE == error))
         {
             error = world_simulator.SetTrafficLight(track, block, static_cast<types::TrafficLightColor>(block_outputs_message.traffic_light_color()));
         }
@@ -414,7 +416,7 @@ types::Error ControllerHandler<buffer_size>::HandleBlockOutputs(const size_t mes
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const ctc::Ctc &ctc_office)
 {
-    types::Error                         error              = types::ERROR_NONE;
+    types::Error                         error              = types::Error::ERROR_NONE;
     std::vector<types::TrackCircuitData> track_circuit_data = ctc_office.GetSuggestedSpeedsAndAuthorities();
 
     for (const types::TrackCircuitData &data : track_circuit_data)
@@ -429,24 +431,24 @@ types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const ctc::Ctc
         message.set_authority(data.authority);
         size_t message_size = message.ByteSizeLong();
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             // Failed to lookup wayside controller, do nothing
         }
         else if (!connected_controllers_[CONTROLLERTYPE_WAYSIDE].contains(wayside))
         {
-            error = types::ERROR_INVALID_CONTROLLER;
+            error = types::Error::ERROR_INVALID_CONTROLLER;
         }
         else if (!message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
         {
-            error = types::ERROR_INVALID_FORMAT;
+            error = types::Error::ERROR_INVALID_FORMAT;
         }
         else if (message_size != connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size))
         {
-            error = types::ERROR_INVALID_SIZE;
+            error = types::Error::ERROR_INVALID_SIZE;
         }
 
-        if (types::ERROR_NONE != error)
+        if (types::Error::ERROR_NONE != error)
         {
             break;
         }

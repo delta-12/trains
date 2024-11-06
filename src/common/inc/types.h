@@ -12,36 +12,38 @@
 #include <string>
 #include <vector>
 
-#define TYPES_BEACON_DATA_SIZE 128U
-#define TYPES_END_BLOCK_ID     0U
-
 namespace types
 {
 
-typedef double                                      KilometersPerHour;
-typedef double                                      Kilometers;
-typedef double                                      MetersPerSecond;
-typedef double                                      MetersPerSecondSquared;
-typedef double                                      Meters;
-typedef double                                      MilesPerHour;
-typedef double                                      Miles;
-typedef double                                      Feet;
-typedef double                                      Watts;
-typedef int16_t                                     DegreesFahrenheit;
-typedef int64_t                                     Tick;
-typedef char                                        SectionId;
-typedef uint32_t                                    BlockId;
-typedef uint32_t                                    Blocks;
-typedef uint32_t                                    ControllerId;
-typedef ControllerId                                TrainId;
-typedef ControllerId                                WaysideId;
-typedef std::array<uint8_t, TYPES_BEACON_DATA_SIZE> BeaconData;
-typedef struct Block                                Block;
-typedef struct TrackCircuitData                     TrackCircuitData;
-typedef struct BlockState                           BlockState;
-typedef std::chrono::duration<double>               Second;
+static const size_t kBeaconSize = 128;
 
-typedef enum
+using KilometersPerHour      = double;
+using Kilometers             = double;
+using MetersPerSecond        = double;
+using MetersPerSecondSquared = double;
+using Meters                 = double;
+using MilesPerHour           = double;
+using Miles                  = double;
+using Feet                   = double;
+using Watts                  = double;
+using DegreesFahrenheit      = int16_t;
+using Tick                   = int64_t;
+using SectionId              = char;
+using BlockId                = uint16_t;
+using Blocks                 = uint16_t;
+using ControllerId           = uint32_t;
+using TrainId                = ControllerId;
+using WaysideId              = ControllerId;
+using BeaconData             = std::array<uint8_t, kBeaconSize>;
+using Block                  = struct Block;
+using TrackCircuitData       = struct TrackCircuitData;
+using BlockState             = struct BlockState;
+using Second                 = std::chrono::duration<double>;
+using Milisecond             = std::chrono::milliseconds;
+
+static const BlockId kEndBlock = 0;
+
+enum class Error
 {
     ERROR_NONE,
     ERROR_INVALID_TRACK,
@@ -53,47 +55,48 @@ typedef enum
     ERROR_INVALID_FORMAT,
     ERROR_INVALID_CONTROLLER,
     ERROR_IO
-} Error;
+};
 
-typedef enum
+enum class Polarity
 {
     POLARITY_POSITIVE,
     POLARITY_NEGATIVE
-} Polarity;
+};
 
-typedef enum
+enum class TrafficLightColor
 {
     TRAFFICLIGHTCOLOR_NONE,
     TRAFFICLIGHTCOLOR_RED,
     TRAFFICLIGHTCOLOR_GREEN
-} TrafficLightColor;
+};
 
-typedef enum
+enum class BlockDirection
 {
     BLOCKDIRECTION_UNIDIRECTIONAL,
     BLOCKDIRECTION_BIDIRECTIONAL
-} BlockDirection;
+};
 
-typedef enum
+enum class TrackId
 {
     TRACKID_NONE,
     TRACKID_RED,
     TRACKID_GREEN,
     TRACKID_BLUE
-} TrackId;
+};
 
-typedef enum
+enum class StationSide
 {
     STATIONSIDE_LEFT,
     STATIONSIDE_RIGHT,
     STATIONSIDE_BOTH
-} StationSide;
+};
 
 struct Block
 {
     Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
-              power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0), speed_limit(0), elevation(0), cumulative_elevation(0),
-              section('\0'), heater_on(false), has_station(false), underground(false)
+              light_color(TrafficLightColor::TRAFFICLIGHTCOLOR_NONE), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
+              speed_limit(0), elevation(0), cumulative_elevation(0), section('\0'), heater_on(false), has_station(false), station_side(StationSide::STATIONSIDE_LEFT),
+              direction(BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0), polarity(types::Polarity::POLARITY_NEGATIVE)
     {
     };
     BlockId block;
@@ -120,12 +123,15 @@ struct Block
     StationSide station_side;
     BlockDirection direction;
     bool underground;
+    Second total_time_to_station;
+    WaysideId wayside;
+    types::Polarity polarity;
 };
 
 struct TrackCircuitData
 {
     public:
-        TrackCircuitData(void) : track(TRACKID_RED), block(0), speed(0.0), authority(0)
+        TrackCircuitData(void) : track(TrackId::TRACKID_RED), block(0), speed(0.0), authority(0)
         {
         }
         TrackCircuitData(const TrackId track, const BlockId block, const MetersPerSecond speed, const size_t authority) : track(track), block(block), speed(speed), authority(authority)

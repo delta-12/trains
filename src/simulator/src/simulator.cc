@@ -7,12 +7,12 @@ namespace simulator
 
 types::Error Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> track)
 {
-    types::Error   error    = types::ERROR_NONE;
+    types::Error   error    = types::Error::ERROR_NONE;
     types::TrackId track_id = track.get()->GetTrackId();
 
     if (tracks_.contains(track_id))
     {
-        error = types::ERROR_DUPLICATE_TRACK;
+        error = types::Error::ERROR_DUPLICATE_TRACK;
     }
     else
     {
@@ -24,11 +24,11 @@ types::Error Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> t
 
 types::Error Simulator::DeleteTrackModel(const types::TrackId track)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
@@ -50,11 +50,11 @@ void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackMod
 
 types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
@@ -83,19 +83,19 @@ std::shared_ptr<train_model::TrainModel> Simulator::GetTrainModel(const types::T
 
 types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(data.track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
-    else if (types::ERROR_NONE != tracks_[data.track].get()->SetCommandedSpeed(data.block, data.speed))
+    else if (types::Error::ERROR_NONE != tracks_[data.track].get()->SetCommandedSpeed(data.block, data.speed))
     {
-        error = types::ERROR_INVALID_BLOCK;
+        error = types::Error::ERROR_INVALID_BLOCK;
     }
-    else if (types::ERROR_NONE != tracks_[data.track].get()->SetAuthority(data.block, data.authority))
+    else if (types::Error::ERROR_NONE != tracks_[data.track].get()->SetAuthority(data.block, data.authority))
     {
-        error = types::ERROR_INVALID_BLOCK;
+        error = types::Error::ERROR_INVALID_BLOCK;
     }
 
     return error;
@@ -103,11 +103,11 @@ types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
 
 types::Error Simulator::SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
@@ -119,11 +119,11 @@ types::Error Simulator::SetSwitchState(const types::TrackId track, const types::
 
 types::Error Simulator::SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
@@ -135,32 +135,32 @@ types::Error Simulator::SetCrossingState(const types::TrackId track, const types
 
 types::Error Simulator::SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     if (!tracks_.contains(track))
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
         switch (color)
         {
-        case types::TRAFFICLIGHTCOLOR_RED:
+        case types::TrafficLightColor::TRAFFICLIGHTCOLOR_RED:
             error = tracks_[track]->SetRedTrafficLight(block, true);
-            if (types::ERROR_NONE == error)
+            if (types::Error::ERROR_NONE == error)
             {
                 error = tracks_[track]->SetGreenTrafficLight(block, false);
             }
             break;
-        case types::TRAFFICLIGHTCOLOR_GREEN:
+        case types::TrafficLightColor::TRAFFICLIGHTCOLOR_GREEN:
             error = tracks_[track]->SetGreenTrafficLight(block, true);
-            if (types::ERROR_NONE == error)
+            if (types::Error::ERROR_NONE == error)
             {
                 error = tracks_[track]->SetRedTrafficLight(block, false);
             }
             break;
         default:
-            error = types::ERROR_INVALID_FORMAT;
+            error = types::Error::ERROR_INVALID_FORMAT;
             break;
         }
     }
