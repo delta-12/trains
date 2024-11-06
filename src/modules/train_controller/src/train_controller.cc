@@ -50,7 +50,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     last_polarity_     = polarity_;
     usable_authority_  = authority_;
     authority_counter_ = authority_;
-    new_authority_      = false;
+    new_authority_     = false;
 
     Update();
 }
@@ -278,7 +278,7 @@ void SoftwareTrainController::Update()
     CalculateDistanceToStopping();
     UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
-    
+
 
     delta_time_ = delta_time;
 }
@@ -363,12 +363,12 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
             if (required_acceleration / MAXIMUM_DECELERATION > 1 || required_acceleration < 0)
             {
                 service_brake_percentage_ = 1;
-                commanded_power_= 0;
+                commanded_power_          = 0;
             }
             else
             {
                 service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
-                commanded_power_ = 0;
+                commanded_power_          = 0;
             }
 
             new_authority_ = false;
@@ -501,11 +501,11 @@ void SoftwareTrainController::CalculateDistanceToStopping()
     {
         usable_authority_         = authority_;
         authority_counter_        = authority_;
-        new_authority_             = true;
+        new_authority_            = true;
         service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
 
         distance_prior_to_current_authority_ = distance_travelled_;
-        distance_of_authority_in_meters_ = 0;
+        distance_of_authority_in_meters_     = 0;
 
         for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
         {
@@ -523,7 +523,7 @@ void SoftwareTrainController::CalculateDistanceToStopping()
         }
     }
 
-    
+
 }
 
 }
