@@ -484,3 +484,22 @@ TEST(TrainControllerAuthorityTests, DecreasingAuthorityWhileSlowingDown)
     ASSERT_EQ(TC.GetCommandedPower(), 0);
     ASSERT_GT(TC.GetServiceBrake(), firstSB);
 }
+
+// Test an Authority that loops back to the beginning of the route
+TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown1Block)
+{
+    TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
+    train_controller::SoftwareTrainController TC(CLOCK);
+    (*CLOCK).Start();
+    (*CLOCK).SetMultiplier(2);
+
+    TC.SetAuthority(350); //Authority that will have it stop at the first block of the rout. Block 63
+    TC.SetCurrentSpeed(0);
+    TC.SetCommandedSpeed(18);
+
+    usleep(1000);
+    TC.Update();
+
+    ASSERT_EQ(TC.GetDistanceOfAuthorityInMeters(),40105.2);
+}

@@ -266,8 +266,6 @@ void SoftwareTrainController::SetPolartity(const types::Polarity polarity)
 
 void SoftwareTrainController::Update()
 {
-
-
     std::chrono::milliseconds elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
 
     types::Second delta_time = std::chrono::duration_cast<types::Second>(elapsed_time);
@@ -509,9 +507,10 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 
         for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
         {
-            double block_length = (green_block_data_map_[green_default_route_vector_[i]])[0];
+            int index = i % green_default_route_vector_.size();
+            double block_length = (green_block_data_map_[green_default_route_vector_[index]])[0];
 
-            if (i == set_route_position_ + usable_authority_)
+            if (index == set_route_position_ + usable_authority_)
             {
                 distance_of_authority_in_meters_ += block_length / 2;
                 distance_of_authority_in_meters_ += total_blocks_accessed_length_ - distance_prior_to_current_authority_;
@@ -524,6 +523,12 @@ void SoftwareTrainController::CalculateDistanceToStopping()
     }
 
 
+}
+
+
+types::Meters SoftwareTrainController::GetDistanceOfAuthorityInMeters()
+{
+    return distance_of_authority_in_meters_;
 }
 
 }
