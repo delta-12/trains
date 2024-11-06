@@ -501,5 +501,5 @@ TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown1Block)
     usleep(1000);
     TC.Update();
 
-    ASSERT_EQ(TC.GetDistanceOfAuthorityInMeters(),40105.2);
+    ASSERT_EQ(TC.GetDistanceOfAuthorityInMeters(), 40105.2);
 }
