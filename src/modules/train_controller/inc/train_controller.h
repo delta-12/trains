@@ -27,10 +27,6 @@
 
 namespace train_controller
 {
-
-
-
-
 class TrainController
 {
     public:
@@ -39,6 +35,7 @@ class TrainController
         virtual types::MilesPerHour GetDriverSpeed(void) const                       = 0;
         virtual types::MetersPerSecond GetCommandedSpeed(void) const                 = 0;
         virtual types::Miles GetDistanceTravelled(void) const                        = 0;
+        virtual types::Meters GetDistanceTravelledSinceLastUpdate(void) const        = 0;
         virtual types::Watts GetCommandedPower(void) const                           = 0;
         virtual double GetServiceBrake(void) const                                   = 0;
         virtual double GetGrade(void) const                                          = 0;
@@ -89,6 +86,7 @@ class SoftwareTrainController : public TrainController
         types::MilesPerHour GetDriverSpeed(void) const;
         types::MetersPerSecond GetCommandedSpeed(void) const;
         types::Meters GetDistanceTravelled(void) const;
+        types::Meters GetDistanceTravelledSinceLastUpdate(void) const;
         types::Watts GetCommandedPower(void) const;
         double GetServiceBrake(void) const;
         double GetGrade(void) const;
@@ -138,6 +136,7 @@ class SoftwareTrainController : public TrainController
         void UpdateTrainPosition(void);
         void CalculateDistanceToStopping();
         types::Meters GetDistanceOfAuthorityInMeters();
+
 
         /*
          *
@@ -565,6 +564,7 @@ class SoftwareTrainController : public TrainController
         uint8_t set_route_position_;
         types::Polarity polarity_;
         types::Polarity last_polarity_;
+        types::Meters distance_since_last_update_;
 };
 
 } // namespace train_controller

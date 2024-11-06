@@ -23,6 +23,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
 
 
     distance_of_authority_in_meters_     = 0;
+    distance_since_last_update_          = 0;
     integral_sum_                        = 0;
     commanded_speed_                     = 0;
     driver_speed_                        = 0;
@@ -80,6 +81,11 @@ types::Watts SoftwareTrainController::GetCommandedPower() const
 types::Meters SoftwareTrainController::GetDistanceTravelled(void) const
 {
     return distance_travelled_;
+}
+
+types::Meters SoftwareTrainController::GetDistanceTravelledSinceLastUpdate(void) const
+{
+    return distance_since_last_update_;
 }
 
 bool SoftwareTrainController::GetEmergencyBrake() const
@@ -455,7 +461,9 @@ void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed
 
 void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_time)
 {
+    types::Meters last_distance_travelled = distance_travelled_;
     distance_travelled_ += current_speed_ * delta_time.count();
+    distance_since_last_update_ = distance_travelled_ - last_distance_travelled;
 }
 
 types::Second SoftwareTrainController::GetDeltaTime(void) const
