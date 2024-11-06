@@ -361,7 +361,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
             // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
             types::MetersPerSecondSquared required_acceleration = ((current_speed_ * current_speed_)) / (2 * ((distance_of_authority_in_meters_ - (distance_travelled_ - distance_prior_to_current_authority_))));
 
-            if (required_acceleration / MAXIMUM_DECELERATION > 1)
+            if (required_acceleration / MAXIMUM_DECELERATION > 1 || required_acceleration < 0)
             {
                 service_brake_percentage_ = 1;
                 commanded_power_= 0;
@@ -523,8 +523,8 @@ void SoftwareTrainController::CalculateDistanceToStopping()
             }
         }
         
-        // std::cout << "\n DT " << distance_travelled_ << "\n";
-        //std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
+        std::cout << "\n DT " << distance_travelled_ << "\n";
+        std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
     }
 
     
