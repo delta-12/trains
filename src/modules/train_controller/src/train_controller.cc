@@ -521,9 +521,6 @@ void SoftwareTrainController::CalculateDistanceToStopping()
                 distance_of_authority_in_meters_ += block_length;
             }
         }
-        
-        std::cout << "\n DT " << distance_travelled_ << "\n";
-        std::cout << "\n LENGTH OF AUTHORIY'S BLOCKS " << distance_of_authority_in_meters_ << "\n";
     }
 
     

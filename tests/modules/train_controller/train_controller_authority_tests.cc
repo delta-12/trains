@@ -43,7 +43,7 @@ TEST(TrainControllerAuthorityTests, UsingAuthorityToStartSlowingDown1Block)
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
     TC.SetAuthority(0);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
 }
 
 
@@ -112,7 +112,7 @@ TEST(TrainControllerAuthorityTests, TestingChangingBlocksWithAuthority)
     usleep(5000000);
     TC.Update();
     TC.SetAuthority(4);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -120,7 +120,7 @@ TEST(TrainControllerAuthorityTests, TestingChangingBlocksWithAuthority)
     usleep(5000000);
     TC.Update();
     TC.SetAuthority(3);
-    TC.SetPolartity(types::POLARITY_NEGATIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_NEGATIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
     
@@ -128,7 +128,7 @@ TEST(TrainControllerAuthorityTests, TestingChangingBlocksWithAuthority)
     usleep(10000000);
     TC.Update();
     TC.SetAuthority(2);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -167,7 +167,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowing
     usleep(5000000);
     TC.Update();
     TC.SetAuthority(4);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -175,7 +175,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowing
     usleep(5000000);
     TC.Update();
     TC.SetAuthority(5);
-    TC.SetPolartity(types::POLARITY_NEGATIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_NEGATIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -183,7 +183,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowing
     usleep(10000000);
     TC.Update();
     TC.SetAuthority(4);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -191,7 +191,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowing
     usleep(10000000);
     TC.Update();
     TC.SetAuthority(3);
-    TC.SetPolartity(types::POLARITY_NEGATIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_NEGATIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -199,7 +199,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToALargerValueBeforeSlowing
     usleep(5000000);
     TC.Update();
     TC.SetAuthority(2);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
 
@@ -240,7 +240,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToASmallerValueBeforeSlowin
 
     // IN Block 64
     TC.SetAuthority(4);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
     std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
@@ -251,7 +251,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToASmallerValueBeforeSlowin
     // IN Block 65
     
     TC.SetAuthority(1);
-    TC.SetPolartity(types::POLARITY_NEGATIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_NEGATIVE);
     ASSERT_GT(TC.GetCommandedPower(), 0);
     ASSERT_EQ(TC.GetServiceBrake(), 0);
     std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
@@ -260,7 +260,7 @@ TEST(TrainControllerAuthorityTests, ChangingAuthorityToASmallerValueBeforeSlowin
     TC.Update();
 
     TC.SetAuthority(0);
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
 
     std::cout <<  "======================\n Distance Travelled: " << TC.GetDistanceTravelled() << "\n";
     std::cout <<  "\n Authority: " << TC.GetAuthority() << "\n";
@@ -303,7 +303,7 @@ TEST(TrainControllerAuthorityTests, CheckingThatCalculatedServiceBrakeLeadsToSto
 
 
 
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     TC.SetAuthority(0);
 
     // TrainModel recieves values
@@ -381,7 +381,7 @@ TEST(TrainControllerAuthorityTests, IncreasingAuthorityWhileSlowingDown)
     ASSERT_EQ(TC.GetCommandedPower(), 0);
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
-    TC.SetPolartity(types::POLARITY_POSITIVE);
+    TC.SetPolartity(types::Polarity::POLARITY_POSITIVE);
     TC.SetAuthority(0);
 
     
