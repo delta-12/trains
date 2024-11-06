@@ -28,7 +28,7 @@ class Channel
 };
 
 template <typename T>
-Channel<T>::Channel(void) : send_signal_(0), receive_signal_(1), data_available_(false)
+Channel<T>::Channel(void) : send_signal_(0), receive_signal_(1), data_available_(false), data_(T())
 {
 }
 

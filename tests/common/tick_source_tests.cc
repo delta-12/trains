@@ -6,7 +6,6 @@
 
 #include <unistd.h>
 
-#include <iostream>
 #include <iomanip>
 
 #include <gtest/gtest.h>
