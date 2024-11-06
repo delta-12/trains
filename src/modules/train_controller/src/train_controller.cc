@@ -462,7 +462,7 @@ void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed
 void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_time)
 {
     types::Meters last_distance_travelled = distance_travelled_;
-    distance_travelled_ += current_speed_ * delta_time.count();
+    distance_travelled_        += current_speed_ * delta_time.count();
     distance_since_last_update_ = distance_travelled_ - last_distance_travelled;
 }
 
