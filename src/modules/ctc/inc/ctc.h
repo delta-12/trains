@@ -119,9 +119,6 @@ class Ctc
         void AddTrainToTrainSchedule(ctc::Train train);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
-        types::Error GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer);
-        types::Error GetTrainPointerFromBlockOccupancy(const types::BlockId block_id, std::shared_ptr<ctc::Train> &train_pointer);
-        types::Error GetBlockPoitnerById(const types::BlockId block_id, std::shared_ptr<types::Block> &block_pointer);
 
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;

@@ -52,14 +52,23 @@ void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 
 types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id)
 {
-    types::Error                error = types::Error::ERROR_NONE;
-    std::shared_ptr<ctc::Train> train = std::make_shared<ctc::Train>();
-    if (GetTrainPointerById(train_id, train) == types::Error::ERROR_NONE)
+    types::Error error = types::Error::ERROR_INVALID_TRAIN;
+
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+
+    if (train_it != train_schedules_.end())
     {
-        train->authority.pop();
-        types::BlockId current_block_id = train->authority.front();
+        train_it->authority.pop();
+        types::BlockId current_block_id = train_it->authority.front();
         types::Block   current_block    = GetBlockById(current_block_id);
-        train->suggested_speed = current_block.speed_limit;
+        train_it->suggested_speed = current_block.speed_limit;
+        error                     = types::Error::ERROR_NONE;
     }
     return error;
 }
@@ -73,10 +82,17 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
         for (const types::BlockState &block_state : block_states)
         {
             // Update block states in private data memer blocks_ which stores all blocks information
-            std::shared_ptr<types::Block> block_ptr = std::make_shared<types::Block>();
-            if (GetBlockPoitnerById(block_state.block, block_ptr) == types::Error::ERROR_NONE)
+            std::vector<types::Block>::iterator block_it = std::find_if(
+                blocks_.begin(),
+                blocks_.end(),
+                [block_state](types::Block &block) {
+                    return block.block == block_state.block;
+                }
+                );
+
+            if (block_it != blocks_.end())
             {
-                block_ptr->occupied = block_state.occupied;
+                block_it->occupied = block_state.occupied;
                 if (block_state.track_failure == true)
                 {
                     failure_blocks_.push_back(block_state.block);
@@ -85,11 +101,19 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
             }
 
             // Update Train current position, suggested speed and authority upon receiving block occupancy
-            std::shared_ptr<ctc::Train> train_ptr = std::make_shared<ctc::Train>();
-            if (GetTrainPointerFromBlockOccupancy(block_state.block, train_ptr) == types::Error::ERROR_NONE)
+            std::vector<ctc::Train>::iterator train_it = std::find_if(
+                train_schedules_.begin(),
+                train_schedules_.end(),
+                [block_state](ctc::Train &train) {
+                    return !train.authority.empty() && train.authority.front() == block_state.block;
+                }
+                );
+
+            if (train_it != train_schedules_.end())
             {
-                train_ptr->current_position = block_state.block;
-                UpdateSuggestedSpeedAndAuthority(train_ptr->train_id);
+                train_it->current_position = block_state.block;
+                UpdateSuggestedSpeedAndAuthority(train_it->train_id);
+                error = types::Error::ERROR_NONE;
             }
         }
     }
@@ -101,12 +125,12 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
     std::vector<types::TrackCircuitData> suggested_speed_and_authorities;
     for (const ctc::Train &train : train_schedules_)
     {
-        types::TrackCircuitData data;
-        data.block     = train.current_position;
-        data.track     = GetBlockById(train.current_position).track;
-        data.authority = train.authority.size();
-        data.speed     = train.suggested_speed;
-        suggested_speed_and_authorities.push_back(data);
+        suggested_speed_and_authorities.emplace_back(
+            GetBlockById(train.current_position).track,
+            train.current_position,
+            train.suggested_speed,
+            train.authority.size()
+        );
     }
     return suggested_speed_and_authorities;
 }
@@ -214,51 +238,6 @@ std::vector<types::BlockId> Ctc::GetRoute(const types::BlockId destination)
         }
     }
     return route;
-}
-
-types::Error Ctc::GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer)
-{
-    types::Error error = types::Error::ERROR_INVALID_TRAIN;
-    for (ctc::Train &train : train_schedules_)
-    {
-        if (train.train_id == train_id)
-        {
-            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train *) {
-                });
-            error = types::Error::ERROR_NONE;
-        }
-    }
-    return error;
-}
-
-types::Error Ctc::GetTrainPointerFromBlockOccupancy(const types::BlockId block_id, std::shared_ptr<ctc::Train> &train_pointer)
-{
-    types::Error error = types::Error::ERROR_INVALID_TRAIN;
-    for (ctc::Train &train : train_schedules_)
-    {
-        if (train.authority.front() == block_id)
-        {
-            train_pointer = std::shared_ptr<ctc::Train>(&train, [](ctc::Train *) {
-                });
-            error = types::Error::ERROR_NONE;
-        }
-    }
-    return error;
-}
-
-types::Error Ctc::GetBlockPoitnerById(const types::BlockId block_id, std::shared_ptr<types::Block> &block_pointer)
-{
-    types::Error error = types::Error::ERROR_INVALID_BLOCK;
-    for (types::Block &block : blocks_)
-    {
-        if (block.block == block_id)
-        {
-            block_pointer = std::shared_ptr<types::Block>(&block, [](types::Block *) {
-                });
-            error = types::Error::ERROR_NONE;
-        }
-    }
-    return error;
 }
 
 ctc::Train Ctc::GetTrainById(const types::TrainId train_id) const
