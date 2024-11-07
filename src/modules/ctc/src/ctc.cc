@@ -111,13 +111,10 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
                     return !train.authority.empty() && train.authority.front() == block_state.block;
                 }
                 );
-
-            // If train iterator found, update train's variables and break out of for loop early
             if (train_it != train_schedules_.end())
             {
                 train_it->current_position = block_state.block;
                 UpdateSuggestedSpeedAndAuthority(train_it->train_id);
-                break;
             }
             else
             {
