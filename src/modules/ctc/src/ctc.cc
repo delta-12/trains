@@ -57,7 +57,7 @@ types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id
     std::vector<ctc::Train>::iterator train_it = std::find_if(
         train_schedules_.begin(),
         train_schedules_.end(),
-        [train_id](ctc::Train &train) {
+        [train_id](const ctc::Train &train) {
             return train.train_id == train_id;
         }
         );
@@ -85,7 +85,7 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
             std::vector<types::Block>::iterator block_it = std::find_if(
                 blocks_.begin(),
                 blocks_.end(),
-                [block_state](types::Block &block) {
+                [block_state](const types::Block &block) {
                     return block.block == block_state.block;
                 }
                 );
@@ -130,7 +130,7 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
             train.current_position,
             train.suggested_speed,
             train.authority.size()
-        );
+            );
     }
     return suggested_speed_and_authorities;
 }
