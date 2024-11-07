@@ -75,7 +75,7 @@ types::Error Ctc::UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id
 
 types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states)
 {
-    types::Error   error     = types::Error::ERROR_INVALID_FORMAT;
+    types::Error   error     = types::Error::ERROR_NONE;
     types::TrackId ctc_track = GetTrack();
     if (track == ctc_track)
     {
@@ -97,7 +97,10 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
                 {
                     failure_blocks_.push_back(block_state.block);
                 }
-                error = types::Error::ERROR_NONE;
+            }
+            else
+            {
+                error = types::Error::ERROR_INVALID_BLOCK;
             }
 
             // Update Train current position, suggested speed and authority upon receiving block occupancy
@@ -114,6 +117,10 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
                 train_it->current_position = block_state.block;
                 UpdateSuggestedSpeedAndAuthority(train_it->train_id);
                 error = types::Error::ERROR_NONE;
+            }
+            else
+            {
+                error = types::Error::ERROR_INVALID_TRAIN;
             }
         }
     }
