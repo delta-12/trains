@@ -22,6 +22,9 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ASSERT_EQ(ctc.GetBlockById(20).block, 20);
     ASSERT_EQ(ctc.GetBlockById(20).speed_limit, 17);
 
+    ASSERT_EQ(ctc.GetBlockById(50).block, 50);
+    ASSERT_EQ(ctc.GetBlockById(50).speed_limit, 19);
+
     ASSERT_EQ(ctc.GetBlockById(2).station_name, "Pioneer");
     ASSERT_EQ(ctc.GetBlockById(22).station_name, "Whited");
     ASSERT_EQ(ctc.GetBlockById(31).station_name, "South bank");
