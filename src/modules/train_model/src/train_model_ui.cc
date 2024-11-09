@@ -1,8 +1,4 @@
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-#include <slint.h>
+#include "train_model_ui.h"
 
 using namespace std;
 
