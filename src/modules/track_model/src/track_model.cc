@@ -50,7 +50,22 @@ types::Error SoftwareTrackModel::AddTrainModel(std::shared_ptr<train_model::Trai
     return types::Error::ERROR_NONE;
 }
 
-void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const
+std::shared_ptr<train_model::TrainModel> SoftwareTrackModel::GetTrainModel(const types::TrainId train) const
+{
+    std::shared_ptr<train_model::TrainModel> selected_train;
+
+    for (int i = 0; i < trains_.size(); i++)
+    {
+        if (train == trains_[i]->GetTrainId())
+        {
+            selected_train = trains_[i];
+        }
+    }
+
+    return selected_train;
+}
+
+void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains)
 {
     trains = trains_;
 }

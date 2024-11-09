@@ -20,7 +20,8 @@ class TrackModel
     public:
         virtual types::TrackId GetTrackId(void)                                                                = 0;
         virtual types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train)                     = 0;
-        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const       = 0;
+        virtual std::shared_ptr<train_model::TrainModel> GetTrainModel(const types::TrainId train) const       = 0;
+        virtual void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains)             = 0;
         virtual void Update(void)                                                                              = 0;
         virtual types::Error SetSwitchState(const types::BlockId block, const bool switched)                   = 0;
         virtual types::Error SetCrossingState(const types::BlockId block, const bool closed)                   = 0;
@@ -39,7 +40,8 @@ class SoftwareTrackModel : public TrackModel
         types::Error SetTrackLayout(const types::TrackId track, const std::vector<types::Block> &blocks, const std::vector<types::Block> &inorder);
         types::TrackId GetTrackId(void);
         types::Error AddTrainModel(std::shared_ptr<train_model::TrainModel> train);
-        void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const;
+        std::shared_ptr<train_model::TrainModel> GetTrainModel(const types::TrainId train) const;
+        void GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains);
         void Update(void);
         types::Error SetSwitchState(const types::BlockId block, const bool switched);
         types::Error SetCrossingState(const types::BlockId block, const bool closed);
