@@ -18,7 +18,8 @@ void Simulator::DeleteTrackModel(const types::TrackId track)
     tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
         {
             return model->GetTrackId() == track;
-        }), tracks_.end());
+        }),
+                  tracks_.end());
 }
 
 void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const
@@ -28,7 +29,7 @@ void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackMod
 
 types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train)
 {
-    types::Error error = types::ERROR_NONE;
+    types::Error error = types::Error::ERROR_NONE;
 
     std::vector<std::shared_ptr<track_model::TrackModel>>::iterator i = std::find_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
         {
@@ -41,7 +42,7 @@ types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_pt
     }
     else
     {
-        error = types::ERROR_INVALID_TRACK;
+        error = types::Error::ERROR_INVALID_TRACK;
     }
 
     return error;
@@ -57,28 +58,6 @@ void Simulator::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainMod
 
         trains.insert(std::end(trains), std::begin(track_trains), std::end(track_trains));
     }
-}
-
-types::Error Simulator::Update(wayside_controller::Gateway &wayside_controller_gateway, train_controller::Gateway &train_controller_gateway)
-{
-    types::Error error = wayside_controller_gateway.UpdateTrackModels(tracks_);
-
-    if (types::ERROR_NONE == error)
-    {
-        std::vector<std::shared_ptr<train_model::TrainModel>> trains;
-        GetTrainModels(trains);
-        error = train_controller_gateway.UpdateTrainModels(trains);
-    }
-
-    if (types::ERROR_NONE == error)
-    {
-        std::for_each(tracks_.begin(), tracks_.end(), [](std::shared_ptr<track_model::TrackModel> track)
-            {
-                track->Update();
-            });
-    }
-
-    return error;
 }
 
 } // namespace simulator

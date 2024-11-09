@@ -273,40 +273,39 @@ TEST(TrackModelTests, GreenLine)
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     bool occupancy1;
 
-    ASSERT_EQ(track.GetTrackId(), types::TRACKID_GREEN);
+    ASSERT_EQ(track.GetTrackId(), types::TrackId::TRACKID_GREEN);
 
     ASSERT_EQ(bb2.GetSize(), 151);
 
-    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(1, block));
+    ASSERT_EQ(types::Error::ERROR_NONE, bb.GetBlock(1, block));
     ASSERT_EQ(block.has_crossing, false);
     ASSERT_EQ(block.has_switch, true);
-    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
-    std::cout << block.direction;
+    ASSERT_EQ(block.direction, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL);
     ASSERT_EQ(block.switch_connection, 13);
 
-    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(2, block));
+    ASSERT_EQ(types::Error::ERROR_NONE, bb.GetBlock(2, block));
     ASSERT_EQ(block.block, 2);
     ASSERT_EQ(block.has_crossing, false);
     ASSERT_EQ(block.has_switch, false);
     ASSERT_EQ(block.has_station, true);
     ASSERT_EQ(block.has_light, false);
 
-    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(62, block));
+    ASSERT_EQ(types::Error::ERROR_NONE, bb.GetBlock(62, block));
     ASSERT_EQ(block.has_crossing, false);
     ASSERT_EQ(block.has_switch, false);
-    ASSERT_EQ(block.direction, types::BLOCKDIRECTION_UNIDIRECTIONAL);
+    ASSERT_EQ(block.direction, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL);
     ASSERT_EQ(block.has_station, false);
     ASSERT_EQ(block.has_light, false);
 
-    ASSERT_EQ(types::ERROR_NONE, bb.GetBlock(77, block));
+    ASSERT_EQ(types::Error::ERROR_NONE, bb.GetBlock(77, block));
     ASSERT_EQ(block.station_side, types::StationSide::STATIONSIDE_BOTH);
 
-    ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(-1, block));
-    ASSERT_EQ(types::ERROR_INVALID_BLOCK, bb.GetBlock(151, block));
+    ASSERT_EQ(types::Error::ERROR_INVALID_BLOCK, bb.GetBlock(-1, block));
+    ASSERT_EQ(types::Error::ERROR_INVALID_BLOCK, bb.GetBlock(151, block));
 }
 
 TEST(TrackModelTests, TrainSpeedAuthority)
@@ -322,7 +321,7 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
 
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
     track.AddTrainModel(ptr);
@@ -337,14 +336,14 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     track.Update();
 
     // fake authority and speed
-    ASSERT_EQ(track.SetAuthority(200, 5), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.SetCommandedSpeed(200, 50), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.SetAuthority(-1, 5), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.SetCommandedSpeed(-1, 50), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetAuthority(200, 5), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetCommandedSpeed(200, 50), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetAuthority(-1, 5), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetCommandedSpeed(-1, 50), types::Error::ERROR_INVALID_BLOCK);
 
     // Set authority and speed
-    ASSERT_EQ(track.SetAuthority(63, 5), types::ERROR_NONE);
-    ASSERT_EQ(track.SetCommandedSpeed(63, 50), types::ERROR_NONE);
+    ASSERT_EQ(track.SetAuthority(63, 5), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(63, 50), types::Error::ERROR_NONE);
 
     // check that authority is set
     ASSERT_EQ(ptr->GetAuthority(), 5);
@@ -356,21 +355,21 @@ TEST(TrackModelTests, TrainSpeedAuthority)
 
     // occupancy check
     bool occupied;
-    ASSERT_EQ(track.GetBlockOccupancy(190, occupied), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.GetBlockOccupancy(-1, occupied), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlockOccupancy(190, occupied), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlockOccupancy(-1, occupied), types::Error::ERROR_INVALID_BLOCK);
 
-    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::Error::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::Error::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
     // UPDATE 2
     track.Update();
 
     // Set authority and speed
-    ASSERT_EQ(track.SetAuthority(65, 8), types::ERROR_NONE);
-    ASSERT_EQ(track.SetCommandedSpeed(65, 90), types::ERROR_NONE);
+    ASSERT_EQ(track.SetAuthority(65, 8), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetCommandedSpeed(65, 90), types::Error::ERROR_NONE);
 
     // check that authority is set
     ASSERT_EQ(ptr->GetAuthority(), 8);
@@ -402,18 +401,18 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     }
 
     // occupancy check when we loop back around
-    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(63, occupied), types::Error::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::Error::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
     otb = track.GetOccupiedTrainBlocks();
 
     // switching so we go back to the yard instead of looping around
-    ASSERT_EQ(track.SetSwitchState(57, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetSwitchState(57, 1), types::Error::ERROR_NONE);
 
-    ASSERT_EQ(track.SetSwitchState(58, 1), types::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.SetSwitchState(58, 1), types::Error::ERROR_INVALID_BLOCK);
 
     track.Update();
     track.Update();
@@ -455,20 +454,20 @@ TEST(TrackModelTests, Switching)
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
 
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
 
     bool         occupancy;
     types::Block test_block;
 
-    ASSERT_EQ(track.GetBlock(100, test_block), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(100, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.switched, 0);
 
-    ASSERT_EQ(track.SetSwitchState(100, 1), types::ERROR_NONE);
+    ASSERT_EQ(track.SetSwitchState(100, 1), types::Error::ERROR_NONE);
 
-    ASSERT_EQ(track.GetBlock(100, test_block), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(100, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.switched, 1);
 }
@@ -486,7 +485,7 @@ TEST(TrackModelTests, Boarding)
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
 
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
 
@@ -503,14 +502,14 @@ TEST(TrackModelTests, Boarding)
 
     // train is now on block 3, where there is a station
     types::Block test_block;
-    ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(65, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 
-    ASSERT_EQ(track.RemoveTrainModel(2), types::ERROR_INVALID_TRAIN);
-    ASSERT_EQ(track.RemoveTrainModel(0), types::ERROR_NONE);
+    ASSERT_EQ(track.RemoveTrainModel(2), types::Error::ERROR_INVALID_TRAIN);
+    ASSERT_EQ(track.RemoveTrainModel(0), types::Error::ERROR_NONE);
 }
 
 TEST(TrackModelTests, Polarity)
@@ -526,7 +525,7 @@ TEST(TrackModelTests, Polarity)
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
 
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
 
@@ -544,23 +543,23 @@ TEST(TrackModelTests, Polarity)
 
     current_polarity = ptr->GetTrackPolarity();
 
-    ASSERT_EQ(current_polarity, types::POLARITY_NEGATIVE);
+    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_NEGATIVE);
 
     track.Update();
 
     // train is now on block 65, where polarity is 1
     types::Block test_block;
 
-    ASSERT_EQ(track.GetBlock(-1, test_block), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.GetBlock(200, test_block), types::ERROR_INVALID_BLOCK);
-    ASSERT_EQ(track.GetBlock(65, test_block), types::ERROR_NONE);
+    ASSERT_EQ(track.GetBlock(-1, test_block), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlock(200, test_block), types::Error::ERROR_INVALID_BLOCK);
+    ASSERT_EQ(track.GetBlock(65, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
-    ASSERT_EQ(test_block.polarity, types::POLARITY_NEGATIVE);
+    ASSERT_EQ(test_block.polarity, types::Polarity::POLARITY_NEGATIVE);
 
     current_polarity = ptr->GetTrackPolarity();
 
-    ASSERT_EQ(current_polarity, types::POLARITY_NEGATIVE);
+    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_NEGATIVE);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), 0);
 }
@@ -577,20 +576,20 @@ TEST(TrackModelTests, PlaceHolderFunctions)
     types::Block                    block;
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
-    track.SetTrackLayout(types::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+    track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     bool occupancy1;
 
-    ASSERT_EQ(track.GetTrackId(), types::TRACKID_GREEN);
+    ASSERT_EQ(track.GetTrackId(), types::TrackId::TRACKID_GREEN);
 
     ASSERT_EQ(bb2.GetSize(), 151);
 
-    ASSERT_EQ(track.SetCrossingState(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetRedTrafficLight(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetYellowTrafficLight(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetGreenTrafficLight(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetBrokenRail(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetTrackCircuitFailure(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetPowerFailure(5, 1), types::ERROR_NONE);
-    ASSERT_EQ(track.SetExternalTemperature(60), types::ERROR_NONE);
+    ASSERT_EQ(track.SetCrossingState(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetRedTrafficLight(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetYellowTrafficLight(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetGreenTrafficLight(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetBrokenRail(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetTrackCircuitFailure(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetPowerFailure(5, 1), types::Error::ERROR_NONE);
+    ASSERT_EQ(track.SetExternalTemperature(60), types::Error::ERROR_NONE);
 }
