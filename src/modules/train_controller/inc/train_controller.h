@@ -23,13 +23,10 @@
 #define DEFAULT_BLOCK_GRADE                   (0)
 #define DEFAULT_TRAIN_TEMPERATURE             (68)
 #define DEFAULT_DELTA_TIME                    (1)
+#define MAXIMUM_DECELERATION                  (1.2)
 
 namespace train_controller
 {
-
-
-
-
 class TrainController
 {
     public:
@@ -38,6 +35,7 @@ class TrainController
         virtual types::MilesPerHour GetDriverSpeed(void) const                       = 0;
         virtual types::MetersPerSecond GetCommandedSpeed(void) const                 = 0;
         virtual types::Miles GetDistanceTravelled(void) const                        = 0;
+        virtual types::Meters GetDistanceTravelledSinceLastUpdate(void) const        = 0;
         virtual types::Watts GetCommandedPower(void) const                           = 0;
         virtual double GetServiceBrake(void) const                                   = 0;
         virtual double GetGrade(void) const                                          = 0;
@@ -51,7 +49,7 @@ class TrainController
         virtual bool GetEngineFailure(void) const                                    = 0;
         virtual types::DegreesFahrenheit GetCommandedInternalTemperature(void) const = 0;
         virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const    = 0;
-        virtual types::Meters GetAuthority(void) const                               = 0;
+        virtual types::Blocks GetAuthority(void) const                               = 0;
         virtual bool GetOperationMode(void) const                                    = 0;
 
         // Setter declarations
@@ -69,10 +67,11 @@ class TrainController
         virtual void SetEngineFailure(const bool state)                                          = 0;
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature) = 0;
         virtual void SetActualInternalTemperature(const types::DegreesFahrenheit temperature)    = 0;
-        virtual void SetAuthority(const types::Meters authority)                                 = 0;
+        virtual void SetAuthority(const types::Blocks authority)                                 = 0;
         virtual void SetKP(const uint16_t kp)                                                    = 0;
         virtual void SetKI(const uint16_t ki)                                                    = 0;
         virtual void SetOperationMode(const bool operation_mode)                                 = 0;
+        virtual void SetPolartity(const types::Polarity polarity)                                = 0;
 };
 
 
@@ -87,6 +86,7 @@ class SoftwareTrainController : public TrainController
         types::MilesPerHour GetDriverSpeed(void) const;
         types::MetersPerSecond GetCommandedSpeed(void) const;
         types::Meters GetDistanceTravelled(void) const;
+        types::Meters GetDistanceTravelledSinceLastUpdate(void) const;
         types::Watts GetCommandedPower(void) const;
         double GetServiceBrake(void) const;
         double GetGrade(void) const;
@@ -100,7 +100,7 @@ class SoftwareTrainController : public TrainController
         bool GetEngineFailure(void) const;
         types::DegreesFahrenheit GetCommandedInternalTemperature(void) const;
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
-        types::Meters GetAuthority(void) const;
+        types::Blocks GetAuthority(void) const;
         bool GetOperationMode(void) const;
 
 
@@ -119,11 +119,12 @@ class SoftwareTrainController : public TrainController
         void SetEngineFailure(const bool state);
         void SetCommandedInternalTemperature(const types::DegreesFahrenheit temperature);
         void SetActualInternalTemperature(const types::DegreesFahrenheit temperature);
-        void SetAuthority(const types::Meters authority);
+        void SetAuthority(const types::Blocks authority);
         void SetArrived(const bool arrived);
         void SetKP(const uint16_t kp);
         void SetKI(const uint16_t ki);
         void SetOperationMode(const bool operation_mode);
+        void SetPolartity(const types::Polarity polarity);
 
         //local functions
         types::Second GetDeltaTime(void) const;
@@ -132,6 +133,10 @@ class SoftwareTrainController : public TrainController
         void UpdateDistanceTravelled(const types::Second delta_time);
         void CalculateServiceBrake(types::MetersPerSecond speed_difference);
         void CheckFailureStates(void);
+        void UpdateTrainPosition(void);
+        void CalculateDistanceToStopping();
+        types::Meters GetDistanceOfAuthorityInMeters();
+
 
         /*
          *
@@ -139,16 +144,16 @@ class SoftwareTrainController : public TrainController
          *
          */
 
-// map for block data -->
-// key:
-//          block number
-// values:
-//          index 0: block length           (m)
-//          index 1: block grade            (%)
-//          index 2: speed limit            (Km/Hr)
-//          index 3: elevation              (m)
-//          index 4: cumulative elevation   (m)
-//          index 5: underground            (0: no, 1: yes)
+        // map for block data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: block length           (m)
+        //          index 1: block grade            (%)
+        //          index 2: speed limit            (Km/Hr)
+        //          index 3: elevation              (m)
+        //          index 4: cumulative elevation   (m)
+        //          index 5: underground            (0: no, 1: yes)
 
         const std::unordered_map<int, std::vector<double>> red_block_data_map_ = {
             {1,  {50, 0.5, 40, 0.25, 0.25, 0}},
@@ -229,12 +234,12 @@ class SoftwareTrainController : public TrainController
             {76, {50, 0, 55, 0.00, -1.24, 1}}
         };
 
-// map for block infrastructure data -->
-// key:
-//          block number
-// values:
-//          index 0: infrastructure string
-//          index 1: station side
+        // map for block infrastructure data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: infrastructure string
+        //          index 1: station side
 
         const std::unordered_map<int, std::vector<std::string>> red_infrastructure_data_map_ = {
             {7,  {"STATION: SHADYSIDE", "Left/Right"}},
@@ -257,22 +262,22 @@ class SoftwareTrainController : public TrainController
         };
 
 
-/*
- *
- *** GREEN LINE MAP IMPLEMENTATION ***
- *
- */
+        /*
+         *
+         *** GREEN LINE MAP IMPLEMENTATION ***
+         *
+         */
 
-// map for block data -->
-// key:
-//          block number
-// values:
-//          index 0: block length           (m)
-//          index 1: block grade            (%)
-//          index 2: speed limit            (Km/Hr)
-//          index 3: elevation              (m)
-//          index 4: cumulative elevation   (m)
-//          index 5: underground            (0: no, 1: yes)
+        // map for block data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: block length           (m)
+        //          index 1: block grade            (%)
+        //          index 2: speed limit            (Km/Hr)
+        //          index 3: elevation              (m)
+        //          index 4: cumulative elevation   (m)
+        //          index 5: underground            (0: no, 1: yes)
 
         std::unordered_map<int, std::vector<double>> green_block_data_map_ = {
             {1,  {100, 0.5, 45, 0.5, 0.5, 0}},
@@ -337,14 +342,14 @@ class SoftwareTrainController : public TrainController
             {60, {50, 0, 30, 0, 0.5, 0}},
             {61, {50, 0, 30, 0, 0.5, 0}},
             {62, {50, 0, 30, 0, 0.5, 0}},
-            {63, {100, 0, 70, 0, 0.5, 0}},
+            {63, {100, 0, 70, 0, 0.5, 0}}, //First
             {64, {100, 0, 70, 0, 0.5, 0}},
             {65, {200, 0, 70, 0, 0.5, 0}},
-            {66, {200, 0, 70, 0, 0.5, 0}},
+            {66, {200, 0, 70, 0, 0.5, 0}}, //Update here
             {67, {100, 0, 40, 0, 0.5, 0}},
-            {68, {100, 0, 40, 0, 0.5, 0}},
+            {68, {100, 0, 40, 0, 0.5, 0}}, // SLOW DOWN HERE
             {69, {100, 0, 40, 0, 0.5, 0}},
-            {70, {100, 0, 40, 0, 0.5, 0}},
+            {70, {100, 0, 40, 0, 0.5, 0}}, // STOP HERE
             {71, {100, 0, 40, 0, 0.5, 0}},
             {72, {100, 0, 40, 0, 0.5, 0}},
             {73, {100, 0, 40, 0, 0.5, 0}},
@@ -427,12 +432,12 @@ class SoftwareTrainController : public TrainController
             {150, {35, 0, 20, 0, 0.5, 0}}
         };
 
-// map for block infrastructure data -->
-// key:
-//          block number
-// values:
-//          index 0: infrastructure string
-//          index 1: station side
+        // map for block infrastructure data -->
+        // key:
+        //          block number
+        // values:
+        //          index 0: infrastructure string
+        //          index 1: station side
 
         std::unordered_map<int, std::vector<std::string>> green_infrastructure_data_map_ = {
             {2,  {"STATION; PIONEER", "Left"}},
@@ -463,6 +468,62 @@ class SoftwareTrainController : public TrainController
             {141, {"STATION; CENTRAL", "Right"}}
         };
 
+        // vector for default green line route
+        // values represent block IDs
+        // path:
+        //      starts at section K from the yard
+        //      loops all the way through to section I
+        //      does another loop so it passes through section J
+        //      finishes in the yard after section I
+
+        std::vector<int> green_default_route_vector_ = {
+            63, 64, 65, 66, 67, 68, 69, 70, 71, 72,         /* K to Q fowards */
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92,
+            93, 94, 95, 96, 97, 98, 99, 100,
+            85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
+            101, 102, 103, 104, 105, 106, 107, 108,     /* R to Z forwards */
+            109, 110, 111, 112, 113, 114, 115, 116,
+            117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132,
+            133, 134, 135, 136, 137, 138, 139, 140,
+            141, 142, 143, 144, 145, 146, 147, 148,
+            149, 150,
+            28, 27, 26, 25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            19, 18, 17, 16, 15, 14, 13, 12, 11,
+            10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+            13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
+            22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 44, 45, 46, 47, 48,
+            49, 50, 51, 52, 53, 54, 55, 56, 57,
+            58, 59, 60, 61, 62,                                       /* Section J */
+
+            /* Loop 2 */
+
+            63, 64, 65, 66, 67, 68, 69, 70, 71, 72,     /* K to Q fowards */
+            73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+            83, 84, 85, 86, 87, 88, 89, 90, 91, 92,
+            93, 94, 95, 96, 97, 98, 99, 100,
+            85, 84, 83, 82, 81, 80, 79, 78, 77,         /* backwards N*/
+            101, 102, 103, 104, 105, 106, 107, 108,     /* R to Z forwards */
+            109, 110, 111, 112, 113, 114, 115, 116,
+            117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132,
+            133, 134, 135, 136, 137, 138, 139, 140,
+            141, 142, 143, 144, 145, 146, 147, 148,
+            149, 150,
+            28, 27, 26, 25, 24, 23, 22, 21, 20,          /* F to A backwards */
+            19, 18, 17, 16, 15, 14, 13, 12, 11,
+            10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+            13, 14, 15, 16, 17, 18, 19, 20, 21,         /* D to I forwards */
+            22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 44, 45, 46, 47, 48,
+            49, 50, 51, 52, 53, 54, 55, 56, 57,
+            58, 59, 60, 61, 62,                                       /* Section J */
+        };
+
     private:
 
         std::shared_ptr<TickSource> clock_;
@@ -480,7 +541,10 @@ class SoftwareTrainController : public TrainController
         types::MetersPerSecond current_speed_;
         double service_brake_percentage_;
         types::Watts commanded_power_;
-        types::Meters authority_;
+        types::Blocks authority_;
+        types::Blocks usable_authority_;
+        types::Blocks authority_counter_;
+        bool new_authority_;
         bool emergency_brake_;
         bool headlights_;
         bool interior_lights_;
@@ -492,8 +556,15 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit commanded_internal_temperature_;
         types::DegreesFahrenheit actual_internal_temperature_;
         types::Meters distance_travelled_;
+        types::Meters distance_of_authority_in_meters_;
+        types::Meters total_blocks_accessed_length_;
+        types::Meters distance_prior_to_current_authority_;
         bool arrived_;
         bool operation_mode_; // false: automatic, true: manual
+        uint8_t set_route_position_;
+        types::Polarity polarity_;
+        types::Polarity last_polarity_;
+        types::Meters distance_since_last_update_;
 };
 
 } // namespace train_controller
