@@ -90,7 +90,7 @@ class SoftwareTrainModel : public TrainModel
         void SetAuthority(const types::Blocks blocks);
         void SetPassengersBoarding(const uint16_t passengers);
         void SetTrackPolarity(const types::Polarity polarity);
-        void SetBeaconData(const types::BeaconData &data, std::size_t &size);
+        //void SetBeaconData(const types::BeaconData &data, std::size_t &size);
         void SetDistanceTraveled(const types::Meters distance);
         void SetCommandedPower(const types::Watts watts);
 
@@ -99,7 +99,7 @@ class SoftwareTrainModel : public TrainModel
         bool GetBrakeFailure(void) const;
         bool GetEngineFailure(void) const;
         bool GetSignalPickupFailure(void) const;
-        types::BeaconData GetBeaconData(void) const;
+        //types::BeaconData GetBeaconData(void) const;
         types::Blocks GetAuthority(void) const;
         types::MetersPerSecond GetCommandedSpeed(void) const;
         types::MetersPerSecond GetActualSpeed(void) const;
@@ -116,7 +116,8 @@ class SoftwareTrainModel : public TrainModel
         bool headlights_;
         bool interior_light_;
         bool right_door_;
-        bool left_door_;
+        bool left_door_; \
+        types::DegreesFahrenheit internal_temperature_;
         types::Polarity track_polarity_;
         //internal variables(calculations)
         types::MetersPerSecondSquared previous_acceleration_;
@@ -124,7 +125,6 @@ class SoftwareTrainModel : public TrainModel
         types::MilesPerHour velocity_;
         types::MilesPerHour previous_velocity_;
         types::MetersPerSecond commanded_speed_;
-        types::Meters distance_travelled_;
         int passengers_boarding_;
         int passengers_deboarding_;
         Kilograms mass_;
@@ -138,7 +138,6 @@ class SoftwareTrainModel : public TrainModel
         types::Blocks authority_;
         types::TrainId train_id_;
         types::Meters distance_traveled_;
-        types::DegreesFahrenheit internal_temperature_;
         std::string station_announcement_;
         double service_brake_;
         types::Watts power_;
