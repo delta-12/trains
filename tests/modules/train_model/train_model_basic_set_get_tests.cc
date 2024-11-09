@@ -104,17 +104,17 @@ TEST(TrainModelBasicSetGetTests, InternalTemperature1)
 
     EXPECT_DOUBLE_EQ(72, TM.GetActualInternalTemperature());
 }
-TEST(TrainModelBasicSetGetTests, DistanceTravelled1)
+TEST(TrainModelBasicSetGetTests, DistanceTraveled1)
 {
     TickSource                      tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>     CLOCK = std::make_shared<TickSource>(tick_source);
     train_model::SoftwareTrainModel TM(CLOCK);
 
-    EXPECT_DOUBLE_EQ(0, TM.GetDistanceTravelled());
+    EXPECT_DOUBLE_EQ(0, TM.GetDistanceTraveled());
 
-    TM.SetDistanceTravelled(120);
+    TM.SetDistanceTraveled(120);
 
-    EXPECT_DOUBLE_EQ(120, TM.GetDistanceTravelled());
+    EXPECT_DOUBLE_EQ(120, TM.GetDistanceTraveled());
 }
 //TEST(TrainModelBasicSetGetTests, TrackPolarity1)
 //{
