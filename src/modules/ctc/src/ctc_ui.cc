@@ -44,14 +44,28 @@ int main(void)
         std::cout << "Destination Block: " << destination << std::endl;
         ctc.ManualDispatch(destination);
         ctc::Train train = ctc.GetTrainById(1);
+        std::cout << "Authority: " << train.authority.size() << std::endl;
         while (!train.authority.empty())
         {
             std::cout << "Block: " << train.authority.front() << std::endl;
             train.authority.pop();
         }
 
-        std::string station = std::string(ctc_ui->get_station());
-        std::cout << "Selected Station: " << station << std::endl;
+        // std::string station = std::string(ctc_ui->get_station());
+        // std::cout << "Selected Station: " << station << std::endl;
+    });
+
+    ctc_ui->on_send_block_occupancy([&] {
+        int block_id = std::stoi(std::string(ctc_ui->get_block_occupancy()));
+        std::vector<types::BlockState> block_states = { types::BlockState(block_id, true, false) };
+        ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
+        ctc::Train train = ctc.GetTrainById(1);
+        std::cout << "\nUpdated Authority: " << train.authority.size() << std::endl;
+        while (!train.authority.empty())
+        {
+            std::cout << "Block: " << train.authority.front() << std::endl;
+            train.authority.pop();
+        }
     });
 
     ctc_ui->run();
