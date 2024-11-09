@@ -20,8 +20,6 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
 
     types::Second elapsed_time0(0);
     types::Second elapsed_time1(1);
-    types::Second elapsed_time2(2);
-    types::Second elapsed_time3(3);
 
     EXPECT_DOUBLE_EQ(0.0, TM.GetActualSpeed());
 

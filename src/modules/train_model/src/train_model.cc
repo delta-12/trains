@@ -165,7 +165,7 @@ void SoftwareTrainModel::SetCommandedInternalTemperature(const types::DegreesFah
 {
     internal_temperature_ = degrees;
 }
-types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
+types::Meters SoftwareTrainModel::GetDistanceTraveled(void) const
 {
     return distance_traveled_;
 }
