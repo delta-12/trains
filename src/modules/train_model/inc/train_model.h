@@ -40,7 +40,7 @@ class TrainModel
         virtual types::Polarity GetTrackPolarity(void) const                      = 0;
         virtual uint16_t GetPassengersDeboarding(void)                            = 0;
         virtual types::TrainId GetTrainId(void) const                             = 0;
-        virtual types::Meters GetDistanceTravelled(void) const                    = 0;
+        virtual types::Meters GetDistanceTraveled(void) const                     = 0;
 
         virtual void SetStationAnnouncement(const std::string &announcement)                 = 0;
         virtual void SetGrade(const double grade)                                            = 0;

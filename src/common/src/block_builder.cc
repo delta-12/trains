@@ -1,40 +1,163 @@
 #include "block_builder.h"
 
-#include <string>
-#include <sstream>
 #include <algorithm>
+#include <ranges>
+#include <sstream>
+#include <string>
 
+#include "convert.h"
 #include "types.h"
 
-static std::vector<std::string> SplitBySemicolon(const std::string& input);
+static const size_t kLayoutFieldBlockNumber          = 2;
+static const size_t kLayoutFieldBlockLength          = 3;
+static const size_t kLayoutFieldBlockGrade           = 4;
+static const size_t kLayoutFieldSpeedLimit           = 5;
+static const size_t kLayoutFieldInfrastructure       = 6;
+static const size_t kLayoutFieldStationSide          = 7;
+static const size_t kLayoutFieldElevation            = 8;
+static const size_t kLayoutFieldCumulativeElevation  = 9;
+static const size_t kLayoutFieldConnection           = 11;
+static const size_t kLayoutFieldDirection            = 12;
+static const size_t kScheduleWayside                 = 7;
+static const size_t kScheduleFieldSpeedLimit         = 11;
+static const size_t kScheduleFieldTotalTimeToStation = 23;
 
-BlockBuilder::BlockBuilder(void)
+static void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
+static std::vector<std::string> SplitBySemicolon(const std::string &input);
+
+BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, const RecordType record_type)
 {
+    switch (record_type)
+    {
+    case RecordType::RECORDTYPE_SCHEDULE:
+        BuildBlocksFromSchedule(records);
+        break;
+    case RecordType::RECORDTYPE_TRACK_LAYOUT:
+        BuildBlocksFromTrackLayout(records);
+        break;
+    default:
+        break;
+    }
 }
 
-BlockBuilder::BlockBuilder(const std::vector<std::vector<std::string>> &records, Module module)
+types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block &block)
 {
-    if (module == Module::MODULE_TRACK_MODEL)
+    types::Error                        error = types::ERROR_NONE;
+    std::vector<types::Block>::iterator it    = std::ranges::find_if(blocks_, [&block_id](const types::Block &block)
     {
-        for (size_t i = 1; i < records.size(); ++i)
-        {
-            const std::vector<std::string> &record = records[i];
-            types::Block                    block  = ConvertRecordToBlock(record);
-            blocks_.push_back(block);
-        }
+        return block.block == block_id;
+    });
+
+    // Check if block was found
+    if (it != blocks_.end())
+    {
+        block = *it; // Return the found block
     }
-    else if (module == Module::MODULE_CTC)
+    else
     {
-        for (size_t i = 1; i < records.size(); ++i)
+        error = types::ERROR_INVALID_BLOCK;
+    }
+
+    return error;
+}
+
+std::vector<types::Block> BlockBuilder::GetBlocks(void) const
+{
+    return blocks_;
+}
+
+std::size_t BlockBuilder::GetSize(void) const
+{
+    return blocks_.size();
+}
+
+void BlockBuilder::Reset(void)
+{
+    blocks_.clear();
+}
+
+void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::string>> &records)
+{
+    blocks_.clear();
+    blocks_.reserve(records.size());
+
+    for (std::vector<std::vector<std::string>>::const_iterator i = (records.begin() + 1); i != records.end(); ++i)
+    {
+        blocks_.emplace_back();
+
+        types::Block &                  block  = *(blocks_.end() - 1);
+        const std::vector<std::string> &record = *i;
+
+        block.section     = record[1][0];
+        block.block       = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldBlockNumber]));
+        block.length      = std::stod(record[kLayoutFieldBlockLength]);
+        block.grade       = std::stod(record[kLayoutFieldBlockGrade]);
+        block.speed_limit = std::stod(record[kScheduleFieldSpeedLimit]);
+        block.wayside     = std::stoi(record[kScheduleWayside]);
+
+        AssignBlockInfrastructure(block, record[kLayoutFieldInfrastructure]);
+
+        if (block.has_station)
         {
-            const std::vector<std::string> &record = records[i];
-            types::Block                    block  = ConvertRecordToBlockCTC(record);
-            blocks_.push_back(block);
+            block.total_time_to_station = convert::ConvertMinuteToMiliseconds(record[kScheduleFieldTotalTimeToStation]);
         }
     }
 }
 
-void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::string &input_string)
+void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std::string>> &records)
+{
+    blocks_.clear();
+    blocks_.reserve(records.size());
+
+    for (std::vector<std::vector<std::string>>::const_iterator i = (records.begin() + 1); i != records.end(); ++i)
+    {
+        blocks_.emplace_back();
+
+        types::Block &                  block  = *(blocks_.end() - 1);
+        const std::vector<std::string> &record = *i;
+
+        block.section              = record[1][0];
+        block.block                = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldBlockNumber]));
+        block.length               = std::stod(record[kLayoutFieldBlockLength]);
+        block.grade                = std::stod(record[kLayoutFieldBlockGrade]);
+        block.speed_limit          = std::stod(record[kLayoutFieldSpeedLimit]);
+        block.elevation            = std::stod(record[kLayoutFieldElevation]);
+        block.cumulative_elevation = std::stod(record[kLayoutFieldCumulativeElevation]);
+
+        AssignBlockInfrastructure(block, record[kLayoutFieldInfrastructure]);
+
+        std::string station_side = record[kLayoutFieldStationSide];
+        if ((station_side.find("Left") != std::string::npos) && (station_side.find("Right") != std::string::npos))
+        {
+            block.station_side = types::StationSide::STATIONSIDE_BOTH;
+        }
+        else if (station_side.find("Left") != std::string::npos)
+        {
+            block.station_side = types::StationSide::STATIONSIDE_LEFT;
+        }
+        else if (station_side.find("Right") != std::string::npos)
+        {
+            block.station_side = types::StationSide::STATIONSIDE_RIGHT;
+        }
+
+        if (record[kLayoutFieldConnection] != "")
+        {
+            block.switch_connection = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldConnection]));
+        }
+
+        std::string block_direction = record[kLayoutFieldDirection];
+        if (block_direction.find("UNIDIRECTIONAL") != std::string::npos)
+        {
+            block.direction = types::BLOCKDIRECTION_UNIDIRECTIONAL;
+        }
+        else
+        {
+            block.direction = types::BLOCKDIRECTION_BIDIRECTIONAL;
+        }
+    }
+}
+
+static void AssignBlockInfrastructure(types::Block &block, const std::string &input_string)
 {
     std::string input_lowercase = input_string;
     std::transform(input_lowercase.begin(), input_lowercase.end(), input_lowercase.begin(), ::tolower);
@@ -48,7 +171,7 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
         {
             block.has_station = true;
             std::string station_name = infrastructure_list[i + 1];
-            station_name[0]    = std::toupper(station_name[0]);
+            station_name[0]    = static_cast<char>(std::toupper(station_name[0]));
             block.station_name = station_name;
         }
         if (infrastructure.find("railway") != std::string::npos)
@@ -70,101 +193,7 @@ void BlockBuilder::AssignBlockInfrastructure(types::Block &block, const std::str
     }
 }
 
-types::Block BlockBuilder::ConvertRecordToBlock(const std::vector<std::string> &record)
-{
-    types::Block block;
-    block.section     = record[1][0];
-    block.block       = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER]);
-    block.length      = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH]);
-    block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
-    block.speed_limit = std::stod(record[BLOCK_BUILDER_CSV_FIELD_SPEED_LIMIT]);
-    AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
-    std::string station_side = record[BLOCK_BUILDER_CSV_FIELD_STATION_SIDE];
-    if ((station_side.find("Left") != std::string::npos) && (station_side.find("Right") != std::string::npos))
-    {
-        block.station_side = types::StationSide::STATIONSIDE_BOTH;
-    }
-    else if (station_side.find("Left") != std::string::npos)
-    {
-        block.station_side = types::StationSide::STATIONSIDE_LEFT;
-    }
-    else if (station_side.find("Right") != std::string::npos)
-    {
-        block.station_side = types::StationSide::STATIONSIDE_RIGHT;
-    }
-    block.elevation            = std::stod(record[BLOCK_BUILDER_CSV_FIELD_ELEVATION]);
-    block.cumulative_elevation = std::stod(record[BLOCK_BUILDER_CSV_FIELD_CUMULATIVE_ELEVATION]);
-    if (record[BLOCK_BUILDER_CSV_FIELD_CONNECTION] != "")
-    {
-        block.switch_connection = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_CONNECTION]);
-    }
-    std::string block_direction = record[BLOCK_BUILDER_CSV_FIELD_DIRECTION];
-    if (block_direction.find("UNIDIRECTIONAL") != std::string::npos)
-    {
-        block.direction = types::BLOCKDIRECTION_UNIDIRECTIONAL;
-    }
-    else
-    {
-        block.direction = types::BLOCKDIRECTION_BIDIRECTIONAL;
-    }
-
-    return block;
-}
-
-types::Block BlockBuilder::ConvertRecordToBlockCTC(const std::vector<std::string> &record)
-{
-    types::Block block;
-    block.section     = record[1][0];
-    block.block       = std::stoi(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_NUMBER]);
-    block.length      = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_LENGTH]);
-    block.grade       = std::stod(record[BLOCK_BUILDER_CSV_FIELD_BLOCK_GRADE]);
-    block.speed_limit = std::stod(record[BLOCK_BUILDER_SCHEDULE_FIELD_SPEED_LIMIT]);
-    AssignBlockInfrastructure(block, record[BLOCK_BUILDER_CSV_FIELD_INFRASTRUCTURE]);
-
-    if (block.has_station)
-    {
-        std::chrono::milliseconds total_time_to_station = convert::ConvertMinuteToMiliseconds(record[BLOCK_BUILDER_SCHEDULE_FIELD_TOTAL_TIME_TO_STATION]);
-        block.total_time_to_station = total_time_to_station;
-    }
-
-    return block;
-}
-
-types::Error BlockBuilder::GetBlock(const types::BlockId block_id, types::Block &block)
-{
-    types::Error                        error = types::ERROR_NONE;
-    std::vector<types::Block>::iterator it    = std::find_if(blocks_.begin(), blocks_.end(), [&block_id](const types::Block& block) {
-        return block.block == block_id;
-    });
-
-    // Check if block was found
-    if (it != blocks_.end())
-    {
-        block = *it;  // Return the found block
-    }
-    else
-    {
-        error = types::ERROR_INVALID_BLOCK;
-    }
-    return error;
-}
-
-std::vector<types::Block> BlockBuilder::GetBlocks(void) const
-{
-    return blocks_;
-}
-
-std::size_t BlockBuilder::GetSize(void) const
-{
-    return blocks_.size();
-}
-
-void BlockBuilder::Reset(void)
-{
-    blocks_.clear();
-}
-
-static std::vector<std::string> SplitBySemicolon(const std::string& input)
+static std::vector<std::string> SplitBySemicolon(const std::string &input)
 {
     std::vector<std::string> result;
     std::stringstream        ss(input);
