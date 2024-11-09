@@ -94,7 +94,7 @@ struct Block
     Block() : block(0), occupied(false), has_switch(false), switched(false), switch_connection(0), has_crossing(false), crossing_state(false), has_light(false),
               light_color(TrafficLightColor::TRAFFICLIGHTCOLOR_NONE), power_failure(false), track_circuit_failure(false), broken_rail(false), grade(0), length(0),
               speed_limit(0), elevation(0), cumulative_elevation(0), section('\0'), heater_on(false), has_station(false), station_side(StationSide::STATIONSIDE_LEFT),
-              direction(BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0), polarity(types::Polarity::POLARITY_NEGATIVE)
+              direction(BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL), underground(false), wayside(0), polarity(types::Polarity::POLARITY_NEGATIVE), track(TrackId::TRACKID_NONE)
     {
     };
     BlockId block;
@@ -124,6 +124,7 @@ struct Block
     Second total_time_to_station;
     WaysideId wayside;
     types::Polarity polarity;
+    TrackId track;
 };
 
 struct TrackCircuitData
