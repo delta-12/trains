@@ -51,7 +51,7 @@ class TrainModel
         virtual void SetRightDoorsState(const bool open)                                     = 0;
         virtual void SetCommandedPower(const types::Watts power)                             = 0;
         virtual void SetCommandedInternalTemperature(const types::DegreesFahrenheit degrees) = 0;
-        virtual void SetDistanceTraveled(const types::Meters distance)                      = 0;
+        virtual void SetDistanceTraveled(const types::Meters distance)                       = 0;
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                   = 0;
         virtual void SetAuthority(const types::Blocks blocks)                                = 0;
         virtual void SetPassengersBoarding(const uint16_t passengers)                        = 0;
