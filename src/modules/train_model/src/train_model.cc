@@ -43,7 +43,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     authority_             = 0;
     commanded_speed_       = 0;
     train_id_              = 0;
-    distance_travelled_    = 0;
+    distance_traveled_    = 0;
     internal_temperature_  = 68;
     station_announcement_  = "Steel Plaza Station";
     service_brake_         = 0.0;
@@ -166,13 +166,13 @@ void SoftwareTrainModel::SetCommandedInternalTemperature(const types::DegreesFah
 {
     internal_temperature_ = degrees;
 }
-types::Meters SoftwareTrainModel::GetDistanceTravelled(void) const
+types::Meters SoftwareTrainModel::GetDistanceTraveled(void) const
 {
-    return distance_travelled_;
+    return distance_traveled_;
 }
-void SoftwareTrainModel::SetDistanceTravelled(const types::Meters distance)
+void SoftwareTrainModel::SetDistanceTraveled(const types::Meters distance)
 {
-    distance_travelled_ = distance;
+    distance_traveled_ = distance;
 }
 uint16_t SoftwareTrainModel::GetPassengersDeboarding(void)
 {

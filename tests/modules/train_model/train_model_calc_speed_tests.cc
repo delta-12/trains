@@ -75,3 +75,75 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc2)
 
     tick_source.Stop();
 }
+TEST(TrainModelSpeedCalcTests, SpeedCalc3)
+{
+    TickSource                      tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>     CLOCK = std::make_shared<TickSource>(tick_source);
+    train_model::SoftwareTrainModel TM(CLOCK);
+
+    (*CLOCK).Start();
+    usleep(1000000);
+    TM.Update();
+
+    //Checking train isnt moving
+    ASSERT_EQ(0, TM.GetActualSpeed());
+
+    //Setting commanded power to 40kW
+    TM.SetCommandedPower(40000);
+
+    //waiting 1 second
+    usleep(1000000);
+    TM.Update();
+
+    bool range1 = (TM.GetActualSpeed() > 6.3 && TM.GetActualSpeed() < 6.5);
+    ASSERT_EQ(range1, true);
+
+    TM.SetBrake(.5);
+
+    usleep(1000000);
+    TM.Update();
+
+    bool range2 = (TM.GetActualSpeed() > 4.5 && TM.GetActualSpeed() < 4.9);
+
+    ASSERT_EQ(range2, true);
+    //ASSERT_EQ(6, TM.GetActualSpeed()); //test just to see exact value
+    //4.6851193164973193
+
+    tick_source.Stop();
+}
+TEST(TrainModelSpeedCalcTests, SpeedCalc4)
+{
+    TickSource                      tick_source("07:00:00", std::chrono::milliseconds(1));
+    std::shared_ptr<TickSource>     CLOCK = std::make_shared<TickSource>(tick_source);
+    train_model::SoftwareTrainModel TM(CLOCK);
+
+    (*CLOCK).Start();
+    usleep(1000000);
+    TM.Update();
+
+    //Checking train isnt moving
+    ASSERT_EQ(0, TM.GetActualSpeed());
+
+    //Setting commanded power to 40kW
+    TM.SetCommandedPower(40000);
+
+    //waiting 1 second
+    usleep(1000000);
+    TM.Update();
+
+    bool range1 = (TM.GetActualSpeed() > 6.3 && TM.GetActualSpeed() < 6.5);
+    ASSERT_EQ(range1, true);
+
+    TM.SetBrake(.25);
+
+    usleep(1000000);
+    TM.Update();
+
+    bool range2 = (TM.GetActualSpeed() > 5.4 && TM.GetActualSpeed() < 5.7);
+
+    ASSERT_EQ(range2, true);
+    //ASSERT_EQ(5, TM.GetActualSpeed()); //test just to see exact value
+    //5.5734481174029042
+
+    tick_source.Stop();
+}
