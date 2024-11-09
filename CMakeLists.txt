@@ -104,7 +104,6 @@ FetchContent_MakeAvailable(googletest)
 # CTC UI build
 ################################################################################
 add_executable(ctc_ui
-    ${UI_DIR}/ctc/ctc_ui.cc
     ${CTC_SRCS}
     ${COMMON_SRCS}
 )

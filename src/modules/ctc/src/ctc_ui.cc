@@ -40,11 +40,16 @@ int main(void)
     // ctc_ui->set_list(list_model);
 
     ctc_ui->on_manual_dispatch([&] {
-        std::string destination = std::string(ctc_ui->get_destination());
-        // ctc.ManualDispatch(std::stoi(destination));
-        // ctc::Train train = ctc.GetTrainById(1);
-        // ctc_ui->set_train_1("Train 1");
-        // ctc_ui->set_train_1_dst(train.destination_list[0].station.station_name.c_str());
+        int destination = std::stoi(std::string(ctc_ui->get_destination()));
+        std::cout << "Destination Block: " << destination << std::endl;
+        ctc.ManualDispatch(destination);
+        ctc::Train train = ctc.GetTrainById(1);
+        while (!train.authority.empty())
+        {
+            std::cout << "Block: " << train.authority.front() << std::endl;
+            train.authority.pop();
+        }
+
         std::string station = std::string(ctc_ui->get_station());
         std::cout << "Selected Station: " << station << std::endl;
     });

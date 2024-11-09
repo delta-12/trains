@@ -138,10 +138,9 @@ component TrainSchedule inherits Rectangle {
                     { title: @tr("ETA") },
                     { title: @tr("DST(s)") },
                 ];
-                rows: train_schedules;
-            }
-            StandardListView {
-                model: list;
+                rows:  [
+                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: train_1_dst }, ],
+                ];
             }
         }
     }
