@@ -19,28 +19,39 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
+    set_route_position_             = 0;
 
-    integral_sum_                = 0;
-    commanded_speed_             = 0;
-    driver_speed_                = 0;
-    current_speed_               = 0;
-    service_brake_percentage_    = 0;
-    commanded_power_             = 0;
-    authority_                   = 0;
-    emergency_brake_             = 0;
-    headlights_                  = 0;
-    interior_lights_             = 0;
-    left_door_                   = 0;
-    right_door_                  = 0;
-    brake_failure_               = 0;
-    signal_pickup_failure_       = 0;
-    engine_failure_              = 0;
-    actual_internal_temperature_ = 0;
-    distance_travelled_          = 0;
-    arrived_                     = 0;
-    operation_mode_              = false;
-    last_tick_updated_           = (*clock_).GetTick();
 
+    distance_of_authority_in_meters_     = 0;
+    distance_since_last_update_          = 0;
+    integral_sum_                        = 0;
+    commanded_speed_                     = 0;
+    driver_speed_                        = 0;
+    current_speed_                       = 0;
+    service_brake_percentage_            = 0;
+    commanded_power_                     = 0;
+    authority_                           = 0;
+    emergency_brake_                     = 0;
+    headlights_                          = 0;
+    interior_lights_                     = 0;
+    left_door_                           = 0;
+    right_door_                          = 0;
+    brake_failure_                       = 0;
+    signal_pickup_failure_               = 0;
+    engine_failure_                      = 0;
+    actual_internal_temperature_         = 0;
+    distance_travelled_                  = 0;
+    distance_prior_to_current_authority_ = 0;
+    total_blocks_accessed_length_        = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+    arrived_                             = 0;
+    operation_mode_                      = false;
+    last_tick_updated_                   = (*clock_).GetTick();
+
+    polarity_          = types::Polarity::POLARITY_NEGATIVE;
+    last_polarity_     = polarity_;
+    usable_authority_  = authority_;
+    authority_counter_ = authority_;
+    new_authority_     = false;
 
     Update();
 }
@@ -70,6 +81,11 @@ types::Watts SoftwareTrainController::GetCommandedPower() const
 types::Meters SoftwareTrainController::GetDistanceTravelled(void) const
 {
     return distance_travelled_;
+}
+
+types::Meters SoftwareTrainController::GetDistanceTravelledSinceLastUpdate(void) const
+{
+    return distance_since_last_update_;
 }
 
 bool SoftwareTrainController::GetEmergencyBrake() const
@@ -131,7 +147,7 @@ types::MilesPerHour SoftwareTrainController::GetCurrentSpeed() const
     return convert::MetersPerSecondToMilesPerHour(current_speed_);
 }
 
-types::Meters SoftwareTrainController::GetAuthority() const
+types::Blocks SoftwareTrainController::GetAuthority() const
 {
     return authority_;
 }
@@ -212,7 +228,7 @@ void SoftwareTrainController::SetActualInternalTemperature(const types::DegreesF
     actual_internal_temperature_ = temp;
 }
 
-void SoftwareTrainController::SetAuthority(const types::Meters authority)
+void SoftwareTrainController::SetAuthority(const types::Blocks authority)
 {
     authority_ = authority;
 }
@@ -246,20 +262,27 @@ void SoftwareTrainController::SetOperationMode(const bool mode)
     }
 }
 
+void SoftwareTrainController::SetPolartity(const types::Polarity polarity)
+{
+    polarity_ = polarity;
+}
+
+
 
 
 void SoftwareTrainController::Update()
 {
-
-
     std::chrono::milliseconds elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
 
     types::Second delta_time = std::chrono::duration_cast<types::Second>(elapsed_time);
 
     last_tick_updated_ = (*clock_).GetTick();
 
-    CalculateCommandedPower(delta_time);
+    UpdateTrainPosition();
+    CalculateDistanceToStopping();
     UpdateDistanceTravelled(delta_time);
+    CalculateCommandedPower(delta_time);
+
 
     delta_time_ = delta_time;
 }
@@ -270,7 +293,8 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     // P(t) = Kp*[V_cmd(t) - v(t)]  +  Ki*∫[Vcmd(τ) - ActualSpeed(τ)]dτ
     // A function in time that represents the PI Controller
 
-    types::MetersPerSecond block_speed_limit = convert::KilometersPerHourToMetersPerSecond(DEFAULT_BLOCK_SPEED_LIMIT);
+    types::KilometersPerHour block_speed_limit_temp = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[2];
+    types::MetersPerSecond   block_speed_limit      = convert::KilometersPerHourToMetersPerSecond(block_speed_limit_temp);
 
     types::MetersPerSecond setpoint_speed;
 
@@ -313,11 +337,46 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
     CheckFailureStates();
 
+    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters_ - 236.196;
+
+    if (distance_to_start_slowing_down < 0)
+    {
+        distance_to_start_slowing_down = 0;
+    }
+
+
+    // std::cout << "\n" << distance_to_start_slowing_down << " A\n";
+    // std::cout << "\n" << distance_travelled_ - distance_prior_to_current_authority_ << " B\n";
+
+    //checking if emergency brake is active.
     if (emergency_brake_ == true)
     {
         integral_sum_             = 0;
         commanded_power_          = 0;
         service_brake_percentage_ =  0;
+    }
+
+    // Checking if we've reached a distance to start slowing down for authority
+    else if (((distance_travelled_ - distance_prior_to_current_authority_) > distance_to_start_slowing_down))
+    {
+        if (new_authority_)
+        {
+            // 0 = current_speed^2 + 2*a*((distance_of_authority_in_meters - (distance_travelled_ - distance_prior_to_current_authority_))
+            types::MetersPerSecondSquared required_acceleration = ((current_speed_ * current_speed_)) / (2 * ((distance_of_authority_in_meters_ - (distance_travelled_ - distance_prior_to_current_authority_))));
+
+            if (required_acceleration / MAXIMUM_DECELERATION > 1 || required_acceleration < 0)
+            {
+                service_brake_percentage_ = 1;
+                commanded_power_          = 0;
+            }
+            else
+            {
+                service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
+                commanded_power_          = 0;
+            }
+
+            new_authority_ = false;
+        }
     }
 
     //Checking if Current Train Velocity is greater than Setpoint speed
@@ -332,12 +391,14 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         //Function to to assign service brake
         CalculateServiceBrake(speed_difference);
     }
+
     //Checking if Service brake is on
     else if (service_brake_percentage_ > 0)
     {
         integral_sum_    = 0;
         commanded_power_ = 0;
     }
+
     //Normal power calculation
     else
     {
@@ -400,7 +461,9 @@ void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed
 
 void SoftwareTrainController::UpdateDistanceTravelled(const types::Second delta_time)
 {
-    distance_travelled_ += current_speed_ * delta_time.count();
+    types::Meters last_distance_travelled = distance_travelled_;
+    distance_travelled_        += current_speed_ * delta_time.count();
+    distance_since_last_update_ = distance_travelled_ - last_distance_travelled;
 }
 
 types::Second SoftwareTrainController::GetDeltaTime(void) const
@@ -415,4 +478,65 @@ void SoftwareTrainController::CheckFailureStates(void)
         emergency_brake_ = true;
     }
 }
+
+void SoftwareTrainController::UpdateTrainPosition(void)
+{
+    if (last_polarity_ != polarity_)
+    {
+        set_route_position_++;
+        authority_counter_--;
+        double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+
+
+        last_polarity_ = polarity_;
+
+        total_blocks_accessed_length_ += block_length;
+
+        if (set_route_position_ > green_default_route_vector_.size() - 1)
+        {
+            set_route_position_ = 0; //to beggining of route
+        }
+    }
+}
+
+void SoftwareTrainController::CalculateDistanceToStopping()
+{
+    // std::cout <<  "\n AC: " << authority_counter_ << "\n";
+    // std::cout <<  "\n A: " << authority_ << "\n";
+    if (authority_counter_ != authority_)
+    {
+        usable_authority_         = authority_;
+        authority_counter_        = authority_;
+        new_authority_            = true;
+        service_brake_percentage_ = 0; // Resetting the service brake when a new authority is passed through.
+
+        distance_prior_to_current_authority_ = distance_travelled_;
+        distance_of_authority_in_meters_     = 0;
+
+        for (size_t i = set_route_position_ + 1; i < set_route_position_ + usable_authority_ + 1; i++)
+        {
+            int    index        = i % green_default_route_vector_.size();
+            double block_length = (green_block_data_map_[green_default_route_vector_[index]])[0];
+
+            if (index == set_route_position_ + usable_authority_)
+            {
+                distance_of_authority_in_meters_ += block_length / 2;
+                distance_of_authority_in_meters_ += total_blocks_accessed_length_ - distance_prior_to_current_authority_;
+            }
+            else
+            {
+                distance_of_authority_in_meters_ += block_length;
+            }
+        }
+    }
+
+
+}
+
+
+types::Meters SoftwareTrainController::GetDistanceOfAuthorityInMeters()
+{
+    return distance_of_authority_in_meters_;
+}
+
 }
