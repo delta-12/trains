@@ -21,6 +21,7 @@
 #define CTC_SECTION_M_BLOCK_76  76
 #define CTC_SECTION_N_BLOCK_85  85
 #define CTC_SECTION_R_BLOCK_101 101
+#define CTC_FIRST_BLOCK         0
 
 namespace ctc
 {
@@ -108,6 +109,8 @@ class Ctc
         std::vector<types::BlockId> GetDefaultRoute(void) const;
         ctc::Train GetTrainById(const types::TrainId train_id) const;
         ctc::CtcOperationMode GetOperationMode(void) const;
+        types::TrackId GetTrack(void) const;
+        std::vector<types::BlockId> GetFailureBlocks(void) const;
 
     private:
         void SetBlocks(std::vector<types::Block> &blocks);
@@ -116,7 +119,6 @@ class Ctc
         void AddTrainToTrainSchedule(ctc::Train train);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
-        types::Error GetTrainPointerById(const types::TrainId train_id, std::shared_ptr<ctc::Train> &train_pointer);
 
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
@@ -125,6 +127,8 @@ class Ctc
         std::filesystem::path schedule_file_path_;
         Graph<types::BlockId, types::Meters> graph_;
         std::vector<types::BlockId> default_route_;
+        types::TrackId track_;
+        std::vector<types::BlockId> failure_blocks_;
 };
 
 } // namespace ctc
