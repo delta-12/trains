@@ -106,7 +106,7 @@ class SoftwareTrainModel : public TrainModel
         types::Watts GetActualPower(void) const;
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Polarity GetTrackPolarity(void) const;
-        types::Meters GetDistanceTraveled(void) const;
+        types::Meters GetDistanceTravelled(void) const;
         uint16_t GetPassengersDeboarding(void);
         uint16_t GetPassengersCount(void);
 
