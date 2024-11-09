@@ -1,8 +1,8 @@
 /*****************************************************************************
- * @file ctc_ui.cc
- *
- * @brief Implement Ctc UI.
- *****************************************************************************/
+* @file ctc_ui.cc
+*
+* @brief Implement Ctc UI.
+*****************************************************************************/
 
 #include "ctc.h"
 #include "ctc_ui.h"
@@ -13,7 +13,7 @@
 int main(void)
 {
     ctc::Ctc ctc;
-    auto ctc_ui = ui::CtcUi::create();
+    auto     ctc_ui = ui::CtcUi::create();
 
     std::filesystem::path base_path = std::filesystem::current_path();
     std::filesystem::path path      = base_path  / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
@@ -21,14 +21,15 @@ int main(void)
     ctc.SetTrackLayout();
 
     std::cout << "Number of Stations: " << ctc.GetNumStation() << std::endl;
-    
+
     // auto row_data_model = std::make_shared<slint::VectorModel<slint::VectorModel<slint::StandardListViewItem>>>();
     // ctc_ui->set_train_schedules(row_data_model);
 
     // Populate Destination Station ComboBox
-    auto stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
-    std::vector<ctc::Station> stations = ctc.GetStations();
-    for (const ctc::Station &station : stations) {
+    auto                      stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
+    std::vector<ctc::Station> stations       = ctc.GetStations();
+    for (const ctc::Station &station : stations)
+    {
         stations_model->push_back(station.station_name.c_str());
     }
     ctc_ui->set_stations(stations_model);
@@ -56,7 +57,7 @@ int main(void)
     });
 
     ctc_ui->on_send_block_occupancy([&] {
-        int block_id = std::stoi(std::string(ctc_ui->get_block_occupancy()));
+        int block_id                                = std::stoi(std::string(ctc_ui->get_block_occupancy()));
         std::vector<types::BlockState> block_states = { types::BlockState(block_id, true, false) };
         ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
         ctc::Train train = ctc.GetTrainById(1);
@@ -66,6 +67,11 @@ int main(void)
             std::cout << "Block: " << train.authority.front() << std::endl;
             train.authority.pop();
         }
+        std::string suggested_speed = std::to_string(train.suggested_speed);
+        std::string authority = std::to_string(train.authority.size());
+        std::cout << "Authority: " << authority << std::endl;
+        ctc_ui->set_authority(authority.c_str());
+        ctc_ui->set_suggested_speed(suggested_speed.c_str());
     });
 
     ctc_ui->run();
