@@ -117,6 +117,8 @@ component TrainSchedule inherits Rectangle {
     in-out property <string> train_name_6: "";
     in-out property <string> train_1_arrival_time: "n/a";
     in-out property <string> train_1_dst: "n/a";
+    in-out property <[[StandardListViewItem]]> train_schedules: [[]];
+    in-out property <[StandardListViewItem]> list: [];
     
     VerticalLayout {
         Rectangle {
@@ -136,14 +138,10 @@ component TrainSchedule inherits Rectangle {
                     { title: @tr("ETA") },
                     { title: @tr("DST(s)") },
                 ];
-                rows: [
-                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: train_1_dst }, ],
-                    [ { text: train_name_2 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_3 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_4 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_5 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_6 }, { text: "" }, { text: "" }, ],
-                ];
+                rows: train_schedules;
+            }
+            StandardListView {
+                model: list;
             }
         }
     }
@@ -152,20 +150,24 @@ component TrainSchedule inherits Rectangle {
 component ManualMode inherits Rectangle {
     in-out property <string> train_name;
     in-out property <string> destination;
+    in-out property <string> station;
     in-out property <string> arrival_time;
+    in-out property <[string]> stations;
+    in-out property <string> storage;
+
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
-        spacing: 5px;
+        spacing: 10px;
         HorizontalLayout {
             alignment: start;
-            Text { text: "Train Name: ";}
+            Text { text: "Destination: ";}
             Rectangle {width: 10px;}
-            LineEdit {
+            ComboBox {
                 width: 120px;
                 height: 30px;
-                placeholder-text: @tr("Train 1");
-                edited(input) => {train_name = input}
+                model: stations;
+                selected(input) => {station = input}
             } 
         }
         HorizontalLayout {
@@ -249,6 +251,8 @@ component Dispatch inherits Rectangle {
     in-out property <string> train_name;
     in-out property <string> destination;
     in-out property <string> arrival_time;
+    in-out property <[string]> stations;
+    in-out property <string> station;
 
     callback choose-file();
     callback parse-file();
@@ -271,17 +275,12 @@ component Dispatch inherits Rectangle {
             }
         }
         Rectangle {
-            height: 20px;
             // background: green;
             HorizontalLayout {
-                spacing: 10px;
-                Switch {
-                    checked: automatic_mode;
-                    toggled => {automatic_mode = !automatic_mode;}
-                }
-                Text {
-                    y: 3px;
+                Button {
+                    height: 30px;
                     text: automatic_mode ? "Automatic Mode" : "Manual Mode";
+                    clicked => {automatic_mode = !automatic_mode;}
                 }
             }
         }
@@ -295,6 +294,8 @@ component Dispatch inherits Rectangle {
             train_name <=> train_name;
             destination <=> destination;
             arrival_time <=> arrival_time;
+            stations <=> stations;
+            station <=> station;
             manual-dispatch => {manual-dispatch()}
         }    
     }
@@ -356,16 +357,22 @@ export component CtcUi inherits Window {
     in-out property <string> train_1_at: " ";
     in-out property <string> train_1_dst;
     in-out property <[[StandardListViewItem]]> row_data;
+    in-out property <[StandardListViewItem]> list;
+    in-out property <[[StandardListViewItem]]> train_schedules;
     in-out property <string> train_name;
     in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <string> maintenance_block;
     in-out property <string> maintenance_section;
+    in-out property <string> station;
 
     //Transit System
     in-out property <bool> maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
+
+    //Dispatch
+    in-out property <[string]> stations;
 
     //TestBench
     in-out property <string> section_occupancy;
@@ -415,9 +422,8 @@ export component CtcUi inherits Window {
                     spacing: 15px;
                     alignment: stretch;
                     TrainSchedule {
-                        train_name_1: train_1;
-                        train_1_arrival_time: train_1_at;
-                        train_1_dst: train_1_dst;
+                        train_schedules: train_schedules;
+                        list: list;
                     }
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
@@ -427,6 +433,8 @@ export component CtcUi inherits Window {
                         destination <=> destination;
                         arrival_time <=> arrival_time;
                         manual-dispatch => {root.manual-dispatch()}
+                        stations <=> stations;
+                        station <=> station;
                     }
                 }   
             }

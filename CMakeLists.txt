@@ -101,6 +101,18 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 ################################################################################
+# CTC UI build
+################################################################################
+add_executable(ctc_ui
+    ${UI_DIR}/ctc/ctc_ui.cc
+    ${CTC_SRCS}
+    ${COMMON_SRCS}
+)
+target_include_directories(ctc_ui PRIVATE ${INC_DIRS})
+target_link_libraries(ctc_ui PRIVATE Slint::Slint)
+slint_target_sources(ctc_ui ${UI_DIR}/ctc_ui.slint NAMESPACE ui)
+
+################################################################################
 # Trains build
 ################################################################################
 if (WIN32)
