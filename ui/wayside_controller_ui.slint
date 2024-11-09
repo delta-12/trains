@@ -1,7 +1,7 @@
-import {Palette, StandardTableView, TextEdit, ScrollView, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
+import {Palette, StandardTableView, TableView, TextEdit, ScrollView, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
 
 //database view component
-export component TableView inherits Rectangle {
+export component BlockTableView inherits Rectangle {
     in property <[string]> columns;
     in property <[[string]]> values;
 
@@ -319,7 +319,7 @@ export component BlockInfo inherits Rectangle {
         }
 }
 
-
+//table view
 component BlockLayout inherits Rectangle {
     background: #252525;
     border-radius: 10px;
@@ -411,50 +411,30 @@ export component WaysideControllerUi inherits Window {
         min-height: 500px;
         min-width: 700px;
 
-        //generic time var
-        in-out property <string> time;
-
+        //generic active
         in-out property <int> active_tab;
-        in-out property <string> select_file;
 
-        //variables STRING input
+        //variables string input
         in-out property <string> sugg_spd;
         in-out property <string> sugg_auth;
 
         //variables output
-        in-out property <float> comm_spd;
-        in-out property <int> comm_auth;
-
-        
         in-out property <string> str_plc_prog;
-        in-out property <string> str_plc_progin;
         in-out property <string> plc_prog;
 
         in-out property <string> str_block_main;
         in-out property <string> str_block_mainin;
-        in-out property <bool> block_main;
 
         in-out property <string> str_sw_state;
         in-out property <string> str_sw_statein;
-        in-out property <bool> sw_state;
 
         in-out property <string> str_block_occ;
         in-out property <string> str_block_occin;
-        in-out property <bool> block-occ;
 
         in-out property <string> str_track_fail;
-        in-out property <bool> track_fail;
 
         //output callbacks
-        callback disp_sugg_spd();
-        callback disp_sugg_auth();
-        callback disp_maintenance_md();
         callback disp_sw_state();
-        callback disp_block_occ();
-        callback disp_select_plc();
-        callback disp_parse_file();
-
-        callback clicked;
 
         
         VerticalLayout {
@@ -658,30 +638,6 @@ export component WaysideControllerUi inherits Window {
                             }
                         }
 
-                        //PLC Program **in TB can be deleted
-                        HorizontalLayout {
-                            Text { text: "PLC Program: ";}
-                            Rectangle {width: 10px;}
-                            LineEdit {
-                                text: plc-prog;
-                                width: 120px;
-                                height: 30px;
-                                edited(val)=>{plc-prog=val}
-                            } 
-                        }
-
-                        //Track Failure - should be an output
-                        HorizontalLayout {
-                            Text { text: "Track Failure Simulated Input: ";}
-                            Rectangle {width: 10px;}
-                            Rectangle {width: 10px;}
-                            LineEdit {
-                            text: str-track-fail;
-                            width: 120px;
-                            height: 30px;
-                            edited(val)=>{str-track-fail=val}
-                            }
-                        }
                     }
                 }
             } 
@@ -790,6 +746,7 @@ export component WaysideControllerUi inherits Window {
                                         text: str_track_fail;
                                     }
                                 }
+
                             }
                         }
                     } 
@@ -852,8 +809,9 @@ export component WaysideControllerUi inherits Window {
             }
         }
     }
-/*
-TableView {
+
+    /*
+BlockTableView {
     columns: ["Route", "Block Number", "Occupancy", "Free", "Track Number", "Test"];
     values: [
         ["/dev/sda1", "/", "255GB", "82.2GB"] ,
@@ -861,6 +819,7 @@ TableView {
         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
         ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
     ];
-}*/
+}
+*/
 
 
