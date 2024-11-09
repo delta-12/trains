@@ -21,6 +21,7 @@ static const size_t kLayoutFieldDirection            = 12;
 static const size_t kScheduleWayside                 = 7;
 static const size_t kScheduleFieldSpeedLimit         = 11;
 static const size_t kScheduleFieldTotalTimeToStation = 23;
+static const size_t kScheduleFieldTrack              = 0;
 
 static void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
 static std::vector<std::string> SplitBySemicolon(const std::string &input);
@@ -87,6 +88,19 @@ void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::st
 
         types::Block &                  block  = *(blocks_.end() - 1);
         const std::vector<std::string> &record = *i;
+
+        if (record[kScheduleFieldTrack].find("Green") != std::string::npos)
+        {
+            block.track = types::TrackId::TRACKID_GREEN;
+        }
+        else if (record[kScheduleFieldTrack].find("Red") != std::string::npos)
+        {
+            block.track = types::TrackId::TRACKID_RED;
+        }
+        else if (record[kScheduleFieldTrack].find("Blue") != std::string::npos)
+        {
+            block.track = types::TrackId::TRACKID_BLUE;
+        }
 
         block.section     = record[1][0];
         block.block       = static_cast<types::BlockId>(std::stoi(record[kLayoutFieldBlockNumber]));
