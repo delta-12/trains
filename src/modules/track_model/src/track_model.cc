@@ -8,6 +8,7 @@
 #include "types.h"
 #include "block_builder.h"
 #include "random_number_generator.h"
+#include "logger.h"
 
 namespace track_model
 {
@@ -54,7 +55,7 @@ std::shared_ptr<train_model::TrainModel> SoftwareTrackModel::GetTrainModel(const
 {
     std::shared_ptr<train_model::TrainModel> selected_train;
 
-    for (int i = 0; i < trains_.size(); i++)
+    for (size_t i = 0; i < trains_.size(); i++)
     {
         if (train == trains_[i]->GetTrainId())
         {
@@ -72,7 +73,7 @@ void SoftwareTrackModel::GetTrainModels(std::vector<std::shared_ptr<train_model:
 
 void SoftwareTrackModel::Update(void)
 {
-    for (int i = 0; i < trains_.size(); i++)
+    for (size_t i = 0; i < trains_.size(); i++)
     {
         types::MetersPerSecond d_traveled = trains_[i]->GetDistanceTraveled();
 
@@ -83,7 +84,7 @@ void SoftwareTrackModel::Update(void)
         temp_distance += train_head_[i];
 
         // unoccupy old blocks
-        for (int k = 0; k < occupied_train_blocks_[i].size(); k++)
+        for (size_t k = 0; k < occupied_train_blocks_[i].size(); k++)
         {
             types::BlockId oldblock = occupied_train_blocks_[i][k];
             blocks_[oldblock].occupied = 0;
@@ -92,7 +93,7 @@ void SoftwareTrackModel::Update(void)
         occupied_train_blocks_[i].clear();
 
         // traverse graph from current block to account for this length
-        for (int j = current_train_block_[i]; j < track_path_.size(); j++)
+        for (size_t j = current_train_block_[i]; j < track_path_.size(); j++)
         {
             // green line end switch check
             if (j == kPathEnd && blocks_[kYardSwitch].switched == 1)
@@ -176,22 +177,34 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(closed);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, const bool on)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(on);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(on);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block, const bool on)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(on);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
@@ -200,9 +213,9 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
 
     if (isValid)
     {
-        for (int i = 0; i < trains_.size(); i++)
+        for (size_t i = 0; i < trains_.size(); i++)
         {
-            for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+            for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
                 {
@@ -221,9 +234,9 @@ types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const 
 
     if (isValid)
     {
-        for (int i = 0; i < trains_.size(); i++)
+        for (size_t i = 0; i < trains_.size(); i++)
         {
-            for (int j = 0; j < occupied_train_blocks_[i].size(); j++)
+            for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
                 {
@@ -251,22 +264,33 @@ types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, b
 
 types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const bool broken)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(broken);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(track_circuit_failure);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, const bool power_failure)
 {
+    LOGGER_UNUSED(block);
+    LOGGER_UNUSED(power_failure);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahrenheit temperature)
 {
+    LOGGER_UNUSED(temperature);
     return types::Error::ERROR_NONE;
+    //NNF233
 }
 
 // is this getting callled only when deboarding is gonna happen?
