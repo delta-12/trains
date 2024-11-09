@@ -116,7 +116,7 @@ class SoftwareTrainModel : public TrainModel
         bool headlights_;
         bool interior_light_;
         bool right_door_;
-        bool left_door_; \
+        bool left_door_;
         types::DegreesFahrenheit internal_temperature_;
         types::Polarity track_polarity_;
         //internal variables(calculations)
