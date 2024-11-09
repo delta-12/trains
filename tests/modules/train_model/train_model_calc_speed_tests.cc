@@ -6,6 +6,7 @@
 
 #include "train_model.h"
 #include <unistd.h>
+#include <iostream>
 #include <iomanip>
 #include <gtest/gtest.h>
 
