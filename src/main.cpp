@@ -11,11 +11,11 @@ int main(void)
 {
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
-    auto                 ctc_ui                = ui::CtcWindow::create();
-    auto                 wayside_controller_ui = ui::WaysideControllerWindow::create();
-    auto                 track_model_ui        = ui::TrackModelWindow::create();
-    auto                 train_model_ui        = ui::TrainModelWindow::create();
-    auto                 train_controller_ui   = ui::TrainControllerWindow::create();
+    auto                 ctc_ui                = ui::CtcUi::create();
+    auto                 wayside_controller_ui = ui::WaysideControllerUi::create();
+    auto                 track_model_ui        = ui::TrackModelUi::create();
+    auto                 train_model_ui        = ui::TrainModelUi::create();
+    auto                 train_controller_ui   = ui::TrainControllerUi::create();
 
     launcher_ui->on_launch_ctc_window([&]
     {
