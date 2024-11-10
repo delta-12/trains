@@ -1,4 +1,3 @@
-#include <chrono>
 #include <thread>
 
 #include <slint.h>
@@ -37,7 +36,14 @@ int main(void)
         train_controller_ui->show();
     });
 
+
+    std::thread worker_thread([&]
+    {
+        // Main backend loop here
+    });
+
     launcher_ui->run();
+    worker_thread.join();
 
     return 0;
 }
