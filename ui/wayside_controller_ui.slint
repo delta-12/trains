@@ -1,7 +1,7 @@
-import {Palette, TextEdit, ScrollView, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
+import {Palette, StandardTableView, TextEdit, ScrollView, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
 
-//database view component
-export component TableView inherits Rectangle {
+//database view components
+export component BlockTableView inherits Rectangle {
     in property <[string]> columns;
     in property <[[string]]> values;
 
@@ -229,7 +229,6 @@ export component TrackSwitch inherits Rectangle {
     }
 }
 
-
 //shows block occupancy, crossing status and station name
 export component BlockInfo inherits Rectangle {
     // Define the states for the traffic light
@@ -320,7 +319,88 @@ export component BlockInfo inherits Rectangle {
         }
 }
 
+//table view
+component BlockLayout inherits Rectangle {
+    background: #252525;
+    border-radius: 10px;
+    preferred-height: 180px;
+    in-out property <[[StandardListViewItem]]> row_data;
+    in-out property <string> section;
+    in-out property <string> block;
+    in-out property <bool> mode: true;
+    in-out property <bool> crossing: true;
+    in-out property <bool> signal: true;
 
+    in-out property <bool> switch: false;
+    in-out property <bool> occupancy: false;
+    in-out property <string> failure;
+    VerticalLayout {
+
+        ScrollView{
+            height: 250px;
+            viewport-width: 675px;
+            viewport-height: 500px;
+
+        VerticalLayout {
+            padding: 15px;
+            StandardTableView {
+                columns: [
+                    { title: @tr("Section") },
+                    { title: @tr("Block") },
+                    { title: @tr("Occupancy") },
+                    { title: @tr("Crossing") },
+                    { title: @tr("Signal State") },
+                    { title: @tr("Switch State") },
+                ];
+                rows: [
+                    [{text: "A"}, {text: "1"}, {text: mode ? "Empty" : "Occupied"}, {text: crossing ? "Closed" : "Open"}, {text: signal ? "Red" : "Green"}, {text: switch ? "61-75" : "61-62"},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                ];
+            }
+        }
+    }
+        ManageBlock := HorizontalLayout {
+            alignment: start;
+            padding: 15px;
+            spacing: 10px;
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("Block Line, Number");
+                edited(input) => { section = input }
+            }
+            LineEdit {
+                width: 120px;
+                height: 30px;
+                placeholder-text: @tr("Switch Orientation");
+                edited(input) => { section = input }
+            }
+            HorizontalLayout {
+                Switch {
+                    toggled => {mode = !mode}
+                }
+                Text {text:"  Occupancy"; y: 7px;}
+            }
+            HorizontalLayout {
+                Switch {
+                    toggled => {crossing = !crossing}
+                }
+                Text {text:" Crossing"; y: 7px;}
+            }
+            HorizontalLayout {
+                Switch {
+                    toggled => {signal = !signal}
+                }
+                Text {text:"  Signal"; y: 7px;}
+            }
+            
+        }
+    }
+}
 
 
 ////////////////////////////////////////////////
@@ -331,50 +411,30 @@ export component WaysideControllerUi inherits Window {
         min-height: 500px;
         min-width: 700px;
 
-        //generic time var
-        in-out property <string> time;
-
+        //generic active
         in-out property <int> active_tab;
-        in-out property <string> select_file;
 
-        //variables STRING input
+        //variables string input
         in-out property <string> sugg_spd;
         in-out property <string> sugg_auth;
 
         //variables output
-        in-out property <float> comm_spd;
-        in-out property <int> comm_auth;
-
-        
         in-out property <string> str_plc_prog;
-        in-out property <string> str_plc_progin;
         in-out property <string> plc_prog;
 
         in-out property <string> str_block_main;
         in-out property <string> str_block_mainin;
-        in-out property <bool> block_main;
 
         in-out property <string> str_sw_state;
         in-out property <string> str_sw_statein;
-        in-out property <bool> sw_state;
 
         in-out property <string> str_block_occ;
         in-out property <string> str_block_occin;
-        in-out property <bool> block-occ;
 
         in-out property <string> str_track_fail;
-        in-out property <bool> track_fail;
 
         //output callbacks
-        callback disp_sugg_spd();
-        callback disp_sugg_auth();
-        callback disp_maintenance_md();
         callback disp_sw_state();
-        callback disp_block_occ();
-        callback disp_select_plc();
-        callback disp_parse_file();
-
-        callback clicked;
 
         
         VerticalLayout {
@@ -382,135 +442,216 @@ export component WaysideControllerUi inherits Window {
                 
                 spacing: 3px;
                 Button {
-                    text: "PLC";
+                    text: "Wayside Controller Homepage";
                     clicked => { root.active-tab = 0; }
                 }
                 Button {
-                    text: "Block Status";
+                    text: "TESTBENCH";
                     clicked => { root.active-tab = 1; }
                 }
-                Button {
-                    text: "TESTBENCH";
-                    clicked => { root.active-tab = 2; }
-                }
-                ComboBox {
-                    width: self.preferred-width;
-                    height: self.preferred-height * 2;
-                    model: ["Software Wayside Controller", "Hardware Wayside Controller"];
-                    current-value: "Software Wayside Controller";
-                }
+
             }
 
+        Rectangle {
+            //animations to enter page
+            drop-shadow-blur: 0cm;
+            x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
+            animate x { duration: 125ms; easing: ease; }
 
-            Rectangle {
-                Rectangle {
-                    //animations to enter page
-                    drop-shadow-blur: 0cm;
-                    x: root.active-tab == 0 ? 0 : root.active-tab < 0 ? - self.width - 1px : parent.width + 1px;
-                    animate x { duration: 125ms; easing: ease; }
+            ScrollView{
+                height: 400px;
+                viewport-width: 300px;
+                viewport-height: 700px;
+            
+                Text {
+                    text: "Select a PLC Program or upload a PLC file";  // Default text
+                    color: green;
+                    x: 50px;
+                    y: 25px;
+                  }
 
-                    //page contents
-                    ComboBox {
-                        model: ["PLC 1", "PLC 2", "PLC 3"];
-                        x: 57px;
-                        y: 120px;
-                    }
-                    EnterFilename {
-                        //accessible-role: AccessibleRole.checkbox;
-                        //text: "File Upload";
-                        x: 52px;
-                        y: 196px;
-                        //clicked => { self.text = "File Uploading";}
-                    }
-                    ProgressIndicator { 
-                        width: 150px;
-                        x: 61px;
-                        y: 273px;
-                        height: 20px;
-                        progress: 50%;
-                    }
-                    Spinner {
-                        height: 93px;
-                        progress: 50%;
-                        width: 107px;
-                        x: 449px;
-                        y: 130px;
-                    }
-                }
-                Rectangle {
-                    x: root.active-tab == 1 ? 0 : root.active-tab < 1 ? - self.width - 1px : parent.width + 1px;
-                    animate x { duration: 125ms; easing: ease; }
-
-                    Text{
-                        vertical-alignment: top;
-                        color: white;
-                        x: 57px;
-                        y: 120px;
-                    }
-                    
-                    ScrollView{
-                    height: 400px;
-                    viewport-width: 300px;
-                    viewport-height: 500px;
-
-                    HorizontalLayout {
-                        //alignment: center;
-                        padding: 10px;
-                        spacing: 10px;
-                        Text {text: "Track ID:";}
-                        ComboBox {
-                            model: [@tr("Select Route"), @tr("Blue Line"), @tr("Red Line"), @tr("Green Line")];
-                            height: 30px;
-                        }
-                        ComboBox {
-                            model: [@tr("Select Block Number"), @tr("1"), @tr("2")];
-                            height: 30px;
-                        }
-                        
-                    }
-                    TrafficLight {
-                        
-                        width: self.preferred-width;
-                        height: self.preferred-height / 1.35;
-                        x: 57px;
-                        y: 120px;
-                           
-                        }
-                    TrackSwitch {
-                        x: 263px;
-                        y: 120px;
-                    }
-                    BlockInfo {
-                        x: 61px;
-                        y: 350px;
-                        
-                    }
-                    
-                }
+            //page contents
+            ComboBox {
+                model: ["PLC 1", "PLC 2", "PLC 3"];
+                width: 75px;
+                x: 50px;
+                y: 50px;
             }
+            EnterFilename {
+                width: 153px;
+                height: 27px;
+                //accessible-role: AccessibleRole.checkbox;
+                //text: "File Upload";
+                x: 163px;
+                y: 52px;
+                //clicked => { self.text = "File Uploading";}
+            }
+            ProgressIndicator { 
+                width: 253px;
+                x: 50px;
+                y: 100px;
+                height: 20px;
+                progress: 50%;
+            }
+
+            Text {
+                text: "Select Wayside Controller and Track Line to see block inform";  // Default text
+                color: green;
+                x: 400px;
+                y: 25px;
+              }
+            ComboBox {
+                width: self.preferred-width;
+                x: 400px;
+                y: 50px;
+                height: self.preferred-height * 2;
+                model: ["Software Wayside Controller", "Hardware Wayside Controller"];
+                current-value: "Software Wayside Controller";
+            }
+            ComboBox {
+                width: self.preferred-width;
+                x: 625px;
+                y: 50px;
+                height: self.preferred-height * 2;
+                model: ["Green Line", "Red Line"];
+                current-value: "Green Line";
+            }
+            Button {
+                text: "Show Track Blocks";
+                x: 499px;
+                y: 100px;
+                clicked => { self.text = "Displaying"; }
+            }
+
+        ///////////// former second tab - converted into a table
+        BlockLayout {
+        width: 678px;
+            x: 50px;
+        y: 200px;
+      
+        } // Transit System Top Widget
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        } ///
+    
+
+
 
 ////////////////////TESTBENCH INPUTS////////////////////////////////////////
 
+    Rectangle {
+        x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
+        animate x { duration: 125ms; easing: ease; }
+
+        HorizontalLayout {
+            padding: 10px;
+            spacing: 10px;
             Rectangle {
-                x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
-                animate x { duration: 125ms; easing: ease; }
+                background: #252525;
+                border-radius: 10px;
+                VerticalLayout {
+                    padding: 10px;
+                    padding-left: 15px;
+                    Text {text: "Inputs";}
+
+                    Button{
+                        text: "Switch Change Button";
+                        clicked => {
+                            root.disp-sw-state();
+                        }}
+                    
+                    VerticalLayout {
+                        spacing: 10px;
+                        padding: 10px;
+
+                        // Speed Input
+                        HorizontalLayout {
+                            //alignment: start;
+                            Text { text: "Suggested Speed (CTC): ";}
+                            Rectangle {width: 10px;}
+                            LineEdit {
+                                text: sugg-spd;
+                                width: 120px;
+                                height: 30px;
+                                edited(val)=>{
+                                    sugg-spd=val}
+                            } 
+                        }
+
+                        // Authority Input 
+                        HorizontalLayout {
+                            //alignment: start;
+                            Text { text: "Authority (CTC): ";}
+                            Rectangle {width: 10px;}
+                            LineEdit {
+                            text: sugg-auth;
+                            width: 120px;
+                            height: 30px;
+                            edited(val)=>{sugg-auth=val}
+                            }
+                        }
+                        //Block Maintenance Mode
+                        HorizontalLayout {
+                            //alignment: start;
+                            Text { text: "Block Maintenance (CTC): ";}
+                            Rectangle {width: 10px;}
+                            LineEdit {
+                            text: str_block_mainin;
+                            width: 120px;
+                            height: 30px;
+                            edited(val)=>{str_block_mainin=val}
+                            }
+                        }
+                        //Switch State
+                        HorizontalLayout {
+                            //alignment: left;
+                            Text { text: "Switch State (CTC): ";}
+                            Rectangle {width: 10px;}
+                            LineEdit {
+                            text: str_sw_statein;
+                            width: 120px;
+                            height: 30px;
+                            edited(val)=>{str_sw_statein=val}
+                            }
+                        }
+
+                        //Block Occupancy
+                        HorizontalLayout {
+                            Text { text: "Block Occupancy (Track Model): ";}
+                            Rectangle {width: 10px;}
+                            LineEdit {
+                            text: str_block_occin;
+                            width: 120px;
+                            height: 30px;
+                            edited(val)=>{str_block_occin=val}
+                            }
+                        }
+
+                    }
+                }
+            } 
+
+////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
 
                 HorizontalLayout {
-                    padding: 10px;
-                    spacing: 10px;
                     Rectangle {
                         background: #252525;
                         border-radius: 10px;
                         VerticalLayout {
                             padding: 10px;
-                            padding-left: 15px;
-                            Text {text: "Inputs";}
-
-                            Button{
-                                text: "Switch Change Button";
-                                clicked => {
-                                    root.disp-sw-state();
-                                }}
+                            padding-right: 2px;
+                            Text {text: "Outputs";}
                             
                             VerticalLayout {
                                 spacing: 10px;
@@ -518,218 +659,100 @@ export component WaysideControllerUi inherits Window {
 
                                 // Speed Input
                                 HorizontalLayout {
-                                    //alignment: start;
-                                    Text { text: "Suggested Speed (CTC): ";}
-                                    Rectangle {width: 10px;}
-                                    LineEdit {
-                                        text: sugg-spd;
-                                        width: 120px;
-                                        height: 30px;
-                                        edited(val)=>{
-                                            sugg-spd=val}
-                                    } 
+                                    Text { vertical-alignment: center;
+                                        text: "Commanded Speed: ";}
+                                        LineEdit {
+                                            read-only: true;
+                                            min-height: 30px;
+                                            max-height: 30px;
+                                            text: sugg-spd + " mph";
+                                        } 
                                 }
 
                                 // Authority Input 
                                 HorizontalLayout {
                                     //alignment: start;
-                                    Text { text: "Authority (CTC): ";}
-                                    Rectangle {width: 10px;}
+                                    Text { vertical-alignment: center;
+                                        text: "Authority: ";}
                                     LineEdit {
-                                    text: sugg-auth;
-                                    width: 120px;
-                                    height: 30px;
-                                    edited(val)=>{sugg-auth=val}
-                                    }
+                                        read-only: true;
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: sugg-auth + " mi";
+                                    } 
                                 }
+
                                 //Block Maintenance Mode
                                 HorizontalLayout {
                                     //alignment: start;
-                                    Text { text: "Block Maintenance (CTC): ";}
-                                    Rectangle {width: 10px;}
+                                    Text { vertical-alignment: center;
+                                        text: "Block Maintenance (CTC): ";}
                                     LineEdit {
-                                    text: str_block_mainin;
-                                    width: 120px;
-                                    height: 30px;
-                                    edited(val)=>{str_block_mainin=val}
-                                    }
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: str_block_main;
+                                        read-only: true;
+                                    } 
                                 }
-                                //Switch State
+
+                                //Switch State Mode
                                 HorizontalLayout {
-                                    //alignment: left;
-                                    Text { text: "Switch State (CTC): ";}
-                                    Rectangle {width: 10px;}
+                                    //alignment: start;
+                                    Text { vertical-alignment: center;
+                                        text: "Switch State: ";}
                                     LineEdit {
-                                    text: str_sw_statein;
-                                    width: 120px;
-                                    height: 30px;
-                                    edited(val)=>{str_sw_statein=val}
+                                        //read-only: true;
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: str_sw_state;
+                                        read-only: true;
                                     }
                                 }
 
                                 //Block Occupancy
                                 HorizontalLayout {
-                                    Text { text: "Block Occupancy (Track Model): ";}
-                                    Rectangle {width: 10px;}
+                                    //alignment: start;
+                                    Text { vertical-alignment: center;
+                                        text: "Block Occupancy: ";}
                                     LineEdit {
-                                    text: str_block_occin;
-                                    width: 120px;
-                                    height: 30px;
-                                    edited(val)=>{str_block_occin=val}
+                                        read-only: true;
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: str_block_occ;
                                     }
                                 }
 
-                                //PLC Program **in TB can be deleted
+                                //PLC Program
                                 HorizontalLayout {
-                                    Text { text: "PLC Program: ";}
-                                    Rectangle {width: 10px;}
+                                    //alignment: start;
+                                    Text { vertical-alignment: center;
+                                        text: "PLC Program: ";}
                                     LineEdit {
-                                        text: plc-prog;
-                                        width: 120px;
-                                        height: 30px;
-                                        edited(val)=>{plc-prog=val}
-                                    } 
-                                }
-
-                                //Track Failure - should be an output
-                                HorizontalLayout {
-                                    Text { text: "Track Failure Simulated Input: ";}
-                                    Rectangle {width: 10px;}
-                                    Rectangle {width: 10px;}
-                                    LineEdit {
-                                    text: str-track-fail;
-                                    width: 120px;
-                                    height: 30px;
-                                    edited(val)=>{str-track-fail=val}
+                                        read-only: true;
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: str_plc_prog;
                                     }
                                 }
+
+                                //Track Failure
+                                HorizontalLayout {
+                                    Text { vertical-alignment: center;
+                                        text: "Track Failure: ";}
+                                    LineEdit {
+                                        read-only: true;
+                                        min-height: 30px;
+                                        max-height: 30px;
+                                        text: str_track_fail;
+                                    }
+                                }
+
                             }
                         }
                     } 
-
-////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
-
-                        HorizontalLayout {
-                            Rectangle {
-                                background: #252525;
-                                border-radius: 10px;
-                                VerticalLayout {
-                                    padding: 10px;
-                                    padding-right: 2px;
-                                    Text {text: "Outputs";}
-                                    
-                                    VerticalLayout {
-                                        spacing: 10px;
-                                        padding: 10px;
-
-                                        // Speed Input
-                                        HorizontalLayout {
-                                            Text { vertical-alignment: center;
-                                                text: "Commanded Speed: ";}
-                                                LineEdit {
-                                                    read-only: true;
-                                                    min-height: 30px;
-                                                    max-height: 30px;
-                                                    text: sugg-spd + " mph";
-                                                } 
-                                        }
-
-                                        // Authority Input 
-                                        HorizontalLayout {
-                                            //alignment: start;
-                                            Text { vertical-alignment: center;
-                                                text: "Authority: ";}
-                                            LineEdit {
-                                                read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: sugg-auth + " mi";
-                                            } 
-                                        }
-
-                                        //Block Maintenance Mode
-                                        HorizontalLayout {
-                                            //alignment: start;
-                                            Text { vertical-alignment: center;
-                                                text: "Block Maintenance (CTC): ";}
-                                            LineEdit {
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: str_block_main;
-                                                read-only: true;
-                                            } 
-                                        }
-
-                                        //Switch State Mode
-                                        HorizontalLayout {
-                                            //alignment: start;
-                                            Text { vertical-alignment: center;
-                                                text: "Switch State: ";}
-                                            LineEdit {
-                                               //read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: str_sw_state;
-                                                read-only: true;
-                                            }
-                                        }
-
-                                        //Block Occupancy
-                                        HorizontalLayout {
-                                            //alignment: start;
-                                            Text { vertical-alignment: center;
-                                                text: "Block Occupancy: ";}
-                                            LineEdit {
-                                                read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: str_block_occ;
-                                            }
-                                        }
-
-                                        //PLC Program
-                                        HorizontalLayout {
-                                            //alignment: start;
-                                            Text { vertical-alignment: center;
-                                                text: "PLC Program: ";}
-                                            LineEdit {
-                                                read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: str_plc_prog;
-                                            }
-                                        }
-
-                                        //Track Failure
-                                        HorizontalLayout {
-                                            Text { vertical-alignment: center;
-                                                text: "Track Failure: ";}
-                                            LineEdit {
-                                                read-only: true;
-                                                min-height: 30px;
-                                                max-height: 30px;
-                                                text: str_track_fail;
-                                            }
-                                        }
-                                    }
-                                }
-                            } 
-                        }
-                    }
                 }
             }
         }
     }
-
-
-
-/*
-TableView {
-    columns: ["Route", "Block Number", "Occupancy", "Free", "Track Number", "Test"];
-    values: [
-        ["/dev/sda1", "/", "255GB", "82.2GB"] ,
-        ["/dev/sda2", "/tmp", "60.5GB", "44.5GB"] ,
-        ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-        ["/dev/sdb1", "/home", "255GB", "32.2GB"] ,
-    ];
-}*/
+        }
+    }
