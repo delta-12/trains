@@ -26,6 +26,10 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenStationary)
     // commanded speed passed, faster than current speed
     TC.SetCommandedSpeed(18);
 
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     // call power calculation
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -49,6 +53,10 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputHigherWhenMoving)
 
     // commanded speed passed, faster than current speed
     TC.SetCommandedSpeed(15);
+
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
 
     usleep(3000000);
 
@@ -76,6 +84,10 @@ TEST(TrainControllerPowerTests, CommandedSpeedInputLowerWhenMoving)
     // commanded speed passed, slower than current speed
     TC.SetCommandedSpeed(15);
 
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     // call power calculation
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -100,6 +112,10 @@ TEST(TrainControllerPowerTests, CurrentSpeedEqualsSetpointSpeed)
     // set current speed and commanded speed to same value
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(10);
+
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
 
     // call power calculation
     TC.CalculateCommandedPower(elapsed_time1);
@@ -130,6 +146,11 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenStationary)
     // commanded speed passed, faster than current speed
     TC.SetDriverSpeed(18);
 
+
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     // call power calculation
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -157,6 +178,10 @@ TEST(TrainControllerPowerTests, DriverSpeedInputHigherWhenMoving)
     // commanded speed passed, faster than current speed
     TC.SetDriverSpeed(15);
 
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     // call power calculation
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -183,6 +208,10 @@ TEST(TrainControllerPowerTests, NegativeDriverSpeed)
 
     // negative driver speed
     TC.SetDriverSpeed(-5);
+
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
 
     // calculate power
     TC.CalculateCommandedPower(elapsed_time1);
@@ -213,12 +242,19 @@ TEST(TrainControllerPowerTests, DriverSpeedOverSpeedLimit)
     // driver speed above speed limit
     TC.SetDriverSpeed(700);
 
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     // calculate power
     TC.CalculateCommandedPower(elapsed_time1);
 
+
+    // This fails due to the speed limit being tied to the block now //
+
     // assert driver speed and power = 0 and service brake is on
-    ASSERT_NEAR(TC.GetDriverSpeed(), 31.0599, 0.05);
-    // ^ 31 b/c set driver capped at 13.8889 m/s (assuming 50 km/hr speed limit)
+    ASSERT_NEAR(TC.GetDriverSpeed(), 43.495974, 0.05);
+    // ^ 43.495974 b/c set driver capped at 19.44444 m/s (assuming 70 km/hr speed limit)
     // 13.889 * 2.23694 (conv for m/s to mph) ~= 31
 
     ASSERT_GT(TC.GetCommandedPower(), 0);
@@ -236,10 +272,17 @@ TEST(TrainControllerPowerTests, EngineFailure)
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
+    TC.SetAuthority(5);
+
+    TC.CalculateDistanceToStopping();
+
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetEngineFailure(true);
+
+
+    TC.CalculateDistanceToStopping();
 
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
@@ -257,6 +300,8 @@ TEST(TrainControllerPowerTests, EngineFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
+
+    TC.CalculateDistanceToStopping();
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake failure back on
@@ -265,6 +310,8 @@ TEST(TrainControllerPowerTests, EngineFailure)
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
+
+    TC.CalculateDistanceToStopping();
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -285,11 +332,14 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
+    TC.SetAuthority(5);
+    TC.CalculateDistanceToStopping();
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetBrakeFailure(true);
 
+    TC.CalculateDistanceToStopping();
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -306,6 +356,8 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
+
+    TC.CalculateDistanceToStopping();
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake faialure back on
@@ -315,6 +367,7 @@ TEST(TrainControllerPowerTests, BrakeFailure)
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
+    TC.CalculateDistanceToStopping();
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -335,11 +388,15 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     // make train have some power output and speed
     TC.SetCurrentSpeed(10);
     TC.SetCommandedSpeed(15);
+
+    TC.SetAuthority(5);
+    TC.CalculateDistanceToStopping();
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn on engine failure
     TC.SetSignalPickupFailure(true);
 
+    TC.CalculateDistanceToStopping();
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
 
@@ -356,6 +413,7 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     // make train have service brake
     TC.SetCurrentSpeed(18);
     TC.SetCommandedSpeed(15);
+    TC.CalculateDistanceToStopping();
     TC.CalculateCommandedPower(elapsed_time1);
 
     // turn brake failure back on
@@ -364,6 +422,7 @@ TEST(TrainControllerPowerTests, SignalPickupFailure)
     // make sure service brake is on
     ASSERT_GT(TC.GetServiceBrake(), 0);
 
+    TC.CalculateDistanceToStopping();
     // call failure state check
     TC.CalculateCommandedPower(elapsed_time1);
 

@@ -103,7 +103,6 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-
 ################################################################################
 # Controller Messages
 ################################################################################
@@ -135,16 +134,23 @@ endif()
 ################################################################################
 enable_testing()
 include(GoogleTest)
+add_library(trains_lib STATIC ${TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
+    target_link_options(trains_lib PRIVATE --coverage)
+endif()
+target_include_directories(trains_lib PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(trains_lib PRIVATE protobuf controller_messages)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS ${TEST_NAME} ${TEST_SRC})
-    add_executable(${TEST_NAME} ${TEST_SRC} ${TRAINS_SRCS})
+    add_executable(${TEST_NAME} ${TEST_SRC})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GTest::gmock protobuf controller_messages)
+    target_link_libraries(${TEST_NAME} PRIVATE trains_lib GTest::gtest_main GTest::gmock protobuf controller_messages)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 

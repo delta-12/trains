@@ -43,7 +43,7 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     commanded_speed_       = 0;
     train_id_              = 0;
     distance_traveled_     = 0;
-    internal_temperature_  = 0;
+    internal_temperature_  = 68;
     station_announcement_  = "Steel Plaza Station";
     service_brake_         = 0.0;
     power_                 = 0;
@@ -58,7 +58,6 @@ void SoftwareTrainModel::Update()
     types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
     //internal calculations
-    mass_ = kTrainMass + ((GetPassengersCount() + kCrewCount) * kAvgPassengerWeight);
     SpeedCalc(delta);
 
 }
@@ -205,6 +204,8 @@ void SoftwareTrainModel::UpdatePassengers()
     //adds new passengers
     passengers_on_board_ += passengers_boarding_;
     //returns passengers on board (should be called and updated only when at station)
+    mass_ = kTrainMass + ((GetPassengersCount() + kCrewCount) * kAvgPassengerWeight);
+    //update the mass dependent on the new amount of passengeres on the train
 }
 void SoftwareTrainModel::SetAuthority(const types::Blocks blocks)
 {
