@@ -172,6 +172,7 @@ types::Polarity TrainModelImpl::GetTrackPolarity(void) const
 
 void TrainModelImpl::SetDistanceTraveled(const types::Meters distance)
 {
+    (void)(distance);
 }
 
 void TrainModelImpl::SetStationAnnouncement(const std::string &announcement)
@@ -274,8 +275,6 @@ TEST(TrackModelTests, GreenLine)
     track_model::SoftwareTrackModel track;
     train_model::TrainModelImpl     train;
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
-
-    bool occupancy1;
 
     ASSERT_EQ(track.GetTrackId(), types::TrackId::TRACKID_GREEN);
 
@@ -456,7 +455,6 @@ TEST(TrackModelTests, Switching)
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
 
-    bool         occupancy;
     types::Block test_block;
 
     ASSERT_EQ(track.GetBlock(100, test_block), types::Error::ERROR_NONE);
