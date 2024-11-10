@@ -104,9 +104,9 @@ FetchContent_MakeAvailable(googletest)
 # Trains build
 ################################################################################
 if (WIN32)
-    add_executable(trains WIN32 ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains WIN32 ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 else()
-    add_executable(trains ${SRC_DIR}/main.cpp ${TRAINS_SRCS})
+    add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
 target_include_directories(trains PRIVATE ${INC_DIRS})
 target_link_libraries(trains PRIVATE Slint::Slint)
