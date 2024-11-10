@@ -308,33 +308,29 @@ component TBInputs inherits Rectangle {
         spacing: 10px;
         WaysideOccupancy := VerticalLayout {
             spacing: 10px;
-            Text {text: "Wayside Occupancy Signal:";}
+            Text {font-size: 20px; text: "Wayside Occupancy Signal:";}
             LineEdit {
-                height: 30px;
+                height: 50px;
                 placeholder-text: @tr("Block Number");
                 edited(input) => {block_occupancy = input}
             }
             Button {
+                height: 40px;
                 text: "Send Occupancy Signal";
                 clicked => {print_occupancy_message()}
             }
             Text {
                 text: confirm_occupancy_message;
             }
-        }
-        VerticalBox {
-            spacing: 10px;
-            Text {text: "Wayside Failure Signal Inputs:";}
-            area := TouchArea {
-                Rectangle {
-                    border-radius: 5px;
-                    height: 30px;
-                    background: #3f3f3f;
-                    Text {text: "Send Failure Signal";}
-                }
+            Button {
+                height: 40px;
+                text:  "Send Failure Signal";
                 clicked => {
                     send_failure_signal();
                 }
+            }
+            Text {
+                text: confirm_occupancy_message;
             }
         }
     }
@@ -433,7 +429,11 @@ export component CtcUi inherits Window {
                         alignment: start;
                         padding: 10px;
                         padding-left: 15px;
-                        Text {text: "Inputs";}
+                        Text {
+                            font-size: 20px;
+                            font-weight: 500;
+                            text: "Inputs";
+                        }
                         TBInputs {
                             block_occupancy <=> block_occupancy;
                             section_occupancy <=> section_occupancy;
@@ -450,40 +450,53 @@ export component CtcUi inherits Window {
                         alignment: start;
                         padding: 10px;
                         padding-left: 15px;
-                        Text {text: "Outputs";}
+                        Text {
+                            font-size: 20px;
+                            font-weight: 500;
+                            text: "Outputs";
+                        }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
+                                font-size: 20px;
                                 text: "Train: \{root.train_1}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Suggested Speed: \{root.suggested_speed}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Authority: \{root.authority}";
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
+                                font-size: 20px;
                                 text: "Section: \{maintenance_mode ? maintenance_section : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Block: \{maintenance_mode ? maintenance_block : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Mainteance Signal: \{maintenance_mode ? "True" : "False" }" ;
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
+                                font-size: 20px;
                                 text: "Section: \{switch_state ? maintenance_section : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Block: \{switch_state ? maintenance_block : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Switch Signal: \{switch_state ? "True" : "False"}";
                             }
                         }
