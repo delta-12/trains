@@ -3,7 +3,7 @@ import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, 
 component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
-    preferred-height: 180px;
+    preferred-height: 300px;
     in-out property <[[StandardListViewItem]]> row_data;
     in-out property <string> section;
     in-out property <string> block;
@@ -18,27 +18,29 @@ component TransitSystem inherits Rectangle {
             padding-left: 15px;
             spacing: 20px;
             Text { 
+                font-size: 20px;
+                font-weight: 500;
                 text: "Transit System";
             }
             HorizontalLayout {
-                Text {text: "Time: ";}
+                Text {font-size: 20px; text: "Time: ";}
                 Rectangle {
                     border-radius: 5px;
-                    y: -4px;
+                    y: -3px;
                     width: 120px;
-                    height: 25px;
+                    height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
                     Text {text: "hh:mm:ss";}
                 }
             }
             HorizontalLayout {
-                Text {text: "Throughput: ";}
+                Text {font-size: 20px;text: "Throughput: ";}
                 Rectangle {
                     border-radius: 5px;
-                    y: -4px;
+                    y: -3px;
                     width: 120px;
-                    height: 25px;
+                    height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
                     Text {text: "Train/hr/line";}
@@ -48,7 +50,7 @@ component TransitSystem inherits Rectangle {
                 alignment: end;
                 padding-right: 15px;
                 ComboBox {
-                    y: -7px;
+                    y: -3px;
                     model: [@tr("Simulation Speed"), @tr("x1"), @tr("x10"), @tr("x50")];
                 }
             }
@@ -60,16 +62,17 @@ component TransitSystem inherits Rectangle {
                     { title: @tr("Section") },
                     { title: @tr("Block") },
                     { title: @tr("Mode") },
+                    { title: @tr("Switch") },
                     { title: @tr("Occupany") },
                     { title: @tr("Failure") },
                 ];
                 rows: [
-                    [{text: "A"}, {text: "1"}, {text: mode ? "Maintenance" : "Open"}, {text: occupancy ? "Occupied" : "n/a"}, {text: failure},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
+                    [{text: "A"}, {text: "1"}, {text: mode ? "Maintenance" : "Open"}, {text: "13"}, {text: occupancy ? "Occupied" : "n/a"}, {text: failure},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},{text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},{text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},{text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},{text: "n/a"}, {text: ""},],
+                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},{text: "n/a"}, {text: ""},],
                 ];
             }
         }
@@ -77,12 +80,6 @@ component TransitSystem inherits Rectangle {
             alignment: start;
             padding: 15px;
             spacing: 10px;
-            LineEdit {
-                width: 120px;
-                height: 30px;
-                placeholder-text: @tr("Section");
-                edited(input) => { section = input }
-            }
             LineEdit {
                 width: 120px;
                 height: 30px;
@@ -109,6 +106,7 @@ component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
+    preferred-height: 400px;
     in-out property <string> train_name_1: "n/a";
     in-out property <string> train_name_2: "";
     in-out property <string> train_name_3: "";
@@ -117,19 +115,20 @@ component TrainSchedule inherits Rectangle {
     in-out property <string> train_name_6: "";
     in-out property <string> train_1_arrival_time: "n/a";
     in-out property <string> train_1_dst: "n/a";
-    
     VerticalLayout {
-        Rectangle {
-            HorizontalLayout {
-                padding-top: 7px;
-                padding-left: 10px;
-                Text { 
-                    text: "Train Schedule";
-                }
+        alignment: stretch;
+        padding-top: 10px;
+        HorizontalLayout {
+            padding-left: 15px;
+            spacing: 20px;
+            Text { 
+                font-size: 20px;
+                font-weight: 500;
+                text: "Train Schedule";
             }
         }
         VerticalLayout {
-            padding: 10px;
+            padding: 15px;
             StandardTableView {
                 columns: [
                     { title: @tr("Train") },
@@ -156,35 +155,30 @@ component ManualMode inherits Rectangle {
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
-        spacing: 5px;
+        spacing: 10px;
         HorizontalLayout {
             alignment: start;
-            Text { text: "Train Name: ";}
+            Text { font-size: 15px; text: "Train:            ";}
             Rectangle {width: 10px;}
-            LineEdit {
-                width: 120px;
+            ComboBox {
                 height: 30px;
-                placeholder-text: @tr("Train 1");
-                edited(input) => {train_name = input}
+                y: -3px;
             } 
         }
         HorizontalLayout {
             alignment: start;
-            Text { text: "Destination: ";}
+            Text { font-size: 15px;text: "Destination: ";}
             Rectangle {width: 10px;}
-            LineEdit {
-                width: 120px;
+            ComboBox {
                 height: 30px;
-                placeholder-text: @tr("Downtown");
-                edited(input) => {destination = input}
+                y: -3px;
             } 
         }
         HorizontalLayout {
             alignment: start;
-            Text { text: "Arrival Time:";}
+            Text { font-size: 15px;text: "Arrival Time: ";}
             Rectangle {width: 10px;}
             LineEdit {
-                width: 120px;
                 height: 30px;
                 placeholder-text: @tr("10:00:00");
                 edited(input) => {arrival_time = input}
@@ -256,31 +250,31 @@ component Dispatch inherits Rectangle {
 
     background: #252525;
     border-radius: 10px;
-    preferred-height: 150px;
+    
     VerticalLayout {
         padding: 10px;
-        spacing: 10px;
+        spacing: 15px;
         alignment: stretch;
         Rectangle {
+            height: 30px;
             // background: red;
-            height: 18px;
             HorizontalLayout {
                 Text { 
+                    font-size: 20px;
+                    font-weight: 500;
                     text: "Dispatch";
                 }
             }
         }
         Rectangle {
-            height: 20px;
+            height: 30px;
             // background: green;
             HorizontalLayout {
-                spacing: 10px;
-                Switch {
-                    checked: automatic_mode;
-                    toggled => {automatic_mode = !automatic_mode;}
-                }
-                Text {
-                    y: 3px;
+                
+                Button {
+                    padding: 10px;
+                    height: 35px;
+                    clicked => {automatic_mode = !automatic_mode;}
                     text: automatic_mode ? "Automatic Mode" : "Manual Mode";
                 }
             }
@@ -314,11 +308,6 @@ component TBInputs inherits Rectangle {
         WaysideOccupancy := VerticalLayout {
             spacing: 10px;
             Text {text: "Wayside Occupancy Signal:";}
-            LineEdit {
-                height: 30px;
-                placeholder-text: @tr("Section");
-                edited(input) => {section_occupancy = input}
-            }
             LineEdit {
                 height: 30px;
                 placeholder-text: @tr("Block Number");
