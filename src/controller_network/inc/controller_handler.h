@@ -325,6 +325,7 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
     // TODO NNF-229 send train failures to train controller
     // TODO NNF-229 send beacon data to train controller
     // TODO NNF-229 send track circuit data to train controller
+    (void)(world_simulator); // UNUSED
 
     return error;
 }

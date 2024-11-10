@@ -7,6 +7,8 @@ types::Error LookupWaysideController(types::WaysideId &wayside, const types::Tra
 {
     // TODO NNF-226
     wayside = 0;
+    (void)(track); // UNUSED
+    (void)(block); // UNUSED
     return types::Error::ERROR_NONE;
 }
 
