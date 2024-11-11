@@ -101,6 +101,27 @@ types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
     return error;
 }
 
+types::Error Simulator::GetTrackCircuitData(const types::TrainId train, types::TrackCircuitData &data)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    if (!tracks_.contains(data.track))
+    {
+        error = types::Error::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        data.authority = tracks_[data.track].get()->GetTrainModel(train).get()->GetAuthority();
+        data.speed = tracks_[data.track].get()->GetTrainModel(train).get()->GetCommandedSpeed();
+        data.track = tracks_[data.track].get()->GetTrackId();
+        
+    }
+
+
+
+    return error;
+}
+
 types::Error Simulator::SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched)
 {
     types::Error error = types::Error::ERROR_NONE;

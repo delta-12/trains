@@ -26,6 +26,7 @@ class Simulator
         types::Error AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train);
         std::shared_ptr<train_model::TrainModel> GetTrainModel(const types::TrainId train);
         types::Error SetTrackCircuitData(const types::TrackCircuitData &data);
+        types::Error GetTrackCircuitData(const types::TrainId train, types::TrackCircuitData &data);
         types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched);
         types::Error SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed);
         types::Error SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color);
