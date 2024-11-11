@@ -47,6 +47,7 @@ export component TrainControllerUi inherits Window {
     callback request_update_commanded_speed();
     callback request_update_authority();
     callback request_update_actual_internal_temperature();
+    callback request_update();
 
     // temporary string variables
     in-out property <string> temp_commanded_speed;
@@ -589,6 +590,14 @@ export component TrainControllerUi inherits Window {
                         text: "INPUTS";
                         font-size: 20px;
                         horizontal-alignment: center;
+                    }
+                    // update button
+                    Button {
+                        text: "UPDATE";
+                        clicked => {
+                            root.request_update();
+                        }
+                        min-width: 100px;
                     }
 
                     Rectangle {
