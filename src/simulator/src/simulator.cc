@@ -104,20 +104,36 @@ types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
 types::Error Simulator::GetTrackCircuitData(const types::TrainId train, types::TrackCircuitData &data)
 {
     types::Error error = types::Error::ERROR_NONE;
-
-    if (!tracks_.contains(data.track))
+    types::TrackId track_ID;
+    bool train_found = false;
+    for (auto entry : tracks_)
     {
-        error = types::Error::ERROR_INVALID_TRACK;
+        track_ID = entry.first;
+        std::shared_ptr<track_model::TrackModel> track = entry.second;
+
+        auto train_model = track.get()->GetTrainModel(train);
+
+        if(train_model != nullptr)
+        {
+            train_found = false;
+            break;
+        }
+    }
+
+    if(!train_found)
+    {
+        error = types::Error::ERROR_INVALID_TRAIN;
+    }
+    else if(tracks_[data.track].get()->GetTrainModel(train) == nullptr)
+    {
+        error = types::Error::ERROR_INVALID_TRAIN;
     }
     else
     {
         data.authority = tracks_[data.track].get()->GetTrainModel(train).get()->GetAuthority();
         data.speed = tracks_[data.track].get()->GetTrainModel(train).get()->GetCommandedSpeed();
-        data.track = tracks_[data.track].get()->GetTrackId();
-        
+        data.polarity = tracks_[data.track].get()->GetTrainModel(train).get()->GetTrackPolarity();
     }
-
-
 
     return error;
 }

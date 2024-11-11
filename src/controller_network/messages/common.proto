@@ -7,3 +7,9 @@ enum TrackId
     TRACK_ID_RED = 0;
     TRACK_ID_GREEN = 1;
 }
+
+enum Polarity
+{
+    POLARITY_POSITIVE = 0;
+    POLARITY_NEGATIVE = 1;
+}

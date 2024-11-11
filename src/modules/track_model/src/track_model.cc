@@ -60,6 +60,7 @@ std::shared_ptr<train_model::TrainModel> SoftwareTrackModel::GetTrainModel(const
         if (train == trains_[i]->GetTrainId())
         {
             selected_train = trains_[i];
+            break;
         }
     }
 

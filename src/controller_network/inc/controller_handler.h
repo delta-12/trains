@@ -332,7 +332,7 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
     for(auto &[train_id,controller_port] : connected_controllers_[CONTROLLERTYPE_TRAIN])
     {
         types::TrackCircuitData track_circuit_data;
-        world_simulator.GetTrackCircuitData(train_id,track_circuit_data_vector);
+        world_simulator.GetTrackCircuitData(train_id,track_circuit_data);
 
         controller_messages::TrackCircuitData message;
 
@@ -341,6 +341,7 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
         message.set_block(track_circuit_data.block);
         message.set_speed_meters_per_second(track_circuit_data.speed);
         message.set_authority(track_circuit_data.authority);
+        message.set_polarity(track_circuit_data.polarity);
         size_t message_size = message.ByteSizeLong();
 
 

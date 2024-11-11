@@ -9,4 +9,5 @@ message TrackCircuitData {
     uint32 block = 2;
     double speed_meters_per_second = 3;
     uint32 authority = 4;
+    optional Polarity polarity = 5;
 }
