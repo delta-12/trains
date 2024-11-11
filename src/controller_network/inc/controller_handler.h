@@ -327,6 +327,27 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
     // TODO NNF-229 send track circuit data to train controller
     (void)(world_simulator); // UNUSED
 
+    std::vector<types::TrackCircuitData> track_circuit_data_vector = ctc_office.GetSuggestedSpeedsAndAuthorities();
+
+    for(auto &[train_id,controller_port] : connected_controllers_[CONTROLLERTYPE_TRAIN])
+    {
+        types::TrackCircuitData track_circuit_data;
+        world_simulator.GetTrackCircuitData(train_id,track_circuit_data_vector);
+
+        controller_messages::TrackCircuitData message;
+
+
+        message.set_track(static_cast<controller_messages::TrackId>(track_circuit_data.track));
+        message.set_block(track_circuit_data.block);
+        message.set_speed_meters_per_second(track_circuit_data.speed);
+        message.set_authority(track_circuit_data.authority);
+        size_t message_size = message.ByteSizeLong();
+
+
+        message.SerilizeToArray(message_buffer_.data(),message_buffer_.size());
+        connected_controllers_[CONTROLLERTYPE_TRAIN][train_id]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(),message_size);
+    }
+
     return error;
 }
 
