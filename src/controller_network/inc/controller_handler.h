@@ -342,6 +342,7 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
         message.set_speed_meters_per_second(track_circuit_data.speed);
         message.set_authority(track_circuit_data.authority);
         message.set_polarity(track_circuit_data.polarity);
+        message.set_current_speed_meters_per_second(track_circuit_data.current_speed);
         size_t message_size = message.ByteSizeLong();
 
 

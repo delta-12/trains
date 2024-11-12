@@ -10,4 +10,5 @@ message TrackCircuitData {
     double speed_meters_per_second = 3;
     uint32 authority = 4;
     optional Polarity polarity = 5;
+    optional double current_speed_meters_per_second = 6;
 }

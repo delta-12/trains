@@ -133,6 +133,7 @@ types::Error Simulator::GetTrackCircuitData(const types::TrainId train, types::T
         data.authority = tracks_[data.track].get()->GetTrainModel(train).get()->GetAuthority();
         data.speed = tracks_[data.track].get()->GetTrainModel(train).get()->GetCommandedSpeed();
         data.polarity = tracks_[data.track].get()->GetTrainModel(train).get()->GetTrackPolarity();
+        data.current_speed = tracks_[data.track].get()->GetTrainModel(train).get()->GetActualSpeed();
     }
 
     return error;

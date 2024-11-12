@@ -132,10 +132,10 @@ struct Block
 struct TrackCircuitData
 {
     public:
-        TrackCircuitData(void) : track(TrackId::TRACKID_RED), block(0), speed(0.0), authority(0), polarity(Polarity::POLARITY_NEGATIVE)
+        TrackCircuitData(void) : track(TrackId::TRACKID_RED), block(0), speed(0.0), authority(0), polarity(Polarity::POLARITY_NEGATIVE), current_speed(0.0)
         {
         }
-        TrackCircuitData(const TrackId track, const BlockId block, const MetersPerSecond speed, const size_t authority, const Polarity polarity) : track(track), block(block), speed(speed), authority(authority), polarity(polarity)
+        TrackCircuitData(const TrackId track, const BlockId block, const MetersPerSecond speed, const size_t authority, const Polarity polarity, const MetersPerSecond current_speed) : track(track), block(block), speed(speed), authority(authority), polarity(polarity), current_speed(current_speed)
         {
         }
         TrackId track;
@@ -143,6 +143,7 @@ struct TrackCircuitData
         MetersPerSecond speed;
         size_t authority;
         Polarity polarity;
+        MetersPerSecond current_speed;
 };
 
 struct BlockState
