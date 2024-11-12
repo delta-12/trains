@@ -73,9 +73,8 @@ export component TrainModelUi inherits Window {
     preferred-width:300px;
     min-width:1000px;
 
-    //add cycle for ads
-    //add testbench pop-up
-    //implement add-train for tabs - variable miust line up
+    //add cycle for ads AD_CODE_LOCATION
+    //implement add-train for tabs - variable must line up
     
 
 TabWidget{
@@ -408,8 +407,8 @@ TabWidget{
                 Image {
                     width: parent.width;
                     height: parent.height;
-                    //ADD CODE TO CYCLE THRU ADS HERE
-                    source: @image-url("icons/image1.png");
+                    //ADD CODE TO CYCLE THRU ADS HERE AD_CODE_LOCATION
+                    source: (int-lights ? (ext-lights ? @image-url("advertisements/image1.png") : @image-url("advertisements/image2.png")) : (ext-lights ? @image-url("advertisements/image3.png") : @image-url("advertisements/image4.png")));
                 }
             }
         }

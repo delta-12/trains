@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <chrono>
 
+//EVENTUALLY ADD BOOLS FOR AD ROTATION (2 bools)
+
 namespace train_model
 {
 
