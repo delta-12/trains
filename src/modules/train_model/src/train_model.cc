@@ -14,8 +14,8 @@ namespace train_model
 const Newtons                       kMaximumForce             = 120000;
 const types::MetersPerSecondSquared kMaximumDecelerationLimit = -2.73;
 const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
-const types::MilesPerHour           kMaximumVelocity          = 43.496;
-const int                           kMaximumPassengers        = 222;
+//const types::MilesPerHour           kMaximumVelocity          = 43.496;
+//const int                           kMaximumPassengers        = 222;
 const int                           kCrewCount                = 7;
 const Kilograms                     kTrainMass                = 37103;
 const Kilograms                     kAvgPassengerWeight       = 68.039;
@@ -238,7 +238,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
 
     if (emergency_brake_ == true && velocity_ >= 0)
     {
-        acceleration_ = -2.73;
+        acceleration_ = kMaximumDecelerationLimit;
     }
     else if (service_brake_ != 0 && velocity_ >= 0)
     {
@@ -246,7 +246,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     }
     else
     {
-        acceleration_ = force_ / mass_;
+        acceleration_ = std::min((force_ / mass_),kMaximumAccelerationLimit);
     }
     previous_acceleration_ = acceleration_;
 
