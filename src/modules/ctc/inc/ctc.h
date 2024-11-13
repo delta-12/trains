@@ -12,7 +12,6 @@
 #include "csv_parser.h"
 #include "graph.h"
 #include "types.h"
-#include "launcher.h"
 
 #define CTC_YARD_BLOCK_0        0
 #define CTC_SECTION_D_BLOCK_13  13

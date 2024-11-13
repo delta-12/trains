@@ -24,10 +24,10 @@ void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc&
 
         // Update UI with train information
         auto train_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
-        train_entry->push_back(slint::StandardListViewItem({text: std::to_string(train.train_id).c_str()}));
-        train_entry->push_back(slint::StandardListViewItem({text: "Yard"}));
-        train_entry->push_back(slint::StandardListViewItem({text: "_"}));
-        train_entry->push_back(slint::StandardListViewItem({text: destination.c_str()}));
+        train_entry->push_back(slint::StandardListViewItem(std::to_string(train.train_id).c_str()));
+        train_entry->push_back(slint::StandardListViewItem("Yard"));
+        train_entry->push_back(slint::StandardListViewItem("_"));
+        train_entry->push_back(slint::StandardListViewItem(destination.c_str()));
 
         auto received_train_schedules = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ctc_ui->get_train_schedules());
         received_train_schedules->push_back(train_entry);
