@@ -16,6 +16,7 @@
 #include "controller_network_protocols.h"
 #include "controller_port.h"
 #include "ctc.h"
+#include "lookup_table.h"
 #include "simulator.h"
 #include "track_circuit_data.pb.h"
 #include "types.h"
@@ -30,7 +31,7 @@ typedef enum
     CONTROLLERTYPE_MAX
 } ControllerType;
 
-types::Error LookupWaysideController(types::WaysideId &wayside, const types::TrackId track, const types::BlockId block);
+static const size_t kMaxmimumWaysideBlocks = 75;
 
 template <size_t buffer_size>
 class ControllerHandler
@@ -38,12 +39,14 @@ class ControllerHandler
     public:
         void AddPort(std::unique_ptr<ControllerPort> port);
         bool IsControllerConnected(const ControllerType type, const types::ControllerId controller) const;
+        void SetWaysideLayout(const std::vector<types::Block> &blocks);
         types::Error Update(ctc::Ctc &ctc_office);
         types::Error Update(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
 
     private:
         void MapConnections(void);
         void RemoveDisconnectedPorts(void);
+        types::Error LookupWaysideController(types::WaysideId &wayside, const types::TrackId track, const types::BlockId block);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
         types::Error ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers);
@@ -60,6 +63,7 @@ class ControllerHandler
         std::vector<std::unique_ptr<ControllerPort>> unmapped_ports_;
         std::array<std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>, CONTROLLERTYPE_MAX> connected_controllers_;
         std::array<uint8_t, buffer_size> message_buffer_;
+        std::array<LookupTable<types::WaysideId, types::BlockId, kMaxmimumWaysideBlocks>, static_cast<size_t>(types::TrackId::TRACKID_MAX)> wayside_lookup_table_;
 };
 
 template <size_t buffer_size>
@@ -79,6 +83,12 @@ bool ControllerHandler<buffer_size>::IsControllerConnected(const ControllerType 
     }
 
     return connected;
+}
+
+template <size_t buffer_size>
+void ControllerHandler<buffer_size>::SetWaysideLayout(const std::vector<types::Block> &blocks)
+{
+    // TODO NNF-226
 }
 
 template <size_t buffer_size>
@@ -171,6 +181,19 @@ void ControllerHandler<buffer_size>::RemoveDisconnectedPorts(void)
             }
         }
     }
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::LookupWaysideController(types::WaysideId &wayside, const types::TrackId track, const types::BlockId block)
+{
+    types::Error error = types::Error::ERROR_INVALID_BLOCK;
+
+    if (wayside_lookup_table_[static_cast<size_t>(track)].GetKey(block, wayside))
+    {
+        error = types::Error::ERROR_NONE;
+    }
+
+    return error;
 }
 
 template <size_t buffer_size>
