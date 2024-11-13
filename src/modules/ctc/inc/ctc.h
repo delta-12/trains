@@ -104,6 +104,8 @@ class Ctc
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;
+        std::vector<types::Block> GetBlocks(void) const;
+        std::vector<ctc::Train> GetTrains(void) const;
         std::size_t GetNumStation(void) const;
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
