@@ -16,12 +16,12 @@ const types::MetersPerSecondSquared kMaximumDecelerationLimit = -2.73;
 const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
 //const types::MilesPerHour           kMaximumVelocity          = 43.496;
 //const int                           kMaximumPassengers        = 222;
-const int                           kCrewCount                = 7;
-const Kilograms                     kTrainMass                = 37103;
-const Kilograms                     kAvgPassengerWeight       = 68.039;
-const types::Feet                   kTrainWidth                    = 8.69;
-const types::Feet                   kTrainHeight                   = 11.22;
-const types::Feet                   kTrainLength                   = 105.64;
+const int         kCrewCount          = 7;
+const Kilograms   kTrainMass          = 37103;
+const Kilograms   kAvgPassengerWeight = 68.039;
+const types::Feet kTrainWidth         = 8.69;
+const types::Feet kTrainHeight        = 11.22;
+const types::Feet kTrainLength        = 105.64;
 
 
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
@@ -63,7 +63,7 @@ void SoftwareTrainModel::Update()
 {
     std::chrono::milliseconds elapsed_time_ = (*clock_).GetElapsedTime(last_tick_updated_);
 
-    last_tick_updated_     = (*clock_).GetTick();
+    last_tick_updated_ = (*clock_).GetTick();
 
     types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
@@ -254,7 +254,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     }
     else
     {
-        acceleration_ = std::min((force_ / mass_),kMaximumAccelerationLimit);
+        acceleration_ = std::min((force_ / mass_), kMaximumAccelerationLimit);
     }
     previous_acceleration_ = acceleration_;
 
