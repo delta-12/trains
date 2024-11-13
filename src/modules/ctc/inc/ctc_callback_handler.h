@@ -8,10 +8,12 @@
 
 #include "launcher.h"
 #include "ctc.h"
+#include "channel.h"
 
-namespace ctc_callback_handler {
-    void on_manual_dispatch(slint::ComponentHandle<ui::CtcUi> ctc_ui, ctc::Ctc& ctc);
-    void setup_ctc_callbacks(slint::ComponentHandle<ui::CtcUi> ctc_ui, ctc::Ctc& ctc);
+namespace ctc
+{
+void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc, Channel<std::string> &channel);
+void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc, std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> received_train_schedules, Channel<std::string> &channel);
 }
 
 #endif // TRAINS_SRC_MODULES_CTC_INC_CTC_CALLBACK_HANDLER_H
