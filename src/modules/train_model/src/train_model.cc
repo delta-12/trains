@@ -19,10 +19,16 @@ const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
 const int                           kCrewCount                = 7;
 const Kilograms                     kTrainMass                = 37103;
 const Kilograms                     kAvgPassengerWeight       = 68.039;
+const types::Feet                   kTrainWidth                    = 8.69;
+const types::Feet                   kTrainHeight                   = 11.22;
+const types::Feet                   kTrainLength                   = 105.64;
 
 
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)
 {
+    width_                 = kTrainWidth;
+    length_                = kTrainLength;
+    height_                = kTrainHeight;
     passengers_on_board_   = 0;
     headlights_            = 0;
     interior_light_        = 0;
@@ -56,6 +62,8 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
 void SoftwareTrainModel::Update()
 {
     std::chrono::milliseconds elapsed_time_ = (*clock_).GetElapsedTime(last_tick_updated_);
+
+    last_tick_updated_     = (*clock_).GetTick();
 
     types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
@@ -233,7 +241,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     }
     else
     {
-        force_ = power_ / velocity_;
+        force_ = std::min(power_ / velocity_, kMaximumForce);
     }
 
     if (emergency_brake_ == true && velocity_ >= 0)
@@ -251,6 +259,6 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     previous_acceleration_ = acceleration_;
 
     previous_velocity_ = velocity_;
-    velocity_          = previous_velocity_ + ((delta.count() / 2) * (previous_acceleration_ + acceleration_));
+    velocity_          = std::max((previous_velocity_ + ((delta.count() / 2) * (previous_acceleration_ + acceleration_))), 0.0);
 }
 }

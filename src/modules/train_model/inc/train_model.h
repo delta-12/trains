@@ -112,6 +112,9 @@ class SoftwareTrainModel : public TrainModel
 
     private:
         //internal variables(model specific)
+        types::Feet height_;
+        types::Feet length_;
+        types::Feet width_;
         int passengers_on_board_;
         bool headlights_;
         bool interior_light_;
