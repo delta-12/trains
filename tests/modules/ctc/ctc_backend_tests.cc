@@ -16,6 +16,9 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ctc.SetScheduleFilePath(path);
     ctc.SetTrackLayout();
 
+    std::vector<types::Block> blocks = ctc.GetBlocks();
+    ASSERT_EQ(blocks.size(), 151);
+
     ASSERT_EQ(ctc.GetBlockById(1).block, 1);
     ASSERT_EQ(ctc.GetBlockById(1).speed_limit, 15);
 
@@ -65,6 +68,10 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
 
     ASSERT_EQ(ctc.GetNumStation(), 18);
     ctc.ManualDispatch(105);
+
+    std::vector<ctc::Train> trains = ctc.GetTrains();
+    ASSERT_EQ(trains.size(), 1);
+
     ctc::Train train1 = ctc.GetTrainById(1);
     ASSERT_EQ(train1.authority.front(), 63);
 

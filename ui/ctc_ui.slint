@@ -3,14 +3,12 @@ import { HorizontalBox, Button, GroupBox, Switch, TabWidget, StandardTableView, 
 component TransitSystem inherits Rectangle {
     background: #252525;
     border-radius: 10px;
-    preferred-height: 180px;
-    in-out property <[[StandardListViewItem]]> row_data;
-    in-out property <string> section;
-    in-out property <string> block;
-    in-out property <bool> mode: true;
-    in-out property <bool> switch: false;
-    in-out property <bool> occupancy: false;
-    in-out property <string> failure;
+    preferred-height: 300px;
+    in-out property <[[StandardListViewItem]]> block_data;
+    in-out property <string> block_id;
+    in-out property <bool> mode;
+    in-out property <bool> switch;
+
     VerticalLayout {
         padding-top: 10px;
         HorizontalLayout {
@@ -18,27 +16,29 @@ component TransitSystem inherits Rectangle {
             padding-left: 15px;
             spacing: 20px;
             Text { 
+                font-size: 20px;
+                font-weight: 500;
                 text: "Transit System";
             }
             HorizontalLayout {
-                Text {text: "Time: ";}
+                Text {font-size: 20px; text: "Time: ";}
                 Rectangle {
                     border-radius: 5px;
-                    y: -4px;
+                    y: -3px;
                     width: 120px;
-                    height: 25px;
+                    height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
                     Text {text: "hh:mm:ss";}
                 }
             }
             HorizontalLayout {
-                Text {text: "Throughput: ";}
+                Text {font-size: 20px;text: "Throughput: ";}
                 Rectangle {
                     border-radius: 5px;
-                    y: -4px;
+                    y: -3px;
                     width: 120px;
-                    height: 25px;
+                    height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
                     Text {text: "Train/hr/line";}
@@ -48,7 +48,7 @@ component TransitSystem inherits Rectangle {
                 alignment: end;
                 padding-right: 15px;
                 ComboBox {
-                    y: -7px;
+                    y: -3px;
                     model: [@tr("Simulation Speed"), @tr("x1"), @tr("x10"), @tr("x50")];
                 }
             }
@@ -60,17 +60,11 @@ component TransitSystem inherits Rectangle {
                     { title: @tr("Section") },
                     { title: @tr("Block") },
                     { title: @tr("Mode") },
+                    { title: @tr("Switch") },
                     { title: @tr("Occupany") },
                     { title: @tr("Failure") },
                 ];
-                rows: [
-                    [{text: "A"}, {text: "1"}, {text: mode ? "Maintenance" : "Open"}, {text: occupancy ? "Occupied" : "n/a"}, {text: failure},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                ];
+                rows: block_data;
             }
         }
         ManageBlock := HorizontalLayout {
@@ -80,14 +74,8 @@ component TransitSystem inherits Rectangle {
             LineEdit {
                 width: 120px;
                 height: 30px;
-                placeholder-text: @tr("Section");
-                edited(input) => { section = input }
-            }
-            LineEdit {
-                width: 120px;
-                height: 30px;
                 placeholder-text: @tr("Block");
-                edited(input) => { block = input }
+                edited(input) => { block_id = input }
             }
             HorizontalLayout {
                 Switch {
@@ -109,82 +97,78 @@ component TrainSchedule inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-width: 150px;
-    in-out property <string> train_name_1: "n/a";
-    in-out property <string> train_name_2: "";
-    in-out property <string> train_name_3: "";
-    in-out property <string> train_name_4: "";
-    in-out property <string> train_name_5: "";
-    in-out property <string> train_name_6: "";
-    in-out property <string> train_1_arrival_time: "n/a";
-    in-out property <string> train_1_dst: "n/a";
-    
+    preferred-height: 400px;
+    in-out property <[[StandardListViewItem]]> train_schedules;
     VerticalLayout {
-        Rectangle {
-            HorizontalLayout {
-                padding-top: 7px;
-                padding-left: 10px;
-                Text { 
-                    text: "Train Schedule";
-                }
+        alignment: stretch;
+        padding-top: 10px;
+        HorizontalLayout {
+            padding-left: 15px;
+            spacing: 20px;
+            Text { 
+                font-size: 20px;
+                font-weight: 500;
+                text: "Train Schedule";
             }
         }
         VerticalLayout {
-            padding: 10px;
+            padding: 15px;
             StandardTableView {
                 columns: [
                     { title: @tr("Train") },
+                    { title: @tr("Position") },
                     { title: @tr("ETA") },
                     { title: @tr("DST(s)") },
                 ];
-                rows: [
-                    [ { text: train_name_1 }, { text: train_1_arrival_time }, { text: train_1_dst }, ],
-                    [ { text: train_name_2 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_3 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_4 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_5 }, { text: "" }, { text: "" }, ],
-                    [ { text: train_name_6 }, { text: "" }, { text: "" }, ],
-                ];
+                rows: train_schedules;
             }
         }
     }
 }
 
 component ManualMode inherits Rectangle {
-    in-out property <string> train_name;
+    in-out property <int> train_id;
     in-out property <string> destination;
     in-out property <string> arrival_time;
+    in-out property <[string]> stations;
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
-        spacing: 5px;
+        spacing: 10px;
         HorizontalLayout {
             alignment: start;
-            Text { text: "Train Name: ";}
+            Text { font-size: 15px; text: "Train:            ";}
             Rectangle {width: 10px;}
-            LineEdit {
-                width: 120px;
+            ComboBox {
                 height: 30px;
-                placeholder-text: @tr("Train 1");
-                edited(input) => {train_name = input}
+                y: -3px;
             } 
         }
         HorizontalLayout {
             alignment: start;
-            Text { text: "Destination: ";}
+            Text { font-size: 15px; text: "Stations:       ";}
+            Rectangle {width: 10px;}
+            ComboBox {
+                height: 30px;
+                y: -3px;
+                model: stations;
+            } 
+        }
+        HorizontalLayout {
+            alignment: start;
+            Text { font-size: 15px;text: "Destination:  ";}
             Rectangle {width: 10px;}
             LineEdit {
-                width: 120px;
                 height: 30px;
-                placeholder-text: @tr("Downtown");
+                y: -3px;
                 edited(input) => {destination = input}
             } 
         }
         HorizontalLayout {
             alignment: start;
-            Text { text: "Arrival Time:";}
+            Text { font-size: 15px;text: "Arrival Time: ";}
             Rectangle {width: 10px;}
             LineEdit {
-                width: 120px;
                 height: 30px;
                 placeholder-text: @tr("10:00:00");
                 edited(input) => {arrival_time = input}
@@ -246,9 +230,10 @@ component AutomaticMode inherits Rectangle {
 component Dispatch inherits Rectangle {
     property <bool> automatic_mode: true;
     in-out property<string> fileName: "";
-    in-out property <string> train_name;
+    in-out property <int> train_id;
     in-out property <string> destination;
     in-out property <string> arrival_time;
+    in-out property <[string]> stations;
 
     callback choose-file();
     callback parse-file();
@@ -256,31 +241,31 @@ component Dispatch inherits Rectangle {
 
     background: #252525;
     border-radius: 10px;
-    preferred-height: 150px;
+    
     VerticalLayout {
         padding: 10px;
-        spacing: 10px;
+        spacing: 15px;
         alignment: stretch;
         Rectangle {
+            height: 30px;
             // background: red;
-            height: 18px;
             HorizontalLayout {
                 Text { 
+                    font-size: 20px;
+                    font-weight: 500;
                     text: "Dispatch";
                 }
             }
         }
         Rectangle {
-            height: 20px;
+            height: 30px;
             // background: green;
             HorizontalLayout {
-                spacing: 10px;
-                Switch {
-                    checked: automatic_mode;
-                    toggled => {automatic_mode = !automatic_mode;}
-                }
-                Text {
-                    y: 3px;
+                
+                Button {
+                    padding: 10px;
+                    height: 35px;
+                    clicked => {automatic_mode = !automatic_mode;}
                     text: automatic_mode ? "Automatic Mode" : "Manual Mode";
                 }
             }
@@ -292,7 +277,8 @@ component Dispatch inherits Rectangle {
             fileName: fileName;
         }
         if(automatic_mode == false) : ManualMode {
-            train_name <=> train_name;
+            train_id <=> train_id;
+            stations: stations;
             destination <=> destination;
             arrival_time <=> arrival_time;
             manual-dispatch => {manual-dispatch()}
@@ -302,49 +288,39 @@ component Dispatch inherits Rectangle {
 
 component TBInputs inherits Rectangle {
     in-out property <string> block_occupancy;
-    in-out property <string> section_occupancy;
 
     in-out property <string> confirm_occupancy_message;
     // Callbacks
-    callback print_occupancy_message();
+    callback send_occupancy_signal();
     callback send_failure_signal();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
         WaysideOccupancy := VerticalLayout {
             spacing: 10px;
-            Text {text: "Wayside Occupancy Signal:";}
+            Text {font-size: 20px; text: "Wayside Occupancy Signal:";}
             LineEdit {
-                height: 30px;
-                placeholder-text: @tr("Section");
-                edited(input) => {section_occupancy = input}
-            }
-            LineEdit {
-                height: 30px;
+                height: 50px;
                 placeholder-text: @tr("Block Number");
                 edited(input) => {block_occupancy = input}
             }
             Button {
+                height: 40px;
                 text: "Send Occupancy Signal";
-                clicked => {print_occupancy_message()}
+                clicked => {send_occupancy_signal()}
             }
             Text {
                 text: confirm_occupancy_message;
             }
-        }
-        VerticalBox {
-            spacing: 10px;
-            Text {text: "Wayside Failure Signal Inputs:";}
-            area := TouchArea {
-                Rectangle {
-                    border-radius: 5px;
-                    height: 30px;
-                    background: #3f3f3f;
-                    Text {text: "Send Failure Signal";}
-                }
+            Button {
+                height: 40px;
+                text:  "Send Failure Signal";
                 clicked => {
                     send_failure_signal();
                 }
+            }
+            Text {
+                text: confirm_occupancy_message;
             }
         }
     }
@@ -352,35 +328,36 @@ component TBInputs inherits Rectangle {
 
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
-    in-out property <string> train_1: " ";
-    in-out property <string> train_1_at: " ";
-    in-out property <string> train_1_dst;
-    in-out property <[[StandardListViewItem]]> row_data;
-    in-out property <string> train_name;
+    in-out property <int> train_id;
+    in-out property <[[StandardListViewItem]]> block_data;
+    in-out property <[[StandardListViewItem]]> train_schedules;
     in-out property <string> destination;
     in-out property <string> arrival_time;
-    in-out property <string> maintenance_block;
     in-out property <string> maintenance_section;
+    in-out property <string> maintenance_block;
 
     //Transit System
     in-out property <bool> maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
 
+    //Dispatch 
+    in-out property <[string]> stations;
+
     //TestBench
-    in-out property <string> section_occupancy;
     in-out property <string> block_occupancy;
     in-out property <bool> occupancy;
 
-    in-out property <string> authority;
-    in-out property <string> suggested_speed;
+    in-out property <int> authority;
+    in-out property <int> suggested_speed;
     in-out property <string> dwell_time;
     in-out property <string> confirm_occupancy_message;
     in-out property <string> confirm_output_message;
     in-out property <string> confirm_maintenance_message;
     in-out property <string> confirm_switch_message;
     in-out property <string> confirm_automatic_dispatch;
-    callback print-occupancy-message();
+
+    callback send_occupancy();
     callback print-output-to-wayside();
     callback print-maintenance-message();
     callback print-switch-message();
@@ -393,7 +370,7 @@ export component CtcUi inherits Window {
 
     title: "CTC Office";
     preferred-width: 600px;
-    preferred-height: 500px;
+    preferred-height: 600px;
     TabWidget {
         Tab {
             title: @tr("CTC Home");
@@ -403,27 +380,20 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
-                    row_data: row_data;
-                    occupancy: occupancy;
-                    failure: failure_signal;
-                    mode <=> maintenance_mode;
-                    switch <=> switch_state;
-                    section <=> maintenance_section;
-                    block <=> maintenance_block;
+                    block_data: block_data;
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
                     alignment: stretch;
                     TrainSchedule {
-                        train_name_1: train_1;
-                        train_1_arrival_time: train_1_at;
-                        train_1_dst: train_1_dst;
+                        train_schedules <=> train_schedules;
                     }
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
                         parse-file => {root.parse-file()}
-                        train_name <=> train_name;
+                        stations <=> stations;
+                        train_id <=> train_id;
                         destination <=> destination;
                         arrival_time <=> arrival_time;
                         manual-dispatch => {root.manual-dispatch()}
@@ -443,12 +413,15 @@ export component CtcUi inherits Window {
                         alignment: start;
                         padding: 10px;
                         padding-left: 15px;
-                        Text {text: "Inputs";}
+                        Text {
+                            font-size: 20px;
+                            font-weight: 500;
+                            text: "Inputs";
+                        }
                         TBInputs {
                             block_occupancy <=> block_occupancy;
-                            section_occupancy <=> section_occupancy;
                             confirm_occupancy_message: confirm_occupancy_message;
-                            print_occupancy_message => {root.print-occupancy-message()}
+                            send_occupancy_signal => {root.send_occupancy()}
                             send_failure_signal => {root.send-failure-signal()}
                         }     
                     }
@@ -460,40 +433,53 @@ export component CtcUi inherits Window {
                         alignment: start;
                         padding: 10px;
                         padding-left: 15px;
-                        Text {text: "Outputs";}
+                        Text {
+                            font-size: 20px;
+                            font-weight: 500;
+                            text: "Outputs";
+                        }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
-                                text: "Train: \{root.train_1}";
+                                font-size: 20px;
+                                text: "Train: \{root.train_id}";
                             }
                             Text {
-                                text: "Suggested Speed: \{root.suggested_speed}";
+                                font-size: 20px;
+                                text: "Suggested Speed (m/s): \{root.suggested_speed}";
                             }
                             Text {
-                                text: "Authority: \{root.authority}";
+                                font-size: 20px;
+                                text: "Authority (# blocks): \{root.authority}";
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
+                                font-size: 20px;
                                 text: "Section: \{maintenance_mode ? maintenance_section : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Block: \{maintenance_mode ? maintenance_block : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Mainteance Signal: \{maintenance_mode ? "True" : "False" }" ;
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
+                                font-size: 20px;
                                 text: "Section: \{switch_state ? maintenance_section : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Block: \{switch_state ? maintenance_block : ""}";
                             }
                             Text {
+                                font-size: 20px;
                                 text: "Switch Signal: \{switch_state ? "True" : "False"}";
                             }
                         }
