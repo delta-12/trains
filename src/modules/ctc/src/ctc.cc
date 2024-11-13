@@ -272,4 +272,14 @@ std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
     return failure_blocks_;
 }
 
+std::vector<types::Block> Ctc::GetBlocks(void) const
+{
+    return blocks_;
+}
+
+std::vector<ctc::Train> Ctc::GetTrains(void) const
+{
+    return train_schedules_;
+}
+
 } // namespace ctc
