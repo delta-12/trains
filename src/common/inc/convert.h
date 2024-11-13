@@ -3,6 +3,8 @@
 *
 * @brief Conversions between commonly used types.
 *****************************************************************************/
+#ifndef TRAINS_SRC_COMMON_INC_CONVERT_H
+#define TRAINS_SRC_COMMON_INC_CONVERT_H
 
 #include "types.h"
 
@@ -23,3 +25,5 @@ uint8_t GetHighByte(const uint16_t data);
 uint16_t MakeUint16(const uint8_t high, const uint8_t low);
 
 } // namespace convert
+
+#endif // TRAINS_SRC_COMMON_INC_CONVERT_H
