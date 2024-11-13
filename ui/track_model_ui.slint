@@ -43,7 +43,7 @@ export component TrackModelUi inherits Window {
     min-height: 950px;
     min-width: 1200px;
     in-out property <string> selected_fileName;
-    in-out property <string> train_block;
+    in-out property <float> train_block;
     in-out property <string> external_temp;
     in-out property <string> passengers_deboarding;
     in-out property <int> switch_block;
@@ -66,6 +66,30 @@ export component TrackModelUi inherits Window {
     in-out property<string> passengers_boarding: "0";
     in-out property <string> view_block;
     in-out property <string> num_blocks;
+    in-out property <string> track_id;
+    in-out property <string> block_number;
+    in-out property <string> d_traveled;
+    in-out property <string> commanded_speed;
+    in-out property <string> authority;
+
+    //block stuff
+    in-out property <string> block_underground;
+    in-out property <string> block_station;
+    in-out property <string> block_crossing;
+    in-out property <string> block_switch;
+    in-out property <string> block_grade;
+    in-out property <string> block_elevation;
+    in-out property <string> block_cumulative_elevation;
+    in-out property <bool> block_tc_fail;
+    in-out property <string> current_tc_fail;
+    in-out property <string> current_pfail;
+    in-out property <string> current_brail;
+    in-out property <bool> block_brail;
+    in-out property <bool> block_pfail;
+    in-out property <string> block_heater;
+    in-out property <string> block_occupied;
+    in-out property <string> block_light_color;
+    in-out property <string> block_length;
 
     callback request_update_train_block();
     callback request_update_external_temp();
@@ -78,6 +102,9 @@ export component TrackModelUi inherits Window {
     callback request_update_brail_block();
     callback request_update_tcfail_block();
     callback request_update_pfail_block();
+    callback request_update_distance_traveled();
+    callback request_update_commanded_speed();
+    callback request_update_authority();
 
     callback request_block_info();
     
@@ -88,6 +115,7 @@ export component TrackModelUi inherits Window {
         Tab{
         title: "Track Model Home";
         HorizontalBox {
+        max-width: 500px;
                 VerticalBox {
                     Rectangle{
                         preferred-height: 250px;
@@ -101,12 +129,27 @@ export component TrackModelUi inherits Window {
                                 }
                             }
                             HorizontalBox {
-                                Image {
-                                    //source: @image-url("/Users/ibrah/Downloads/redgreenlines.png");
-                                    height: 500px;
-                                    width: 400px;
+                                if track_id=="green" : Image {
+                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/green_line_picture.png");
+                                    height: 600px;
+                                    width: 700px;
                                     //y: 150px;
+                                }  
+                                //if track_id=="red"
+                            }
+                            Rectangle { 
+                                if train_block<69 && train_block>59 : Image {
+                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
+                                    y: 200px;
+                                    x: train_block*1px;
                                 }
+                            }
+                            Button {
+                                text: "Update";
+                                clicked => {
+                                    root.request_update_train_block();
+                                }
+                                min-width: 100px;
                             }
                         }
                     }
@@ -117,7 +160,7 @@ export component TrackModelUi inherits Window {
                         preferred-width: 50px;
                         VerticalBox {
                             HorizontalBox {
-
+                                max-width: 200px;
                                 VerticalBox {
                                     Rectangle {
                                         //border-color: white;
@@ -171,11 +214,12 @@ export component TrackModelUi inherits Window {
                                                 preferred-width: 250px;
                                             }
                                             LineEdit {
-                                            //text: root.current_velocity;
+                                            text: block_number;
                                             font-size: 20px;
                                             max-width: 30px;
                                             max-height: 30px;
-                                            placeholder-text: "Enter Value";                       
+                                            placeholder-text: "Enter Value";
+                                            edited(val)=>{block_number=val}                       
                                             }
                                             Button {
                                                 text: "Confirm";
@@ -187,23 +231,23 @@ export component TrackModelUi inherits Window {
                                         }
                                     HorizontalBox {
                                         Text{
-                                            //max-width: 150px;
+                                            max-width: 150px;
                                             max-height: 30px;
-                                            text: "Connected to:";
+                                            text: "Switched: " + block-switch;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Station:";
+                                            text: "Station: " + block-station;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Crossing:";
+                                            text: "Crossing: " + block-crossing;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -212,7 +256,7 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Grade:";
+                                            text: "Grade: " + block-grade;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -221,7 +265,7 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Elevation:";
+                                            text: "Elevation: " + block-elevation;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -230,16 +274,7 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Cumulative Elevation:";
-                                            font-size: 20px;
-                                            preferred-width: 250px;
-                                        }
-                                    }
-                                    HorizontalBox {
-                                        Text{
-                                            //max-width: 150px;
-                                            max-height: 30px;
-                                            text: "Track Circuit Failure:";
+                                            text: "Cumulative Elevation: " + block-cumulative-elevation;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -248,37 +283,79 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             //max-width: 150px;
                                             max-height: 30px;
-                                            text: "Broken Rail:";
+                                            text: "Track Circuit Failure: " + current-tc-fail;
                                             font-size: 20px;
                                             preferred-width: 250px;
+                                        }
+                                        Switch {
+                                            checked: tcfail_bool;
+                                            toggled => {tcfail_bool = !tcfail_bool;}
+                                        }
+                                        Button {
+                                            text: "Confirm ";
+                                            clicked => {
+                                                root.request_update_tcfail_block();
+                                            }
+                                            min-width: 100px;
+                                        }
+                                    }
+                                    HorizontalBox {
+                                        Text{
+                                            max-width: 150px;
+                                            max-height: 30px;
+                                            text: "Broken Rail: " + current-brail;
+                                            font-size: 20px;
+                                            preferred-width: 250px;
+                                        }
+                                        Switch {
+                                            checked: brail_bool;
+                                            toggled => {brail_bool = !brail_bool;}
+                                        }
+                                        Button {
+                                            text: "Confirm";
+                                            clicked => {
+                                                root.request_update_brail_block();
+                                            }
+                                            min-width: 100px;
                                         }
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Power Failure:";
+                                            text: "Power Failure: " + current-pfail;
                                             font-size: 20px;
                                             preferred-width: 250px;
+                                        }
+                                        Switch {
+                                            checked: pfail_bool;
+                                            toggled => {pfail_bool = !pfail_bool;}
+                                        }
+                                        Button {
+                                            text: "Confirm";
+                                            clicked => {
+                                                root.request_update_pfail_block();
+                                            }
+                                            min-width: 100px;
                                         }
                                     }
                                     HorizontalBox {
                                         Text{
                                             max-width: 200px;
                                             max-height: 30px;
-                                            text: "Underground:";
+                                            text: "Underground: " + block-underground;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Heater:";
+                                            text: "Heater: " + block-heater;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
-                                            text: "Occupancy:";
+                                            text: "Occupied: " + block-occupied;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -287,7 +364,16 @@ export component TrackModelUi inherits Window {
                                             Text{
                                                 max-width: 150px;
                                                 max-height: 30px;
-                                                text: "Light Color:";
+                                                text: "Light Color: " + block-light-color;
+                                                font-size: 20px;
+                                                preferred-width: 250px;
+                                            }
+                                        }
+                                        HorizontalBox {
+                                            Text{
+                                                max-width: 150px;
+                                                max-height: 30px;
+                                                text: "Block Length: " + block-length;
                                                 font-size: 20px;
                                                 preferred-width: 250px;
                                             }
@@ -346,21 +432,21 @@ export component TrackModelUi inherits Window {
                             //Train BlockId
                             HorizontalBox {
                                 Text {
-                                    text: "Current Train BlockID:";
+                                    text: "Distance Traveled:";
                                     vertical-alignment: center;
                                     font-size: 20px;
                                     preferred-width: 250px;
                                 }
                                 LineEdit {
-                                    text: train_block;
+                                    text: d_traveled;
                                     font-size: 20px;
                                     horizontal-alignment: center;
-                                    edited(val)=>{train_block=val}
+                                    edited(val)=>{d_traveled=val}
                                 }
                                 Button {
                                     text: "Confirm";
                                     clicked => {
-                                        root.request_update_train_block();
+                                        root.request_update_distance_traveled();
                                     }
                                     min-width: 100px;
                                 }
@@ -388,6 +474,60 @@ export component TrackModelUi inherits Window {
                                     text: "Confirm";
                                     clicked => {
                                         root.request_update_external_temp();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Commanded Speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded Speed:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: external_temp;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    edited(val)=>{commanded_speed=val}
+                                }
+                                Text {
+                                    text: "m/s";
+                                    vertical-alignment: center;
+                                    font-size: 25px;
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_commanded_speed();
+                                    }
+                                    min-width: 100px;
+                                }
+                            }
+                            //Authority
+                            HorizontalBox {
+                                Text {
+                                    text: "Authority:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: external_temp;
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    edited(val)=>{authority=val}
+                                }
+                                Text {
+                                    text: "meters";
+                                    vertical-alignment: center;
+                                    font-size: 25px;
+                                }
+                                Button {
+                                    text: "Confirm";
+                                    clicked => {
+                                        root.request_update_authority();
                                     }
                                     min-width: 100px;
                                 }
@@ -730,6 +870,54 @@ export component TrackModelUi inherits Window {
                                 }
                                 Text {
                                     text: "Passengers";
+                                    vertical-alignment: center;
+                                    horizontal-alignment: left;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            //Authority
+                            HorizontalBox {
+                                Text {
+                                    text: "Authority:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: passengers_boarding;
+                                    font-size: 20px;
+                                    max-height: 200px;
+                                    horizontal-alignment: center;
+                                    read-only: true;
+                                    //vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "meters";
+                                    vertical-alignment: center;
+                                    horizontal-alignment: left;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            //Commanded Speed
+                            HorizontalBox {
+                                Text {
+                                    text: "Commanded Speed:";
+                                    vertical-alignment: center;
+                                    font-size: 20px;
+                                    preferred-width: 250px;
+                                }
+                                LineEdit {
+                                    text: passengers_boarding;
+                                    font-size: 20px;
+                                    max-height: 200px;
+                                    horizontal-alignment: center;
+                                    read-only: true;
+                                    //vertical-alignment: center;
+                                }
+                                Text {
+                                    text: "m/s";
                                     vertical-alignment: center;
                                     horizontal-alignment: left;
                                     font-size: 20px;

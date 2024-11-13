@@ -333,6 +333,8 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     // update
     track.Update();
 
+    auto otb = track.GetOccupiedTrainBlocks();
+
     // fake authority and speed
     ASSERT_EQ(track.SetAuthority(200, 5), types::Error::ERROR_INVALID_BLOCK);
     ASSERT_EQ(track.SetCommandedSpeed(200, 50), types::Error::ERROR_INVALID_BLOCK);
@@ -390,8 +392,6 @@ TEST(TrackModelTests, TrainSpeedAuthority)
         track.Update();
     }
 
-    auto otb = track.GetOccupiedTrainBlocks();
-
     // update 4 (takes u to the end)
     for (int i = 0; i < 145; i++)
     {
@@ -405,7 +405,6 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     ASSERT_EQ(track.GetBlockOccupancy(64, occupied), types::Error::ERROR_NONE);
     ASSERT_EQ(occupied, 1);
 
-    otb = track.GetOccupiedTrainBlocks();
 
     // switching so we go back to the yard instead of looping around
     ASSERT_EQ(track.SetSwitchState(57, 1), types::Error::ERROR_NONE);

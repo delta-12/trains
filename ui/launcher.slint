@@ -6,6 +6,8 @@ import { TrackModelUi } from "track_model_ui.slint";
 import { TrainModelUi } from "train_model_ui.slint";
 import { TrainControllerUi } from "train_controller_ui.slint";
 
+export {CtcUi, WaysideControllerUi, TrackModelUi, TrainModelUi, TrainControllerUi }
+
 export component Launcher inherits Window {
 
     callback launch-ctc-window();
@@ -60,13 +62,3 @@ export component Launcher inherits Window {
         }
     }
 }
-
-export component CtcWindow inherits CtcUi { }
-
-export component WaysideControllerWindow inherits WaysideControllerUi { }
-
-export component TrackModelWindow inherits TrackModelUi { }
-
-export component TrainModelWindow inherits TrainModelUi { }
-
-export component TrainControllerWindow inherits TrainControllerUi { }

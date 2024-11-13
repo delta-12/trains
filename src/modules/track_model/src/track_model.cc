@@ -26,7 +26,11 @@ types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, cons
 
     track_path_ = blocks;
 
+    std::cout << "path size is " << track_path_.size() << std::endl;
+
     blocks_ = inorder;
+
+    std::cout << "track size is " << blocks_.size() << std::endl;
 
     return types::Error::ERROR_NONE;
 }
@@ -121,6 +125,7 @@ void SoftwareTrackModel::Update(void)
             {
                 // update new block occupancy
                 occupied_train_blocks_[i].push_back(current_block);
+
                 blocks_[current_block].occupied = 1;
 
                 current_train_block_[i] = j;
@@ -344,6 +349,18 @@ types::Error SoftwareTrackModel::GetBlock(types::BlockId block_number, types::Bl
     if (isValid)
     {
         block = blocks_[block_number];
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
+}
+
+types::Error SoftwareTrackModel::GetTrainBlock(types::TrainId train_id, types::BlockId block)
+{
+    bool isValid = train_id <= trains_.size();
+
+    if (isValid)
+    {
+        block = current_train_block_[train_id];
     }
 
     return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;

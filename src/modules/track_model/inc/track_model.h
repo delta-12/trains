@@ -60,6 +60,7 @@ class SoftwareTrackModel : public TrackModel
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
         types::Error RemoveTrainModel(size_t train_element);
         types::Error GetBlock(types::BlockId block_number, types::Block &block);
+        types::Error GetTrainBlock(types::TrainId train_id, types::BlockId block);
 
     private:
         types::TrackId track_;
