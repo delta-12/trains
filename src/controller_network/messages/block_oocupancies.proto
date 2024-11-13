@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package controller_messages;
+
+import "common.proto";
+
+message BlockOccupany
+{
+    uint32 block = 1;
+    bool occupied = 2;
+}
+
+message BlockOccupancies {
+    TrackId track = 1;
+    repeated BlockOccupany occupancies = 2;
+}
