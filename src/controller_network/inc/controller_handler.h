@@ -88,7 +88,10 @@ bool ControllerHandler<buffer_size>::IsControllerConnected(const ControllerType 
 template <size_t buffer_size>
 void ControllerHandler<buffer_size>::SetWaysideLayout(const std::vector<types::Block> &blocks)
 {
-    // TODO NNF-226
+    for (const types::Block &block : blocks)
+    {
+        wayside_lookup_table_[static_cast<size_t>(block.track)].Insert(block.wayside, block.block);
+    }
 }
 
 template <size_t buffer_size>
