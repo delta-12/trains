@@ -144,8 +144,7 @@ void ControllerHandler<buffer_size>::MapConnections(void)
             }
 
             return controller_connected;
-        }),
-                          unmapped_ports_.end());
+        }), unmapped_ports_.end());
 }
 
 template <size_t buffer_size>
