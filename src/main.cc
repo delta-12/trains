@@ -1,12 +1,16 @@
+#include <atomic>
+#include <cstring>
 #include <thread>
 
 #include <slint.h>
 
 #include "launcher.h"
 #include "simulator.h"
+#include "wayside_controller_port.h"
 
 int main(void)
 {
+    std::atomic_bool running(true);
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
     auto                 ctc_ui                = ui::CtcUi::create();
@@ -36,13 +40,21 @@ int main(void)
         train_controller_ui->show();
     });
 
-
     std::thread worker_thread([&]
     {
+        wayside_controller::WaysideControllerPort wayside_controller_port("/dev/ttyACM0");
+        const char * test_data = "5,10";
+        wayside_controller_port.Send((uint8_t*)test_data, strlen(test_data));
+
         // Main backend loop here
+        while (running.load())
+        {
+            
+        }
     });
 
     launcher_ui->run();
+    running.store(false);
     worker_thread.join();
 
     return 0;
