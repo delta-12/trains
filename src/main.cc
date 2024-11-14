@@ -58,7 +58,6 @@ int main(void)
 
         train_model_ui->on_update([&]{
             
-            usleep(1000000);
             TM.Update();
 
             TM.SetCommandedSpeed               (std::stof(std::string(train_model_ui->get_comm_speed_in())));
