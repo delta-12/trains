@@ -281,4 +281,20 @@ Kilograms SoftwareTrainModel::GetMass()
 {
     return mass_;
 }
+bool SoftwareTrainModel::GetHeadlights()
+{
+    return headlights_;
+}
+bool SoftwareTrainModel::GetInternalLights()
+{
+    return interior_light_;
+}
+bool SoftwareTrainModel::GetLeftDoorsState()
+{
+    return left_door_;
+}
+bool SoftwareTrainModel::GetRightDoorsState()
+{
+    return right_door_;
+}
 }

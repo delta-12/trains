@@ -72,6 +72,10 @@ class SoftwareTrainModel : public TrainModel
         Kilograms GetMass();
         bool GetEmergencyBrake();
         std::string GetStationAnnouncement();
+        bool GetHeadlights();
+        bool GetInternalLights();
+        bool GetLeftDoorsState();
+        bool GetRightDoorsState();
 
         //internal
         void Update();
