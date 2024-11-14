@@ -8,14 +8,17 @@ void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc&
 {
     if (channel.DataAvailable())
     {
-        std::string train_id = std::string(ctc_ui->get_train_id());
+        std::string train_id        = std::string(ctc_ui->get_train_id());
         std::string arrival_station = std::string(ctc_ui->get_arrival_station());
-        std::string destination = channel.Receive();
-        if (destination == "Station") {
-            types::BlockId destination_block = 0;
-            std::vector<ctc::Station> stations = ctc.GetStations();
-            for (const ctc::Station &station : stations) {
-                if (station.station_name == arrival_station) {
+        std::string destination     = channel.Receive();
+        if (destination == "Station")
+        {
+            types::BlockId            destination_block = 0;
+            std::vector<ctc::Station> stations          = ctc.GetStations();
+            for (const ctc::Station &station : stations)
+            {
+                if (station.station_name == arrival_station)
+                {
                     destination_block = station.block_id;
                 }
             }
@@ -37,8 +40,10 @@ void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc&
             auto received_train_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ctc_ui->get_trains());
             received_train_ids->push_back(slint::SharedString(std::to_string(new_train.train_id)));
         }
-        else {
-            if (train_id == "New Train") { 
+        else
+        {
+            if (train_id == "New Train")
+            {
                 ctc::Train new_train;
                 ctc.ManualDispatch(new_train.train_id, static_cast<uint16_t>(std::stoi(destination)));
                 std::cout << "Train dispatch to: " << destination << std::endl << std::flush;
@@ -57,11 +62,12 @@ void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc&
                 auto received_train_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ctc_ui->get_trains());
                 received_train_ids->push_back(slint::SharedString(std::to_string(new_train.train_id)));
             }
-            else {
+            else
+            {
                 ctc.ManualDispatch(std::stoi(train_id), static_cast<uint16_t>(std::stoi(destination)));
                 auto received_train_schedules = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ctc_ui->get_train_schedules());
-                auto train_entry      = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(received_train_schedules->row_data(0).value());
-                auto destinations = train_entry->row_data(3).value();
+                auto train_entry              = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(received_train_schedules->row_data(0).value());
+                auto destinations             = train_entry->row_data(3).value();
                 destinations.text = destinations.text + ", " + destination.c_str();
                 train_entry->set_row_data(3, destinations);
             }
@@ -104,15 +110,16 @@ void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& c
 {
     if (channel.DataAvailable())
     {
-        std::string train_id = std::string(ctc_ui->get_train_tb());
+        std::string    train_id       = std::string(ctc_ui->get_train_tb());
         types::BlockId occupied_block = static_cast<uint16_t>(std::stoi(channel.Receive()));
         std::cout << "Occupied Block Signal Sent: " << occupied_block << std::endl;
         std::vector<types::BlockState> block_states = { types::BlockState(occupied_block, true, false) };
         ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
 
-        ctc::Train                 train(0);
+        ctc::Train   train(0);
         types::Error error = ctc.GetTrainById(std::stoi(train_id), train);
-        if (error != types::Error::ERROR_NONE) {
+        if (error != types::Error::ERROR_NONE)
+        {
             std::cout << "Error train id" << std::endl;
         }
 
@@ -131,11 +138,13 @@ void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& c
         auto destination = train_entry->row_data(3).value();
         destination.text = std::to_string(train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination);
         train_entry->set_row_data(1, current_position);
-        if (destination.text == "0") {
+        if (destination.text == "0")
+        {
             destination.text = "Yard";
             train_entry->set_row_data(3, destination);
         }
-        else {
+        else
+        {
             train_entry->set_row_data(3, destination);
         }
 

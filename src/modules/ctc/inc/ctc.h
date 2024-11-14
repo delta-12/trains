@@ -70,7 +70,9 @@ struct Train
     Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
-    Train(types::TrainId train_id) : train_id(train_id) {};
+    Train(types::TrainId train_id) : train_id(train_id)
+    {
+    };
     Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };

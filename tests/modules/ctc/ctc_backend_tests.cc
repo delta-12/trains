@@ -77,7 +77,8 @@ TEST(CtcBackEndTest, DispatchMultipleDestination)
     ASSERT_EQ(train.destination_list[1].destination, 90);
 }
 
-TEST(CtcBackEndTest, Authority) {
+TEST(CtcBackEndTest, Authority)
+{
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
     ctc.ManualDispatch(1, 70);
     ASSERT_EQ(ctc.GetTrainAuthority(1), 8);

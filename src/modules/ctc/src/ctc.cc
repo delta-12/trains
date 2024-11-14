@@ -358,8 +358,9 @@ std::vector<ctc::Train> Ctc::GetTrains(void) const
     return train_schedules_;
 }
 
-std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id) {
-    std::size_t authority;
+std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id)
+{
+    std::size_t                       authority;
     std::vector<ctc::Train>::iterator train_it = std::find_if(
         train_schedules_.begin(),
         train_schedules_.end(),
@@ -371,14 +372,16 @@ std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id) {
     {
         authority = train_it->authority.size();
     }
-    else {
+    else
+    {
         authority = 0;
     }
     return authority;
 }
 
-types::MetersPerSecond Ctc::GetTrainSuggestedSpeed(const types::TrainId train_id) {
-    types::MetersPerSecond suggested_speed;
+types::MetersPerSecond Ctc::GetTrainSuggestedSpeed(const types::TrainId train_id)
+{
+    types::MetersPerSecond            suggested_speed;
     std::vector<ctc::Train>::iterator train_it = std::find_if(
         train_schedules_.begin(),
         train_schedules_.end(),
@@ -390,7 +393,8 @@ types::MetersPerSecond Ctc::GetTrainSuggestedSpeed(const types::TrainId train_id
     {
         suggested_speed = train_it->suggested_speed;
     }
-    else {
+    else
+    {
         suggested_speed = 0;
     }
     return suggested_speed;
