@@ -140,6 +140,7 @@ int main(void)
         train_controller_ui->set_commanded_speed(TC.GetCommandedSpeed());
         train_controller_ui->set_authority(TC.GetAuthority());
         train_controller_ui->set_actual_internal_temperature(TC.GetActualInternalTemperature());
+        train_controller_ui->set_distance_traveled(TC.GetDistanceTravelled());
         train_controller_ui->set_commanded_power(TC.GetCommandedPower());
         train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
     });
@@ -213,6 +214,7 @@ int main(void)
             TC.Update();
             train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
+            train_controller_ui->set_distance_traveled(TC.GetDistanceTravelled());
         }
     });
 
@@ -236,40 +238,13 @@ int main(void)
         {
             float temp = std::stof(std::string(train_controller_ui->get_temp_driver_speed()));
             TC.SetDriverSpeed(temp);
-            //TC.Update();
+            TC.Update();
             train_controller_ui->set_driver_speed(TC.GetDriverSpeed());
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
             train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
+            train_controller_ui->set_distance_traveled(TC.GetDistanceTravelled());
         }
     });
-
-    // Manual - UI input parameters - End
-
-    /*// Testbench - Start
-
-    // actual internal temperature
-    train_controller_ui->on_request_update_actual_internal_temperature([&] {
-        float temp = std::stof(std::string(train_controller_ui->get_temp_actual_internal_temperature()));
-        if (temp < 65) {
-            temp = 65;
-        } else if (temp > 75) {
-            temp = 75;
-        }
-        TC.SetActualInternalTemperature(temp);
-        train_controller_ui->set_actual_internal_temperature(TC.GetActualInternalTemperature());
-    });
-
-    // commanded speed
-    train_controller_ui->on_request_update_commanded_speed([&] {
-        float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_speed()));
-        TC.SetCommandedSpeed(temp);
-        TC.Update();
-        train_controller_ui->set_commanded_speed(TC.GetCommandedSpeed());
-        train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-        train_controller_ui->set_service_brake(TC.GetServiceBrake());
-    });
-
-    // Testbench - End*/
 
     // TRAIN CONTROLLER CALLBACKS END
 
