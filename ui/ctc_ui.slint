@@ -127,10 +127,12 @@ component TrainSchedule inherits Rectangle {
 }
 
 component ManualMode inherits Rectangle {
-    in-out property <int> train_id;
+    in-out property <string> train_id;
+    in-out property <string> arrival_station;
     in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
+    in-out property <[string]> trains;
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
@@ -142,6 +144,9 @@ component ManualMode inherits Rectangle {
             ComboBox {
                 height: 30px;
                 y: -3px;
+                model: trains;
+                current-value: train_id;
+                selected(input) => {train_id = input}
             } 
         }
         HorizontalLayout {
@@ -152,6 +157,7 @@ component ManualMode inherits Rectangle {
                 height: 30px;
                 y: -3px;
                 model: stations;
+                selected(input) => {arrival_station = input}
             } 
         }
         HorizontalLayout {
@@ -230,10 +236,12 @@ component AutomaticMode inherits Rectangle {
 component Dispatch inherits Rectangle {
     property <bool> automatic_mode: true;
     in-out property<string> fileName: "";
-    in-out property <int> train_id;
+    in-out property <string> train_id;
+    in-out property <string> arrival_station;
     in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
+    in-out property <[string]> trains;
 
     callback choose-file();
     callback parse-file();
@@ -278,6 +286,8 @@ component Dispatch inherits Rectangle {
         }
         if(automatic_mode == false) : ManualMode {
             train_id <=> train_id;
+            trains <=> trains;
+            arrival_station <=> arrival_station;
             stations: stations;
             destination <=> destination;
             arrival_time <=> arrival_time;
@@ -328,7 +338,6 @@ component TBInputs inherits Rectangle {
 
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
-    in-out property <int> train_id;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <[[StandardListViewItem]]> train_schedules;
     in-out property <string> destination;
@@ -343,10 +352,14 @@ export component CtcUi inherits Window {
 
     //Dispatch 
     in-out property <[string]> stations;
+    in-out property <string> train_id;
+    in-out property <[string]> trains;
+    in-out property <string> arrival_station;
 
     //TestBench
     in-out property <string> block_occupancy;
     in-out property <bool> occupancy;
+    in-out property <string> train_tb;
 
     in-out property <int> authority;
     in-out property <int> suggested_speed;
@@ -367,6 +380,9 @@ export component CtcUi inherits Window {
     callback choose-file();
     callback parse-file();
     callback manual-dispatch();
+
+    // Testbench 
+    callback show-train-output();
 
     title: "CTC Office";
     preferred-width: 600px;
@@ -394,6 +410,8 @@ export component CtcUi inherits Window {
                         parse-file => {root.parse-file()}
                         stations <=> stations;
                         train_id <=> train_id;
+                        trains <=> trains;
+                        arrival_station <=> arrival_station;
                         destination <=> destination;
                         arrival_time <=> arrival_time;
                         manual-dispatch => {root.manual-dispatch()}
@@ -440,9 +458,20 @@ export component CtcUi inherits Window {
                         }
                         VerticalBox {
                             padding-bottom: 20px;
-                            Text {
-                                font-size: 20px;
-                                text: "Train: \{root.train_id}";
+                            HorizontalLayout {
+                                alignment: start;
+                                Text { font-size: 15px; text: "Train:            ";}
+                                Rectangle {width: 10px;}
+                                ComboBox {
+                                    height: 30px;
+                                    y: -3px;
+                                    model: trains;
+                                    current-value: train_tb;
+                                    selected(input) => { 
+                                        train_tb = input;
+                                        root.show-train-output();
+                                    }
+                                } 
                             }
                             Text {
                                 font-size: 20px;

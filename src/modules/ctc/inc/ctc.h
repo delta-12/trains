@@ -70,6 +70,7 @@ struct Train
     Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
+    Train(types::TrainId train_id) : train_id(train_id) {};
     Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
@@ -118,7 +119,10 @@ class Ctc
         std::size_t GetNumTrains(void) const;
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
+        // Train Specific
         types::Error GetTrainById(const types::TrainId train_id, ctc::Train &train) const;
+        std::size_t GetTrainAuthority(const types::TrainId train_id);
+        types::MetersPerSecond GetTrainSuggestedSpeed(const types::TrainId train_id);
         ctc::CtcOperationMode GetOperationMode(void) const;
         types::TrackId GetTrack(void) const;
         std::vector<types::BlockId> GetFailureBlocks(void) const;

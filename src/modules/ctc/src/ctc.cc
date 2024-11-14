@@ -67,7 +67,7 @@ void Ctc::ManualDispatch(types::TrainId train_id, types::BlockId destination)
     }
     else
     {
-        ctc::Train train;
+        ctc::Train train(train_id);
         train.destination_list.emplace_back(DestinationAndArrivalTime(destination));
         AddTrainToTrainSchedule(train);
         std::vector<types::BlockId> route = GetRoute(destination);
@@ -356,6 +356,44 @@ std::size_t Ctc::GetNumTrains(void) const
 std::vector<ctc::Train> Ctc::GetTrains(void) const
 {
     return train_schedules_;
+}
+
+std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id) {
+    std::size_t authority;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        authority = train_it->authority.size();
+    }
+    else {
+        authority = 0;
+    }
+    return authority;
+}
+
+types::MetersPerSecond Ctc::GetTrainSuggestedSpeed(const types::TrainId train_id) {
+    types::MetersPerSecond suggested_speed;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        suggested_speed = train_it->suggested_speed;
+    }
+    else {
+        suggested_speed = 0;
+    }
+    return suggested_speed;
 }
 
 } // namespace ctc

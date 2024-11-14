@@ -84,7 +84,7 @@ set(TRAINS_SRCS
     ${SIMULATOR_SRCS}
 )
 
-set(SLINT_STYLE cosmic-dark)
+set(SLINT_STYLE native)
 
 find_package(Slint REQUIRED)
 
@@ -108,7 +108,7 @@ if (WIN32)
 else()
     add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
-target_include_directories(trains PRIVATE ${INC_DIRS})
+target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(trains PRIVATE Slint::Slint)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
@@ -120,7 +120,16 @@ endif()
 ################################################################################
 enable_testing()
 include(GoogleTest)
-add_library(trains_lib STATIC ${TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
+add_library(trains_lib STATIC 
+    ${COMMON_SRCS}
+    ${CONTROLLER_NETWORK_SRCS}
+    ${CTC_DIR}/src/ctc.cc
+    ${WAYSIDE_CONTROLLER_SRCS}
+    ${TRACK_MODEL_SRCS}
+    ${TRAIN_MODEL_SRCS}
+    ${TRAIN_CONTROLLER_SRCS}
+    ${SIMULATOR_SRCS}
+) # Add static library to avoid re-compiling sources for tests
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
     target_link_options(trains_lib PRIVATE --coverage)
