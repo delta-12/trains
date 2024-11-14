@@ -51,6 +51,7 @@ class TrainController
         virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const    = 0;
         virtual types::Blocks GetAuthority(void) const                               = 0;
         virtual bool GetOperationMode(void) const                                    = 0;
+        virtual double GetIntegralSum(void) const                                    = 0;
 
         // Setter declarations
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                       = 0;
@@ -103,6 +104,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Blocks GetAuthority(void) const;
         bool GetOperationMode(void) const;
+        double GetIntegralSum(void) const;
 
 
         // Implementations for setters

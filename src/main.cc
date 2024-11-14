@@ -2,6 +2,7 @@
 
 #include <slint.h>
 
+#include "common/inc/types.h"
 #include "launcher.h"
 #include "simulator.h"
 #include "train_controller.h"
@@ -45,9 +46,12 @@ int main(void)
 
     // TRAIN CONTROLLER CALLBACKS START
 
+    types::Second delta_time = types::Second(1.0); 
+
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
+    (*CLOCK).Start();
 
     // automatic mode
     train_controller_ui->on_request_automatic_mode([&] {
@@ -131,7 +135,8 @@ int main(void)
         }
 
         // call update
-        TC.Update();
+         TC.Update();
+        //TC.CalculateCommandedPower(delta_time);
 
         // assign all UI elements
         train_controller_ui->set_current_velocity(TC.GetCurrentSpeed());
@@ -139,7 +144,7 @@ int main(void)
         train_controller_ui->set_authority(TC.GetAuthority());
         train_controller_ui->set_actual_internal_temperature(TC.GetActualInternalTemperature());
         train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-        train_controller_ui->set_service_brake(TC.GetServiceBrake());
+        train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
     });
 
     // Update - End
@@ -156,7 +161,7 @@ int main(void)
             train_controller_ui->set_engine_status(TC.GetEngineFailure());
             train_controller_ui->set_emergency_brake(TC.GetEmergencyBrake());
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-            train_controller_ui->set_service_brake(TC.GetServiceBrake());
+            train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
         } else {
             TC.SetEngineFailure(0);
             train_controller_ui->set_engine_status(TC.GetEngineFailure());
@@ -173,7 +178,7 @@ int main(void)
             train_controller_ui->set_brake_status(TC.GetBrakeFailure());
             train_controller_ui->set_emergency_brake(TC.GetEmergencyBrake());
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-            train_controller_ui->set_service_brake(TC.GetServiceBrake());
+            train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
         } else {
             TC.SetBrakeFailure(0);
             train_controller_ui->set_brake_status(TC.GetBrakeFailure());
@@ -190,7 +195,7 @@ int main(void)
             train_controller_ui->set_signal_status(TC.GetSignalPickupFailure());
             train_controller_ui->set_emergency_brake(TC.GetEmergencyBrake());
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-            train_controller_ui->set_service_brake(TC.GetServiceBrake());
+            train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
         } else {
             TC.SetSignalPickupFailure(0);
             train_controller_ui->set_signal_status(TC.GetSignalPickupFailure());
@@ -234,10 +239,10 @@ int main(void)
         {
             float temp = std::stof(std::string(train_controller_ui->get_temp_driver_speed()));
             TC.SetDriverSpeed(temp);
-            TC.Update();
+            //TC.Update();
             train_controller_ui->set_driver_speed(TC.GetDriverSpeed());
             train_controller_ui->set_commanded_power(TC.GetCommandedPower());
-            train_controller_ui->set_service_brake(TC.GetServiceBrake());
+            train_controller_ui->set_service_brake(TC.GetServiceBrake() * 100);
         }
     });
 

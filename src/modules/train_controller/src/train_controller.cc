@@ -1,5 +1,6 @@
 #include "train_controller.h"
 
+#include <iostream>
 #include <unistd.h>
 #include <cstdint>
 #include <chrono>
@@ -9,6 +10,8 @@
 #include "types.h"
 #include "convert.h"
 #include "tick_source.h"
+
+using namespace std;
 
 namespace train_controller
 {
@@ -157,6 +160,11 @@ types::Blocks SoftwareTrainController::GetAuthority() const
 bool SoftwareTrainController::GetOperationMode() const
 {
     return operation_mode_;
+}
+
+double SoftwareTrainController::GetIntegralSum() const
+{
+    return integral_sum_;
 }
 
 // Setters
@@ -425,6 +433,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
             commanded_power_ = max_power_;
         }
     }
+    std::cout << "integral sum: " << GetIntegralSum() << std::endl;
 }
 
 void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed_difference)

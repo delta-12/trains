@@ -498,7 +498,7 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual"){
+                                    if (operation-mode-status == "Manual" && current_velocity == 0){
                                         root.right-doors = !root.right-doors;
                                     }
                                 }
@@ -519,7 +519,7 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual") {
+                                    if (operation-mode-status == "Manual" && current_velocity == 0) {
                                         root.left-doors = !root.left-doors;
                                     }
                                 }
