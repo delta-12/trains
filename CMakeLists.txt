@@ -84,7 +84,7 @@ set(TRAINS_SRCS
     ${SIMULATOR_SRCS}
 )
 
-set(SLINT_STYLE cosmic-dark)
+set(SLINT_STYLE native)
 
 find_package(Slint REQUIRED)
 
