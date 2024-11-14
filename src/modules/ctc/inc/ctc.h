@@ -13,15 +13,16 @@
 #include "graph.h"
 #include "types.h"
 
-#define CTC_YARD_BLOCK_0        0
-#define CTC_SECTION_D_BLOCK_13  13
-#define CTC_SECTION_F_BLOCK_28  28
-#define CTC_SECTION_J_BLOCK_58  58
-#define CTC_SECTION_K_BLOCK_63  63
-#define CTC_SECTION_M_BLOCK_76  76
-#define CTC_SECTION_N_BLOCK_85  85
-#define CTC_SECTION_R_BLOCK_101 101
-#define CTC_FIRST_BLOCK         0
+#define CTC_YARD_BLOCK_0              0
+#define CTC_SECTION_D_BLOCK_13        13
+#define CTC_SECTION_F_BLOCK_28        28
+#define CTC_SECTION_J_BLOCK_58        58
+#define CTC_SECTION_K_BLOCK_63        63
+#define CTC_SECTION_M_BLOCK_76        76
+#define CTC_SECTION_N_BLOCK_85        85
+#define CTC_SECTION_R_BLOCK_101       101
+#define CTC_FIRST_BLOCK               0
+#define CTC_TRAIN_CURRENT_DESTINATION 0
 
 namespace ctc
 {
@@ -54,10 +55,13 @@ struct Station
 struct DestinationAndArrivalTime
 {
     DestinationAndArrivalTime(void);
-    DestinationAndArrivalTime(const Station station, types::Tick arrival_time) : station(station), arrival_time(arrival_time)
+    DestinationAndArrivalTime(const types::BlockId destination) : destination(destination)
     {
     };
-    ctc::Station station;
+    DestinationAndArrivalTime(const types::BlockId destination, types::Tick arrival_time) : destination(destination), arrival_time(arrival_time)
+    {
+    };
+    types::BlockId destination;
     types::Tick arrival_time;
 };
 
@@ -88,13 +92,17 @@ struct Train
 class Ctc
 {
     public:
+        /* Constructor */
+        Ctc(void);
+        Ctc(const types::TrackId track_id);
+
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
         std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
         /* Train Dispatch Specific */
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
-        void ManualDispatch(types::BlockId destination);                                                      // Manual Dispatch to Block (not station)
+        void ManualDispatch(types::TrainId train_id, types::BlockId destination);                             // Manual Dispatch to Block (not station)
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
 
         /* Setters */
@@ -107,12 +115,14 @@ class Ctc
         std::vector<types::Block> GetBlocks(void) const;
         std::vector<ctc::Train> GetTrains(void) const;
         std::size_t GetNumStation(void) const;
+        std::size_t GetNumTrains(void) const;
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
-        ctc::Train GetTrainById(const types::TrainId train_id) const;
+        types::Error GetTrainById(const types::TrainId train_id, ctc::Train &train) const;
         ctc::CtcOperationMode GetOperationMode(void) const;
         types::TrackId GetTrack(void) const;
         std::vector<types::BlockId> GetFailureBlocks(void) const;
+        std::vector<types::BlockId> GetRoute(const types::BlockId start, const types::BlockId end);
 
     private:
         void SetBlocks(std::vector<types::Block> &blocks);
@@ -121,6 +131,7 @@ class Ctc
         void AddTrainToTrainSchedule(ctc::Train train);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
+
 
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
