@@ -6,6 +6,7 @@
 #include "ctc_callback_handler.h"
 #include "simulator.h"
 #include "channel.h"
+#include <iostream>
 
 int main(void)
 {
@@ -71,8 +72,11 @@ int main(void)
     });
 
     ctc_ui->on_manual_dispatch([&] {
-        ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
+        std::string destination = std::string(ctc_ui->get_destination());
+        ctc_manual_dispatch_channel.Send(destination);
         ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
+        ctc::Train train = ctc.GetTrainById(1);
+        std::cout << "Train dispatch [" <<  train.train_id << "] is dispatch to block: " << destination << std::endl;
     });
 
     ctc_ui->on_send_occupancy([&] {

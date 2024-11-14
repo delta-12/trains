@@ -10,7 +10,7 @@ void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc&
     {
         std::string destination = channel.Receive();
         ctc.ManualDispatch(static_cast<uint16_t>(std::stoi(destination)));
-        std::cout << "Train dispatch to: " << destination << std::endl;
+        std::cout << "Train dispatch to: " << destination << std::endl << std::flush;
 
         // Show Authority and Route
         ctc::Train                 train     = ctc.GetTrainById(1);
@@ -57,7 +57,6 @@ void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& c
             std::cout << "Block: " << authority.front() << std::endl;
             authority.pop();
         }
-
 
         auto train_entry      = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(received_train_schedules->row_data(0).value());
         auto current_position = train_entry->row_data(1).value();
