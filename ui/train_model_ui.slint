@@ -9,12 +9,11 @@ export component TrainModelUi inherits Window {
     in-out property<float> comm-speed;
     in-out property<float> act-speed: 0.0;
     in-out property<float> acceleration: 0.0;
-    in-out property<int> crew-count: 14;
+    in-out property<int> crew-count: 7;
     in-out property<float> authority;
     in-out property<float> actual-power;
     in-out property<int> pass-count: 100;
     in-out property<float> distance-traveled: 100;
-    in-out property<float> grade;
     in-out property<float> brake-percentage;
     in-out property<bool> ebrake;
     in-out property<bool> engine-fail;
@@ -46,7 +45,6 @@ export component TrainModelUi inherits Window {
     in-out property<string> comm-power-in;
     in-out property<string> dist-trav-in;
     in-out property<string> int-temp-in;
-    in-out property<string> grade-in;
     in-out property<string> service-brake-in;
     in-out property<string> ebrake-in;
     in-out property<string> station-announce-in;
@@ -63,10 +61,10 @@ export component TrainModelUi inherits Window {
     callback comm_power_change();
     callback dist_trav_change();
     callback int_temp_change();
-    callback grade_change();
     callback service_brake_change();
     callback ebrake_change();
     callback station_announce_change();
+    callback update();
 
     preferred-height:400px;
     min-height:650px;
@@ -436,7 +434,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.comm_speed_change();
+                            root.update();
                         }
                     }
                 }
@@ -453,7 +451,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.authority_change();
+                            root.update();
                         }
                     }
                 }
@@ -470,7 +468,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.pass_board_change();
+                            root.update();
                         }
                     }
                 }
@@ -487,7 +485,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.track_pol_change();
+                            root.update();
                         }
                     }
                 }
@@ -504,7 +502,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.station_announce_change();
+                            root.update();
                         }
                     }
                 }
@@ -521,7 +519,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.ebrake_change();
+                            root.update();
                         }
                     }
                 }
@@ -538,24 +536,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.service_brake_change();
-                        }
-                    }
-                }
-                HorizontalBox{
-                    Text{
-                        vertical-alignment: center;
-                        text: "Grade:";
-                    }
-                    TextEdit{
-                        edited(val) => {grade-in = val}
-                        min-height: 30px;
-                        max-height: 30px;
-                    }
-                    Button{
-                        text: "Submit";
-                        clicked => {
-                            root.grade_change();
+                            root.update();
                         }
                     }
                 }
@@ -572,7 +553,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.dist_trav_change();
+                            root.update();
                         }
                     }
                 }
@@ -589,7 +570,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.int_temp_change();
+                            root.update();
                         }
                     }
                 }
@@ -606,7 +587,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.left_door_change();
+                            root.update();
                         }
                     }
                 }
@@ -623,7 +604,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.right_door_change();
+                            root.update();
                         }
                     }
                 }
@@ -640,7 +621,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.int_light_change();
+                            root.update();
                         }
                     }
                 }
@@ -657,7 +638,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.ext_light_change();
+                            root.update();
                         }
                     }
                 }
@@ -674,7 +655,7 @@ TabWidget{
                     Button{
                         text: "Submit";
                         clicked => {
-                            root.comm_power_change();
+                            root.update();
                         }
                     }
                 }

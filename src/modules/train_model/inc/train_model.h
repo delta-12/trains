@@ -66,6 +66,12 @@ class SoftwareTrainModel : public TrainModel
     public:
         SoftwareTrainModel(std::shared_ptr<TickSource> clk);
 
+        //UI
+        double GetBrake();
+        types::MetersPerSecondSquared GetAcceleration();
+        Kilograms GetMass();
+        bool GetEmergencyBrake();
+        std::string GetStationAnnouncement();
 
         //internal
         void Update();
