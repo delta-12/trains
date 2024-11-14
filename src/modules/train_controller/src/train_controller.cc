@@ -346,6 +346,12 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         setpoint_speed = driver_speed_;
     }
 
+    // turn off service brake if train now wants to speed up
+    if (setpoint_speed >= current_speed_)
+    {
+        service_brake_percentage_ = 0;
+    }
+
     // Calculating speed_error
     types::MetersPerSecond speed_error = setpoint_speed - current_speed_;
 

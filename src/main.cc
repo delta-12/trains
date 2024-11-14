@@ -46,8 +46,6 @@ int main(void)
 
     // TRAIN CONTROLLER CALLBACKS START
 
-    types::Second delta_time = types::Second(1.0); 
-
     TickSource                                tick_source("07:00:00", std::chrono::milliseconds(1));
     std::shared_ptr<TickSource>               CLOCK = std::make_shared<TickSource>(tick_source);
     train_controller::SoftwareTrainController TC(CLOCK);
@@ -136,7 +134,6 @@ int main(void)
 
         // call update
          TC.Update();
-        //TC.CalculateCommandedPower(delta_time);
 
         // assign all UI elements
         train_controller_ui->set_current_velocity(TC.GetCurrentSpeed());
