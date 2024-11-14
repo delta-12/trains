@@ -29,6 +29,7 @@ class Simulator
         types::Error SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched);
         types::Error SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed);
         types::Error SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color);
+        types::Error GetBlockOccupancy(const types::TrackId track, const types::BlockId block, bool &occupied) const;
 
     private:
         std::unordered_map<types::TrackId, std::shared_ptr<track_model::TrackModel>> tracks_;

@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "block_oocupancies.pb.h"
 #include "block_outputs.pb.h"
 #include "block_states.pb.h"
 #include "connection.pb.h"
@@ -47,6 +48,7 @@ class ControllerHandler
         void MapConnections(void);
         void RemoveDisconnectedPorts(void);
         types::Error LookupWaysideController(types::WaysideId &wayside, const types::TrackId track, const types::BlockId block);
+        types::Error LookupTrack(const types::WaysideId &wayside, types::TrackId &track);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office);
         types::Error ReceiveMessages(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
         types::Error ReceiveMessagesFromControllers(ctc::Ctc &ctc_office, std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>> &controllers);
@@ -59,6 +61,7 @@ class ControllerHandler
         types::Error HandleTrackCircuitData(const size_t message_size, simulator::Simulator &world_simulator);
         types::Error HandleBlockOutputs(const size_t message_size, simulator::Simulator &world_simulator);
         types::Error SendTrackCircuitData(const ctc::Ctc &ctc_office);
+        types::Error SendBlockOccupancies(const simulator::Simulator &world_simulator);
 
         std::vector<std::unique_ptr<ControllerPort>> unmapped_ports_;
         std::array<std::unordered_map<types::ControllerId, std::unique_ptr<ControllerPort>>, CONTROLLERTYPE_MAX> connected_controllers_;
@@ -157,7 +160,8 @@ void ControllerHandler<buffer_size>::MapConnections(void)
             }
 
             return controller_connected;
-        }), unmapped_ports_.end());
+        }),
+                          unmapped_ports_.end());
 }
 
 template <size_t buffer_size>
@@ -194,6 +198,25 @@ types::Error ControllerHandler<buffer_size>::LookupWaysideController(types::Ways
     if (wayside_lookup_table_[static_cast<size_t>(track)].GetKey(block, wayside))
     {
         error = types::Error::ERROR_NONE;
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::LookupTrack(const types::WaysideId &wayside, types::TrackId &track)
+{
+    types::Error error = types::Error::ERROR_INVALID_CONTROLLER;
+
+    for (size_t i = 0; i < wayside_lookup_table_.size(); i++)
+    {
+        if (wayside_lookup_table_[i].Contains(wayside))
+        {
+            track = static_cast<types::TrackId>(i);
+            error = types::Error::ERROR_NONE;
+
+            break;
+        }
     }
 
     return error;
@@ -346,11 +369,15 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
     types::Error error = SendMessages(ctc_office);
 
     // TODO NNF-230 send block occupancies to wayside controller
+    if (types::Error::ERROR_NONE == error)
+    {
+        error = SendBlockOccupancies(world_simulator);
+    }
+
     // TODO NNF-229 send train feedback to train controller
     // TODO NNF-229 send train failures to train controller
     // TODO NNF-229 send beacon data to train controller
     // TODO NNF-229 send track circuit data to train controller
-    (void)(world_simulator); // UNUSED
 
     return error;
 }
@@ -470,6 +497,67 @@ types::Error ControllerHandler<buffer_size>::SendTrackCircuitData(const ctc::Ctc
             error = types::Error::ERROR_INVALID_FORMAT;
         }
         else if (message_size != connected_controllers_[CONTROLLERTYPE_WAYSIDE][wayside]->SendMessage(MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size))
+        {
+            error = types::Error::ERROR_INVALID_SIZE;
+        }
+
+        if (types::Error::ERROR_NONE != error)
+        {
+            break;
+        }
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::SendBlockOccupancies(const simulator::Simulator &world_simulator)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    for (const std::pair<const types::ControllerId, std::unique_ptr<ControllerPort>> &controller_port : connected_controllers_[CONTROLLERTYPE_WAYSIDE])
+    {
+        controller_messages::BlockOccupancies message;
+        std::vector<types::BlockId>           blocks;
+        types::TrackId                        track;
+        size_t                                message_size = 0;
+
+        if (types::Error::ERROR_NONE != LookupTrack(controller_port.first, track))
+        {
+            error = types::Error::ERROR_INVALID_CONTROLLER;
+        }
+        else if (!wayside_lookup_table_[static_cast<size_t>(track)].GetValues(controller_port.first, blocks))
+        {
+            error = types::Error::ERROR_INVALID_CONTROLLER;
+        }
+        else
+        {
+            message.set_track(static_cast<controller_messages::TrackId>(track));
+
+            for (const types::BlockId &block : blocks)
+            {
+                bool occupied = true;
+
+                if (types::Error::ERROR_NONE != world_simulator.GetBlockOccupancy(track, block, occupied))
+                {
+                    error = types::Error::ERROR_INVALID_BLOCK;
+                }
+                else
+                {
+                    controller_messages::BlockOccupany* block_occupancy = message.add_occupancies();
+                    block_occupancy->set_block(block);
+                    block_occupancy->set_occupied(occupied);
+                }
+            }
+
+            message_size = message.ByteSizeLong();
+        }
+
+        if (!message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
+        {
+            error = types::Error::ERROR_INVALID_FORMAT;
+        }
+        else if (message_size != controller_port.second->SendMessage(MESSAGETYPE_BLOCK_OCCUPANCIES, message_buffer_.data(), message_size))
         {
             error = types::Error::ERROR_INVALID_SIZE;
         }

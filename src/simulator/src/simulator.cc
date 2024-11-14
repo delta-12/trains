@@ -168,4 +168,20 @@ types::Error Simulator::SetTrafficLight(const types::TrackId track, const types:
     return error;
 }
 
+types::Error Simulator::GetBlockOccupancy(const types::TrackId track, const types::BlockId block, bool &occupied) const
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::Error::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        error = tracks_.find(track)->second->GetBlockOccupancy(block, occupied);
+    }
+
+    return error;
+}
+
 } // namespace simulator

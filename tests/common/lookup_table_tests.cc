@@ -87,6 +87,7 @@ TEST(LookupTableTests, LookupTableTest)
     ASSERT_FALSE(table.GetKey(0, key));
     ASSERT_FALSE(table.GetValues(0, blocks));
     ASSERT_EQ(0, blocks.size());
+    ASSERT_FALSE(table.Contains(0));
 
     table.Insert(0, 1);
     table.Insert(0, 2);
@@ -98,6 +99,8 @@ TEST(LookupTableTests, LookupTableTest)
     table.Insert(1, 5);
     table.Insert(1, 6);
 
+    ASSERT_TRUE(table.Contains(0));
+    ASSERT_TRUE(table.Contains(1));
     ASSERT_TRUE(table.GetKey(1, key));
     ASSERT_EQ(0, key);
     ASSERT_TRUE(table.GetKey(2, key));

@@ -33,6 +33,7 @@ class LookupTable
         void Insert(const Key &key, const Value &value);
         bool GetKey(const Value &value, Key &key) const;
         bool GetValues(const Key &key, std::vector<Value> &values) const;
+        bool Contains(const Key &key) const;
 
     private:
         std::unordered_map<Key, Row<Value, columns>> table_;
@@ -108,6 +109,12 @@ bool LookupTable<Key, Value, columns>::GetValues(const Key &key, std::vector<Val
     }
 
     return values_found;
+}
+
+template <typename Key, typename Value, size_t columns>
+bool LookupTable<Key, Value, columns>::Contains(const Key &key) const
+{
+    return table_.contains(key);
 }
 
 #endif // TRAINS_SRC_COMMON_INC_LOOKUP_TABLE_H
