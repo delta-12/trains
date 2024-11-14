@@ -346,12 +346,6 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         setpoint_speed = driver_speed_;
     }
 
-    // turn off service brake if train now wants to speed up
-    if (setpoint_speed >= current_speed_)
-    {
-        service_brake_percentage_ = 0;
-    }
-
     // Calculating speed_error
     types::MetersPerSecond speed_error = setpoint_speed - current_speed_;
 
@@ -408,35 +402,43 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
             new_authority_ = false;
         }
     }
-
-    //Checking if Current Train Velocity is greater than Setpoint speed
-    else if (current_speed_ > setpoint_speed)
+    // turn off service brake if train now wants to speed up
+    else 
     {
-        integral_sum_ = 0;
-
-        commanded_power_ = 0;
-
-        types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
-
-        //Function to to assign service brake
-        CalculateServiceBrake(speed_difference);
-    }
-
-    //Checking if Service brake is on
-    else if (service_brake_percentage_ > 0)
-    {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
-    }
-
-    //Normal power calculation
-    else
-    {
-        commanded_power_ = kp_term + ki_term;
-
-        if (commanded_power_ > max_power_)
+        if (service_brake_percentage_ > 0 && setpoint_speed >= current_speed_)
         {
-            commanded_power_ = max_power_;
+            service_brake_percentage_ = 0;
+        }
+
+        //Checking if Current Train Velocity is greater than Setpoint speed
+        if (current_speed_ > setpoint_speed)
+        {
+            integral_sum_ = 0;
+
+            commanded_power_ = 0;
+
+            types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
+
+            //Function to to assign service brake
+            CalculateServiceBrake(speed_difference);
+        }
+
+        //Checking if Service brake is on
+        else if (service_brake_percentage_ > 0)
+        {
+            integral_sum_    = 0;
+            commanded_power_ = 0;
+        }
+
+        //Normal power calculation
+        else
+        {
+            commanded_power_ = kp_term + ki_term;
+
+            if (commanded_power_ > max_power_)
+            {
+                commanded_power_ = max_power_;
+            }
         }
     }
     std::cout << "integral sum: " << GetIntegralSum() << std::endl;

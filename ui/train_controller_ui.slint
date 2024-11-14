@@ -171,7 +171,7 @@ export component TrainControllerUi inherits Window {
                             // Current Velocity
                             HorizontalBox {
                                 Text {
-                                    text: "Current Velocity:";
+                                    text: "Current Speed:";
                                     vertical-alignment: center;
                                     font-size: 20px;
                                     width: 250px;
@@ -498,7 +498,7 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual" && current_velocity == 0){
+                                    if (operation-mode-status == "Manual" && current_velocity == 0 && driver_speed == 0 && authority == 0){
                                         root.right-doors = !root.right-doors;
                                     }
                                 }
@@ -519,7 +519,7 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual" && current_velocity == 0) {
+                                    if (operation-mode-status == "Manual" && current_velocity == 0 && driver_speed == 0 && authority == 0) {
                                         root.left-doors = !root.left-doors;
                                     }
                                 }
