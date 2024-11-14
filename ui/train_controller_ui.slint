@@ -15,6 +15,7 @@ export component TrainControllerUi inherits Window {
     in-out property <float> ki: 75;
     in-out property <float> grade_percent: 0.0;
     in-out property <float> distance_traveled: 0.0;
+    in-out property <float> distance_traveled_since_last_update: 0.0;
     in-out property <bool> emergency_brake: false;
     in-out property <int> service_brake: 0;
 
@@ -899,6 +900,28 @@ export component TrainControllerUi inherits Window {
                                 }
                                 Text {
                                     text: round(root.distance_traveled);
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-width: 18px;
+                                }
+                                Text {
+                                    text: "meters";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                            }
+                            // distance traveled since last update
+                            HorizontalBox {
+                                Text {
+                                    text: "Distance\nTraveled Since\nLast Update:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: round(root.distance_traveled_since_last_update);
                                     font-size: 18px;
                                     horizontal-alignment: center;
                                     vertical-alignment: center;
