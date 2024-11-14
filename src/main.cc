@@ -83,6 +83,10 @@ int main(void)
         if (!temp_current_velocity_str.empty()) {
             try {
                 float temp_current_velocity = std::stof(temp_current_velocity_str);
+                if (temp_current_velocity < 0)
+                {
+                    temp_current_velocity = 0;
+                }
                 TC.SetCurrentSpeed(temp_current_velocity);
             } catch (const std::exception&) {
                 inputError = true;

@@ -411,7 +411,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         }
 
         //Checking if Current Train Velocity is greater than Setpoint speed
-        if (current_speed_ > setpoint_speed)
+        if (current_speed_ >= setpoint_speed)
         {
             integral_sum_ = 0;
 
