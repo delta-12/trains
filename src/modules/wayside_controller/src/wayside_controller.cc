@@ -2,8 +2,6 @@
 
 #include <unordered_set>
 
-#include "logger.h"
-
 namespace wayside_controller
 {
 
@@ -201,7 +199,7 @@ Error WaysideController::SetSwitch(const types::BlockId block, const bool switch
         // TODO NNF-105 verify safe switch state here or in PLC program
         // TODO NNF-105 set virtual input accordingly
         // TODO NNF-105 update block_layout_ graph accordingly (i.e. add/remove connections betweens blocks)
-        LOGGER_UNUSED(switch_state);
+        (void)(switch_state);
     }
 
     return error;

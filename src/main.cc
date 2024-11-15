@@ -7,6 +7,7 @@
 #include "launcher.h"
 #include "simulator.h"
 #include "wayside_controller_port.h"
+#include "random_number_generator.h"
 
 int main(void)
 {
@@ -42,14 +43,24 @@ int main(void)
 
     std::thread worker_thread([&]
     {
+        RandomNumberGenerator random_number_generator;
+
         wayside_controller::WaysideControllerPort wayside_controller_port("/dev/ttyACM0");
-        const char * test_data = "5,10";
-        wayside_controller_port.Send((uint8_t*)test_data, strlen(test_data));
+        // const char * test_data = "5,10\n";
+        // wayside_controller_port.Send((uint8_t*)test_data, strlen(test_data));
+        char buf[6];        
 
         // Main backend loop here
         while (running.load())
         {
-            
+
+            int i = random_number_generator.generate(10);
+            int j = random_number_generator.generate(10);
+
+            snprintf(buf, 6, "%d,%d\n", i, j);
+            wayside_controller_port.Send((uint8_t*)buf, strlen(buf));
+
+            std::this_thread::sleep_for (std::chrono::seconds(3));
         }
     });
 

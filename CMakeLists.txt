@@ -13,6 +13,7 @@ add_compile_definitions(
 )
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(BSP_DIR ${SRC_DIR}/bsp)
 set(COMMON_DIR ${SRC_DIR}/common)
 set(CONTROLLER_NETWORK_DIR ${SRC_DIR}/controller_network)
 set(MODULES_DIR ${SRC_DIR}/modules)
@@ -35,6 +36,7 @@ set(TRAIN_MODEL_INC_DIR ${TRAIN_MODEL_DIR}/inc)
 set(TRAIN_CONTROLLER_INC_DIR ${TRAIN_CONTROLLER_DIR}/inc)
 set(SIMULATOR_INC_DIR ${SIMULATOR_DIR}/inc)
 set(INC_DIRS
+    ${BSP_DIR}
     ${COMMON_INC_DIR}
     ${CONTROLLER_NETWORK_INC_DIR}
     ${CTC_INC_DIR}
