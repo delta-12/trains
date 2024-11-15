@@ -60,7 +60,7 @@ class SoftwareTrackModel : public TrackModel
         std::vector<std::vector<types::BlockId>> GetOccupiedTrainBlocks(void);
         types::Error RemoveTrainModel(size_t train_element);
         types::Error GetBlock(types::BlockId block_number, types::Block &block);
-        types::Error GetTrainBlock(types::TrainId train_id, types::BlockId block);
+        std::vector<types::BlockId> GetFailedBlocks();
 
     private:
         types::TrackId track_;
@@ -68,6 +68,7 @@ class SoftwareTrackModel : public TrackModel
         std::vector<types::Block> track_path_;
         std::vector<std::shared_ptr<train_model::TrainModel>> trains_;
         std::vector<std::vector<types::BlockId>> occupied_train_blocks_;
+        std::vector<types::BlockId> failed_blocks_;
         std::vector<types::Meters> train_head_;
         std::vector<types::BlockId> current_train_block_;
         std::vector<uint16_t> passenger_counts_;

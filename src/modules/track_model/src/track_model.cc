@@ -26,11 +26,7 @@ types::Error SoftwareTrackModel::SetTrackLayout(const types::TrackId track, cons
 
     track_path_ = blocks;
 
-    std::cout << "path size is " << track_path_.size() << std::endl;
-
     blocks_ = inorder;
-
-    std::cout << "track size is " << blocks_.size() << std::endl;
 
     return types::Error::ERROR_NONE;
 }
@@ -182,9 +178,13 @@ types::Error SoftwareTrackModel::SetSwitchState(const types::BlockId block, cons
 
 types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, const bool closed)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(closed);
-    return types::Error::ERROR_NONE;
+    bool isValid = blocks_.size() > block && block > 0 && blocks_[block].has_crossing == 1;
+    if (isValid)
+    {
+        blocks_[block].crossing_state = closed;
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
@@ -269,31 +269,105 @@ types::Error SoftwareTrackModel::GetBlockOccupancy(const types::BlockId block, b
 
 types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const bool broken)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(broken);
-    return types::Error::ERROR_NONE;
+    // checking if block exists
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid && broken == 1)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) == failed_blocks_.end())
+        {
+            failed_blocks_.push_back(block);
+
+            blocks_[block].broken_rail = broken;
+        }
+    }
+    else if (isValid && broken == 0)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) != failed_blocks_.end())
+        {
+            failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
+
+            blocks_[block].broken_rail = broken;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId block, const bool track_circuit_failure)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(track_circuit_failure);
-    return types::Error::ERROR_NONE;
+    // checking if block exists
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid && track_circuit_failure == 1)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) == failed_blocks_.end())
+        {
+            failed_blocks_.push_back(block);
+
+            blocks_[block].track_circuit_failure = track_circuit_failure;
+        }
+    }
+    else if (isValid && track_circuit_failure == 0)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) != failed_blocks_.end())
+        {
+            failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
+
+            blocks_[block].track_circuit_failure = track_circuit_failure;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, const bool power_failure)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(power_failure);
-    return types::Error::ERROR_NONE;
+    // checking if block exists
+    bool isValid = blocks_.size() > block && block > 0;
+
+    if (isValid && power_failure == 1)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) == failed_blocks_.end())
+        {
+            failed_blocks_.push_back(block);
+
+            blocks_[block].power_failure = power_failure;
+        }
+    }
+    else if (isValid && power_failure == 0)
+    {
+        if (std::find(failed_blocks_.begin(), failed_blocks_.end(), block) != failed_blocks_.end())
+        {
+            failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
+
+            blocks_[block].power_failure = power_failure;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetExternalTemperature(const types::DegreesFahrenheit temperature)
 {
-    LOGGER_UNUSED(temperature);
+    if (temperature < 32)
+    {
+        for (int i = 0; i < blocks_.size(); i++)
+        {
+            blocks_[i].heater_on = 1;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < blocks_.size(); i++)
+        {
+            blocks_[i].heater_on = 0;
+        }
+    }
+
     return types::Error::ERROR_NONE;
     //NNF233
 }
@@ -354,16 +428,9 @@ types::Error SoftwareTrackModel::GetBlock(types::BlockId block_number, types::Bl
     return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
 }
 
-types::Error SoftwareTrackModel::GetTrainBlock(types::TrainId train_id, types::BlockId block)
+std::vector<types::BlockId> SoftwareTrackModel::GetFailedBlocks()
 {
-    bool isValid = train_id <= trains_.size();
-
-    if (isValid)
-    {
-        block = current_train_block_[train_id];
-    }
-
-    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
+    return failed_blocks_;
 }
 
 } // namespace track_model
