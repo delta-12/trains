@@ -50,20 +50,11 @@ export component TrainModelUi inherits Window {
     in-out property<string> station-announce-in;
 
     //testbench
-    callback comm_speed_change();
-    callback authority_change();
-    callback pass_board_change();
-    callback track_pol_change();
-    callback left_door_change();
-    callback right_door_change();
-    callback ext_light_change();
-    callback int_light-change();
-    callback comm_power_change();
-    callback dist_trav_change();
-    callback int_temp_change();
-    callback service_brake_change();
+
+    callback engine_failure_change();
+    callback brake_failure_change();
+    callback sig_pickup_failure_change();
     callback ebrake_change();
-    callback station_announce_change();
     callback update();
 
     preferred-height:400px;
@@ -107,6 +98,7 @@ TabWidget{
                             height: parent.height;
                             clicked => {
                                 ebrake = !ebrake;
+                                //root.ebrake_change();
                             }
                         }
                             border-radius:30px;
@@ -197,7 +189,7 @@ TabWidget{
                         }
                     TextEdit{
                         max-height: 30px;
-                        text: "Authority: " + authority + " miles";
+                        text: "Authority: " + authority + " blocks";
                         read-only:true;
                     }
                 }
@@ -679,7 +671,7 @@ TabWidget{
                         text: "Authority:";
                     }
                     TextEdit{
-                        text: authority + " miles";
+                        text: authority + " blocks";
                         read-only: true;
                         min-height: 30px;
                         max-height: 30px;

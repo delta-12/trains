@@ -61,11 +61,11 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
 }
 void SoftwareTrainModel::Update()
 {
-    std::chrono::milliseconds elapsed_time_ = (*clock_).GetElapsedTime(last_tick_updated_);
+    std::chrono::milliseconds elapsed_time = (*clock_).GetElapsedTime(last_tick_updated_);
+
+    types::Second delta = std::chrono::duration_cast<types::Second>(elapsed_time);
 
     last_tick_updated_ = (*clock_).GetTick();
-
-    types::Second delta = std::chrono::duration_cast<types::Second> (elapsed_time_);
 
     //internal calculations
     SpeedCalc(delta);

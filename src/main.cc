@@ -56,24 +56,217 @@ int main(void)
 
         (*CLOCK).Start();
 
+        train_model_ui->on_engine_failure_change([&]{
+            bool temp = train_model_ui->get_engine_fail();
+            TM.SetEngineFailure(temp);
+        });
+
+        train_model_ui->on_brake_failure_change([&]{
+            bool temp = train_model_ui->get_brake_fail();
+            TM.SetBrakeFailure(temp);
+        });
+
+        train_model_ui->on_sig_pickup_failure_change([&]{
+            bool temp = train_model_ui->get_signal_fail();
+            TM.SetSignalPickupFailure(temp);
+        });
+
+        train_model_ui->on_ebrake_change([&]{
+            bool temp = train_model_ui->get_ebrake();
+            TM.SetEmergencyBrake(temp);
+        });
+
         train_model_ui->on_update([&]{
-            
+
+            bool inputError = false;
+
+            auto temp1a = std::string(train_model_ui->get_comm_speed_in());
+            if (!temp1a.empty()) {
+                try {
+                    float temp1b = std::stof(temp1a);
+                    if (temp1b < 0)
+                    {
+                        temp1b = 0;
+                    }
+                    TM.SetCommandedSpeed(temp1b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp2a = std::string(train_model_ui->get_authority_in());
+            if (!temp2a.empty()) {
+                try {
+                    float temp2b = std::stof(temp2a);
+                    if (temp2b < 0)
+                    {
+                        temp2b = 0;
+                    }
+                    TM.SetAuthority(temp2b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp3a = std::string(train_model_ui->get_pass_board_in());
+            if (!temp3a.empty()) {
+                try {
+                    int temp3b = std::stoi(temp3a);
+                    if (temp3b < 0)
+                    {
+                        temp3b = 0;
+                    }
+                    TM.SetPassengersBoarding(temp3b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp4a = std::string(train_model_ui->get_left_door_in());
+            if (!temp4a.empty()) {
+                try {
+                    bool temp4b = (temp4a == "true");
+                    if (temp4b == 0)
+                    {
+                        temp4b = 0;
+                    }
+                    TM.SetLeftDoorsState(temp4b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp5a = std::string(train_model_ui->get_right_door_in());
+            if (!temp5a.empty()) {
+                try {
+                    bool temp5b = (temp5a == "true");
+                    if (temp5b == 0)
+                    {
+                        temp5b = 0;
+                    }
+                    TM.SetRightDoorsState(temp5b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp6a = std::string(train_model_ui->get_ext_light_in());
+            if (!temp6a.empty()) {
+                try {
+                    bool temp6b = (temp6a == "true");
+                    if (temp6b == 0)
+                    {
+                        temp6b = 0;
+                    }
+                    TM.SetHeadlights(temp6b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp7a = std::string(train_model_ui->get_int_light_in());
+            if (!temp7a.empty()) {
+                try {
+                    bool temp7b = (temp7a == "true");
+                    if (temp7b == 0)
+                    {
+                        temp7b = 0;
+                    }
+                    TM.SetInternalLights(temp7b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp8a = std::string(train_model_ui->get_comm_power_in());
+            if (!temp8a.empty()) {
+                try {
+                    float temp8b = std::stof(temp8a);
+                    if (temp8b < 0)
+                    {
+                        temp8b = 0;
+                    }
+                    TM.SetCommandedPower(temp8b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp9a = std::string(train_model_ui->get_dist_trav_in());
+            if (!temp9a.empty()) {
+                try {
+                    float temp9b = std::stof(temp9a);
+                    if (temp9b < 0)
+                    {
+                        temp9b = 0;
+                    }
+                    TM.SetDistanceTraveled(temp9b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp10a = std::string(train_model_ui->get_service_brake_in());
+            if (!temp10a.empty()) {
+                try {
+                    float temp10b = std::stof(temp10a);
+                    if (temp10b < 0)
+                    {
+                        temp10b = 0;
+                    }
+                    TM.SetBrake(temp10b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp11a = std::string(train_model_ui->get_int_temp_in());
+            if (!temp11a.empty()) {
+                try {
+                    int temp11b = std::stof(temp11a);
+                    if (temp11b < 0)
+                    {
+                        temp11b = 0;
+                    }
+                    TM.SetCommandedInternalTemperature(temp11b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp12a = std::string(train_model_ui->get_ebrake_in());
+            if (!temp12a.empty()) {
+                try {
+                    bool temp12b = (temp12a == "true");
+                    if (temp12b == 0)
+                    {
+                        temp12b = 0;
+                    }
+                    TM.SetEmergencyBrake(temp12b);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            auto temp13a = std::string(train_model_ui->get_station_announce_in());
+            if (!temp13a.empty()) {
+                try {
+                    TM.SetStationAnnouncement(temp13a);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            if (inputError)
+            {
+                inputError = false;
+            }
+
             TM.Update();
 
-            TM.SetCommandedSpeed               (std::stof(std::string(train_model_ui->get_comm_speed_in())));
-            TM.SetAuthority                    (std::stof(std::string(train_model_ui->get_authority_in())));
-            TM.SetPassengersBoarding           (std::stoi(std::string(train_model_ui->get_pass_board_in())));
             //TM.SetTrackPolarity                (std::string(train_model_ui->get_track_pol_in()) == "true");
-            TM.SetLeftDoorsState               (std::string(train_model_ui->get_left_door_in()) == "true");
-            TM.SetRightDoorsState              (std::string(train_model_ui->get_right_door_in()) == "true");
-            TM.SetHeadlights                   (std::string(train_model_ui->get_ext_light_in()) == "true");
-            TM.SetInternalLights               (std::string(train_model_ui->get_int_light_in()) == "true");
-            TM.SetCommandedPower               (std::stof(std::string(train_model_ui->get_comm_power_in())));
-            TM.SetDistanceTraveled             (std::stof(std::string(train_model_ui->get_dist_trav_in())));
-            TM.SetCommandedInternalTemperature (std::stoi(std::string(train_model_ui->get_int_temp_in())));
-            TM.SetBrake                        (std::stof(std::string(train_model_ui->get_service_brake_in())));
-            TM.SetEmergencyBrake               (std::string(train_model_ui->get_ebrake_in()) == "true");
-            TM.SetStationAnnouncement          (std::string(train_model_ui->get_station_announce_in()));
+
+            // TM.SetStationAnnouncement          (std::string(train_model_ui->get_station_announce_in()));
 
             train_model_ui->set_comm_speed(TM.GetCommandedSpeed());
             train_model_ui->set_authority(TM.GetAuthority());
@@ -91,7 +284,9 @@ int main(void)
             train_model_ui->set_acceleration(TM.GetAcceleration());
             train_model_ui->set_train_mass(TM.GetMass());
             train_model_ui->set_pass_count(TM.GetPassengersCount());
-
+            train_model_ui->set_brake_fail(TM.GetBrakeFailure());
+            train_model_ui->set_engine_fail(TM.GetEngineFailure());
+            train_model_ui->set_signal_fail(TM.GetSignalPickupFailure());
         });
 
 
