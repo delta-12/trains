@@ -5,10 +5,7 @@
 
 #include "wayside_controller.h"
 
-namespace plc_compiler
-{
-
-namespace lexer
+namespace plc_compiler::lexer
 {
 
 enum class DfaState
@@ -218,7 +215,9 @@ bool Error::operator==(const Error &error_right) const
 
 bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &errors)
 {
-    DfaState    state = DfaState::DFASTATE_INITIAL;
+    using enum DfaState;
+
+    DfaState    state = DFASTATE_INITIAL;
     std::string lexeme;
 
     lexeme.reserve(kDefaultTokenCharacterSize);
@@ -227,49 +226,48 @@ bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &
 
     while (EOF != input.peek())
     {
-        DfaState next_state = kDfaStateTable[static_cast<size_t>(state)][static_cast<size_t>(GetIndex(input.peek()))];
+        DfaState next_state = kDfaStateTable[static_cast<size_t>(state)][static_cast<size_t>(GetIndex(static_cast<char>(input.peek())))];
 
         switch (state)
         {
-        case DfaState::DFASTATE_INITIAL:
-            lexeme += input.get();
+        case DFASTATE_INITIAL:
+            lexeme += static_cast<char>(input.get());
             break;
-        case DfaState::DFASTATE_WHITESPACE:
+        case DFASTATE_WHITESPACE:
             lexeme.clear();
             break;
-        case DfaState::DFASTATE_INPUT:
+        case DFASTATE_INPUT:
             if (state == next_state)
             {
-                lexeme += input.get();
+                lexeme += static_cast<char>(input.get());
             }
             break;
-        case DfaState::DFASTATE_KEYWORD_ID_SIGNAL:
+        case DFASTATE_KEYWORD_ID_SIGNAL:
             tokens.emplace_back(GetInputType(lexeme), lexeme);
             lexeme.clear();
             break;
-        case DfaState::DFASTATE_ILLEGAL_SYMBOL:
+        case DFASTATE_ILLEGAL_SYMBOL:
             errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, lexeme);
             lexeme.clear();
             break;
-        case DfaState::DFASTATE_SYMBOL_SINGLE_EQUALS:
-            if (DfaState::DFASTATE_SYMBOL_DOUBLE_EQUALS == next_state)
+        case DFASTATE_SYMBOL_SINGLE_EQUALS:
+            if (DFASTATE_SYMBOL_DOUBLE_EQUALS == next_state)
             {
-                lexeme += input.get();
+                lexeme += static_cast<char>(input.get());
             }
             break;
-        case DfaState::DFASTATE_SYMBOL_AMPERSAND:
-        case DfaState::DFASTATE_SYMBOL_VERTICAL_BAR:
-            if (DfaState::DFASTATE_VALID_SYMBOL == next_state)
+        case DFASTATE_SYMBOL_AMPERSAND:
+        case DFASTATE_SYMBOL_VERTICAL_BAR:
+            if (DFASTATE_VALID_SYMBOL == next_state)
             {
-                lexeme += input.get();
+                lexeme += static_cast<char>(input.get());
             }
             break;
-        case DfaState::DFASTATE_SYMBOL_DOUBLE_EQUALS:
-        case DfaState::DFASTATE_VALID_SYMBOL:
+        case DFASTATE_SYMBOL_DOUBLE_EQUALS:
+        case DFASTATE_VALID_SYMBOL:
             tokens.emplace_back(TokenType::TOKENTYPE_SYMBOL, lexeme);
             lexeme.clear();
             break;
-        case DfaState::DFASTATE_INVALID_INPUT:
         default:
             errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, lexeme);
             lexeme.clear();
@@ -279,7 +277,7 @@ bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &
         state = next_state;
     }
 
-    return errors.size() == 0;
+    return errors.empty();
 }
 
 static DfaIndex GetIndex(const char input)
@@ -373,7 +371,7 @@ static TokenType GetInputType(const std::string &input)
 {
     TokenType input_type = TokenType::TOKENTYPE_ID;
 
-    std::function<bool(const char *const comparison_string)> string_compare = [input](const char *const comparison_string)
+    std::function<bool(const char *const comparison_string)> string_compare = [&input](const char *const comparison_string)
                                                                               {
                                                                                   return 0 == input.compare(comparison_string);
                                                                               };
@@ -394,6 +392,4 @@ static TokenType GetInputType(const std::string &input)
     return input_type;
 }
 
-} // namespace lexer
-
-} // namespace plc_compiler
+} // namespace plc_compiler::lexer

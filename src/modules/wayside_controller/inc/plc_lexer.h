@@ -12,10 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace plc_compiler
-{
-
-namespace lexer
+namespace plc_compiler::lexer
 {
 
 using Token = struct Token;
@@ -60,8 +57,6 @@ struct Error
 
 bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &errors);
 
-} // namespace lexer
-
-} // namespace plc_compiler
+} // namespace plc_compiler::lexer
 
 #endif // TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_PLC_LEXER_H
