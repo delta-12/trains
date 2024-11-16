@@ -30,7 +30,7 @@ template <size_t buffer_size>
 class BasicControllerPort : public ControllerPort
 {
     public:
-        BasicControllerPort(std::unique_ptr<types::Port> port);
+        BasicControllerPort(std::shared_ptr<types::Port> port);
         BasicControllerPort(const BasicControllerPort &)            = delete;
         BasicControllerPort &operator=(const BasicControllerPort &) = delete;
         BasicControllerPort(BasicControllerPort &&)                 = delete;
@@ -40,14 +40,14 @@ class BasicControllerPort : public ControllerPort
         bool Connected(void) const;
 
     private:
-        std::unique_ptr<types::Port> port_;
+        std::shared_ptr<types::Port> port_;
         std::array<uint8_t, buffer_size> send_buffer_;
         std::array<uint8_t, buffer_size> receive_buffer_;
         size_t bytes_received_;
 };
 
 template <size_t buffer_size>
-BasicControllerPort<buffer_size>::BasicControllerPort(std::unique_ptr<types::Port> port) : port_(std::move(port)), bytes_received_(0)
+BasicControllerPort<buffer_size>::BasicControllerPort(std::shared_ptr<types::Port> port) : port_(port), bytes_received_(0)
 {
 }
 

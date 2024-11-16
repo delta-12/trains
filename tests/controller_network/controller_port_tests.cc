@@ -43,7 +43,7 @@ class SoftwarePort : public types::Port
 TEST(BasicControllerTests, SendMessageTest)
 {
     uint8_t                                       send_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0x10};
-    controller_network::BasicControllerPort<1024> controller_port(std::make_unique<SoftwarePort>());
+    controller_network::BasicControllerPort<1024> controller_port(std::make_shared<SoftwarePort>());
 
     // Nullptr
     ASSERT_EQ(0, controller_port.SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, nullptr, sizeof(send_data)));
@@ -75,7 +75,7 @@ TEST(BasicControllerTests, ReceiveMessageTest)
     uint8_t                                       send_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0x10};
     uint8_t                                       receive_data[sizeof(send_data)];
     controller_network::MessageType               message_type;
-    controller_network::BasicControllerPort<1024> controller_port(std::make_unique<SoftwarePort>());
+    controller_network::BasicControllerPort<1024> controller_port(std::make_shared<SoftwarePort>());
 
     // Nullptr
     ASSERT_EQ(0, controller_port.ReceiveMessage(message_type, nullptr, sizeof(receive_data)));
@@ -101,7 +101,7 @@ TEST(BasicControllerTests, ReceiveMessageTest)
 
 TEST(BasicControllerTests, PortConnectedTest)
 {
-    controller_network::BasicControllerPort<1024> controller_port(std::make_unique<SoftwarePort>());
+    controller_network::BasicControllerPort<1024> controller_port(std::make_shared<SoftwarePort>());
 
     ASSERT_TRUE(controller_port.Connected());
 }

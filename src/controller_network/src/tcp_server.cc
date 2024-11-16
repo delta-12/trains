@@ -1,7 +1,11 @@
 #include "tcp_server.h"
 
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <vector>
+
+#include "asio.hpp"
 
 #include "logger.h"
 
@@ -13,8 +17,6 @@ static const std::string kTcpPortLogTag("TCP PORT");
 
 TcpPort::TcpPort(asio::io_context &io_context) : socket_(io_context)
 {
-    receive_buffer_.reserve(kTcpPortBufferSize);
-
     LOGGER_LOG_DEBUG(std::cout, kTcpPortLogTag, "New port");
 }
 
@@ -64,10 +66,23 @@ bool TcpPort::Connected(void)
     return connected_;
 }
 
+size_t TcpPort::CheckReadComplete(const asio::error_code& error, std::size_t bytes_transferred)
+{
+    size_t bytes_to_read = kTcpPortBufferSize;
+
+    if (error || (bytes_transferred > 0))
+    {
+        bytes_to_read = 0;
+    }
+
+    return bytes_to_read;
+}
+
 void TcpPort::AsyncReceive(void)
 {
     asio::async_read(socket_,
-                     asio::buffer(receive_buffer_),
+                     asio::buffer(receive_buffer_, receive_buffer_.max_size()),
+                     CheckReadComplete,
                      std::bind(&TcpPort::HandleRead,
                                shared_from_this(),
                                asio::placeholders::error,
@@ -82,7 +97,7 @@ void TcpPort::HandleWrite(const std::error_code &error, const size_t bytes_trans
     }
     else
     {
-        LOGGER_LOG_VERBOSE(std::cout, kTcpPortLogTag, "{} bytes successfully written", bytes_transferred);
+        LOGGER_LOG_VERBOSE(std::cout, kTcpPortLogTag, "{} bytes written successfully", bytes_transferred);
     }
 }
 
@@ -98,19 +113,18 @@ void TcpPort::HandleRead(const std::error_code &error, const size_t bytes_transf
     }
     else
     {
-        for (const uint8_t &byte : receive_buffer_)
+        for (size_t i = 0; i < bytes_transferred; i++)
         {
-            receiver_ring_buffer_.Write(&byte, 1);
+            receiver_ring_buffer_.Write(&receive_buffer_[i], 1); // Remaining buffer size previously checked, write should be successful
         }
-        receive_buffer_.clear();
 
-        LOGGER_LOG_VERBOSE(std::cout, kTcpPortLogTag, "{} bytes successfully received", bytes_transferred);
+        LOGGER_LOG_VERBOSE(std::cout, kTcpPortLogTag, "{} bytes received successfully", bytes_transferred);
     }
 
     AsyncReceive();
 }
 
-TcpServer::TcpServer(const uint16_t port) : acceptor_(io_context_, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+TcpServer::TcpServer(const uint16_t port, std::function<void(std::shared_ptr<types::Port> port)> on_accept) : acceptor_(io_context_, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), on_accept_(on_accept)
 {
     StartAccept();
 
@@ -145,12 +159,7 @@ void TcpServer::HandleAccept(std::shared_ptr<TcpPort> port, const std::error_cod
     if (!error)
     {
         port->Start();
-
-        // TODO remove test
-        uint8_t test[] = "foobar";
-        port->Send(test, sizeof(test));
-
-        // TODO pass port to callback function to pass to controller handler
+        on_accept_(port);
 
         LOGGER_LOG_DEBUG(std::cout, kTcpServerLogTag, "New connection accepted");
     }
