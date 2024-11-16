@@ -510,6 +510,11 @@ void SoftwareTrainController::CheckFailureStates(void)
     {
         emergency_brake_ = true;
     }
+    else
+    {
+        // all failure states false, reset e brake
+        emergency_brake_ = false;
+    }
 }
 
 void SoftwareTrainController::UpdateTrainPosition(void)

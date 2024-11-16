@@ -168,6 +168,9 @@ int main(void)
         } else {
             TC.SetEngineFailure(0);
             train_controller_ui->set_engine_status(TC.GetEngineFailure());
+            TC.Update();
+            train_controller_ui->set_emergency_brake(TC.GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(TC.GetCommandedPower());
         }
     });
 
