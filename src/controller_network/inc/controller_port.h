@@ -3,8 +3,8 @@
 *
 * @brief Implements the Controller Message Protocol.
 *****************************************************************************/
-#ifndef TRAINS_SRC_COMMON_INC_CONTROLLER_PORT_H
-#define TRAINS_SRC_COMMON_INC_CONTROLLER_PORT_H
+#ifndef TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_PORT_H
+#define TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_PORT_H
 
 #include <algorithm>
 #include <array>
@@ -131,4 +131,4 @@ bool BasicControllerPort<buffer_size>::Connected(void) const
 
 } // namespace controller_network
 
-#endif // TRAINS_SRC_COMMON_INC_CONTROLLER_PORT_H
+#endif // TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_PORT_H

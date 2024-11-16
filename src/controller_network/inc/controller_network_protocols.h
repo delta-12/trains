@@ -3,8 +3,8 @@
 *
 * @brief Defines the Controller Message and Link Protocols.
 *****************************************************************************/
-#ifndef TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
-#define TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
+#ifndef TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_NETWORK_PROTOCOLS_H
+#define TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_NETWORK_PROTOCOLS_H
 
 namespace controller_network
 {
@@ -60,4 +60,4 @@ typedef enum
 
 } // namespace controller_network
 
-#endif // TRAINS_SRC_COMMON_INC_CONTROLLER_NETWORK_PROTOCOLS_H
+#endif // TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_NETWORK_PROTOCOLS_H

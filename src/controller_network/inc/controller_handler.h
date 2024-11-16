@@ -3,8 +3,8 @@
 *
 * @brief Sends and receives messages to and from controllers.
 *****************************************************************************/
-#ifndef TRAINS_SRC_COMMON_INC_CONTROLLER_HANDLER_H
-#define TRAINS_SRC_COMMON_INC_CONTROLLER_HANDLER_H
+#ifndef TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_HANDLER_H
+#define TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_HANDLER_H
 
 #include <array>
 #include <memory>
@@ -573,4 +573,4 @@ types::Error ControllerHandler<buffer_size>::SendBlockOccupancies(const simulato
 
 } // namespace controller_network
 
-#endif // TRAINS_SRC_COMMON_INC_CONTROLLER_HANDLER_H
+#endif // TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_HANDLER_H

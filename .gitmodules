@@ -7,3 +7,6 @@
 [submodule "tools/nanopb/nanopb"]
 	path = tools/nanopb/nanopb
 	url = git@github.com:nanopb/nanopb.git
+[submodule "external/asio"]
+	path = external/asio
+	url = git@github.com:chriskohlhoff/asio.git
