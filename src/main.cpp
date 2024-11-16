@@ -304,6 +304,13 @@ int main(void)
     Channel<std::string> tcfail_block_channel;
     Channel<std::string> pfail_block_channel;
     Channel<std::string> brail_block_channel;
+    Channel<bool> tcfail_bool_channel;
+    Channel<bool> pfail_bool_channel;
+    Channel<bool> brail_bool_channel;
+    Channel<std::string> distance_traveled_channel;
+    Channel<std::string> train_block_channel;
+    Channel<std::string> occupied_block_channel;
+    Channel<std::string> 
         
     track_model_ui->on_choose_file([&]() {
             // For other platforms
@@ -390,7 +397,7 @@ int main(void)
         slint::invoke_from_event_loop([&]() {
         // track_model_ui->on_request_update_train_block([&](){
         // if (auto ui = weak_ui_handle.lock()) {
-        //     // Main backend loop here
+        //     // Main backend loop here\
         //     /*track.Update();
         //     auto occupiedtrainblocks = track.GetOccupiedTrainBlocks();
         //     std::cout << "size is" << occupiedtrainblocks[0].size() << std::endl;
