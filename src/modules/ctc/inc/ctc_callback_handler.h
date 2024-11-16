@@ -15,10 +15,10 @@
 namespace ctc
 {
 void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc, Channel<std::string> &channel);
-void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc, 
-std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &received_train_schedules, 
-std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &block_data_model, 
-Channel<std::string> &channel);
+void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc,
+                          std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &received_train_schedules,
+                          std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &block_data_model,
+                          Channel<std::string> &channel);
 }
 
 #endif // TRAINS_SRC_MODULES_CTC_INC_CTC_CALLBACK_HANDLER_H

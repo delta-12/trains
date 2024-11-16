@@ -20,4 +20,10 @@
         <id>unusedFunction</id>
         <fileName>*/src/common/src/convert.cc</fileName>
     </suppress>
+
+    <!-- Suppress unused ctc callback handler functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/modules/ctc/src/ctc_callback_handler.cc</fileName>
+    </suppress>
 </suppressions>
