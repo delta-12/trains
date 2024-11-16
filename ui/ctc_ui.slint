@@ -117,7 +117,8 @@ component TrainSchedule inherits Rectangle {
                 columns: [
                     { title: @tr("Train") },
                     { title: @tr("Position") },
-                    { title: @tr("ETA") },
+                    { title: @tr("Authority (blocks)") },
+                    { title: @tr("S.Speed (m/s)") },
                     { title: @tr("DST(s)") },
                 ];
                 rows: train_schedules;
@@ -157,6 +158,7 @@ component ManualMode inherits Rectangle {
                 height: 30px;
                 y: -3px;
                 model: stations;
+                current-value: arrival_station;
                 selected(input) => {arrival_station = input}
             } 
         }
@@ -360,6 +362,7 @@ export component CtcUi inherits Window {
     in-out property <string> block_occupancy;
     in-out property <bool> occupancy;
     in-out property <string> train_tb;
+    in-out property <[string]> trains_tb;
 
     in-out property <int> authority;
     in-out property <int> suggested_speed;
@@ -465,7 +468,7 @@ export component CtcUi inherits Window {
                                 ComboBox {
                                     height: 30px;
                                     y: -3px;
-                                    model: trains;
+                                    model: trains_tb;
                                     current-value: train_tb;
                                     selected(input) => { 
                                         train_tb = input;

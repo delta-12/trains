@@ -37,6 +37,7 @@ int main(void)
         block_data_model->push_back(block_entry);
     }
     ctc_ui->set_block_data(block_data_model);
+    auto received_block_data = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ctc_ui->get_block_data());
     // Create Model to Populate Train Schedule Table
     auto train_schedule_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
     ctc_ui->set_train_schedules(train_schedule_model);
@@ -76,30 +77,29 @@ int main(void)
     {
         train_controller_ui->show();
     });
-
-    ctc_ui->on_manual_dispatch([&] {
-        ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
-        ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
-    });
-
-    ctc_ui->on_send_occupancy([&] {
-        ctc_block_occupancy_channel.Send(std::string(ctc_ui->get_block_occupancy()));
-        ctc::handle_set_occupancy(ctc_ui, ctc, received_train_schedules, ctc_block_occupancy_channel);
-    });
-
-    ctc_ui->on_show_train_output([&] {
-        std::string train_id = std::string(ctc_ui->get_train_tb());
-        if (train_id != "New Train") {
-            ctc_ui->set_authority(ctc.GetTrainAuthority(std::stoi(train_id)));
-            ctc_ui->set_suggested_speed(static_cast<int>(ctc.GetTrainSuggestedSpeed(std::stoi(train_id))));
-        }
-    });
     
 
 
     std::thread worker_thread([&]
     {
         // Main backend loop here
+        ctc_ui->on_manual_dispatch([&] {
+            ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
+            ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
+        });
+
+        ctc_ui->on_send_occupancy([&] {
+            ctc_block_occupancy_channel.Send(std::string(ctc_ui->get_block_occupancy()));
+            ctc::handle_set_occupancy(ctc_ui, ctc, received_train_schedules, received_block_data, ctc_block_occupancy_channel);
+        });
+
+        ctc_ui->on_show_train_output([&] {
+            std::string train_id = std::string(ctc_ui->get_train_tb());
+            if (train_id != "New Train") {
+                ctc_ui->set_authority(ctc.GetTrainAuthority(std::stoi(train_id)));
+                ctc_ui->set_suggested_speed(static_cast<int>(ctc.GetTrainSuggestedSpeed(std::stoi(train_id))));
+            }
+        });
     });
 
     launcher_ui->run();

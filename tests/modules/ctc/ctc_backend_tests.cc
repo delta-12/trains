@@ -54,9 +54,8 @@ TEST(CtcBackEndTest, DispatchMultipleDestination)
 {
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
     // Dispatch Train regardless of ID
-    ctc.ManualDispatch(0, 70);
-    ctc::Train train;
-    ASSERT_EQ(train.train_id, 2);
+    ctc.ManualDispatch(1, 70);
+    ctc::Train   train(0);
     types::Error error = ctc.GetTrainById(1, train);
     ASSERT_EQ(error, types::Error::ERROR_NONE);
     ASSERT_EQ(train.train_id, 1);
@@ -185,6 +184,7 @@ TEST(CtcBackEndTest, ManualDispatchToMultipleBlock)
     ASSERT_EQ(train1.current_position, 0);      // Sitting in yard
     ASSERT_EQ(train1.authority.size(), 5);      // Authority = 5 blocks to get to block 67
     ASSERT_EQ(train1.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination, 67);
+    ASSERT_EQ(train1.destination_list[1].destination, 70);
 
     ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, { types::BlockState(63, true, false) });
     ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, { types::BlockState(64, true, false) });
