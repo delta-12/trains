@@ -14,6 +14,7 @@
 #include "train_model.h"
 #include "track_model.h"
 #include "random_number_generator.h"
+#include "channel.h"
 
 namespace train_model
 {
@@ -297,6 +298,12 @@ int main(void)
     std::string input_file_path2="";
 
     std::filesystem::path           base_path = std::filesystem::current_path();
+
+    //channel instantiations
+    Channel<std::string> block_number_channel;
+    Channel<std::string> tcfail_block_channel;
+    Channel<std::string> pfail_block_channel;
+    Channel<std::string> brail_block_channel;
         
     track_model_ui->on_choose_file([&]() {
             // For other platforms
