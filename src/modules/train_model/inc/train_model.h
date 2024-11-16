@@ -57,6 +57,7 @@ class TrainModel
         virtual void SetPassengersBoarding(const uint16_t passengers)                        = 0;
         virtual void SetTrackPolarity(const types::Polarity polarity)                        = 0;
         //virtual void SetBeaconData(const types::BeaconData &data, std::size_t &size)         = 0;
+        ~TrainModel();
 
 };
 
@@ -109,6 +110,7 @@ class SoftwareTrainModel : public TrainModel
         types::Meters GetDistanceTraveled(void) const;
         uint16_t GetPassengersDeboarding(void);
         uint16_t GetPassengersCount(void);
+        virtual ~SoftwareTrainModel();
 
     private:
         //internal variables(model specific)
