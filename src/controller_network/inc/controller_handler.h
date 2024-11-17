@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "block_oocupancies.pb.h"
+#include "block_occupancies.pb.h"
 #include "block_outputs.pb.h"
 #include "block_states.pb.h"
 #include "connection.pb.h"
