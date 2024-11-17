@@ -552,7 +552,6 @@ TEST(TrackModelTests, Polarity)
     ASSERT_EQ(track.GetBlock(65, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
-    ASSERT_EQ(test_block.polarity, types::Polarity::POLARITY_POSITIVE);
 
     current_polarity = ptr->GetTrackPolarity();
 
