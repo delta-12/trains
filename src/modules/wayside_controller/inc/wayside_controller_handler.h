@@ -13,6 +13,7 @@
 
 #include "block_occupancies.pb.h"
 #include "block_states.pb.h"
+#include "connection.pb.h"
 #include "controller_port.h"
 #include "lookup_table.h"
 #include "track_circuit_data.pb.h"
@@ -26,10 +27,12 @@ template <size_t buffer_size>
 class SoftwareWaysideControllerHandler
 {
     public:
-        SoftwareWaysideControllerHandler(std::unique_ptr<controller_network::ControllerPort> controller_port,
+        SoftwareWaysideControllerHandler(const types::WaysideId wayside_id,
                                          const types::TrackId track,
-                                         const std::vector<WaysideBlock> &blocks);
+                                         const std::vector<WaysideBlock> &blocks,
+                                         std::unique_ptr<controller_network::ControllerPort> controller_port);
         types::Error Update(void);
+        types::Error Connect(void);
 
     private:
         Error GetInput(const InputId input, IoSignal &signal) const;
@@ -38,24 +41,26 @@ class SoftwareWaysideControllerHandler
         types::Error ReceiveMessages(void);
         types::Error HandleTrackCircuitData(const size_t message_size);
         types::Error HandleBlockOccupancies(const size_t message_size);
-        types::Error SendBlockStates(const std::vector<types::BlockState> &block_states) const;
+        types::Error SendBlockStates(const std::vector<types::BlockState> &block_states);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_ = [this](const InputId input, IoSignal &signal){
                                                                                      return GetInput(input, signal);
                                                                                  };
-        std::unique_ptr<controller_network::ControllerPort> controller_port_;
         std::array<uint8_t, buffer_size> message_buffer_;
         std::array<IoSignal, kTotalInputs> inputs_ = {IoSignal::IOSIGNAL_LOW};
         std::unordered_map<types::BlockId, InputId> inputs_lookup_;
         WaysideController wayside_controller_;
+        types::WaysideId id_;
         types::TrackId track_;
+        std::unique_ptr<controller_network::ControllerPort> controller_port_;
 };
 
 template <size_t buffer_size>
-SoftwareWaysideControllerHandler<buffer_size>::SoftwareWaysideControllerHandler(std::unique_ptr<controller_network::ControllerPort> controller_port,
+SoftwareWaysideControllerHandler<buffer_size>::SoftwareWaysideControllerHandler(const types::WaysideId wayside_id,
                                                                                 const types::TrackId track,
-                                                                                const std::vector<WaysideBlock> &blocks)
-    : controller_port_(std::move(controller_port)), wayside_controller_(get_input_, blocks), track_(track)
+                                                                                const std::vector<WaysideBlock> &blocks,
+                                                                                std::unique_ptr<controller_network::ControllerPort> controller_port)
+    : wayside_controller_(get_input_, blocks), id_(wayside_id), track_(track), controller_port_(std::move(controller_port))
 {
     for (const wayside_controller::WaysideBlock &block : blocks)
     {
@@ -80,6 +85,28 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::Update(void)
     else
     {
         error = SendBlockStates(block_states);
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error SoftwareWaysideControllerHandler<buffer_size>::Connect(void)
+{
+    types::Error                    error = types::Error::ERROR_NONE;
+    controller_messages::Connection connection_message;
+    connection_message.set_controller_id(id_);
+    connection_message.set_controller_type(controller_messages::ControllerType::CONTROLLER_TYPE_WAYSIDE);
+
+    size_t message_size = connection_message.ByteSizeLong();
+
+    if (!connection_message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_CONNECTION, message_buffer_.data(), message_size))
+    {
+        error = types::Error::ERROR_INVALID_SIZE;
     }
 
     return error;
@@ -120,6 +147,11 @@ Error SoftwareWaysideControllerHandler<buffer_size>::SetBlockOccupancy(const typ
 {
     Error    error  = Error::ERROR_INVALID_BLOCK;
     IoSignal signal = IoSignal::IOSIGNAL_HIGH;
+
+    if (!occupied)
+    {
+        signal = IoSignal::IOSIGNAL_LOW;
+    }
 
     if (!inputs_lookup_.contains(block))
     {
@@ -207,7 +239,7 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
     }
     else
     {
-        for (size_t i = 0; i < block_occupancies_message.occupancies_size(); i++)
+        for (int i = 0; i < block_occupancies_message.occupancies_size(); i++)
         {
             const controller_messages::BlockOccupany &block_occupancy = block_occupancies_message.occupancies(i);
 
@@ -223,7 +255,7 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
 }
 
 template <size_t buffer_size>
-types::Error SoftwareWaysideControllerHandler<buffer_size>::SendBlockStates(const std::vector<types::BlockState> &block_states) const
+types::Error SoftwareWaysideControllerHandler<buffer_size>::SendBlockStates(const std::vector<types::BlockState> &block_states)
 {
     types::Error                     error = types::Error::ERROR_NONE;
     controller_messages::BlockStates block_states_message;

@@ -368,7 +368,6 @@ types::Error ControllerHandler<buffer_size>::SendMessages(ctc::Ctc &ctc_office, 
 {
     types::Error error = SendMessages(ctc_office);
 
-    // TODO NNF-230 send block occupancies to wayside controller
     if (types::Error::ERROR_NONE == error)
     {
         error = SendBlockOccupancies(world_simulator);
