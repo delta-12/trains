@@ -13,6 +13,7 @@
 
 #include "controller_network_protocols.h"
 #include "convert.h"
+#include "software_port.h"
 #include "types.h"
 
 namespace controller_network
@@ -127,6 +128,24 @@ template <size_t buffer_size>
 bool BasicControllerPort<buffer_size>::Connected(void) const
 {
     return port_->Connected();
+}
+
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+std::shared_ptr<types::Port> BuildSoftwarePort(RingBuffer<T, buffer_size> &ring_buffer)
+{
+    return std::make_shared<SoftwarePort<T, buffer_size>>(ring_buffer);
+}
+
+template <size_t buffer_size>
+std::unique_ptr<ControllerPort> BuildBasicControllerPort(std::shared_ptr<types::Port> port)
+{
+    return std::make_unique<BasicControllerPort<buffer_size>>(port);
+}
+
+template<size_t controller_port_buffer_size, template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+std::unique_ptr<ControllerPort> BuildSoftwareBasicControllerPort(RingBuffer<T, buffer_size> &ring_buffer)
+{
+    return BuildBasicControllerPort<controller_port_buffer_size>(BuildSoftwarePort(ring_buffer));
 }
 
 } // namespace controller_network
