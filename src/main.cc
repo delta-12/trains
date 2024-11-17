@@ -99,37 +99,16 @@ int main(void)
     });
 
     // Test Integration
-    slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-    std::thread ctc_time_thread([&]
-    {
-        TickSource tick_source("08:00:00");
-        Channel<std::string> channel;
-        tick_source.Start();
-        for (std::size_t i = 0; i < 10; i++)
-        {
-            channel.Send(tick_source.GetTimeString());
-            slint::invoke_from_event_loop([weak_ui_handle, &channel]() {
-                if (auto ui = weak_ui_handle.lock()) {
-                    if (ui.has_value())
-                    {
-                        ui.value()->set_time(channel.Receive().c_str());
-                    }
-                }
-            });
-        }
-    });
 
 
 
     std::thread worker_thread([&]
     {
         // Main backend loop here
-        
     });
 
     launcher_ui->run();
     worker_thread.join();
-    ctc_time_thread.join();
 
     return 0;
 }
