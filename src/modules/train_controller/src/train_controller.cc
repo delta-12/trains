@@ -515,10 +515,10 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 
         for (size_t i = set_route_position_ + 1; i < static_cast<size_t>(set_route_position_ + usable_authority_ + 1); i++)
         {
-            int    index        = i % green_default_route_vector_.size();
+            size_t index        = i % green_default_route_vector_.size();
             double block_length = (green_block_data_map_[green_default_route_vector_[index]])[0];
 
-            if (index == set_route_position_ + usable_authority_)
+            if (index == (set_route_position_ + usable_authority_))
             {
                 distance_of_authority_in_meters_ += block_length / 2;
                 distance_of_authority_in_meters_ += total_blocks_accessed_length_ - distance_prior_to_current_authority_;
