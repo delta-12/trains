@@ -1,330 +1,40 @@
 import {Palette, StandardTableView, TextEdit, ScrollView, GridBox, TabWidget, ComboBox, Button, ProgressIndicator, Switch, VerticalBox, ListView, Spinner, SpinBox, HorizontalBox, LineEdit} from "std-widgets.slint";
 
-//database view components
-export component BlockTableView inherits Rectangle {
-    in property <[string]> columns;
-    in property <[[string]]> values;
-
-    private property <length> e: self.width / root.columns.length;
-    private property <[length]> column_sizes: [
-        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
-        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
-        root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e, root.e,
-    ];
-
-    VerticalBox {
-        padding: 5px;
-        HorizontalLayout {
-            padding: 3px; spacing: 3px;
-            vertical-stretch: 0;
-            for title[idx] in root.columns : HorizontalLayout {
-                width: root.column_sizes[idx];
-                Text { overflow: elide; text: title; color: white; }
-                Rectangle {
-                    width: 1px;
-                    background: gray;
-                    TouchArea {
-                        width: 10px;
-                        x: (parent.width - self.width) / 2;
-                        property <length> cached;
-                        pointer-event(event) => {
-                            if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
-                                self.cached = root.column_sizes[idx];
-                            }
-                        }
-                        moved => {
-                            if (self.pressed) {
-                                root.column_sizes[idx] += (self.mouse-x - self.pressed-x);
-                                if (root.column_sizes[idx] < 0) {
-                                    root.column_sizes[idx] = 0;
-                                }
-                            }
-                        }
-                        mouse-cursor: ew-resize;
-                    }
-                }
-            }
-        }
-        ListView {
-            for r in root.values : HorizontalLayout {
-                padding: 3px;
-                spacing: 3px;
-                for t[idx] in r : HorizontalLayout {
-                    width: root.column_sizes[idx];
-                    Text { overflow: elide; text: t; }
-                }
-            }
-        }
-    }
-}
-
-//generic track component
-export component StraightTrack inherits Path {
-    width: 75px;
-    height: 25px;
-    commands: "M 0 0 L 100 0";  // A straight line from (0, 0) to (100, 0)
-    stroke: black;
-    stroke-width: 2px;
-}
-
 //enter filename field for custom PLC
 export component EnterFilename inherits Window {
-    width: 200px;
-    height: 25px;
+
+    in-out property <string> plcprog;
+    callback select_file();
+    callback parse_file();
+
+    width: 153px;
+    height: 27px;
+    x: 163px;
+    y: 52px;
     LineEdit {
         font-size: 14px;
         width: parent.width;
         height: parent.height;
-        placeholder-text: "Enter Filename here";
+        placeholder-text: "Enter filename";
+
+        edited(input) => {plcprog = input}
+
     }
-}
+    Button {
 
-// signal light component
-export component TrafficLight inherits Rectangle {
-    // Define the states for the traffic light
-
-    // Define the size of the traffic light
-    preferred-width: 100px;
-    preferred-height: 250px;
-    border-width:1px;
-    border-color: white;
-
-    // Layout for the traffic light
-    VerticalBox {
-        spacing: 5px;
-        padding: 10px;
-    
-        // Red light
-        Rectangle {
-            property<bool> active: true;
-            TouchArea {
-                clicked=> {active = !active}
-            }
-            width: 80px;
-            height: 80px;
-            border-radius: root.width;// Circular
-            //background: red;
-            //brush: state == 0 ? red : darkgray; // Red light
-            states [
-                on when active : {
-                    background: red;
-                }
-                
-                off when !active : {
-                    background: gray;
-                }
-            ]
-        }
-    
-        // Green light
-        Rectangle {
-            property<bool> active: true;
-            TouchArea {
-                clicked=> {active = !active}
-            }
-            states [
-                on when active : {
-                    background: green;
-                }
-                
-                off when !active : {
-                    background: gray;
-                }
-            ]
-            width: 80px;
-            height: 80px;
-            border-radius: root.width;// Circular
-            //background: green;
-            //brush: state == 2 ? green : darkgray; // Green light
-        }
-
+        text: "Load PLC";
+        x: 190px;
+        clicked => {parse_file()}
 
     }
 }
 
-//baseline track switch component
-export component TrackSwitch inherits Rectangle {
-    property<bool> active: false;
-
-    VerticalBox {
-        Rectangle {
-            border-radius: 10px;
-            property<int> y_val: 25;
-            animate y_val {
-                duration: 500ms;
-            }
-
-            height: 100px;
-            width: 250px;
-
-            StraightTrack {
-                x:19px;
-                y: 44px; 
-             }
-             StraightTrack {
-                x:154px;
-                y: 60px;
-             }
-             StraightTrack {
-                x:154px;
-                y: 24px;
-             }
-
-            TouchArea {
-                clicked => { active = !active }
-
-                Path {
-                    viewbox-height: parent.height / 1px;
-                    viewbox-width: parent.width / 1px;
-                    x: 116px;
-                    y: 3px;
-                    width: 206px;
-                    fill-rule: FillRule.nonzero;
-                    height: 180px;
-                    stroke: red;
-                    stroke-width: 2px;
-
-                    mt := MoveTo {
-                        x: 50;
-                        y: y_val;
-                    }
-                    lt := LineTo {
-                        x: -30;
-                        y: 5;
-                    }
-                    Close {}
-                }
-            }
-
-            states [
-                on when active : {
-                    background: lightyellow;
-                    y_val: -20;
-                }
-
-                off when !active : {
-                    background: lightblue;
-                    y_val: 25;
-                }
-            ]
-        }
-
-        // Text caption outside the rectangle
-        txt := Text {
-            horizontal-alignment: left;
-            vertical-alignment: top;  // Adjust to position above the rectangle
-            text: "switch";  // Default text
-
-            states [
-                on when active: {
-                    color: white;
-                    text: "Switch Open";  // Change text when active
-                }
-                off when !active: {
-                    color: white;
-                    text: "Switch Closed";  // Change text back when inactive
-                }
-            ]
-        }
-    }
-}
-
-//shows block occupancy, crossing status and station name
-export component BlockInfo inherits Rectangle {
-    // Define the states for the traffic light
-
-    // Define the size of the traffic light
-    preferred-width: 200px;
-    preferred-height: 300px;
-    
-    
-    VerticalLayout {
-        // Layout for the traffic light
-            HorizontalBox {
-                spacing: 105px;
-                padding: 10px;
-
-                // Red light
-                Rectangle {
-                    property<bool> active: true;
-                    TouchArea {
-                        clicked=> {active = !active}
-                        Text {
-                            horizontal-alignment: TextHorizontalAlignment.left;
-                            text: "Crossing State";
-                            color: white;
-                        }
-                    }
-                    width: 80px;
-                    height: 80px;
-                    border-radius: root.width;// Circular
-                    //background: red;
-                    //brush: state == 0 ? red : darkgray; // Red light
-                    states [
-                        on when active : {
-                            background: red;
-                        }
-                        
-                        off when !active : {
-                            background: green;
-                        }
-                    ]
-                }
-            
-                // Green light
-                Rectangle {
-                    property<bool> active: true;
-                    TouchArea {
-                        clicked=> {active = !active}
-                        Text {
-                            horizontal-alignment: TextHorizontalAlignment.right;
-                            text: "Block Occ";
-                            color: white;
-                        }
-                    }
-                    states [
-                        on when active : {
-                            background: red;
-                        }
-                        
-                        off when !active : {
-                            background: green;
-                        }
-                    ]
-                    width: 80px;
-                    height: 80px;
-                    border-radius: root.width;// Circular
-                    //background: green;
-                    //brush: state == 2 ? green : darkgray; // Green light
-                }
-
-                //Station Name
-                Rectangle {
-                    width: 100px;
-                    height: 75px;
-                    y: 100px;
-                    //background: gray;
-                    padding: 5px;
-                    border-radius: 10px;
-                    
-                    Text{
-                        text: "Station Name";
-                        color: white;
-                    }
-                }
-
-
-
-            }
-        }
-}
-
-//table view
-component BlockLayout inherits Rectangle {
+//table view SW - DEFAULT
+component BlockLayoutMap inherits Rectangle {
     background: #252525;
     border-radius: 10px;
     preferred-height: 180px;
-    in-out property <[[StandardListViewItem]]> row_data;
+    in-out property <[[StandardListViewItem]]> block_data;
     in-out property <string> section;
     in-out property <string> block;
     in-out property <bool> mode: true;
@@ -352,14 +62,7 @@ component BlockLayout inherits Rectangle {
                     { title: @tr("Signal State") },
                     { title: @tr("Switch State") },
                 ];
-                rows: [
-                    [{text: "A"}, {text: "1"}, {text: mode ? "Empty" : "Occupied"}, {text: crossing ? "Closed" : "Open"}, {text: signal ? "Red" : "Green"}, {text: switch ? "61-75" : "61-62"},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                    [{text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: "n/a"}, {text: ""},],
-                ];
+                rows: block_data;
             }
         }
     }
@@ -368,13 +71,13 @@ component BlockLayout inherits Rectangle {
             padding: 15px;
             spacing: 10px;
             LineEdit {
-                width: 120px;
+                width: 130px;
                 height: 30px;
                 placeholder-text: @tr("Block Line, Number");
                 edited(input) => { section = input }
             }
             LineEdit {
-                width: 120px;
+                width: 130px;
                 height: 30px;
                 placeholder-text: @tr("Switch Orientation");
                 edited(input) => { section = input }
@@ -402,41 +105,167 @@ component BlockLayout inherits Rectangle {
     }
 }
 
+//combo 1 - SW vs HW WC
+export component WCType inherits ComboBox {
+
+    in-out property <string> sworhw;
+    in-out property <bool> selectWayside: true;
+    callback selectWCType();
+
+    width: self.preferred-width;
+    x: 400px;
+    y: 50px;
+    height: self.preferred-height * 2;
+    model: ["Software Wayside Controller", "Hardware Wayside Controller"];
+    current-value: "Software Wayside Controller";
+
+    selected(item) => {
+        sworhw = item;
+
+        if(item == "Software Wayside Controller"){
+            selectWayside = true;
+        } else if(item == "Hardware Wayside Controller"){
+            selectWayside = false;
+        }
+    }
+
+
+    
+}
+//combo 2 - Redline vs Greenline
+export component LineType inherits ComboBox {
+ 
+    in-out property <string> redorgreen;
+    in-out property <bool> selectLine: true;
+
+    callback selectLineType();
+
+    width: self.preferred-width;
+    x: 625px;
+    y: 50px;
+    height: self.preferred-height * 2;
+    model: ["Green Line", "Red Line"];
+    current-value: "Green Line";
+
+    selected(item) => {
+        redorgreen = item;
+
+        if(item == "Software Wayside Controller"){
+            selectLine = true;
+        } else if(item == "Hardware Wayside Controller"){
+            selectLine = false;
+        }
+    }
+
+
+}
+//show button
+export component ShowButton inherits Button {
+    
+    callback load_block_data();
+
+    text: "Show Track Blocks";
+    x: 499px;
+    y: 100px;
+
+    
+}
 
 ////////////////////////////////////////////////
 
 // main window
 export component WaysideControllerUi inherits Window {
-        title: "Wayside Controller";
-        min-height: 500px;
-        min-width: 700px;
 
-        //generic active
+        //test bench//
+
+        
+        //generic time var
+        in-out property <string> time;
+
         in-out property <int> active_tab;
+        in-out property <string> pick_file;
 
         //variables string input
         in-out property <string> sugg_spd;
         in-out property <string> sugg_auth;
+        
 
         //variables output
+        in-out property <float> comm_spd;
+        in-out property <string> comm_auth;
+
+        
         in-out property <string> str_plc_prog;
+        in-out property <string> str_plc_progin;
         in-out property <string> plc_prog;
 
         in-out property <string> str_block_main;
         in-out property <string> str_block_mainin;
+        in-out property <bool> block_main;
 
         in-out property <string> str_sw_state;
         in-out property <string> str_sw_statein;
+        in-out property <bool> sw_state;
 
         in-out property <string> str_block_occ;
         in-out property <string> str_block_occin;
+        in-out property <bool> block-occ;
 
         in-out property <string> str_track_fail;
+        in-out property <bool> track_fail;
 
         //output callbacks
+        callback disp_sugg_spd();
+        callback disp_sugg_auth();
+        callback disp_maintenance_md();
         callback disp_sw_state();
+        callback disp_block_occ();
+        callback disp_select_plc();
+        callback disp_parse_file();
 
+        callback clicked();
+
+        //test bench//
+
+        //selecting wayside controller and line
+        in-out property <string> sworhw;
+        in-out property <string> redorgreen;
+        in-out property <bool> selectLine;
+        in-out property <bool> selectWayside;
+        callback selectWCType();
+        callback selectLineType();
+
+        //generic active
+        //in-out property <int> active_tab;
+
+        //entering a filename for PLC
+        in-out property <string> plcprog;
+        callback select_file();
+        callback parse_file();
+
+        //switching between HW and SW wayside table view
+        in-out property <[[StandardListViewItem]]> block_data;
+        callback load_block_data();
+
+        //filling table
+        in-out property <string> section;
+        in-out property <string> block;
+        in-out property <bool> mode: true;
+        in-out property <bool> crossing: true;
+        in-out property <bool> signal: true;
+    
+        in-out property <bool> switch: false;
+        in-out property <bool> occupancy: false;
+        in-out property <string> failure;
         
+        //fill w SW or HW info
+        callback fillBlockData();
+
+        title: "Wayside Controller";
+        preferred-width: 808px;
+        preferred-height: 500px;
+
+        //tabs
         VerticalLayout {
             tab_bar := HorizontalLayout {
                 
@@ -464,34 +293,29 @@ export component WaysideControllerUi inherits Window {
                 viewport-height: 700px;
             
                 Text {
-                    text: "Select a PLC Program or upload a PLC file";  // Default text
+                    text: "Enter PLC filename";  // Default text
                     color: green;
-                    x: 50px;
-                    y: 25px;
+                    x: 108px;
+                    y: 26px;
                   }
 
-            //page contents
-            ComboBox {
-                model: ["PLC 1", "PLC 2", "PLC 3"];
-                width: 75px;
-                x: 50px;
-                y: 50px;
-            }
             EnterFilename {
-                width: 153px;
-                height: 27px;
-                //accessible-role: AccessibleRole.checkbox;
-                //text: "File Upload";
-                x: 163px;
-                y: 52px;
-                //clicked => { self.text = "File Uploading";}
+                x: 35px;
+                y: 55px;
+                plcprog <=> plcprog;
+                select_file => {root.select_file();}
+                parse_file => {root.parse_file()}                                
             }
+
             ProgressIndicator { 
                 width: 253px;
                 x: 50px;
                 y: 100px;
                 height: 20px;
-                progress: 50%;
+                //progress: 50%;
+                animate progress {
+
+                }
             }
 
             Text {
@@ -500,55 +324,40 @@ export component WaysideControllerUi inherits Window {
                 x: 400px;
                 y: 25px;
               }
-            ComboBox {
-                width: self.preferred-width;
-                x: 400px;
-                y: 50px;
-                height: self.preferred-height * 2;
-                model: ["Software Wayside Controller", "Hardware Wayside Controller"];
-                current-value: "Software Wayside Controller";
+            WCType{
+                
+                sworhw <=> sworhw;
+
             }
-            ComboBox {
-                width: self.preferred-width;
-                x: 625px;
-                y: 50px;
-                height: self.preferred-height * 2;
-                model: ["Green Line", "Red Line"];
-                current-value: "Green Line";
+            LineType {
+                
+                redorgreen <=> redorgreen;
             }
-            Button {
+            ShowButton {
                 text: "Show Track Blocks";
                 x: 499px;
                 y: 100px;
-                clicked => { self.text = "Displaying"; }
+
+               clicked => {load_block_data()}
             }
 
         ///////////// former second tab - converted into a table
-        BlockLayout {
+
+        BlockLayoutMap {
         width: 678px;
-            x: 50px;
+        x: 50px;
         y: 200px;
       
-        } // Transit System Top Widget
-
+        } // Transit System Top Widget  
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        } ///
+    } ///
     
 
 
 
 ////////////////////TESTBENCH INPUTS////////////////////////////////////////
+
 
     Rectangle {
         x: root.active-tab == 2 ? 0 : root.active-tab < 2 ? - self.width - 1px : parent.width + 1px;
@@ -564,12 +373,6 @@ export component WaysideControllerUi inherits Window {
                     padding: 10px;
                     padding-left: 15px;
                     Text {text: "Inputs";}
-
-                    Button{
-                        text: "Switch Change Button";
-                        clicked => {
-                            root.disp-sw-state();
-                        }}
                     
                     VerticalLayout {
                         spacing: 10px;
@@ -587,6 +390,12 @@ export component WaysideControllerUi inherits Window {
                                 edited(val)=>{
                                     sugg-spd=val}
                             } 
+                            
+                        Button{
+                            text: "Set Speed";
+                            clicked => {
+                                root.disp-sugg-spd();
+                            }}
                         }
 
                         // Authority Input 
@@ -600,6 +409,11 @@ export component WaysideControllerUi inherits Window {
                             height: 30px;
                             edited(val)=>{sugg-auth=val}
                             }
+                            Button{
+                                text: "Enter Authority";
+                                clicked => {
+                                    root.disp_sugg_auth();
+                                }}
                         }
                         //Block Maintenance Mode
                         HorizontalLayout {
@@ -612,6 +426,11 @@ export component WaysideControllerUi inherits Window {
                             height: 30px;
                             edited(val)=>{str_block_mainin=val}
                             }
+                            Button{
+                                text: "Enter Maintenance\nMode";
+                                clicked => {
+                                    root.disp-sw-state();
+                                }}
                         }
                         //Switch State
                         HorizontalLayout {
@@ -624,6 +443,11 @@ export component WaysideControllerUi inherits Window {
                             height: 30px;
                             edited(val)=>{str_sw_statein=val}
                             }
+                            Button{
+                                text: "Change Switch";
+                                clicked => {
+                                    root.disp-sw-state();
+                                }}
                         }
 
                         //Block Occupancy
@@ -636,13 +460,21 @@ export component WaysideControllerUi inherits Window {
                             height: 30px;
                             edited(val)=>{str_block_occin=val}
                             }
+                            Button{
+                                text: "Block Occupied";
+                                clicked => {
+                                    root.disp-sw-state();
+                                }}
                         }
 
                     }
                 }
             } 
 
-////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
+
+
+            ////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
+
 
                 HorizontalLayout {
                     Rectangle {
@@ -669,16 +501,16 @@ export component WaysideControllerUi inherits Window {
                                         } 
                                 }
 
-                                // Authority Input 
+                                // Authority Output 
                                 HorizontalLayout {
                                     //alignment: start;
                                     Text { vertical-alignment: center;
-                                        text: "Authority: ";}
+                                        text: "Commanded Authority: ";}
                                     LineEdit {
                                         read-only: true;
                                         min-height: 30px;
                                         max-height: 30px;
-                                        text: sugg-auth + " mi";
+                                        text: comm_auth + " mi";
                                     } 
                                 }
 
@@ -750,9 +582,10 @@ export component WaysideControllerUi inherits Window {
                             }
                         }
                     } 
-                }
+                } 
             }
         }
+            
     }
-        }
-    }
+}
+}

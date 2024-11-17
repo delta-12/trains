@@ -95,6 +95,9 @@ struct PlcInstruction
 class WaysideController
 {
     public:
+        //default constructor
+        WaysideController(void);
+        
         explicit WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input);
         WaysideController(const std::function<Error(const InputId input, IoSignal &signal)> &get_input, const std::vector<WaysideBlock> &blocks);
         Error Configure(const std::vector<WaysideBlock> &blocks);

@@ -7,6 +7,10 @@
 namespace wayside_controller
 {
 
+//void constructor
+WaysideController::WaysideController(void){}
+
+
 WaysideBlock::WaysideBlock(void) : block(0), primary_connection(0), switch_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
     maintenance_mode(false), occupancy_signal(IoSignal::IOSIGNAL_LOW)
 {
@@ -391,5 +395,11 @@ bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcIns
 
     return success;
 }
+
+
+//------Access Functions------//
+
+
+
 
 } // namespace wayside_controller
