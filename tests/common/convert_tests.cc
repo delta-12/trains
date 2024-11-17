@@ -23,17 +23,17 @@ TEST(ConvertTests, MakeUint16Test)
     ASSERT_EQ(0x1234, convert::MakeUint16(0x12, 0x34));
 }
 
-TEST(ConvertTests, MinuteToMiliSecond)
+TEST(ConvertTests, MinuteToMillisecond)
 {
-    std::string               minute     = "2.5";
-    std::chrono::milliseconds milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 150000);
+    std::string               minute      = "2.5";
+    std::chrono::milliseconds millisecond = convert::ConvertMinuteToMilliseconds(minute);
+    ASSERT_EQ(millisecond.count(), 150000);
 
-    minute     = "2.7";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 162000);
+    minute      = "2.7";
+    millisecond = convert::ConvertMinuteToMilliseconds(minute);
+    ASSERT_EQ(millisecond.count(), 162000);
 
-    minute     = "3.2";
-    milisecond = convert::ConvertMinuteToMiliseconds(minute);
-    ASSERT_EQ(milisecond.count(), 192000);
+    minute      = "3.2";
+    millisecond = convert::ConvertMinuteToMilliseconds(minute);
+    ASSERT_EQ(millisecond.count(), 192000);
 }

@@ -19,7 +19,7 @@ types::Meters MilesToMeters(const types::Miles miles);
 types::Miles MetersToMiles(const types::Meters meters);
 types::MetersPerSecond KilometersPerHourToMetersPerSecond(const types::KilometersPerHour kilometers_per_hour);
 types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters meters_per_second);
-types::Milisecond ConvertMinuteToMiliseconds(const std::string& minute_string);
+types::Millisecond ConvertMinuteToMilliseconds(const std::string &minute_string);
 uint8_t GetLowByte(const uint16_t data);
 uint8_t GetHighByte(const uint16_t data);
 uint16_t MakeUint16(const uint8_t high, const uint8_t low);

@@ -9,7 +9,7 @@
 #define CONVERT_KILOMETERS_PER_HOUR_TO_METERS_PER_SECOND (0.27777)
 #define CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR (3.6)
 #define MINUTE_TO_SECOND_CONVERSION_FACTOR               (60)
-#define SECOND_TO_MILISECONDS_CONVERSION_FACTOR          (1000)
+#define SECOND_TO_MILLISECONDS_CONVERSION_FACTOR         (1000)
 #define CONVERT_1_BYTE_BIT_SHIFT                         (8)
 #define CONVERT_BYTE_MASK                                (0xFF)
 
@@ -56,14 +56,11 @@ types::KilometersPerHour MetersPerSecondToKilometersPerHour(const types::Meters 
     return meters_per_second * CONVERT_METERS_PER_SECOND_TO_KILOMETERS_PER_HOUR;
 }
 
-types::Milisecond ConvertMinuteToMiliseconds(const std::string& minute_string)
+types::Millisecond ConvertMinuteToMilliseconds(const std::string &minute_string)
 {
-    double t = std::stod(minute_string);
-    t = t * MINUTE_TO_SECOND_CONVERSION_FACTOR * SECOND_TO_MILISECONDS_CONVERSION_FACTOR;
-    int                       time = int(t);
-    std::chrono::milliseconds total_time_to_station(time);
-    return total_time_to_station;
+    return types::Millisecond(static_cast<int64_t>(std::stod(minute_string) * MINUTE_TO_SECOND_CONVERSION_FACTOR * SECOND_TO_MILLISECONDS_CONVERSION_FACTOR));
 }
+
 uint8_t GetLowByte(const uint16_t data)
 {
     return (data & CONVERT_BYTE_MASK);

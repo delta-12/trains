@@ -113,7 +113,7 @@ void BlockBuilder::BuildBlocksFromSchedule(const std::vector<std::vector<std::st
 
         if (block.has_station)
         {
-            block.total_time_to_station = convert::ConvertMinuteToMiliseconds(record[kScheduleFieldTotalTimeToStation]);
+            block.total_time_to_station = convert::ConvertMinuteToMilliseconds(record[kScheduleFieldTotalTimeToStation]);
         }
     }
 }

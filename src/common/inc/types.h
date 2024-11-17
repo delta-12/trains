@@ -39,7 +39,7 @@ using Block                  = struct Block;
 using TrackCircuitData       = struct TrackCircuitData;
 using BlockState             = struct BlockState;
 using Second                 = std::chrono::duration<double>;
-using Milisecond             = std::chrono::milliseconds;
+using Millisecond            = std::chrono::milliseconds;
 
 static const BlockId kEndBlock = 0;
 
