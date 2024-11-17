@@ -135,4 +135,40 @@ void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& c
 
     }
 }
+void handle_set_block_states(ctc::Ctc& ctc,
+                             std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &received_train_schedules,
+                             std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &block_data_model,
+                             Channel<std::vector<types::BlockState>> &channel)
+{
+    if (channel.DataAvailable())
+    {
+        std::vector<types::BlockState> block_states = channel.Receive();
+        ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
+
+        std::vector<ctc::Train> trains = ctc.GetTrains();
+        received_train_schedules->clear();
+        for (const ctc::Train &train : trains)
+        {
+            auto train_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+            train_entry->push_back(slint::StandardListViewItem(std::to_string(train.train_id).c_str()));
+            train_entry->push_back(slint::StandardListViewItem(std::to_string(train.current_position).c_str()));
+            train_entry->push_back(slint::StandardListViewItem(std::to_string(ctc.GetTrainAuthority(train.train_id)).c_str()));
+            train_entry->push_back(slint::StandardListViewItem(std::to_string(static_cast<int>(ctc.GetTrainSuggestedSpeed(train.train_id))).c_str()));
+            train_entry->push_back(slint::StandardListViewItem(std::to_string(train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination).c_str()));
+            received_train_schedules->push_back(train_entry);
+        }
+
+
+        // Update Block Data Table
+        std::vector<types::Block> blocks = ctc.GetBlocks();
+        blocks.erase(blocks.begin());
+        for (const types::BlockState &block_state : block_states)
+        {
+            types::BlockId block_id    = block_state.block;
+            auto           block_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_data_model->row_data(block_id - 1).value());
+            block_entry->set_row_data(4, slint::StandardListViewItem("Occupied"));
+            block_data_model->push_back(block_entry);
+        }
+    }
+}
 }

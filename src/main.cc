@@ -19,10 +19,13 @@ int main(void)
     auto                 train_model_ui        = ui::TrainModelUi::create();
     auto                 train_controller_ui   = ui::TrainControllerUi::create();
 
+
     Channel<std::string> ctc_block_occupancy_channel;
     Channel<std::string> ctc_manual_dispatch_channel;
+    Channel<std::vector<types::BlockState>> ctc_block_states_channel;
     // Setting Up CTC
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
+
     auto block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(); 
     std::vector<types::Block> blocks = ctc.GetBlocks(); 
     blocks.erase(blocks.begin());
@@ -57,6 +60,7 @@ int main(void)
     }
     ctc_ui->set_stations(stations_model);
 
+
     launcher_ui->on_launch_ctc_window([&]
     {
         ctc_ui->show();
@@ -78,32 +82,55 @@ int main(void)
         train_controller_ui->show();
     });
     
+    ctc_ui->on_manual_dispatch([&] {
+        ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
+        ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
+    });
+
+    ctc_ui->on_send_occupancy([&] {
+        ctc_block_occupancy_channel.Send(std::string(ctc_ui->get_block_occupancy()));
+        ctc::handle_set_occupancy(ctc_ui, ctc, received_train_schedules, received_block_data, ctc_block_occupancy_channel);
+    });
+
+    ctc_ui->on_wc_send_block_states([&] {
+        std::vector<types::BlockState> block_states = { types::BlockState(63, true, false), types::BlockState(90, true, false), types::BlockState(91, true, false)};
+        ctc_block_states_channel.Send(block_states);
+        ctc::handle_set_block_states(ctc, received_train_schedules, received_block_data, ctc_block_states_channel);
+    });
+
+    // Test Integration
+    slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+    std::thread ctc_time_thread([&]
+    {
+        TickSource tick_source("08:00:00");
+        Channel<std::string> channel;
+        tick_source.Start();
+        for (std::size_t i = 0; i < 10; i++)
+        {
+            channel.Send(tick_source.GetTimeString());
+            slint::invoke_from_event_loop([weak_ui_handle, &channel]() {
+                if (auto ui = weak_ui_handle.lock()) {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_time(channel.Receive().c_str());
+                    }
+                }
+            });
+        }
+    });
+
 
 
     std::thread worker_thread([&]
     {
         // Main backend loop here
-        ctc_ui->on_manual_dispatch([&] {
-            ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
-            ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
-        });
-
-        ctc_ui->on_send_occupancy([&] {
-            ctc_block_occupancy_channel.Send(std::string(ctc_ui->get_block_occupancy()));
-            ctc::handle_set_occupancy(ctc_ui, ctc, received_train_schedules, received_block_data, ctc_block_occupancy_channel);
-        });
-
-        ctc_ui->on_show_train_output([&] {
-            std::string train_id = std::string(ctc_ui->get_train_tb());
-            if (train_id != "New Train") {
-                ctc_ui->set_authority(ctc.GetTrainAuthority(std::stoi(train_id)));
-                ctc_ui->set_suggested_speed(static_cast<int>(ctc.GetTrainSuggestedSpeed(std::stoi(train_id))));
-            }
-        });
+        
     });
 
     launcher_ui->run();
     worker_thread.join();
+    ctc_time_thread.join();
 
     return 0;
 }
+

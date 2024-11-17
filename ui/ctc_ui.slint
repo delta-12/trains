@@ -8,6 +8,7 @@ component TransitSystem inherits Rectangle {
     in-out property <string> block_id;
     in-out property <bool> mode;
     in-out property <bool> switch;
+    in-out property <string> time;
 
     VerticalLayout {
         padding-top: 10px;
@@ -29,7 +30,7 @@ component TransitSystem inherits Rectangle {
                     height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
-                    Text {text: "hh:mm:ss";}
+                    Text {text: time;}
                 }
             }
             HorizontalLayout {
@@ -305,6 +306,7 @@ component TBInputs inherits Rectangle {
     // Callbacks
     callback send_occupancy_signal();
     callback send_failure_signal();
+    callback wc_send_block_states();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -334,6 +336,13 @@ component TBInputs inherits Rectangle {
             Text {
                 text: confirm_occupancy_message;
             }
+            Button {
+                height: 40px;
+                text:  "Send Dummy Block States";
+                clicked => {
+                    root.wc_send_block_states();
+                }
+            }
         }
     }
 }
@@ -351,6 +360,7 @@ export component CtcUi inherits Window {
     in-out property <bool> maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
+    in-out property <string> time;
 
     //Dispatch 
     in-out property <[string]> stations;
@@ -386,6 +396,7 @@ export component CtcUi inherits Window {
 
     // Testbench 
     callback show-train-output();
+    callback wc_send_block_states();
 
     title: "CTC Office";
     preferred-width: 600px;
@@ -400,6 +411,7 @@ export component CtcUi inherits Window {
                 alignment: stretch;
                 TransitSystem {
                     block_data: block_data;
+                    time: time;
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -444,6 +456,7 @@ export component CtcUi inherits Window {
                             confirm_occupancy_message: confirm_occupancy_message;
                             send_occupancy_signal => {root.send_occupancy()}
                             send_failure_signal => {root.send-failure-signal()}
+                            wc_send_block_states => {root.wc_send_block_states()}
                         }     
                     }
                 } 

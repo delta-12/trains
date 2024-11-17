@@ -19,6 +19,10 @@ void handle_set_occupancy(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& c
                           std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &received_train_schedules,
                           std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &block_data_model,
                           Channel<std::string> &channel);
+void handle_set_block_states(ctc::Ctc& ctc,
+                             std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &received_train_schedules,
+                             std::shared_ptr<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>> &block_data_model,
+                             Channel<std::vector<types::BlockState>> &channel);
 }
 
 #endif // TRAINS_SRC_MODULES_CTC_INC_CTC_CALLBACK_HANDLER_H
