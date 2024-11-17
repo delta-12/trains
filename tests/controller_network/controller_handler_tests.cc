@@ -43,9 +43,9 @@ class SoftwarePort : public types::Port
 
 TEST(ControllerHandlerTests, IsConnectedTestWayside0)
 {
-    ctc::Ctc                                                       ctc_office;
-    controller_network::ControllerHandler<1024>                    controller_handler;
-    std::unique_ptr<controller_network::BasicControllerPort<1024>> client_port = std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>());
+    ctc::Ctc                                            ctc_office;
+    controller_network::ControllerHandler<1024>         controller_handler;
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
     controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
 
     controller_handler.Update(ctc_office);
@@ -66,9 +66,9 @@ TEST(ControllerHandlerTests, IsConnectedTestWayside0)
 
 TEST(ControllerHandlerTests, IsConnectedTestWayside1)
 {
-    ctc::Ctc                                                       ctc_office;
-    controller_network::ControllerHandler<1024>                    controller_handler;
-    std::unique_ptr<controller_network::BasicControllerPort<1024>> client_port = std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>());
+    ctc::Ctc                                            ctc_office;
+    controller_network::ControllerHandler<1024>         controller_handler;
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
     controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
 
     controller_handler.Update(ctc_office);
@@ -89,11 +89,11 @@ TEST(ControllerHandlerTests, IsConnectedTestWayside1)
 
 TEST(ControllerHandlerTests, TrackCircuitDataTest)
 {
-    ctc::Ctc                                                       ctc_office;
-    simulator::Simulator                                           world_simulator;
-    controller_network::ControllerHandler<1024>                    controller_handler;
-    std::unique_ptr<controller_network::BasicControllerPort<1024>> client_port = std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>());
-    controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
+    ctc::Ctc                                            ctc_office;
+    simulator::Simulator                                world_simulator;
+    controller_network::ControllerHandler<1024>         controller_handler;
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
+    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer));
 
     controller_handler.Update(ctc_office, world_simulator);
 
