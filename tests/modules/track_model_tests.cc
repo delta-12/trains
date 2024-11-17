@@ -20,6 +20,7 @@ namespace train_model
 class TrainModelImpl : public TrainModel
 {
     public:
+        void Update(void);
         void SetTrainId(const types::TrainId train);
         types::TrainId GetTrainId(void) const;
         void SetEmergencyBrake(const bool emergency_brake);
@@ -78,6 +79,10 @@ class TrainModelImpl : public TrainModel
         double grade_;
         double brake_;
 };
+
+void TrainModelImpl::Update(void)
+{
+}
 
 void TrainModelImpl::SetGrade(const double grade)
 {

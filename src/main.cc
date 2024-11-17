@@ -1,9 +1,15 @@
+#include <memory>
 #include <thread>
 
 #include <slint.h>
 
 #include "launcher.h"
+#include "block_builder.h"
+#include "csv_parser.h"
 #include "simulator.h"
+#include "tick_source.h"
+#include "track_model.h"
+#include "train_model.h"
 
 int main(void)
 {
@@ -39,7 +45,23 @@ int main(void)
 
     std::thread worker_thread([&]
     {
-        // Main backend loop here
+        std::filesystem::path           base_path = std::filesystem::current_path();
+        std::filesystem::path           path      = base_path / "tests" / "common" / "test_csv" / "green_line_path.csv";
+        std::filesystem::path           path2     = base_path / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
+        CsvParser                       parser(path);
+        CsvParser                       parser2(path2);
+        BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        
+        std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+        std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
+        std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
+
+        track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+
+        world.AddTrackModel(track);
+        world.AddTrainModel(track->GetTrackId(), train);
+        world.Update();
     });
 
     launcher_ui->run();
