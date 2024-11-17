@@ -1,13 +1,17 @@
-#include <atomic>
-#include <cstring>
+#include <memory>
 #include <thread>
 
 #include <slint.h>
 
 #include "launcher.h"
+
+#include "block_builder.h"
+#include "csv_parser.h"
 #include "simulator.h"
+#include "tick_source.h"
+#include "track_model.h"
+#include "train_model.h"
 #include "wayside_controller_port.h"
-#include "random_number_generator.h"
 
 int main(void)
 {
@@ -43,25 +47,23 @@ int main(void)
 
     std::thread worker_thread([&]
     {
-        RandomNumberGenerator random_number_generator;
+        std::filesystem::path           base_path = std::filesystem::current_path();
+        std::filesystem::path           path      = base_path / "tests" / "common" / "test_csv" / "green_line_path.csv";
+        std::filesystem::path           path2     = base_path / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
+        CsvParser                       parser(path);
+        CsvParser                       parser2(path2);
+        BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        
+        std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+        std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
+        std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
 
-        wayside_controller::WaysideControllerPort wayside_controller_port("/dev/ttyACM0");
-        // const char * test_data = "5,10\n";
-        // wayside_controller_port.Send((uint8_t*)test_data, strlen(test_data));
-        char buf[6];        
+        track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-        // Main backend loop here
-        while (running.load())
-        {
-
-            int i = random_number_generator.generate(10);
-            int j = random_number_generator.generate(10);
-
-            snprintf(buf, 6, "%d,%d\n", i, j);
-            wayside_controller_port.Send((uint8_t*)buf, strlen(buf));
-
-            std::this_thread::sleep_for (std::chrono::seconds(3));
-        }
+        world.AddTrackModel(track);
+        world.AddTrainModel(track->GetTrackId(), train);
+        world.Update();
     });
 
     launcher_ui->run();

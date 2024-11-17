@@ -20,6 +20,7 @@ namespace simulator
 class Simulator
 {
     public:
+        void Update(void);
         types::Error AddTrackModel(std::shared_ptr<track_model::TrackModel> track);
         types::Error DeleteTrackModel(const types::TrackId track);
         void GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const;

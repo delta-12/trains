@@ -5,6 +5,21 @@
 namespace simulator
 {
 
+void Simulator::Update(void)
+{
+    for (const std::pair<const types::TrackId, std::shared_ptr<track_model::TrackModel>> &track : tracks_)
+    {
+        track.second->Update();
+
+        std::vector<std::shared_ptr<train_model::TrainModel>> trains;
+        track.second->GetTrainModels(trains);
+        for (const std::shared_ptr<train_model::TrainModel> &train : trains)
+        {
+            train->Update();
+        }
+    }
+}
+
 types::Error Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> track)
 {
     types::Error   error    = types::Error::ERROR_NONE;
@@ -103,11 +118,11 @@ types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
 
 types::Error Simulator::SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched)
 {
-    types::Error error = types::Error::ERROR_NONE;
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
 
     if (!tracks_.contains(track))
     {
-        error = types::Error::ERROR_INVALID_TRACK;
+        // Error set, do nothing
     }
     else
     {
@@ -119,11 +134,11 @@ types::Error Simulator::SetSwitchState(const types::TrackId track, const types::
 
 types::Error Simulator::SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed)
 {
-    types::Error error = types::Error::ERROR_NONE;
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
 
     if (!tracks_.contains(track))
     {
-        error = types::Error::ERROR_INVALID_TRACK;
+        // Error set, do nothing
     }
     else
     {
@@ -170,11 +185,11 @@ types::Error Simulator::SetTrafficLight(const types::TrackId track, const types:
 
 types::Error Simulator::GetBlockOccupancy(const types::TrackId track, const types::BlockId block, bool &occupied) const
 {
-    types::Error error = types::Error::ERROR_NONE;
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
 
     if (!tracks_.contains(track))
     {
-        error = types::Error::ERROR_INVALID_TRACK;
+        // Error set, do nothing
     }
     else
     {
