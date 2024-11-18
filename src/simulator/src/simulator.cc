@@ -5,59 +5,198 @@
 namespace simulator
 {
 
-void Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> track)
+void Simulator::Update(void)
 {
-    if (tracks_.end() == std::find(tracks_.begin(), tracks_.end(), track))
+    for (const std::pair<const types::TrackId, std::shared_ptr<track_model::TrackModel>> &track : tracks_)
     {
-        tracks_.push_back(track);
+        track.second->Update();
+
+        std::vector<std::shared_ptr<train_model::TrainModel>> trains;
+        track.second->GetTrainModels(trains);
+        for (const std::shared_ptr<train_model::TrainModel> &train : trains)
+        {
+            train->Update();
+        }
     }
 }
 
-void Simulator::DeleteTrackModel(const types::TrackId track)
+types::Error Simulator::AddTrackModel(std::shared_ptr<track_model::TrackModel> track)
 {
-    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
-        {
-            return model->GetTrackId() == track;
-        }),
-                  tracks_.end());
+    types::Error   error    = types::Error::ERROR_NONE;
+    types::TrackId track_id = track.get()->GetTrackId();
+
+    if (tracks_.contains(track_id))
+    {
+        error = types::Error::ERROR_DUPLICATE_TRACK;
+    }
+    else
+    {
+        tracks_[track_id] = track;
+    }
+
+    return error;
+}
+
+types::Error Simulator::DeleteTrackModel(const types::TrackId track)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::Error::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        tracks_.erase(track);
+    }
+
+    return error;
 }
 
 void Simulator::GetTrackModels(std::vector<std::shared_ptr<track_model::TrackModel>> &tracks) const
 {
-    tracks = tracks_;
+    tracks.reserve(tracks_.size() - tracks.size());
+
+    for (const std::pair<types::TrackId, std::shared_ptr<track_model::TrackModel>> track_model : tracks_)
+    {
+        tracks.emplace_back(track_model.second);
+    }
 }
 
 types::Error Simulator::AddTrainModel(const types::TrackId track, std::shared_ptr<train_model::TrainModel> train)
 {
     types::Error error = types::Error::ERROR_NONE;
 
-    std::vector<std::shared_ptr<track_model::TrackModel>>::iterator i = std::find_if(tracks_.begin(), tracks_.end(), [track](std::shared_ptr<track_model::TrackModel> model)
-        {
-            return model->GetTrackId() == track;
-        });
-
-    if (tracks_.end() != i)
+    if (!tracks_.contains(track))
     {
-        i->get()->AddTrainModel(train);
+        error = types::Error::ERROR_INVALID_TRACK;
     }
     else
     {
-        error = types::Error::ERROR_INVALID_TRACK;
+        tracks_[track].get()->AddTrainModel(train);
     }
 
     return error;
 }
 
-void Simulator::GetTrainModels(std::vector<std::shared_ptr<train_model::TrainModel>> &trains) const
+std::shared_ptr<train_model::TrainModel> Simulator::GetTrainModel(const types::TrainId train)
 {
-    std::vector<std::shared_ptr<train_model::TrainModel>> track_trains;
+    std::shared_ptr<train_model::TrainModel> model(nullptr);
 
-    for (std::vector<std::shared_ptr<track_model::TrackModel>>::const_iterator i = tracks_.begin(); i != tracks_.end(); ++i)
+    for (const std::pair<types::TrackId, std::shared_ptr<track_model::TrackModel>> track_model : tracks_)
     {
-        i->get()->GetTrainModels(track_trains);
+        model = track_model.second->GetTrainModel(train);
 
-        trains.insert(std::end(trains), std::begin(track_trains), std::end(track_trains));
+        if (nullptr != model)
+        {
+            break;
+        }
     }
+
+    return model;
+}
+
+types::Error Simulator::SetTrackCircuitData(const types::TrackCircuitData &data)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    if (!tracks_.contains(data.track))
+    {
+        error = types::Error::ERROR_INVALID_TRACK;
+    }
+    else if (types::Error::ERROR_NONE != tracks_[data.track].get()->SetCommandedSpeed(data.block, data.speed))
+    {
+        error = types::Error::ERROR_INVALID_BLOCK;
+    }
+    else if (types::Error::ERROR_NONE != tracks_[data.track].get()->SetAuthority(data.block, data.authority))
+    {
+        error = types::Error::ERROR_INVALID_BLOCK;
+    }
+
+    return error;
+}
+
+types::Error Simulator::SetSwitchState(const types::TrackId track, const types::BlockId block, const bool switched)
+{
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
+
+    if (!tracks_.contains(track))
+    {
+        // Error set, do nothing
+    }
+    else
+    {
+        error = tracks_[track]->SetSwitchState(block, switched);
+    }
+
+    return error;
+}
+
+types::Error Simulator::SetCrossingState(const types::TrackId track, const types::BlockId block, const bool closed)
+{
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
+
+    if (!tracks_.contains(track))
+    {
+        // Error set, do nothing
+    }
+    else
+    {
+        error = tracks_[track]->SetCrossingState(block, closed);
+    }
+
+    return error;
+}
+
+types::Error Simulator::SetTrafficLight(const types::TrackId track, const types::BlockId block, const types::TrafficLightColor color)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    if (!tracks_.contains(track))
+    {
+        error = types::Error::ERROR_INVALID_TRACK;
+    }
+    else
+    {
+        switch (color)
+        {
+        case types::TrafficLightColor::TRAFFICLIGHTCOLOR_RED:
+            error = tracks_[track]->SetRedTrafficLight(block, true);
+            if (types::Error::ERROR_NONE == error)
+            {
+                error = tracks_[track]->SetGreenTrafficLight(block, false);
+            }
+            break;
+        case types::TrafficLightColor::TRAFFICLIGHTCOLOR_GREEN:
+            error = tracks_[track]->SetGreenTrafficLight(block, true);
+            if (types::Error::ERROR_NONE == error)
+            {
+                error = tracks_[track]->SetRedTrafficLight(block, false);
+            }
+            break;
+        default:
+            error = types::Error::ERROR_INVALID_FORMAT;
+            break;
+        }
+    }
+
+    return error;
+}
+
+types::Error Simulator::GetBlockOccupancy(const types::TrackId track, const types::BlockId block, bool &occupied) const
+{
+    types::Error error = types::Error::ERROR_INVALID_TRACK;
+
+    if (!tracks_.contains(track))
+    {
+        // Error set, do nothing
+    }
+    else
+    {
+        error = tracks_.find(track)->second->GetBlockOccupancy(block, occupied);
+    }
+
+    return error;
 }
 
 } // namespace simulator

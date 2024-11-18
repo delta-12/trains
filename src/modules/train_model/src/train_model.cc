@@ -9,14 +9,14 @@
 namespace train_model
 {
 
-const Newtons                       kMaximumForce             = 120000;
-const types::MetersPerSecondSquared kMaximumDecelerationLimit = -2.73;
-const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
-const types::MilesPerHour           kMaximumVelocity          = 43.496;
-const int                           kMaximumPassengers        = 222;
-const int                           kCrewCount                = 7;
-const Kilograms                     kTrainMass                = 37103;
-const Kilograms                     kAvgPassengerWeight       = 68.039;
+const Newtons kMaximumForce = 120000;
+// const types::MetersPerSecondSquared kMaximumDecelerationLimit = -2.73;
+// const types::MetersPerSecondSquared kMaximumAccelerationLimit = .5;
+// const types::MilesPerHour           kMaximumVelocity          = 43.496;
+// const int                           kMaximumPassengers        = 222;
+const int       kCrewCount          = 7;
+const Kilograms kTrainMass          = 37103;
+const Kilograms kAvgPassengerWeight = 68.039;
 
 
 SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_(clk)

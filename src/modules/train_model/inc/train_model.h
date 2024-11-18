@@ -22,6 +22,7 @@ typedef double Kilograms;
 class TrainModel
 {
     public:
+        virtual void Update(void)                                             = 0;
         virtual void SetTrainId(const types::TrainId train)                   = 0;
         virtual void SetEmergencyBrake(const bool emergency_brake)            = 0;
         virtual void SetEngineFailure(const bool engine_failure)              = 0;
@@ -68,8 +69,8 @@ class SoftwareTrainModel : public TrainModel
 
 
         //internal
-        void Update();
-        void UpdatePassengers();
+        void Update(void);
+        void UpdatePassengers(void);
         void SpeedCalc(types::Second delta);
 
         //setters
