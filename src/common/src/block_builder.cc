@@ -22,6 +22,7 @@ static const size_t kScheduleWayside                 = 7;
 static const size_t kScheduleFieldSpeedLimit         = 11;
 static const size_t kScheduleFieldTotalTimeToStation = 23;
 static const size_t kScheduleFieldTrack              = 0;
+static const size_t kLayoutFieldPolarity             = 13;
 
 static void AssignBlockInfrastructure(types::Block &block, const std::string &input_string);
 static std::vector<std::string> SplitBySemicolon(const std::string &input);
@@ -167,6 +168,15 @@ void BlockBuilder::BuildBlocksFromTrackLayout(const std::vector<std::vector<std:
         else
         {
             block.direction = types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL;
+        }
+
+        if (record[kLayoutFieldPolarity] != "")
+        {
+            std::string block_polarity = record[kLayoutFieldPolarity];
+            if (block_polarity.find("1") != std::string::npos)
+            {
+                block.polarity = types::Polarity::POLARITY_POSITIVE;
+            }
         }
     }
 }

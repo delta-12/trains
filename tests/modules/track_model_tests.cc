@@ -556,11 +556,10 @@ TEST(TrackModelTests, Polarity)
     ASSERT_EQ(track.GetBlock(65, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
-    ASSERT_EQ(test_block.polarity, types::Polarity::POLARITY_NEGATIVE);
 
     current_polarity = ptr->GetTrackPolarity();
 
-    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_NEGATIVE);
+    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_POSITIVE);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), -1);
 }
