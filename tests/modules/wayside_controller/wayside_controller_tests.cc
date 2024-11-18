@@ -4,6 +4,7 @@
 * @brief Unit testing for WaysideController.
 *****************************************************************************/
 
+#include <filesystem>
 #include <ranges>
 
 #include <gmock/gmock.h>
@@ -11,7 +12,8 @@
 
 #include "controller_handler.h"
 #include "green_line_blocks.h"
-#include "logger.h"
+#include "simulator.h"
+#include "track_model.h"
 #include "wayside_controller.h"
 #include "wayside_controller_handler.h"
 
@@ -20,6 +22,24 @@ class MockCtc : public ctc::Ctc
     public:
         MOCK_METHOD(types::Error, SetBlockStates, (const types::TrackId track, const std::vector<types::BlockState> &block_states), (override));
         MOCK_METHOD(std::vector<types::TrackCircuitData>, GetSuggestedSpeedsAndAuthorities, (), (const, override));
+};
+
+class MockTrackModel : public track_model::TrackModel
+{
+    public:
+        MOCK_METHOD(types::TrackId, GetTrackId, (), (override));
+        MOCK_METHOD(types::Error, AddTrainModel, (std::shared_ptr<train_model::TrainModel> train), (override));
+        MOCK_METHOD(std::shared_ptr<train_model::TrainModel>, GetTrainModel, (const types::TrainId train), (const, override));
+        MOCK_METHOD(void, GetTrainModels, (std::vector<std::shared_ptr<train_model::TrainModel>> &trains), (override));
+        MOCK_METHOD(void, Update, (), (override));
+        MOCK_METHOD(types::Error, SetSwitchState, (const types::BlockId block, const bool switched), (override));
+        MOCK_METHOD(types::Error, SetCrossingState, (const types::BlockId block, const bool closed), (override));
+        MOCK_METHOD(types::Error, SetRedTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetYellowTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetGreenTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetCommandedSpeed, (const types::BlockId block, const types::MetersPerSecond speed), (override));
+        MOCK_METHOD(types::Error, SetAuthority, (const types::BlockId block, const types::Blocks authority), (override));
+        MOCK_METHOD(types::Error, GetBlockOccupancy, (const types::BlockId block, bool &occupied), (const, override));
 };
 
 static const std::array<bool, wayside_controller::kTotalInputs> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
@@ -69,7 +89,7 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
     if (output < wayside_controller::kTotalOutputs)
     {
         // TODO NNF-105 set outputs
-        LOGGER_UNUSED(signal); // temporary fix to remove compiler warnings
+        (void)(signal); // temporary fix to remove compiler warnings
         error = wayside_controller::Error::ERROR_NONE;
     }
 
@@ -209,8 +229,8 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
     std::function<wayside_controller::Error(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)> get_inputs_none =
         [](const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
         {
-            LOGGER_UNUSED(input);
-            LOGGER_UNUSED(signal);
+            (void)(input);
+            (void)(signal);
             return wayside_controller::Error::ERROR_INVALID_INPUT;
         };
     wayside_controller::WaysideController software_wayside_controlle_no_inputs(get_inputs_none, kBlueLineWaysideBlocks);
@@ -280,26 +300,56 @@ TEST(WaysideControllerTests, GetBlockStates)
 
 TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
 {
+    using ::testing::Return;
+    using ::testing::DoAll;
+    using ::testing::SetArgReferee;
+    using ::testing::_;
+
     MockCtc                                                    ctc_mock;
-    RingBuffer<uint8_t, 1024>                                  ring_buffer;
-    wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(0,
+    simulator::Simulator                                       world;
+    CsvParser                                                  csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
+    BlockBuilder                                               block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
+    wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
                                                                                           types::TrackId::TRACKID_GREEN,
                                                                                           wayside_controller::kGreenLineBlocksWayside0,
-                                                                                          controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer));
+                                                                                          controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
     controller_network::ControllerHandler<1024> controller_handler;
-    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer));
+    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
+    controller_handler.SetWaysideLayout(block_builder.GetBlocks());
 
+    // Add track model mock to simulation
+    std::shared_ptr<MockTrackModel> mock_track = std::make_shared<MockTrackModel>();
+    EXPECT_CALL(*mock_track.get(), GetTrackId()).Times(1).WillOnce(Return(types::TrackId::TRACKID_GREEN));
+    world.AddTrackModel(mock_track);
+
+    // Connect wayside controller
     ASSERT_EQ(types::Error::ERROR_NONE, wayside_controller_handler.Connect());
     EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1);
-    controller_handler.Update(ctc_mock);
-    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 0));
+    controller_handler.Update(ctc_mock, world);
+    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 1));
 
+    // Send track circuit data to wayside controller
     std::vector<types::TrackCircuitData> track_circuit_data = {
         {types::TrackId::TRACKID_GREEN, 70, 10, 20}
     };
-    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1).WillOnce(::testing::Return(track_circuit_data));
-    controller_handler.Update(ctc_mock);
+    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1).WillOnce(Return(track_circuit_data));
+    EXPECT_CALL(*mock_track.get(), GetBlockOccupancy(_, _)).Times(wayside_controller::kGreenLineBlocksWayside0.size()).WillRepeatedly(DoAll(SetArgReferee<1>(false), Return(types::Error::ERROR_NONE)));
+    controller_handler.Update(ctc_mock, world);
+
+    // Wayside controller receives track circuit data and sends back to track model
     wayside_controller_handler.Update();
 
-    // TODO
+    // Track model mock receives track circuit data
+    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1).WillOnce(Return(track_circuit_data));
+    EXPECT_CALL(*mock_track.get(), GetBlockOccupancy(_, _)).Times(wayside_controller::kGreenLineBlocksWayside0.size()).WillRepeatedly(DoAll(SetArgReferee<1>(false), Return(types::Error::ERROR_NONE)));
+    // TODO NNF-144 test clamping to safe speed
+    EXPECT_CALL(*mock_track.get(), SetCommandedSpeed(70, 10)).Times(1).WillOnce(Return(types::Error::ERROR_NONE));
+    EXPECT_CALL(*mock_track.get(), SetAuthority(70, 20)).Times(1).WillOnce(Return(types::Error::ERROR_NONE));
+    controller_handler.Update(ctc_mock, world);
+}
+
+TEST(WaysideControllerTests, BlockStatesEndToEnd)
+{
+    // TODO send block states from Track Model, to Wayside, to CTC
 }

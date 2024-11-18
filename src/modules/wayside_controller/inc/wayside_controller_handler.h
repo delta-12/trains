@@ -257,28 +257,32 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
 template <size_t buffer_size>
 types::Error SoftwareWaysideControllerHandler<buffer_size>::SendBlockStates(const std::vector<types::BlockState> &block_states)
 {
-    types::Error                     error = types::Error::ERROR_NONE;
-    controller_messages::BlockStates block_states_message;
+    types::Error error = types::Error::ERROR_NONE;
 
-    block_states_message.set_track(static_cast<controller_messages::TrackId>(track_));
-
-    for (const types::BlockState &block_state : block_states)
+    if (block_states.size() > 0)
     {
-        controller_messages::BlockState* block_state_message = block_states_message.add_states();
-        block_state_message->set_block(block_state.block);
-        block_state_message->set_occupied(block_state.occupied);
-        block_state_message->set_track_failure(block_state.track_failure);
-    }
+        controller_messages::BlockStates block_states_message;
 
-    size_t message_size = block_states_message.ByteSizeLong();
+        block_states_message.set_track(static_cast<controller_messages::TrackId>(track_));
 
-    if (!block_states_message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
-    {
-        error = types::Error::ERROR_INVALID_FORMAT;
-    }
-    else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_BLOCK_STATES, message_buffer_.data(), message_size))
-    {
-        error = types::Error::ERROR_INVALID_SIZE;
+        for (const types::BlockState &block_state : block_states)
+        {
+            controller_messages::BlockState* block_state_message = block_states_message.add_states();
+            block_state_message->set_block(block_state.block);
+            block_state_message->set_occupied(block_state.occupied);
+            block_state_message->set_track_failure(block_state.track_failure);
+        }
+
+        size_t message_size = block_states_message.ByteSizeLong();
+
+        if (!block_states_message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
+        {
+            error = types::Error::ERROR_INVALID_FORMAT;
+        }
+        else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_BLOCK_STATES, message_buffer_.data(), message_size))
+        {
+            error = types::Error::ERROR_INVALID_SIZE;
+        }
     }
 
     return error;

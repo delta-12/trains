@@ -122,6 +122,7 @@ Error WaysideController::GetCommandedSpeedAndAuthority(types::TrackCircuitData &
     else
     {
         // TODO NNF-144 check for safe speed
+        speed = track_circuit_data.speed;
 
         // BFS should return set of blocks in the order they can be traversed from the starting block
         std::vector<types::BlockId>                 blocks         = block_layout_.BreadthFirstSearch(track_circuit_data.block);

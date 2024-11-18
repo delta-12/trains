@@ -319,14 +319,18 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
 template <size_t buffer_size>
 types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator, const std::unique_ptr<ControllerPort> &port)
 {
-    types::Error error        = ReceiveMessageFromPort(ctc_office, port);
+    types::Error error        = types::Error::ERROR_NONE;
     MessageType  message_type = MESSAGETYPE_NONE;
     size_t       message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
 
     if ((message_size > 0) && (MESSAGETYPE_NONE != message_type))
     {
+        // Order of messages is not guaranteed, each ReceiveMessageFromPort method must handle all message types
         switch (message_type)
         {
+        case MESSAGETYPE_BLOCK_STATES:
+            error = HandleBlockStates(message_size, ctc_office);
+            break;
         case MESSAGETYPE_TRACK_CIRCUIT_DATA:
             error = HandleTrackCircuitData(message_size, world_simulator);
             break;

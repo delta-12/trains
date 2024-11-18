@@ -11,7 +11,6 @@
 #include "tick_source.h"
 #include "track_model.h"
 #include "train_model.h"
-#include "wayside_controller_port.h"
 
 int main(void)
 {

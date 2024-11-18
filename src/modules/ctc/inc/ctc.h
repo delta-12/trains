@@ -89,8 +89,8 @@ class Ctc
 {
     public:
         /* Integration */
-        types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
-        std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
+        virtual types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
+        virtual std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
         /* Train Dispatch Specific */
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
