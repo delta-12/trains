@@ -131,9 +131,9 @@ bool BasicControllerPort<buffer_size>::Connected(void) const
 }
 
 template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
-std::shared_ptr<types::Port> BuildSoftwarePort(RingBuffer<T, buffer_size> &ring_buffer)
+std::shared_ptr<types::Port> BuildSoftwarePort(RingBuffer<T, buffer_size> &send_buffer, RingBuffer<T, buffer_size> &receive_buffer)
 {
-    return std::make_shared<SoftwarePort<T, buffer_size>>(ring_buffer);
+    return std::make_shared<SoftwarePort<RingBuffer, T, buffer_size>>(send_buffer, receive_buffer);
 }
 
 template <size_t buffer_size>
@@ -143,9 +143,9 @@ std::unique_ptr<ControllerPort> BuildBasicControllerPort(std::shared_ptr<types::
 }
 
 template<size_t controller_port_buffer_size, template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
-std::unique_ptr<ControllerPort> BuildSoftwareBasicControllerPort(RingBuffer<T, buffer_size> &ring_buffer)
+std::unique_ptr<ControllerPort> BuildSoftwareBasicControllerPort(RingBuffer<T, buffer_size> &send_buffer, RingBuffer<T, buffer_size> &receive_buffer)
 {
-    return BuildBasicControllerPort<controller_port_buffer_size>(BuildSoftwarePort(ring_buffer));
+    return BuildBasicControllerPort<controller_port_buffer_size>(BuildSoftwarePort(send_buffer, receive_buffer));
 }
 
 } // namespace controller_network

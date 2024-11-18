@@ -13,7 +13,8 @@
 #include "ring_buffer.h"
 #include "types.h"
 
-RingBuffer<uint8_t, 1024> ring_buffer;
+RingBuffer<uint8_t, 1024> send_buffer;
+RingBuffer<uint8_t, 1024> receive_buffer;
 bool                      connected = true;
 
 class SoftwarePort : public types::Port
@@ -21,19 +22,19 @@ class SoftwarePort : public types::Port
     public:
         size_t Send(const uint8_t *const buffer, const size_t size)
         {
-            return ring_buffer.Write(buffer, size);
+            return send_buffer.Write(buffer, size);
         }
         size_t SendAvailable(void)
         {
-            return (ring_buffer.Capacity() - ring_buffer.Size());
+            return (send_buffer.Capacity() - send_buffer.Size());
         }
         size_t Receive(uint8_t *const buffer, const size_t size)
         {
-            return ring_buffer.Read(buffer, size);
+            return receive_buffer.Read(buffer, size);
         }
         size_t ReceiveAvailable(void)
         {
-            return ring_buffer.Size();
+            return receive_buffer.Size();
         }
         bool Connected(void)
         {
@@ -45,7 +46,7 @@ TEST(ControllerHandlerTests, IsConnectedTestWayside0)
 {
     ctc::Ctc                                            ctc_office;
     controller_network::ControllerHandler<1024>         controller_handler;
-    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(receive_buffer, send_buffer);
     controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
 
     controller_handler.Update(ctc_office);
@@ -68,7 +69,7 @@ TEST(ControllerHandlerTests, IsConnectedTestWayside1)
 {
     ctc::Ctc                                            ctc_office;
     controller_network::ControllerHandler<1024>         controller_handler;
-    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(receive_buffer, send_buffer);
     controller_handler.AddPort(std::make_unique<controller_network::BasicControllerPort<1024>>(std::make_unique<SoftwarePort>()));
 
     controller_handler.Update(ctc_office);
@@ -92,8 +93,8 @@ TEST(ControllerHandlerTests, TrackCircuitDataTest)
     ctc::Ctc                                            ctc_office;
     simulator::Simulator                                world_simulator;
     controller_network::ControllerHandler<1024>         controller_handler;
-    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer);
-    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(ring_buffer));
+    std::unique_ptr<controller_network::ControllerPort> client_port = controller_network::BuildSoftwareBasicControllerPort<1024>(receive_buffer, send_buffer);
+    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(send_buffer, receive_buffer));
 
     controller_handler.Update(ctc_office, world_simulator);
 
@@ -106,4 +107,6 @@ TEST(ControllerHandlerTests, TrackCircuitDataTest)
     controller_handler.Update(ctc_office, world_simulator);
     ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 0));
     ASSERT_FALSE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_MAX, 0));
+
+    // TODO??
 }

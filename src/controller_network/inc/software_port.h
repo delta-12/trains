@@ -12,11 +12,11 @@
 namespace controller_network
 {
 
-template<typename T, size_t buffer_size>
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
 class SoftwarePort : public types::Port
 {
     public:
-        SoftwarePort(RingBuffer<T, buffer_size> &ring_buffer);
+        SoftwarePort(RingBuffer<T, buffer_size> &send_buffer, RingBuffer<T, buffer_size> &receive_buffer);
         size_t Send(const uint8_t *const buffer, const size_t size);
         size_t SendAvailable(void);
         size_t Receive(uint8_t *const buffer, const size_t size);
@@ -24,40 +24,42 @@ class SoftwarePort : public types::Port
         bool Connected(void);
 
     private:
-        RingBuffer<T, buffer_size> &buffer_;
+        RingBuffer<T, buffer_size> &send_buffer_;
+        RingBuffer<T, buffer_size> &receive_buffer_;
 };
 
-template<typename T, size_t buffer_size>
-SoftwarePort<T, buffer_size>::SoftwarePort(RingBuffer<T, buffer_size> &ring_buffer) : buffer_(ring_buffer)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+SoftwarePort<RingBuffer, T, buffer_size>::SoftwarePort(RingBuffer<T, buffer_size> &send_buffer, RingBuffer<T, buffer_size> &receive_buffer)
+    : send_buffer_(send_buffer), receive_buffer_(receive_buffer)
 {
 }
 
-template<typename T, size_t buffer_size>
-size_t SoftwarePort<T, buffer_size>::Send(const uint8_t *const buffer, const size_t size)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+size_t SoftwarePort<RingBuffer, T, buffer_size>::Send(const uint8_t *const buffer, const size_t size)
 {
-    return buffer_.Write(buffer, size);
+    return send_buffer_.Write(buffer, size);
 }
 
-template<typename T, size_t buffer_size>
-size_t SoftwarePort<T, buffer_size>::SendAvailable(void)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+size_t SoftwarePort<RingBuffer, T, buffer_size>::SendAvailable(void)
 {
-    return (buffer_.Capacity() - buffer_.Size());
+    return (send_buffer_.Capacity() - send_buffer_.Size());
 }
 
-template<typename T, size_t buffer_size>
-size_t SoftwarePort<T, buffer_size>::Receive(uint8_t *const buffer, const size_t size)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+size_t SoftwarePort<RingBuffer, T, buffer_size>::Receive(uint8_t *const buffer, const size_t size)
 {
-    return buffer_.Read(buffer, size);
+    return receive_buffer_.Read(buffer, size);
 }
 
-template<typename T, size_t buffer_size>
-size_t SoftwarePort<T, buffer_size>::ReceiveAvailable(void)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+size_t SoftwarePort<RingBuffer, T, buffer_size>::ReceiveAvailable(void)
 {
-    return buffer_.Size();
+    return receive_buffer_.Size();
 }
 
-template<typename T, size_t buffer_size>
-bool SoftwarePort<T, buffer_size>::Connected(void)
+template<template<typename, size_t> class RingBuffer, typename T, size_t buffer_size>
+bool SoftwarePort<RingBuffer, T, buffer_size>::Connected(void)
 {
     return true;
 }
