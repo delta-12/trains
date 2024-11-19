@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 project(trains LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -fdiagnostics-color=always")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wno-missing-requires -fdiagnostics-color=always") # suppress missing-requires warning to build protobufs
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -12,10 +12,16 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:LOGGER>
 )
 
+option(ABSL_PROPAGATE_CXX_STD "Propagate C++ standard to abseil-cpp" ON)
+
+set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external)
+set(ASIO_DIR ${EXTERNAL_DIR}/asio)
+set(PROTOBUF_INSTALL_DIR ${EXTERNAL_DIR}/protobuf/_build/protobuf-install)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(BSP_DIR ${SRC_DIR}/bsp)
 set(COMMON_DIR ${SRC_DIR}/common)
 set(CONTROLLER_NETWORK_DIR ${SRC_DIR}/controller_network)
+set(CONTROLLER_NETWORK_MESSAGES_DIR ${CONTROLLER_NETWORK_DIR}/messages)
 set(MODULES_DIR ${SRC_DIR}/modules)
 set(CTC_DIR ${MODULES_DIR}/ctc)
 set(WAYSIDE_CONTROLLER_DIR ${MODULES_DIR}/wayside_controller)
@@ -26,9 +32,9 @@ set(SIMULATOR_DIR ${SRC_DIR}/simulator)
 set(TESTS_DIR ${CMAKE_SOURCE_DIR}/tests)
 set(UI_DIR ${CMAKE_SOURCE_DIR}/ui)
 set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/tools)
-set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external)
-set(ASIO_DIR ${EXTERNAL_DIR}/asio)
 
+set(ASIO_INC_DIR ${ASIO_DIR}/asio/include)
+set(PROTOBUF_INC_DIRS ${CMAKE_CURRENT_BINARY_DIR} ${PROTOBUF_INSTALL_DIR}/include)
 set(COMMON_INC_DIR ${COMMON_DIR}/inc)
 set(CONTROLLER_NETWORK_INC_DIR ${CONTROLLER_NETWORK_DIR}/inc)
 set(CTC_INC_DIR ${CTC_DIR}/inc)
@@ -38,6 +44,8 @@ set(TRAIN_MODEL_INC_DIR ${TRAIN_MODEL_DIR}/inc)
 set(TRAIN_CONTROLLER_INC_DIR ${TRAIN_CONTROLLER_DIR}/inc)
 set(SIMULATOR_INC_DIR ${SIMULATOR_DIR}/inc)
 set(INC_DIRS
+    ${ASIO_INC_DIR}
+    ${PROTOBUF_INC_DIRS}
     ${BSP_DIR}
     ${COMMON_INC_DIR}
     ${CONTROLLER_NETWORK_INC_DIR}
@@ -47,7 +55,6 @@ set(INC_DIRS
     ${TRAIN_MODEL_INC_DIR}
     ${TRAIN_CONTROLLER_INC_DIR}
     ${SIMULATOR_INC_DIR}
-    ${ASIO_DIR}/asio/include
 )
 
 file(GLOB COMMON_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
@@ -111,13 +118,18 @@ FetchContent_MakeAvailable(googletest)
 ################################################################################
 # Controller Messages
 ################################################################################
-find_package(Protobuf REQUIRED)
-protobuf_generate_cpp(
-    CONTROLLER_MESSAGE_SRCS
-    CONTROLLER_MESSAGE_HDRS
-    ${CONTROLLER_NETWORK_MESSAGE_SRCS}
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/protobuf/third_party/abseil-cpp)
+find_package(utf8_range CONFIG REQUIRED HINTS ${PROTOBUF_INSTALL_DIR})
+find_package(Protobuf CONFIG REQUIRED HINTS ${PROTOBUF_INSTALL_DIR})
+add_library(controller_messages)
+protobuf_generate(
+	TARGET controller_messages
+	LANGUAGE cpp
+	PROTOS ${CONTROLLER_NETWORK_MESSAGE_SRCS}
+	IMPORT_DIRS ${CONTROLLER_NETWORK_MESSAGES_DIR}
 )
-add_library(controller_messages ${CONTROLLER_MESSAGE_SRCS} ${CONTROLLER_MESSAGE_HDRS})
+target_link_libraries(controller_messages PRIVATE protobuf::libprotobuf)
+target_include_directories(controller_messages PRIVATE ${PROTOBUF_INC_DIRS})
 
 ################################################################################
 # Trains build
@@ -127,8 +139,8 @@ if (WIN32)
 else()
     add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
-target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(trains PRIVATE Slint::Slint protobuf controller_messages)
+target_include_directories(trains PRIVATE ${INC_DIRS})
+target_link_libraries(trains PRIVATE Slint::Slint controller_messages)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
     add_custom_command(TARGET trains POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:trains> $<TARGET_FILE_DIR:trains> COMMAND_EXPAND_LISTS)
@@ -144,8 +156,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
     target_link_options(trains_lib PRIVATE --coverage)
 endif()
-target_include_directories(trains_lib PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(trains_lib PRIVATE protobuf controller_messages)
+target_include_directories(trains_lib PRIVATE ${INC_DIRS})
+target_link_libraries(trains_lib PRIVATE controller_messages)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS ${TEST_NAME} ${TEST_SRC})
@@ -154,8 +166,8 @@ foreach(TEST_SRC ${TEST_SRCS})
         target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
-    target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TEST_NAME} PRIVATE trains_lib GTest::gtest_main GTest::gmock protobuf controller_messages)
+    target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS})
+    target_link_libraries(${TEST_NAME} PRIVATE trains_lib GTest::gtest_main GTest::gmock)
     gtest_discover_tests(${TEST_NAME})
 endforeach()
 
