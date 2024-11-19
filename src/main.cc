@@ -1,14 +1,23 @@
 #include <memory>
 #include <thread>
-
+#include <iostream>
+#include <map>
 #include <slint.h>
 
 #include "launcher.h"
+#include "block_builder.h"
+#include "csv_parser.h"
 #include "simulator.h"
+#include "tick_source.h"
+#include "track_model.h"
+#include "train_model.h"
+#include "train_controller.h"
 
 int main(void)
 {
+
     simulator::Simulator world;
+    std::map<int,std::shared_ptr<train_controller::SoftwareTrainController>> train_controllers;
     auto                 launcher_ui           = ui::Launcher::create();
     auto                 ctc_ui                = ui::CtcUi::create();
     auto                 wayside_controller_ui = ui::WaysideControllerUi::create();
@@ -37,12 +46,52 @@ int main(void)
         train_controller_ui->show();
     });
 
+    int x = 500;
 
-    std::thread worker_thread([&]
+    std::thread worker_thread([&world, &train_controllers, &x]
     {
-        // Main backend loop here
+        std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+        tick_source.get()->Start();
+
+        std::filesystem::path           base_path = std::filesystem::current_path();
+        std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+        std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
+        CsvParser                       parser(path);
+        CsvParser                       parser2(path2);
+        BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+        
+        
+        std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
+        std::shared_ptr<train_controller::SoftwareTrainController> train_contr = std::make_shared<train_controller::SoftwareTrainController>(tick_source);
+        std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
+
+
+        train.get()->SetTrainId(0);
+        train_controllers[0] = train_contr;
+        track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+
+
+
+        train.get()->SetAuthority(333);
+
+
+        world.AddTrackModel(track);
+        world.AddTrainModel(track->GetTrackId(), train);
+
+
+        world.Update(); 
+        x = track.get()->GetTrainModel(0).get()->GetAuthority(); 
+
+
+        track.get()->SetAuthority(0,7);
+        x = track.get()->GetTrainModel(0).get()->GetAuthority(); 
+            
+        train_controllers[0].get()->SetAuthority(x);
     });
 
+
+    //std::cout << x;
     launcher_ui->run();
     worker_thread.join();
 
