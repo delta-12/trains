@@ -212,7 +212,7 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
@@ -239,7 +239,7 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Blocks authority)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
