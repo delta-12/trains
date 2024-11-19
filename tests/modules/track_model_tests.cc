@@ -55,7 +55,6 @@ class TrainModelImpl : public TrainModel
         void SetDistanceTraveled(const types::Meters distance);
         void SetGrade(const double grade);
         void SetBrake(const double brake);
-        ~TrainModelImpl();
 
     private:
         types::TrainId train_id_;
