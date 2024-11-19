@@ -218,6 +218,12 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetCommandedSpeed(speed);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
@@ -239,6 +245,12 @@ types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const 
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetAuthority(authority);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
