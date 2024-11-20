@@ -9,6 +9,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
+      - name: Cache Protobuf CMake files
+        id: cache-protobuf-cmake
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-protobuf-cmake
+        with:
+          path: ./external/protobuf/_build
+          key: ${{ env.cache-name }}-${{ hashFiles('./external/protobuf/**/*') }}
+      - name: Generate Protobuf CMake cache
+        if: ${{ steps.cache-protobuf-cmake.outputs.cache-hit != 'true' }}
+        run: |
+          cd ./external/protobuf/
+          cmake -S . -B _build -DCMAKE_INSTALL_PREFIX=_build/protobuf-install -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -Dprotobuf_BUILD_TESTS=OFF -DABSL_PROPAGATE_CXX_STD=ON -G Ninja
+          cmake --build _build --config Release
+          cmake --build _build -t install
+          cd ../../
       - name: Cache CMake files
         id: cache-cmake
         uses: actions/cache@v4
@@ -68,6 +84,27 @@ jobs:
         run: apt update && apt install unzip
       - name: Install sonar-scanner and build-wrapper
         uses: sonarsource/sonarcloud-github-c-cpp@v3
+      - name: Cache Protobuf CMake files
+        id: cache-protobuf-cmake
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-protobuf-cmake
+        with:
+          path: ./external/protobuf/_build
+          key: ${{ env.cache-name }}-${{ hashFiles('./external/protobuf/**/*') }}
+      - name: Generate Protobuf CMake cache
+        if: ${{ steps.cache-protobuf-cmake.outputs.cache-hit != 'true' }}
+        run: cd ./external/protobuf/ && \
+             cmake -S . -B _build \
+              -DCMAKE_INSTALL_PREFIX=_build/protobuf-install \
+              -DCMAKE_CXX_STANDARD=20 \
+              -DCMAKE_BUILD_TYPE=Release \
+              -Dprotobuf_BUILD_TESTS=OFF \
+              -DABSL_PROPAGATE_CXX_STD=ON \
+              -G Ninja && \
+            cmake --build _build --config Release && \
+            cmake --build _build -t install && \
+            cd ../../
       - name: Cache CMake files
         id: cache-cmake
         uses: actions/cache@v4
