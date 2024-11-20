@@ -8,5 +8,8 @@ sdkconfig*
 # MacOS
 .DS_Store
 
+# Python
+.env
+
 # VS Code
 .vscode
