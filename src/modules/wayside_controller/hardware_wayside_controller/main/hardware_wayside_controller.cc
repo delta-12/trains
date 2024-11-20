@@ -8,6 +8,8 @@
 
 static const char *const kLogTag = "HARDWARE WAYSIDE";
 
+static EspTcpPort tcp_port;
+
 extern "C" void app_main(void)
 {
     /* Startup message */
@@ -30,9 +32,27 @@ extern "C" void app_main(void)
     Wifi_Init();
     Wifi_Start();
 
-    EspTcpPort tcp_port("10.0.0.172", 8080);
-    while(!tcp_port.Connected())
+    size_t i = 0;
+    while (!tcp_port.Connected() && (i < 5))
     {
         tcp_port.Connect("10.0.0.172", 8080);
+        i++;
+    }
+
+    if (tcp_port.Connected())
+    {
+        char data[] = "foobar";
+        tcp_port.Send((uint8_t *)data, 7);
+    }
+
+    while (true)
+    {
+        size_t bytes = tcp_port.ReceiveAvailable();
+        if (bytes > 0)
+        {
+            ESP_LOGI(kLogTag, "Bytes received: %d", bytes);
+        }
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

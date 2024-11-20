@@ -15,7 +15,7 @@ const size_t kEspTcpPortIntermediateBufferSize = 512;
 class EspTcpPort : public types::Port
 {
 public:
-    EspTcpPort(const char *const host_ip, const uint16_t port_number);
+    EspTcpPort(void);
     ~EspTcpPort(void);
     void Connect(const char *const host_ip, const uint16_t port_number);
     size_t Send(const uint8_t *const buffer, const size_t size);
@@ -26,15 +26,12 @@ public:
 
 private:
     void Close(void);
-    void SendTask(void);
-    void ReceiveTask(void);
+    static void SendTask(void *arg);
+    static void ReceiveTask(void *arg);
     inline bool LockSender(void);
     inline void UnlockSender(void);
     inline bool LockReceiver(void);
     inline void UnlockReceiver(void);
-
-    // TODO start tasks for send/receive
-    // TODO add mutex to send/receive ring buffers
 
     int socket_;
     bool connected_ = false;

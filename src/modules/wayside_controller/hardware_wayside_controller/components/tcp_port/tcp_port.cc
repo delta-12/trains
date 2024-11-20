@@ -11,20 +11,20 @@
 #include "esp_log.h"
 
 static const char *const kLogTag = "TCP PORT";
+static const size_t kTaskStackDepth = 1024;
+static const size_t kTaskPriority = 10;
 
-EspTcpPort::EspTcpPort(const char *const host_ip, const uint16_t port_number)
+EspTcpPort::EspTcpPort(void)
 {
     receiver_mutex_ = xSemaphoreCreateMutexStatic(&receiver_mutex_buffer_);
     sender_mutex_ = xSemaphoreCreateMutexStatic(&sender_mutex_buffer_);
-
-    Connect(host_ip, port_number);
 }
 
 EspTcpPort::~EspTcpPort(void)
 {
     if (connected_)
     {
-        // TODO stop update task
+        connected_ = false;
 
         Close();
     }
@@ -93,34 +93,38 @@ bool EspTcpPort::Connected(void)
 
 void EspTcpPort::Connect(const char *const host_ip, const uint16_t port_number)
 {
-    struct sockaddr_in destination_address;
-    inet_pton(AF_INET, host_ip, &destination_address.sin_addr);
-    destination_address.sin_family = AF_INET;
-    destination_address.sin_port = htons(port_number);
-
-    int socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-
-    if (socket_ < 0)
+    if (!connected_)
     {
-        ESP_LOGE(kLogTag, "Unable to create socket: errno %d", errno);
+        struct sockaddr_in destination_address;
+        inet_pton(AF_INET, host_ip, &destination_address.sin_addr);
+        destination_address.sin_family = AF_INET;
+        destination_address.sin_port = htons(port_number);
 
-        Close();
-    }
-    else
-    {
-        ESP_LOGI(kLogTag, "Socket created, connecting to %s:%d", host_ip, port_number);
+        socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
-        if (0 != connect(socket_, (struct sockaddr *)&destination_address, sizeof(destination_address)))
+        if (socket_ < 0)
         {
-            ESP_LOGE(kLogTag, "Socket unable to connect: errno %d", errno);
+            ESP_LOGE(kLogTag, "Unable to create socket: errno %d", errno);
+
+            Close();
         }
         else
         {
-            ESP_LOGI(kLogTag, "Successfully connected");
+            ESP_LOGI(kLogTag, "Socket created, connecting to %s:%d", host_ip, port_number);
 
-            connected_ = true;
+            if (0 != connect(socket_, (struct sockaddr *)&destination_address, sizeof(destination_address)))
+            {
+                ESP_LOGE(kLogTag, "Socket unable to connect: errno %d", errno);
+            }
+            else
+            {
+                ESP_LOGI(kLogTag, "Successfully connected");
 
-            // TODO start update task
+                connected_ = true;
+
+                xTaskCreate(SendTask, "TcpPortSendTask", kTaskStackDepth, this, kTaskPriority, NULL);
+                xTaskCreate(ReceiveTask, "TcpPortReceiveTask", kTaskStackDepth, this, kTaskPriority, NULL);
+            }
         }
     }
 }
@@ -131,14 +135,82 @@ void EspTcpPort::Close(void)
     close(socket_);
 }
 
-void EspTcpPort::SendTask(void)
+void EspTcpPort::SendTask(void *arg)
 {
-    // TODO
+    EspTcpPort *port = (EspTcpPort *)arg;
+
+    while (port->connected_)
+    {
+        size_t bytes = port->SendAvailable();
+
+        if (bytes > port->send_buffer_.max_size())
+        {
+            bytes = port->send_buffer_.max_size();
+        }
+
+        if (0 == bytes)
+        {
+        }
+        else if (!port->LockSender())
+        {
+        }
+        else
+        {
+            bytes = port->sender_ring_buffer_.Read(port->send_buffer_.data(), bytes);
+
+            port->UnlockSender();
+
+            if (send(port->socket_, port->send_buffer_.data(), bytes, 0) < 0)
+            {
+                ESP_LOGE(kLogTag, "Error occurred during sending: errno %d", errno);
+            }
+        }
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+
+    vTaskDelete(NULL);
 }
 
-void EspTcpPort::ReceiveTask(void)
+void EspTcpPort::ReceiveTask(void *arg)
 {
-    // TODO
+    EspTcpPort *port = (EspTcpPort *)arg;
+
+    while (port->connected_)
+    {
+        int bytes = recv(port->socket_, port->receive_buffer_.data(), port->receive_buffer_.size(), 0);
+
+        if (bytes < 0)
+        {
+            ESP_LOGE(kLogTag, "Error occurred during receiving: errno %d", errno);
+        }
+        else
+        {
+            bool buffered = false;
+
+            while (!buffered)
+            {
+                if (!port->LockReceiver())
+                {
+                }
+                else if ((port->receiver_ring_buffer_.Capacity() - port->receiver_ring_buffer_.Size()) < bytes)
+                {
+                    port->UnlockReceiver();
+                }
+                else
+                {
+                    port->receiver_ring_buffer_.Write(port->receive_buffer_.data(), bytes);
+                    buffered = true;
+
+                    port->UnlockReceiver();
+                }
+            }
+
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+    }
+
+    vTaskDelete(NULL);
 }
 
 inline bool EspTcpPort::LockSender(void)
