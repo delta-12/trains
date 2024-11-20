@@ -3,7 +3,7 @@ build
 
 # ESP-IDF
 managed_components
-sdkconfig
+sdkconfig*
 
 # MacOS
 .DS_Store
