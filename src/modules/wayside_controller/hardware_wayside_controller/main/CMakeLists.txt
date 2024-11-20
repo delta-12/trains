@@ -16,5 +16,5 @@ set(INC_DIRS
     ${WAYSIDE_CONTROLLER_INC_DIR}
 )
 
-idf_component_register(SRCS "hardware_wayside_controller.cc" "display.c"
+idf_component_register(SRCS "hardware_wayside_controller.cc" "display.c" ${COMMON_DIR}/src/convert.cc
                        INCLUDE_DIRS "." ${INC_DIRS})

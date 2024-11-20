@@ -20,6 +20,14 @@ EspTcpPort::EspTcpPort(void)
     sender_mutex_ = xSemaphoreCreateMutexStatic(&sender_mutex_buffer_);
 }
 
+EspTcpPort::EspTcpPort(const char *const host_ip, const uint16_t port_number)
+{
+    receiver_mutex_ = xSemaphoreCreateMutexStatic(&receiver_mutex_buffer_);
+    sender_mutex_ = xSemaphoreCreateMutexStatic(&sender_mutex_buffer_);
+
+    Connect(host_ip, port_number);
+}
+
 EspTcpPort::~EspTcpPort(void)
 {
     if (connected_)

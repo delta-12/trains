@@ -1,14 +1,15 @@
+#include <memory>
+
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "nvs_flash.h"
 
+#include "controller_port.h"
 #include "tcp_port.h"
 #include "wifi.h"
 
 static const char *const kLogTag = "HARDWARE WAYSIDE";
-
-static EspTcpPort tcp_port;
 
 extern "C" void app_main(void)
 {
@@ -32,22 +33,25 @@ extern "C" void app_main(void)
     Wifi_Init();
     Wifi_Start();
 
+    std::shared_ptr<EspTcpPort> tcp_port = std::make_shared<EspTcpPort>("10.0.0.172", 8080);
+    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port));
+
     size_t i = 0;
-    while (!tcp_port.Connected() && (i < 5))
+    while (!tcp_port->Connected() && (i < 5))
     {
-        tcp_port.Connect("10.0.0.172", 8080);
+        tcp_port->Connect("10.0.0.172", 8080);
         i++;
     }
 
-    if (tcp_port.Connected())
+    if (tcp_port->Connected())
     {
         char data[] = "foobar";
-        tcp_port.Send((uint8_t *)data, 7);
+        tcp_port->Send((uint8_t *)data, 7);
     }
 
     while (true)
     {
-        size_t bytes = tcp_port.ReceiveAvailable();
+        size_t bytes = tcp_port->ReceiveAvailable();
         if (bytes > 0)
         {
             ESP_LOGI(kLogTag, "Bytes received: %d", bytes);

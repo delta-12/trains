@@ -16,6 +16,7 @@ class EspTcpPort : public types::Port
 {
 public:
     EspTcpPort(void);
+    EspTcpPort(const char *const host_ip, const uint16_t port_number);
     ~EspTcpPort(void);
     void Connect(const char *const host_ip, const uint16_t port_number);
     size_t Send(const uint8_t *const buffer, const size_t size);
