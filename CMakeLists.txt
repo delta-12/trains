@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.30)
 project(trains LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wno-missing-requires -fdiagnostics-color=always") # suppress missing-requires warning to build protobufs
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-requires -fdiagnostics-color=always") # suppress missing-requires warning to build protobufs
+
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -12,6 +16,8 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:LOGGER>
 )
 
+set(SRC_COMPILE_OPTIONS -Wall -Wextra -Werror)
+set(TEST_COMPILE_OPTIONS ${SRC_COMPILE_OPTIONS} -g -O0 --coverage)
 option(ABSL_PROPAGATE_CXX_STD "Propagate C++ standard to abseil-cpp" ON)
 
 set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external)
@@ -43,9 +49,11 @@ set(TRACK_MODEL_INC_DIR ${TRACK_MODEL_DIR}/inc)
 set(TRAIN_MODEL_INC_DIR ${TRAIN_MODEL_DIR}/inc)
 set(TRAIN_CONTROLLER_INC_DIR ${TRAIN_CONTROLLER_DIR}/inc)
 set(SIMULATOR_INC_DIR ${SIMULATOR_DIR}/inc)
-set(INC_DIRS
+set(EXTERNAL_INC_DIRS
     ${ASIO_INC_DIR}
     ${PROTOBUF_INC_DIRS}
+)
+set(INTERNAL_INC_DIRS
     ${BSP_DIR}
     ${COMMON_INC_DIR}
     ${CONTROLLER_NETWORK_INC_DIR}
@@ -55,6 +63,10 @@ set(INC_DIRS
     ${TRAIN_MODEL_INC_DIR}
     ${TRAIN_CONTROLLER_INC_DIR}
     ${SIMULATOR_INC_DIR}
+)
+set(INC_DIRS
+    ${EXTERNAL_INC_DIRS}
+    ${INTERNAL_INC_DIRS}
 )
 
 file(GLOB COMMON_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
@@ -139,6 +151,7 @@ if (WIN32)
 else()
     add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
+target_compile_options(trains PRIVATE ${SRC_COMPILE_OPTIONS})
 target_include_directories(trains PRIVATE ${INC_DIRS})
 target_link_libraries(trains PRIVATE Slint::Slint controller_messages)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
@@ -153,17 +166,16 @@ enable_testing()
 include(GoogleTest)
 add_library(trains_lib STATIC ${TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
+    target_compile_options(trains_lib PRIVATE ${TEST_COMPILE_OPTIONS})
     target_link_options(trains_lib PRIVATE --coverage)
 endif()
 target_include_directories(trains_lib PRIVATE ${INC_DIRS})
 target_link_libraries(trains_lib PRIVATE controller_messages)
 foreach(TEST_SRC ${TEST_SRCS})
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
-    message(STATUS ${TEST_NAME} ${TEST_SRC})
     add_executable(${TEST_NAME} ${TEST_SRC})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(${TEST_NAME} PRIVATE -g -O0 --coverage)
+        target_compile_options(${TEST_NAME} PRIVATE ${TEST_COMPILE_OPTIONS})
         target_link_options(${TEST_NAME} PRIVATE --coverage)
     endif()
     target_include_directories(${TEST_NAME} PRIVATE ${INC_DIRS})
