@@ -14,6 +14,9 @@ static const char *const kLogTag = "TCP PORT";
 
 EspTcpPort::EspTcpPort(const char *const host_ip, const uint16_t port_number)
 {
+    receiver_mutex_ = xSemaphoreCreateMutexStatic(&receiver_mutex_buffer_);
+    sender_mutex_ = xSemaphoreCreateMutexStatic(&sender_mutex_buffer_);
+
     Connect(host_ip, port_number);
 }
 
@@ -29,30 +32,58 @@ EspTcpPort::~EspTcpPort(void)
 
 size_t EspTcpPort::Send(const uint8_t *const buffer, const size_t size)
 {
-    // TODO lock buffer
-    return sender_ring_buffer_.Write(buffer, size);
-    // TODO unlock buffer
+    size_t bytes_sent = 0;
+
+    if (LockSender())
+    {
+        bytes_sent = sender_ring_buffer_.Write(buffer, size);
+
+        UnlockSender();
+    }
+
+    return bytes_sent;
 }
 
 size_t EspTcpPort::SendAvailable(void)
 {
-    // TODO lock buffer
-    return sender_ring_buffer_.Size();
-    // TODO unlock buffer
+    size_t bytes_available = 0;
+
+    if (LockSender())
+    {
+        bytes_available = sender_ring_buffer_.Capacity() - sender_ring_buffer_.Size();
+
+        UnlockSender();
+    }
+
+    return bytes_available;
 }
 
 size_t EspTcpPort::Receive(uint8_t *const buffer, const size_t size)
 {
-    // TODO lock buffer
-    return receiver_ring_buffer_.Read(buffer, size);
-    // TODO unlock buffer
+    size_t bytes_received = 0;
+
+    if (LockReceiver())
+    {
+        bytes_received = receiver_ring_buffer_.Read(buffer, size);
+
+        UnlockReceiver();
+    }
+
+    return bytes_received;
 }
 
 size_t EspTcpPort::ReceiveAvailable(void)
 {
-    // TODO lock buffer
-    return receiver_ring_buffer_.Size();
-    // TODO unlock buffer
+    size_t bytes_available = 0;
+
+    if (LockReceiver())
+    {
+        bytes_available = receiver_ring_buffer_.Size();
+
+        UnlockReceiver();
+    }
+
+    return bytes_available;
 }
 
 bool EspTcpPort::Connected(void)
@@ -100,7 +131,46 @@ void EspTcpPort::Close(void)
     close(socket_);
 }
 
-void EspTcpPort::Update(void)
+void EspTcpPort::SendTask(void)
 {
     // TODO
+}
+
+void EspTcpPort::ReceiveTask(void)
+{
+    // TODO
+}
+
+inline bool EspTcpPort::LockSender(void)
+{
+    bool locked = false;
+
+    if (xSemaphoreTake(sender_mutex_, portMAX_DELAY) == pdTRUE)
+    {
+        locked = true;
+    }
+
+    return locked;
+}
+
+inline void EspTcpPort::UnlockSender(void)
+{
+    xSemaphoreGive(sender_mutex_);
+}
+
+inline bool EspTcpPort::LockReceiver(void)
+{
+    bool locked = false;
+
+    if (xSemaphoreTake(receiver_mutex_, portMAX_DELAY) == pdTRUE)
+    {
+        locked = true;
+    }
+
+    return locked;
+}
+
+inline void EspTcpPort::UnlockReceiver(void)
+{
+    xSemaphoreGive(receiver_mutex_);
 }

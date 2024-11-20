@@ -3,10 +3,13 @@
 
 #include <array>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include "ring_buffer.h"
 #include "types.h"
 
-const size_t kEspTcpPortBufferSize = 2048;
+const size_t kEspTcpPortBufferSize = 1024;
 const size_t kEspTcpPortIntermediateBufferSize = 512;
 
 class EspTcpPort : public types::Port
@@ -23,16 +26,26 @@ public:
 
 private:
     void Close(void);
-    void Update(void);
+    void SendTask(void);
+    void ReceiveTask(void);
+    inline bool LockSender(void);
+    inline void UnlockSender(void);
+    inline bool LockReceiver(void);
+    inline void UnlockReceiver(void);
 
-    // TODO start task for send/receive
+    // TODO start tasks for send/receive
     // TODO add mutex to send/receive ring buffers
 
     int socket_;
     bool connected_ = false;
     std::array<uint8_t, kEspTcpPortIntermediateBufferSize> receive_buffer_;
+    std::array<uint8_t, kEspTcpPortIntermediateBufferSize> send_buffer_;
     RingBuffer<uint8_t, kEspTcpPortBufferSize> receiver_ring_buffer_;
     RingBuffer<uint8_t, kEspTcpPortBufferSize> sender_ring_buffer_;
+    SemaphoreHandle_t receiver_mutex_ = NULL;
+    StaticSemaphore_t receiver_mutex_buffer_;
+    SemaphoreHandle_t sender_mutex_ = NULL;
+    StaticSemaphore_t sender_mutex_buffer_;
 };
 
 #endif // TCP_PORT_H
