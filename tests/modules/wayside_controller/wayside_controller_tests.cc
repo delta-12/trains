@@ -30,7 +30,7 @@ class MockTrackModel : public track_model::TrackModel
         MOCK_METHOD(types::TrackId, GetTrackId, (), (override));
         MOCK_METHOD(types::Error, AddTrainModel, (std::shared_ptr<train_model::TrainModel> train), (override));
         MOCK_METHOD(std::shared_ptr<train_model::TrainModel>, GetTrainModel, (const types::TrainId train), (const, override));
-        MOCK_METHOD(void, GetTrainModels, (std::vector<std::shared_ptr<train_model::TrainModel>> &trains), (override));
+        MOCK_METHOD(void, GetTrainModels, (std::vector<std::shared_ptr<train_model::TrainModel>> & trains), (override));
         MOCK_METHOD(void, Update, (), (override));
         MOCK_METHOD(types::Error, SetSwitchState, (const types::BlockId block, const bool switched), (override));
         MOCK_METHOD(types::Error, SetCrossingState, (const types::BlockId block, const bool closed), (override));
@@ -273,37 +273,42 @@ TEST(WaysideControllerTests, GetBlockStates)
     ASSERT_EQ(5, block_states.size());
 
     // Block 1 occupied
-    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
+    {
         return ((block_state.block == 1) && block_state.occupied);
     }));
 
     // Block 2 occupied
-    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
+    {
         return ((block_state.block == 2) && block_state.occupied);
     }));
 
     // Block 5 occupied
-    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
+    {
         return ((block_state.block == 5) && block_state.occupied);
     }));
 
     // Block 13 occupied
-    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
+    {
         return ((block_state.block == 13) && block_state.occupied);
     }));
 
     // Block 15 occupied
-    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state){
+    ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
+    {
         return ((block_state.block == 15) && block_state.occupied);
     }));
 }
 
 TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
 {
-    using ::testing::Return;
-    using ::testing::DoAll;
-    using ::testing::SetArgReferee;
     using ::testing::_;
+    using ::testing::DoAll;
+    using ::testing::Return;
+    using ::testing::SetArgReferee;
 
     MockCtc                                                    ctc_mock;
     simulator::Simulator                                       world;
@@ -331,8 +336,7 @@ TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
 
     // Send track circuit data to wayside controller
     std::vector<types::TrackCircuitData> track_circuit_data = {
-        {types::TrackId::TRACKID_GREEN, 70, 10, 20}
-    };
+        {types::TrackId::TRACKID_GREEN, 70, 10, 20}};
     EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1).WillOnce(Return(track_circuit_data));
     EXPECT_CALL(*mock_track.get(), GetBlockOccupancy(_, _)).Times(wayside_controller::kGreenLineBlocksWayside0.size()).WillRepeatedly(DoAll(SetArgReferee<1>(false), Return(types::Error::ERROR_NONE)));
     controller_handler.Update(ctc_mock, world);
@@ -351,5 +355,46 @@ TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
 
 TEST(WaysideControllerTests, BlockStatesEndToEnd)
 {
-    // TODO send block states from Track Model, to Wayside, to CTC
+    using ::testing::_;
+    using ::testing::DoAll;
+    using ::testing::Return;
+    using ::testing::SetArgReferee;
+
+    MockCtc                                                    ctc_mock;
+    simulator::Simulator                                       world;
+    CsvParser                                                  csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
+    BlockBuilder                                               block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
+    wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
+                                                                                          types::TrackId::TRACKID_GREEN,
+                                                                                          wayside_controller::kGreenLineBlocksWayside0,
+                                                                                          controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
+    controller_network::ControllerHandler<1024> controller_handler;
+    controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
+    controller_handler.SetWaysideLayout(block_builder.GetBlocks());
+
+    // Add track model mock to simulation
+    std::shared_ptr<MockTrackModel> mock_track = std::make_shared<MockTrackModel>();
+    EXPECT_CALL(*mock_track.get(), GetTrackId()).Times(1).WillOnce(Return(types::TrackId::TRACKID_GREEN));
+    world.AddTrackModel(mock_track);
+
+    // Connect wayside controller
+    ASSERT_EQ(types::Error::ERROR_NONE, wayside_controller_handler.Connect());
+    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1);
+    controller_handler.Update(ctc_mock, world);
+    ASSERT_TRUE(controller_handler.IsControllerConnected(controller_network::CONTROLLERTYPE_WAYSIDE, 1));
+
+    // Send block occupancies from the track model to the wayside controller
+    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1);
+    EXPECT_CALL(*mock_track.get(), GetBlockOccupancy(_, _)).Times(wayside_controller::kGreenLineBlocksWayside0.size()).WillRepeatedly(DoAll(SetArgReferee<1>(true), Return(types::Error::ERROR_NONE)));
+    controller_handler.Update(ctc_mock, world);
+
+    // Wayside controller receives block occupancies and send block states to CTC
+    wayside_controller_handler.Update();
+
+    // CTC receives block states
+    EXPECT_CALL(ctc_mock, SetBlockStates(types::TrackId::TRACKID_GREEN, _)).Times(1);
+    EXPECT_CALL(ctc_mock, GetSuggestedSpeedsAndAuthorities()).Times(1);
+    EXPECT_CALL(*mock_track.get(), GetBlockOccupancy(_, _)).Times(wayside_controller::kGreenLineBlocksWayside0.size()).WillRepeatedly(DoAll(SetArgReferee<1>(false), Return(types::Error::ERROR_NONE)));
+    controller_handler.Update(ctc_mock, world);
 }
