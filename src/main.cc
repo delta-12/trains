@@ -46,9 +46,8 @@ int main(void)
         train_controller_ui->show();
     });
 
-    int x = 500;
 
-    std::thread worker_thread([&world, &train_controllers, &x]
+    std::thread worker_thread([&world, &train_controllers]
     {
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
         tick_source.get()->Start();
@@ -70,24 +69,37 @@ int main(void)
         train.get()->SetTrainId(0);
         train_controllers[0] = train_contr;
         track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
-
-
-
-        train.get()->SetAuthority(333);
-
-
         world.AddTrackModel(track);
         world.AddTrainModel(track->GetTrackId(), train);
 
 
-        world.Update(); 
-        x = track.get()->GetTrainModel(0).get()->GetAuthority(); 
-
-
-        track.get()->SetAuthority(0,7);
-        x = track.get()->GetTrainModel(0).get()->GetAuthority(); 
+        while(1)
+        {
+            types::Meters dist = train_controllers[0].get()->GetDistanceTravelled();
             
-        train_controllers[0].get()->SetAuthority(x);
+            if(dist == 0)
+            {
+                track.get()->SetAuthority(0,7);
+            }
+
+            types::Watts commanded_power = train_controllers[0].get()->GetCommandedPower();
+            types::Meters ditsance_traveled_since_last_update = train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate();
+
+            track.get()->GetTrainModel(0).get()->SetCommandedPower(commanded_power);
+            track.get()->GetTrainModel(0).get()->SetDistanceTraveled(ditsance_traveled_since_last_update);
+
+
+            world.Update();
+
+
+            types::Polarity polarity = track.get()->GetTrainModel(0).get()->GetTrackPolarity();
+            types::Blocks authority = track.get()->GetTrainModel(0).get()->GetAuthority();
+
+            train_controllers[0].get()->SetPolartity(polarity);
+            train_controllers[0].get()->SetAuthority(authority);
+
+            train_controllers[0].get()->Update();
+        }
     });
 
 
