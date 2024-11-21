@@ -1,3 +1,6 @@
+#ifndef DISPLAY_H
+#define DISPLAY_H
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -10,3 +13,5 @@ void DisplayWriteString(const char *const str);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* DISPLAY_H */

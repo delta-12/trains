@@ -3,6 +3,8 @@
  *
  * @brief Hardware specific pin map.
  *****************************************************************************/
+#ifndef PIN_MAP_H
+#define PIN_MAP_H
 
 #define PIN_MAP_DISPLAY_I2C_SDA 21
 #define PIN_MAP_DISPLAY_I2C_SCL 22
@@ -20,3 +22,5 @@
 #define PIN_MAP_BIT 1ULL
 #define PIN_MAP_BUTTON_MASK ((PIN_MAP_BIT << PIN_MAP_LEFT_BUTTON) | (PIN_MAP_BIT << PIN_MAP_RIGHT_BUTTON) | (PIN_MAP_BIT << PIN_MAP_OCCUPANCY_BUTTON) | (PIN_MAP_BIT << PIN_MAP_SWITCH_BUTTON))
 #define PIN_MAP_LED_MASK ((PIN_MAP_BIT << PIN_MAP_OCCUPANCY_LED) | (PIN_MAP_BIT << PIN_MAP_SWITCH_0_LED) | (PIN_MAP_BIT << PIN_MAP_SWITCH_1_LED) | (PIN_MAP_BIT << PIN_MAP_RED_TRAFFIC_SIGNAL_LED) | (PIN_MAP_BIT << PIN_MAP_GREEN_TRAFFIC_SIGNAL_LED) | (PIN_MAP_BIT << PIN_MAP_CROSSING_LED))
+
+#endif /* PIN_MAP_H */
