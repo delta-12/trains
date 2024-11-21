@@ -65,14 +65,10 @@ int main(void)
 
     std::thread worker_thread([&]
     {
-<<<<<<< HEAD
-        // Main backend loop here
-=======
         while (true)
         {
             ctc::backend_handler(ctc_office);
         }
->>>>>>> ab4efb54101c6966f907255d0dee5a60752cd25d
     });
 
     launcher_ui->run();
