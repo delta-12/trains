@@ -1,9 +1,109 @@
 #include "ctc_callback_handler.h"
 
+#include <string>
+
+#include "channel.h"
+#include "launcher.h"
+
 namespace ctc
 {
 
-// cppcheck-suppress unusedFunction
+// TODO repeat for each event listener
+static Channel<std::string> destination_channel;
+
+static Channel<std::string> ctc_block_occupancy_channel;
+static Channel<std::string> ctc_manual_dispatch_channel;
+
+static void register_callbacks(ui::CtcUi &ctc_ui);
+
+// TODO repeat for each event listener
+static inline void manual_dispatch_callback(ui::CtcUi &ctc_ui);
+static void manual_dispath_handler(ctc::Ctc &ctc_office);
+
+void setup_ui(ui::CtcUi &ctc_ui)
+{
+    register_callbacks(ctc_ui);
+
+    auto block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(); 
+    std::vector<types::Block> blocks = ctc.GetBlocks(); 
+    blocks.erase(blocks.begin());
+    for (const types::Block &block : blocks) {
+        auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+        block_entry->push_back(slint::StandardListViewItem({text: std::string(1, block.section).c_str()}));
+        block_entry->push_back(slint::StandardListViewItem({text: std::to_string(block.block).c_str()}));
+        block_entry->push_back(slint::StandardListViewItem({text: block.maintenance ? "Maintenance" : "Open"}));
+        block_entry->push_back(slint::StandardListViewItem({text: "_"}));
+        block_entry->push_back(slint::StandardListViewItem({text: block.occupied ? "Occupied" : "_"}));
+        block_entry->push_back(slint::StandardListViewItem({text: block.power_failure ? "Failure" : "_"}));
+        block_data_model->push_back(block_entry);
+    }
+    ctc_ui->set_block_data(block_data_model);
+    // Create Model to Populate Train Schedule Table
+    auto train_schedule_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
+    ctc_ui->set_train_schedules(train_schedule_model);
+    auto received_train_schedules = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ctc_ui->get_train_schedules());
+    
+    // Create Model to Populate Trains Dropdown
+    auto train_ids = std::make_shared<slint::VectorModel<slint::SharedString>>();
+    train_ids->push_back(slint::SharedString("New Train"));
+    ctc_ui->set_trains(train_ids);
+    auto received_train_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ctc_ui->get_trains());
+
+    // Create Model to Populate Stations
+    auto stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
+    std::vector<ctc::Station> stations = ctc.GetStations();
+    for (const ctc::Station &station : stations) {
+        stations_model->push_back(station.station_name.c_str());
+    }
+    ctc_ui->set_stations(stations_model);
+}
+
+// This will be called in the backend each time through the loop
+void backend_handler(ctc::Ctc &ctc_office)
+{
+    manual_dispath_handler(ctc_office);
+
+    // TODO repeat for each callback that needs to be handled in the backend
+}
+
+static void register_callbacks(ui::CtcUi &ctc_ui)
+{
+    ctc_ui->on_manual_dispatch([&ctc_ui] {
+        manual_dispatch_callback(ctc_ui);
+    });
+
+    // TODO repeat for each event listener
+}
+
+// Callbacks run on the frontend thread
+static inline void manual_dispatch_callback(ui::CtcUi &ctc_ui)
+{
+    destination_channel.Send(ctc_ui->get_destination());
+
+    // TODO update UI if necessary
+}
+
+// Handlers run on the backend thread
+static void manual_dispath_handler(ctc::Ctc &ctc_office)
+{
+    if (destination_channel.DataAvailable())
+    {
+        // TODO need a function that instantiates a new train model and train controller with the same id
+        ctc_office.ManualDispatch(0, destination_channel.Receive());
+
+        // Update the UI
+        // 1. set channels with appropriate data
+        // 2. invoke_from_event_loop to read data from channels in frontend thread
+    }
+}
+
+
+
+
+
+
+// TODO refactor anything below here to match the functions defined above
+// Callback for manual dispatch
 void handle_manual_dispatch(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc& ctc, Channel<std::string> &channel)
 {
     if (channel.DataAvailable())
