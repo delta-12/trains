@@ -6,6 +6,8 @@
 #include "nvs_flash.h"
 
 #include "controller_port.h"
+#include "green_line_blocks.h"
+#include "hardware_wayside_controller_handler.h"
 #include "tcp_port.h"
 #include "wifi.h"
 
@@ -34,8 +36,10 @@ extern "C" void app_main(void)
     Wifi_Start();
 
     std::shared_ptr<EspTcpPort> tcp_port = std::make_shared<EspTcpPort>("10.0.0.172", 8080);
-    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port));
-
+    wayside_controller::HardwareWaysideControllerHandler<1024> wayside_controller_handler(1,
+                                                                                    types::TrackId::TRACKID_GREEN,
+                                                                                    wayside_controller::kGreenLineBlocksWayside0,
+                                                                                    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port)));
     size_t i = 0;
     while (!tcp_port->Connected() && (i < 5))
     {
@@ -47,6 +51,8 @@ extern "C" void app_main(void)
     {
         char data[] = "foobar";
         tcp_port->Send((uint8_t *)data, 7);
+
+        wayside_controller_handler.Connect();
     }
 
     while (true)

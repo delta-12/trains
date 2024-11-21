@@ -28,5 +28,5 @@ set(CONTROLLER_MESSAGE_SRCS
     ${CONTROLLER_MESSAGE_DIR}/track_circuit_data.pb.c
 )
 
-idf_component_register(SRCS "hardware_wayside_controller.cc" "display.c" ${COMMON_DIR}/src/convert.cc ${CONTROLLER_MESSAGE_SRCS}
+idf_component_register(SRCS "hardware_wayside_controller.cc" "display.c" ${COMMON_DIR}/src/convert.cc ${CONTROLLER_MESSAGE_SRCS} ${WAYSIDE_CONTROLLER_DIR}/src/wayside_controller.cc
                        INCLUDE_DIRS "." ${INC_DIRS})
