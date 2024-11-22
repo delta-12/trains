@@ -72,33 +72,52 @@ int main(void)
         world.AddTrackModel(track);
         world.AddTrainModel(track->GetTrackId(), train);
 
-
+        types::Meters dist = 0;
         while(1)
         {
-            types::Meters dist = train_controllers[0].get()->GetDistanceTravelled();
+            dist = train_controllers[0].get()->GetDistanceTravelled();
             
             if(dist == 0)
             {
                 track.get()->SetAuthority(0,7);
+                track.get()->SetCommandedSpeed(0,10);
             }
 
             types::Watts commanded_power = train_controllers[0].get()->GetCommandedPower();
             types::Meters ditsance_traveled_since_last_update = train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate();
+            double brake = train_controllers[0].get()->GetServiceBrake();
+
 
             track.get()->GetTrainModel(0).get()->SetCommandedPower(commanded_power);
             track.get()->GetTrainModel(0).get()->SetDistanceTraveled(ditsance_traveled_since_last_update);
-
+            track.get()->GetTrainModel(0).get()->SetBrake(brake);
+            
+            if (dist >= 100)
+            {
+                track.get()->SetAuthority(64,6);
+                track.get()->SetCommandedSpeed(2,10);
+            }
 
             world.Update();
 
 
             types::Polarity polarity = track.get()->GetTrainModel(0).get()->GetTrackPolarity();
             types::Blocks authority = track.get()->GetTrainModel(0).get()->GetAuthority();
+            types::Meters commanded_speed = track.get()->GetTrainModel(0).get()->GetCommandedSpeed();
+            types::MetersPerSecond current_speed = track.get()->GetTrainModel(0).get()->GetActualSpeed();
 
+            train_controllers[0].get()->SetCurrentSpeed(current_speed);
             train_controllers[0].get()->SetPolartity(polarity);
             train_controllers[0].get()->SetAuthority(authority);
+            train_controllers[0].get()->SetCommandedSpeed(commanded_speed);
 
             train_controllers[0].get()->Update();
+
+
+            if(dist < 0)
+            {
+                break;
+            }
         }
     });
 
