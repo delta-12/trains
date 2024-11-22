@@ -50,20 +50,13 @@ extern "C" void app_main(void)
 
     if (tcp_port->Connected())
     {
-        char data[] = "foobar";
-        tcp_port->Send((uint8_t *)data, 7);
-
         wayside_controller_handler.Connect();
-    }
 
-    while (true)
-    {
-        size_t bytes = tcp_port->ReceiveAvailable();
-        if (bytes > 0)
+        while (true)
         {
-            ESP_LOGI(kLogTag, "Bytes received: %d", bytes);
-        }
+            wayside_controller_handler.Update();
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
     }
 }

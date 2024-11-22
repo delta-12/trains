@@ -547,7 +547,7 @@ types::Error ControllerHandler<buffer_size>::SendBlockOccupancies(const simulato
                 }
                 else
                 {
-                    controller_messages::BlockOccupany* block_occupancy = message.add_occupancies();
+                    controller_messages::BlockOccupancy* block_occupancy = message.add_occupancies();
                     block_occupancy->set_block(block);
                     block_occupancy->set_occupied(occupied);
                 }

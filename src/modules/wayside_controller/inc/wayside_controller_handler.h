@@ -241,7 +241,7 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
     {
         for (int i = 0; i < block_occupancies_message.occupancies_size(); i++)
         {
-            const controller_messages::BlockOccupany &block_occupancy = block_occupancies_message.occupancies(i);
+            const controller_messages::BlockOccupancy &block_occupancy = block_occupancies_message.occupancies(i);
 
             if (Error::ERROR_NONE != SetBlockOccupancy(block_occupancy.block(), block_occupancy.occupied()))
             {

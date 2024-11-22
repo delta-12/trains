@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "esp_log.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
 
@@ -129,8 +130,6 @@ bool HardwareWaysideControllerHandler<buffer_size>::DecodeBlockOccupancies(pb_is
     pb_istream_t istream = pb_istream_from_buffer(buffer, bytes_left);
     controller_messages_BlockOccupancy block_occupancy_message = controller_messages_BlockOccupancy_init_default;
 
-    sizeof(controller_messages_BlockOccupancy);
-
     if (nullptr == hardware_wayside_controller_handler)
     {
         /* Do not dereference nullptr, do nothing */
@@ -165,6 +164,8 @@ bool HardwareWaysideControllerHandler<buffer_size>::EncodeBlockStates(pb_ostream
     bool encoded = false;
 
     // TODO
+
+    ESP_LOGI("HW WC HANDLER", "EncodeBlockStates called");
 
     // for (const types::BlockState &block_state : block_states)
     // {
@@ -323,7 +324,7 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::SendBlockStates(cons
         controller_messages_BlockStates block_states_message = controller_messages_BlockStates_init_zero;
 
         block_states_message.track = static_cast<controller_messages_TrackId>(track_);
-        block_states_message.states.arg = &block_states;
+        block_states_message.states.arg = (void *)&block_states;
         block_states_message.states.funcs.encode = EncodeBlockStates;
 
         if (!pb_encode(&ostream, controller_messages_BlockStates_fields, &block_states_message))

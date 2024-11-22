@@ -23,6 +23,7 @@ set(CONTROLLER_MESSAGE_SRCS
     ${CONTROLLER_MESSAGE_DIR}/pb_decode.c
     ${CONTROLLER_MESSAGE_DIR}/pb_encode.c
     ${CONTROLLER_MESSAGE_DIR}/block_occupancies.pb.c
+    ${CONTROLLER_MESSAGE_DIR}/block_states.pb.c
     ${CONTROLLER_MESSAGE_DIR}/connection.pb.c
     ${CONTROLLER_MESSAGE_DIR}/common.pb.c
     ${CONTROLLER_MESSAGE_DIR}/track_circuit_data.pb.c

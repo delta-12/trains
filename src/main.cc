@@ -7,7 +7,10 @@
 
 #include "block_builder.h"
 #include "csv_parser.h"
+#include "controller_handler.h"
+#include "controller_port.h"
 #include "simulator.h"
+#include "tcp_server.h"
 #include "tick_source.h"
 #include "track_model.h"
 #include "train_model.h"
@@ -49,8 +52,8 @@ int main(void)
 
         // Create CTC
         ctc::Ctc              ctc_office;
-        std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
-        ctc_office.SetScheduleFilePath(path);
+        std::filesystem::path schedule_path      = base_path / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+        ctc_office.SetScheduleFilePath(schedule_path);
         ctc_office.SetTrackLayout();
 
         // Create train
@@ -63,13 +66,21 @@ int main(void)
         // Add track and train to simulator
         world.AddTrackModel(track);
         world.AddTrainModel(track->GetTrackId(), train);
-        world.Update();
 
-        // TODO instantiate wayside handler and controller handler
+        // Create controller handler and start TCP server
+        controller_network::ControllerHandler<1024> controller_handler;
+        controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
+            controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
+        });
 
-        while (running.get())
+        // Main loop
+        while (running.load())
         {
             // TODO run simulator update, controller handler update, and wayside update
+
+            tcp_server.RunFor(std::chrono::milliseconds(10));
+            controller_handler.Update(ctc_office, world);
+            world.Update();
         } });
 
     launcher_ui->run();
