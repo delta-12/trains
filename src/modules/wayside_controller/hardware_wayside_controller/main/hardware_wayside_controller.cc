@@ -13,6 +13,12 @@
 
 static const char *const kLogTag = "HARDWARE WAYSIDE";
 
+static std::shared_ptr<EspTcpPort> tcp_port = std::make_shared<EspTcpPort>("10.0.0.172", 8080);
+static wayside_controller::HardwareWaysideControllerHandler<1024> wayside_controller_handler(1,
+                                                                                    types::TrackId::TRACKID_GREEN,
+                                                                                    wayside_controller::kGreenLineBlocksWayside0,
+                                                                                    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port)));
+
 extern "C" void app_main(void)
 {
     /* Startup message */
@@ -35,11 +41,6 @@ extern "C" void app_main(void)
     Wifi_Init();
     Wifi_Start();
 
-    std::shared_ptr<EspTcpPort> tcp_port = std::make_shared<EspTcpPort>("10.0.0.172", 8080);
-    wayside_controller::HardwareWaysideControllerHandler<1024> wayside_controller_handler(1,
-                                                                                    types::TrackId::TRACKID_GREEN,
-                                                                                    wayside_controller::kGreenLineBlocksWayside0,
-                                                                                    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port)));
     size_t i = 0;
     while (!tcp_port->Connected() && (i < 5))
     {

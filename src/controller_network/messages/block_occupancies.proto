@@ -4,7 +4,7 @@ package controller_messages;
 
 import "common.proto";
 
-message BlockOccupany
+message BlockOccupancy
 {
     uint32 block = 1;
     bool occupied = 2;
@@ -12,5 +12,5 @@ message BlockOccupany
 
 message BlockOccupancies {
     TrackId track = 1;
-    repeated BlockOccupany occupancies = 2;
+    repeated BlockOccupancy occupancies = 2;
 }

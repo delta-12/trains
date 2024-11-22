@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "pb_decode.h"
 #include "pb_encode.h"
 
 #include "block_occupancies.pb.h"
@@ -37,12 +38,15 @@ class HardwareWaysideControllerHandler
         types::Error Connect(void);
 
     private:
+        static bool DecodeBlockOccupancies(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        static bool EncodeBlockStates(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+
         Error GetInput(const InputId input, IoSignal &signal) const;
         Error SetInput(const InputId input, const IoSignal signal);
         Error SetBlockOccupancy(const types::BlockId block, const bool occupied);
         types::Error ReceiveMessages(void);
-        types::Error HandleTrackCircuitData(const size_t message_size);
-        types::Error HandleBlockOccupancies(const size_t message_size);
+        types::Error HandleTrackCircuitData(void);
+        types::Error HandleBlockOccupancies(void);
         types::Error SendBlockStates(const std::vector<types::BlockState> &block_states);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_ = [this](const InputId input, IoSignal &signal){
@@ -114,6 +118,66 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::Connect(void)
 }
 
 template <size_t buffer_size>
+bool HardwareWaysideControllerHandler<buffer_size>::DecodeBlockOccupancies(pb_istream_t *stream, const pb_field_t *field, void **arg)
+{
+    (void)(field); // Unused
+
+    bool decoded = false;
+    size_t bytes_left = stream->bytes_left;
+    HardwareWaysideControllerHandler<buffer_size> *hardware_wayside_controller_handler = (HardwareWaysideControllerHandler *)(*arg);
+    static uint8_t buffer[sizeof(controller_messages_BlockOccupancy)] = {0U};
+    pb_istream_t istream = pb_istream_from_buffer(buffer, bytes_left);
+    controller_messages_BlockOccupancy block_occupancy_message = controller_messages_BlockOccupancy_init_default;
+
+    sizeof(controller_messages_BlockOccupancy);
+
+    if (nullptr == hardware_wayside_controller_handler)
+    {
+        /* Do not dereference nullptr, do nothing */
+    }
+    else if (bytes_left > sizeof(buffer))
+    {
+        /* Insufficient space, do nothing */
+    }
+    else if (!pb_read(stream, buffer, bytes_left))
+    {
+        /* Failed to read bytes left into buffer, do nothing */
+    }
+    else if (!pb_decode(&istream, controller_messages_BlockOccupancy_fields, &block_occupancy_message))
+    {
+        /* Failed to decode block occupancy message, do nothing */
+    }
+    else if (Error::ERROR_NONE != hardware_wayside_controller_handler->SetBlockOccupancy(block_occupancy_message.block, block_occupancy_message.occupied))
+    {
+        /* Failed to set block occupancy in wayside controller, do nothing */
+    }
+    else
+    {
+        decoded = true;
+    }
+
+    return decoded;
+}
+
+template <size_t buffer_size>
+bool HardwareWaysideControllerHandler<buffer_size>::EncodeBlockStates(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
+{
+    bool encoded = false;
+
+    // TODO
+
+    // for (const types::BlockState &block_state : block_states)
+    // {
+    //     controller_messages::BlockState* block_state_message = block_states_message.add_states();
+    //     block_state_message->set_block(block_state.block);
+    //     block_state_message->set_occupied(block_state.occupied);
+    //     block_state_message->set_track_failure(block_state.track_failure);
+    // }
+
+    return encoded;
+}
+
+template <size_t buffer_size>
 Error HardwareWaysideControllerHandler<buffer_size>::GetInput(const InputId input, IoSignal &signal) const
 {
     Error error = Error::ERROR_INVALID_INPUT;
@@ -178,10 +242,10 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::ReceiveMessages(void
         switch (message_type)
         {
         case controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA:
-            error = HandleTrackCircuitData(message_size);
+            error = HandleTrackCircuitData();
             break;
         case controller_network::MESSAGETYPE_BLOCK_OCCUPANCIES:
-            error = HandleBlockOccupancies(message_size);
+            error = HandleBlockOccupancies();
             break;
         default:
             break;
@@ -194,63 +258,56 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::ReceiveMessages(void
 }
 
 template <size_t buffer_size>
-types::Error HardwareWaysideControllerHandler<buffer_size>::HandleTrackCircuitData(const size_t message_size)
+types::Error HardwareWaysideControllerHandler<buffer_size>::HandleTrackCircuitData(void)
 {
     types::Error                          error = types::Error::ERROR_NONE;
-    // controller_messages::TrackCircuitData track_circuit_data_message;
+    pb_istream_t istream = pb_istream_from_buffer(message_buffer_.data(), message_buffer_.size());
+    controller_messages_TrackCircuitData track_circuit_data_message = controller_messages_TrackCircuitData_init_zero;
 
-    // if (!track_circuit_data_message.ParseFromArray(message_buffer_.data(), message_size))
-    // {
-    //     error = types::Error::ERROR_INVALID_FORMAT;
-    // }
-    // else
-    // {
-    //     types::TrackCircuitData track_circuit_data(static_cast<types::TrackId>(track_circuit_data_message.track()),
-    //                                                track_circuit_data_message.block(),
-    //                                                track_circuit_data_message.speed_meters_per_second(),
-    //                                                track_circuit_data_message.authority());
+    if (!pb_decode(&istream, controller_messages_TrackCircuitData_fields, &track_circuit_data_message))
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else
+    {
+        types::TrackCircuitData track_circuit_data(static_cast<types::TrackId>(track_circuit_data_message.track),
+                                                   track_circuit_data_message.block,
+                                                   track_circuit_data_message.speed_meters_per_second,
+                                                   track_circuit_data_message.authority);
+        
+        wayside_controller_.GetCommandedSpeedAndAuthority(track_circuit_data);
+        track_circuit_data_message.speed_meters_per_second = track_circuit_data.speed;
+        track_circuit_data_message.authority = track_circuit_data.authority;
 
-    //     wayside_controller_.GetCommandedSpeedAndAuthority(track_circuit_data);
-    //     track_circuit_data_message.set_speed_meters_per_second(track_circuit_data.speed);
-    //     track_circuit_data_message.set_authority(track_circuit_data.authority);
-    //     size_t message_size = track_circuit_data_message.ByteSizeLong();
+        pb_ostream_t ostream = pb_ostream_from_buffer(message_buffer_.data(), message_buffer_.size());
+        
+        if (!pb_encode(&ostream, controller_messages_TrackCircuitData_fields, &track_circuit_data_message))
+        {
+            error = types::Error::ERROR_INVALID_FORMAT;
+        }
+        else if (ostream.bytes_written != controller_port_->SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), ostream.bytes_written))
+        {
+            error = types::Error::ERROR_INVALID_SIZE;
+        }
+    }
 
-    //     if (!track_circuit_data_message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
-    //     {
-    //         error = types::Error::ERROR_INVALID_FORMAT;
-    //     }
-    //     else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA, message_buffer_.data(), message_size))
-    //     {
-    //         error = types::Error::ERROR_INVALID_SIZE;
-    //     }
-    // }
 
     return error;
 }
 
 template <size_t buffer_size>
-types::Error HardwareWaysideControllerHandler<buffer_size>::HandleBlockOccupancies(const size_t message_size)
+types::Error HardwareWaysideControllerHandler<buffer_size>::HandleBlockOccupancies(void)
 {
     types::Error                          error = types::Error::ERROR_NONE;
-    // controller_messages::BlockOccupancies block_occupancies_message;
+    pb_istream_t istream = pb_istream_from_buffer(message_buffer_.data(), message_buffer_.size());
+    controller_messages_BlockOccupancies block_occupancies_message = controller_messages_BlockOccupancies_init_zero;
+    block_occupancies_message.occupancies.arg = this;
+    block_occupancies_message.occupancies.funcs.decode = DecodeBlockOccupancies;
 
-    // if (!block_occupancies_message.ParseFromArray(message_buffer_.data(), message_size))
-    // {
-    //     error = types::Error::ERROR_INVALID_FORMAT;
-    // }
-    // else
-    // {
-    //     for (int i = 0; i < block_occupancies_message.occupancies_size(); i++)
-    //     {
-    //         const controller_messages::BlockOccupany &block_occupancy = block_occupancies_message.occupancies(i);
-
-    //         if (Error::ERROR_NONE != SetBlockOccupancy(block_occupancy.block(), block_occupancy.occupied()))
-    //         {
-    //             error = types::Error::ERROR_INVALID_BLOCK;
-    //             break;
-    //         }
-    //     }
-    // }
+    if (!pb_decode(&istream, controller_messages_BlockOccupancies_fields, &block_occupancies_message))
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
 
     return error;
 }
@@ -262,28 +319,21 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::SendBlockStates(cons
 
     if (block_states.size() > 0)
     {
-        // controller_messages::BlockStates block_states_message;
+        pb_ostream_t ostream = pb_ostream_from_buffer(message_buffer_.data(), message_buffer_.size());
+        controller_messages_BlockStates block_states_message = controller_messages_BlockStates_init_zero;
 
-        // block_states_message.set_track(static_cast<controller_messages::TrackId>(track_));
+        block_states_message.track = static_cast<controller_messages_TrackId>(track_);
+        block_states_message.states.arg = &block_states;
+        block_states_message.states.funcs.encode = EncodeBlockStates;
 
-        // for (const types::BlockState &block_state : block_states)
-        // {
-        //     controller_messages::BlockState* block_state_message = block_states_message.add_states();
-        //     block_state_message->set_block(block_state.block);
-        //     block_state_message->set_occupied(block_state.occupied);
-        //     block_state_message->set_track_failure(block_state.track_failure);
-        // }
-
-        // size_t message_size = block_states_message.ByteSizeLong();
-
-        // if (!block_states_message.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
-        // {
-        //     error = types::Error::ERROR_INVALID_FORMAT;
-        // }
-        // else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_BLOCK_STATES, message_buffer_.data(), message_size))
-        // {
-        //     error = types::Error::ERROR_INVALID_SIZE;
-        // }
+        if (!pb_encode(&ostream, controller_messages_BlockStates_fields, &block_states_message))
+        {
+            error = types::Error::ERROR_INVALID_FORMAT;
+        }
+        else if (ostream.bytes_written != controller_port_->SendMessage(controller_network::MESSAGETYPE_BLOCK_STATES, message_buffer_.data(), ostream.bytes_written))
+        {
+            error = types::Error::ERROR_INVALID_SIZE;
+        }
     }
 
     return error;
