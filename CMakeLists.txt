@@ -168,6 +168,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             DEPENDS test
         )
         add_custom_target(
+            coverage-no-test
+            COMMAND ${GCOVR_PATH} ${GCOVR_ARGS} --html-details --html-theme github.dark-green -o coverage.html
+            COMMENT "Generating code coverage report..."
+        )
+        add_custom_target(
             sonarqube-coverage
             COMMAND ${GCOVR_PATH} ${GCOVR_ARGS} --sonarqube -o coverage.xml
             COMMENT "Generating code coverage report..."

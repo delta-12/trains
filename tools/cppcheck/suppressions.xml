@@ -32,5 +32,11 @@
         <id>useStlAlgorithm</id>
         <fileName>*/src/modules/ctc/src/ctc_callback_handler.cc</fileName>
     </suppress>
-    
+
+    <!-- Suppress unused lexer functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/modules/wayside_controller/src/plc_lexer.cc</fileName>
+    </suppress>
+
 </suppressions>

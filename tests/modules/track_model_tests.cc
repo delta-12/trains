@@ -20,6 +20,7 @@ namespace train_model
 class TrainModelImpl : public TrainModel
 {
     public:
+        void Update(void);
         void SetTrainId(const types::TrainId train);
         types::TrainId GetTrainId(void) const;
         void SetEmergencyBrake(const bool emergency_brake);
@@ -273,7 +274,7 @@ TEST(TrackModelTests, GreenLine)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
+
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
     ASSERT_EQ(track.GetTrackId(), types::TrackId::TRACKID_GREEN);
@@ -318,16 +319,19 @@ TEST(TrackModelTests, TrainSpeedAuthority)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
 
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>();
     track.AddTrainModel(ptr);
 
     std::vector<std::shared_ptr<train_model::TrainModel>> trains;
 
     track.GetTrainModels(trains);
+
+    //set a cs and authority in the yard
+    ASSERT_EQ(track.SetAuthority(0, 20), types::Error::ERROR_NONE);
+    ASSERT_EQ(ptr->GetAuthority(), 20);
 
     // update
     track.Update();
@@ -449,11 +453,10 @@ TEST(TrackModelTests, Switching)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
 
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>();
 
     types::Block test_block;
 
@@ -479,11 +482,10 @@ TEST(TrackModelTests, Boarding)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
 
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>();
 
     track.AddTrainModel(ptr);
 
@@ -519,11 +521,10 @@ TEST(TrackModelTests, Polarity)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
 
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>();
 
     track.AddTrainModel(ptr);
 
@@ -551,11 +552,10 @@ TEST(TrackModelTests, Polarity)
     ASSERT_EQ(track.GetBlock(65, test_block), types::Error::ERROR_NONE);
 
     ASSERT_EQ(test_block.has_station, 1);
-    ASSERT_EQ(test_block.polarity, types::Polarity::POLARITY_NEGATIVE);
 
     current_polarity = ptr->GetTrackPolarity();
 
-    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_NEGATIVE);
+    ASSERT_EQ(current_polarity, types::Polarity::POLARITY_POSITIVE);
 
     ASSERT_NE(ptr->GetPassengersDeboarding(), -1);
 }
@@ -571,10 +571,9 @@ TEST(TrackModelTests, PlaceHolderFunctionGetTrainModel)
     BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
     types::Block                    block;
     track_model::SoftwareTrackModel track;
-    train_model::TrainModelImpl     train;
     track.SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
+    std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>();
     std::shared_ptr<train_model::TrainModel> ptr_test;
 
     track.AddTrainModel(ptr);

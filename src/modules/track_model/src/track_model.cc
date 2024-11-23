@@ -155,11 +155,14 @@ void SoftwareTrackModel::Update(void)
         }
 
         // Check if the current block has a station and update deboarding
-        types::BlockId possible_station_block = current_train_block_[i];
-        if (blocks_[possible_station_block].has_station == 1)
+        if (occupied_train_blocks_[i].size() > 0)
         {
-            uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
-            SetPassengersDeboarding(i, traindeb);
+            types::BlockId possible_station_block = occupied_train_blocks_[i][0];
+            if (blocks_[possible_station_block].has_station == 1)
+            {
+                uint16_t traindeb = trains_[i]->GetPassengersDeboarding();
+                SetPassengersDeboarding(i, traindeb);
+            }
         }
     }
 }
@@ -209,12 +212,18 @@ types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetCommandedSpeed(speed);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
@@ -230,12 +239,18 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Blocks authority)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetAuthority(authority);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
