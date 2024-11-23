@@ -125,6 +125,7 @@ class Ctc
         types::Error GetTrainById(const types::TrainId train_id, ctc::Train &train) const;
         std::size_t GetTrainAuthority(const types::TrainId train_id);
         types::MetersPerSecond GetTrainSuggestedSpeed(const types::TrainId train_id);
+        types::BlockId GetTrainCurrentPosition(const types::TrainId train_id);
         ctc::CtcOperationMode GetOperationMode(void) const;
         types::TrackId GetTrack(void) const;
         std::vector<types::BlockId> GetFailureBlocks(void) const;

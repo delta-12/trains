@@ -194,14 +194,20 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
 /*------------------------------------- Setters -------------------------------------*/
 void Ctc::SetBlocks(std::vector<types::Block> &blocks)
 {
-    types::Block yard;
-    yard.block = 0;
-    blocks_.push_back(yard);
-    for (types::Block &block : blocks)
+    if (blocks[CTC_FIRST_BLOCK].track == types::TrackId::TRACKID_GREEN)
     {
-        blocks_.push_back(block);
+        types::Block yard;
+        yard.block = 0;
+        yard.track = types::TrackId::TRACKID_GREEN;
+        blocks_.push_back(yard);
+        for (types::Block &block : blocks)
+        {
+            blocks_.push_back(block);
+        }
+        track_ = blocks[CTC_FIRST_BLOCK].track;
     }
-    track_ = blocks[CTC_FIRST_BLOCK].track;
+
+    // TODO: Implement else case for red line
 }
 
 void Ctc::SetStations(std::vector<types::Block> &blocks)
@@ -398,6 +404,29 @@ types::MetersPerSecond Ctc::GetTrainSuggestedSpeed(const types::TrainId train_id
         suggested_speed = 0;
     }
     return suggested_speed;
+}
+
+types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
+{
+    {
+        types::BlockId                    current_position;
+        std::vector<ctc::Train>::iterator train_it = std::find_if(
+            train_schedules_.begin(),
+            train_schedules_.end(),
+            [train_id](const ctc::Train &train) {
+                return train.train_id == train_id;
+            }
+            );
+        if (train_it != train_schedules_.end())
+        {
+            current_position = train_it->current_position;
+        }
+        else
+        {
+            current_position = 0;
+        }
+        return current_position;
+    }
 }
 
 } // namespace ctc

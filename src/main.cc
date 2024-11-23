@@ -9,6 +9,9 @@
 #include "ctc_callback_handler.h"
 #include "channel.h"
 
+// Prevent worker_thread keep running after application window is closed
+std::atomic<bool> keep_running(true);
+
 int main(void)
 {
     simulator::Simulator world;
@@ -40,35 +43,22 @@ int main(void)
         train_controller_ui->show();
     });
 
-    // TODO move these callbacks to ctc_callback_handler.cc
-    ctc_ui->on_manual_dispatch([&] {
-        ctc_manual_dispatch_channel.Send(std::string(ctc_ui->get_destination()));
-        ctc::handle_manual_dispatch(ctc_ui, ctc, ctc_manual_dispatch_channel);
-    });
-
-    ctc_ui->on_send_occupancy([&] {
-        ctc_block_occupancy_channel.Send(std::string(ctc_ui->get_block_occupancy()));
-        ctc::handle_set_occupancy(ctc_ui, ctc, received_train_schedules, received_block_data, ctc_block_occupancy_channel);
-    });
-
-    ctc_ui->on_wc_send_block_states([&] {
-        std::vector<types::BlockState> block_states = { types::BlockState(63, true, false), types::BlockState(90, true, false), types::BlockState(91, true, false)};
-        ctc_block_states_channel.Send(block_states);
-        ctc::handle_set_block_states(ctc, received_train_schedules, received_block_data, ctc_block_states_channel);
-    });
-
-    // Test Integration
-
     // Setting Up CTC
     ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
-    ctc::setup_ui(ctc_ui);
+    ctc::setup_ui(ctc_ui, ctc_office);
 
     std::thread worker_thread([&]
     {
-        while (true)
+        while (keep_running)
         {
-            ctc::backend_handler(ctc_office);
+            ctc::backend_handler(ctc_office, ctc_ui);
         }
+    });
+
+    // Stop work_thread when launcher is closed
+    launcher_ui->window().on_close_requested([&] {
+        keep_running = false;
+        return slint::CloseRequestResponse::HideWindow;
     });
 
     launcher_ui->run();
