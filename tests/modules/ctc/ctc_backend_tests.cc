@@ -170,8 +170,8 @@ TEST(CtcBackEndTest, TrainReceiveBlockOccupancy)
 
     ctc.GetTrainById(1, train1);
     ASSERT_EQ(train1.authority.front(), 64);
-    ASSERT_EQ(train1.current_position, 63);
-    ASSERT_EQ(train1.suggested_speed, 19);
+    ASSERT_EQ(ctc.GetTrainCurrentPosition(1), 63);
+    ASSERT_EQ(ctc.GetTrainSuggestedSpeed(1), 19);
 }
 
 TEST(CtcBackEndTest, ManualDispatchToMultipleBlock)
