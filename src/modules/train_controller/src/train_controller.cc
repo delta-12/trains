@@ -47,7 +47,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     operation_mode_                      = false;
     last_tick_updated_                   = (*clock_).GetTick();
 
-    polarity_          = types::Polarity::POLARITY_NEGATIVE;
+    polarity_          = types::Polarity::POLARITY_POSITIVE;
     last_polarity_     = polarity_;
     usable_authority_  = authority_;
     authority_counter_ = authority_;
@@ -383,7 +383,6 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     else if (current_speed_ > setpoint_speed)
     {
         integral_sum_ = 0;
-
         commanded_power_ = 0;
 
         types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
@@ -402,6 +401,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     //Normal power calculation
     else
     {
+        service_brake_percentage_ =  0;
         commanded_power_ = kp_term + ki_term;
 
         if (commanded_power_ > max_power_)

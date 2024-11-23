@@ -15,8 +15,8 @@
 #include "convert.h"
 #include "tick_source.h"
 
-#define TRAIN_CONTROLLER_DEFAULT_KP           (4)
-#define TRAIN_CONTROLLER_DEFAULT_KI           (2)
+#define TRAIN_CONTROLLER_DEFAULT_KP           (3000)
+#define TRAIN_CONTROLLER_DEFAULT_KI           (50)
 #define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
 #define TRAIN_SPEED_LIMIT                     (70)
 #define DEFAULT_BLOCK_SPEED_LIMIT             (50)

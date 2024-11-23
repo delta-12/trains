@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <slint.h>
+#include <unistd.h>
 
 #include "launcher.h"
 #include "block_builder.h"
@@ -46,11 +47,13 @@ int main(void)
         train_controller_ui->show();
     });
 
+    types::Meters dist = 0;
 
-    std::thread worker_thread([&world, &train_controllers]
+    std::thread worker_thread([&world, &train_controllers, &dist]
     {
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
         tick_source.get()->Start();
+        tick_source.get()->SetMultiplier(8);
 
         std::filesystem::path           base_path = std::filesystem::current_path();
         std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
@@ -71,15 +74,17 @@ int main(void)
         track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
         world.AddTrackModel(track);
         world.AddTrainModel(track->GetTrackId(), train);
+//        bool debugger = false;
 
-        types::Meters dist = 0;
+        types::Blocks ATH = 10;
+        
         while(1)
         {
             dist = train_controllers[0].get()->GetDistanceTravelled();
             
             if(dist == 0)
             {
-                track.get()->SetAuthority(0,7);
+                track.get()->SetAuthority(0,ATH);
                 track.get()->SetCommandedSpeed(0,10);
             }
 
@@ -92,11 +97,57 @@ int main(void)
             track.get()->GetTrainModel(0).get()->SetDistanceTraveled(ditsance_traveled_since_last_update);
             track.get()->GetTrainModel(0).get()->SetBrake(brake);
             
-            if (dist >= 100)
+            if (dist > 100 && dist <= 200)
             {
-                track.get()->SetAuthority(64,6);
-                track.get()->SetCommandedSpeed(2,10);
+                track.get()->SetAuthority(64,ATH-1);
+                track.get()->SetCommandedSpeed(64,10);
             }
+            else if(dist > 200 && dist <= 400)
+            {
+                track.get()->SetAuthority(65,ATH-2);
+                track.get()->SetCommandedSpeed(65,10);
+            }
+            else if(dist > 400 && dist <= 600)
+            {
+                track.get()->SetAuthority(66,ATH-3);
+                track.get()->SetCommandedSpeed(66,10);
+            }
+            else if(dist > 600 && dist <= 700)
+            {
+                track.get()->SetAuthority(67,ATH-4);
+                track.get()->SetCommandedSpeed(67,10);
+            }
+            else if(dist > 700 && dist <= 800)
+            {
+                track.get()->SetAuthority(68,ATH-5);
+                track.get()->SetCommandedSpeed(68,10);
+            }
+            else if(dist > 800 && dist <= 900)
+            {
+                track.get()->SetAuthority(69,ATH-6);
+                track.get()->SetCommandedSpeed(69,10);
+            }
+            else if(dist > 900 && dist <= 1000)
+            {
+                track.get()->SetAuthority(70,ATH-7);
+                track.get()->SetCommandedSpeed(70,10);
+            }
+            else if(dist > 1000 && dist <= 1100)
+            {
+                track.get()->SetAuthority(71,ATH-8);
+                track.get()->SetCommandedSpeed(71,10);
+            }
+            else if(dist > 1100 && dist <= 1200)
+            {
+                track.get()->SetAuthority(72,ATH-9);
+                track.get()->SetCommandedSpeed(72,10);
+            }
+            else if(dist > 1200 && dist <= 1300)
+            {
+                track.get()->SetAuthority(73,ATH-10);
+                track.get()->SetCommandedSpeed(73,10);
+            }
+
 
             world.Update();
 
@@ -114,10 +165,11 @@ int main(void)
             train_controllers[0].get()->Update();
 
 
-            if(dist < 0)
+            if(authority == 0 && current_speed == 0)
             {
                 break;
             }
+            
         }
     });
 
