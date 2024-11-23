@@ -27,6 +27,10 @@ Ctc::Ctc(const types::TrackId track_id)
         SetScheduleFilePath(path);
         SetTrackLayout();
     }
+    else
+    {
+        std::abort();
+    }
 }
 
 void Ctc::SetTrackLayout(void)
@@ -194,20 +198,12 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
 /*------------------------------------- Setters -------------------------------------*/
 void Ctc::SetBlocks(std::vector<types::Block> &blocks)
 {
-    if (blocks[CTC_FIRST_BLOCK].track == types::TrackId::TRACKID_GREEN)
-    {
-        types::Block yard;
-        yard.block = 0;
-        yard.track = types::TrackId::TRACKID_GREEN;
-        blocks_.push_back(yard);
-        for (types::Block &block : blocks)
-        {
-            blocks_.push_back(block);
-        }
-        track_ = blocks[CTC_FIRST_BLOCK].track;
-    }
-
-    // TODO: Implement else case for red line
+    track_ = blocks[CTC_FIRST_BLOCK].track;
+    // Emplace back Yard block
+    blocks_.emplace_back();
+    blocks_.back().block = 0;
+    blocks_.back().track = track_;
+    blocks_.insert(blocks_.end(), blocks.begin(), blocks.end());
 }
 
 void Ctc::SetStations(std::vector<types::Block> &blocks)

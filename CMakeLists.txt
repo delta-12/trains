@@ -73,6 +73,10 @@ file(GLOB_RECURSE TEST_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${TESTS_DIR}/*_tests.cc"
 )
 
+file(GLOB CTC_HANDLER_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    "${CTC_DIR}/src/*_handler.cc"
+)
+
 set(TRAINS_SRCS
     ${COMMON_SRCS}
     ${CONTROLLER_NETWORK_SRCS}
@@ -83,6 +87,10 @@ set(TRAINS_SRCS
     ${TRAIN_CONTROLLER_SRCS}
     ${SIMULATOR_SRCS}
 )
+
+# Copy of TRAINS_SRCS exclude backend-frontend handlers to avoid launcher.h not found
+set(TEST_TRAINS_SRCS ${TRAINS_SRCS})
+list(REMOVE_ITEM TEST_TRAINS_SRCS ${CTC_HANDLER_SRCS})
 
 set(SLINT_STYLE native)
 
@@ -120,16 +128,7 @@ endif()
 ################################################################################
 enable_testing()
 include(GoogleTest)
-add_library(trains_lib STATIC 
-    ${COMMON_SRCS}
-    ${CONTROLLER_NETWORK_SRCS}
-    ${CTC_DIR}/src/ctc.cc
-    ${WAYSIDE_CONTROLLER_SRCS}
-    ${TRACK_MODEL_SRCS}
-    ${TRAIN_MODEL_SRCS}
-    ${TRAIN_CONTROLLER_SRCS}
-    ${SIMULATOR_SRCS}
-) # Add static library to avoid re-compiling sources for tests
+add_library(trains_lib STATIC ${TEST_TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
     target_link_options(trains_lib PRIVATE --coverage)

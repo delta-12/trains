@@ -218,6 +218,7 @@ TEST(CtcBackEndTest, GetSuggestedSpeedAndAuthorities)
     std::vector<types::TrackCircuitData> track_circuit_data = ctc.GetSuggestedSpeedsAndAuthorities();
     ASSERT_EQ(track_circuit_data.size(), 1);
     types::TrackCircuitData data = track_circuit_data[0];
+    ASSERT_EQ(data.track, types::TrackId::TRACKID_GREEN);
     ASSERT_EQ(data.authority, 7);
     ASSERT_EQ(data.block, 63);
     ASSERT_EQ(data.speed, 19);
@@ -228,6 +229,7 @@ TEST(CtcBackEndTest, GetSuggestedSpeedAndAuthorities)
 
     track_circuit_data = ctc.GetSuggestedSpeedsAndAuthorities();
     data               = track_circuit_data[0];
+    ASSERT_EQ(data.track, types::TrackId::TRACKID_GREEN);
     ASSERT_EQ(data.authority, 6);
     ASSERT_EQ(data.block, 64);
     ASSERT_EQ(data.speed, 19);
