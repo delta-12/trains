@@ -54,7 +54,9 @@ struct Station
 
 struct DestinationAndArrivalTime
 {
-    DestinationAndArrivalTime(void) : destination(0), arrival_time(0){};
+    DestinationAndArrivalTime(void) : destination(0), arrival_time(0)
+    {
+    };
     explicit DestinationAndArrivalTime(const types::BlockId destination) : destination(destination), arrival_time(0)
     {
     };
