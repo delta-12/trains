@@ -55,13 +55,13 @@ static const std::vector<wayside_controller::WaysideBlock> kBlueLineWaysideBlock
     wayside_controller::WaysideBlock(7, 8, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 6, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(8, 9, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 7, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(9, 10, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 8, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(10, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 9, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(10, types::kEndBlock, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 9, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(11, 12, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 10, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(12, 13, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 11, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(13, 14, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 12, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(14, 15, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 13, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
     wayside_controller::WaysideBlock(15, 16, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 14, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(16, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW)};
+    wayside_controller::WaysideBlock(16, types::kEndBlock, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW)};
 
 wayside_controller::Error GetInput(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
 {

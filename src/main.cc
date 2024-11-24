@@ -9,11 +9,15 @@
 #include "csv_parser.h"
 #include "controller_handler.h"
 #include "controller_port.h"
+#include "green_line_blocks.h"
+#include "logger.h"
+#include "ring_buffer.h"
 #include "simulator.h"
 #include "tcp_server.h"
 #include "tick_source.h"
 #include "track_model.h"
 #include "train_model.h"
+#include "wayside_controller_handler.h"
 
 int main(void)
 {
@@ -40,8 +44,8 @@ int main(void)
     std::thread worker_thread([&]
                               {
         std::filesystem::path           base_path = std::filesystem::current_path();
-        std::filesystem::path           path      = base_path / "tests" / "common" / "test_csv" / "green_line_path.csv";
-        std::filesystem::path           path2     = base_path / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
+        std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+        std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
         CsvParser                       parser(path);
         CsvParser                       parser2(path2);
         BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
@@ -52,7 +56,7 @@ int main(void)
 
         // Create CTC
         ctc::Ctc              ctc_office;
-        std::filesystem::path schedule_path      = base_path / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+        std::filesystem::path schedule_path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
         ctc_office.SetScheduleFilePath(schedule_path);
         ctc_office.SetTrackLayout();
 
@@ -67,20 +71,48 @@ int main(void)
         world.AddTrackModel(track);
         world.AddTrainModel(track->GetTrackId(), train);
 
+        // Hardware wayside
         // Create controller handler and start TCP server
+        // controller_network::ControllerHandler<1024> controller_handler;
+        // controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
+        //     controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
+        // });
+
+        // Software wayside
+        RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
+        wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
+                                                                                            types::TrackId::TRACKID_GREEN,
+                                                                                            wayside_controller::kGreenLineBlocksWayside0,
+                                                                                            controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
+        CsvParser csv_parser(schedule_path);
+        BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+        std::vector<types::Block> blocks = bb.GetBlocks();
         controller_network::ControllerHandler<1024> controller_handler;
-        controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
-            controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
-        });
+        controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
+        controller_handler.SetWaysideLayout(block_builder.GetBlocks());
+        wayside_controller_handler.Connect();
+        controller_handler.Update(ctc_office, world);
+
+        // Manually dispatch train
+        ctc_office.ManualDispatch(80);
 
         // Main loop
         while (running.load())
         {
             // TODO run simulator update, controller handler update, and wayside update
 
-            tcp_server.RunFor(std::chrono::milliseconds(10));
+            // tcp_server.RunFor(std::chrono::milliseconds(10));
             controller_handler.Update(ctc_office, world);
+            wayside_controller_handler.Update();
             world.Update();
+
+            types::MetersPerSecond speed = train->GetCommandedSpeed();
+            types::Blocks authority = train->GetAuthority();
+
+            if ((speed != 0) || (authority != 0))
+            {
+                LOGGER_LOG_DEBUG(std::cout, "MAIN", "Speed: {}, Authority: {}", speed, authority);
+            }
         } });
 
     launcher_ui->run();
