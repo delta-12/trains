@@ -22,12 +22,12 @@ Ctc::Ctc(const types::TrackId track_id)
     {
         std::filesystem::path base_path = std::filesystem::current_path();
         std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
-        SetScheduleFilePath(path);
-        SetTrackLayout();
-    }
-    else
-    {
-        std::abort();
+        // Check if path exist
+        if (std::filesystem::exists(path))
+        {
+            SetScheduleFilePath(path);
+            SetTrackLayout();
+        }
     }
 }
 
