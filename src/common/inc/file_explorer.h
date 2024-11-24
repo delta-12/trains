@@ -29,11 +29,13 @@ class FileExplorer
         std::string file_name_;
 };
 
-FileExplorer::FileExplorer(void) {
+FileExplorer::FileExplorer(void)
+{
     OpenFileExplorer();
 }
 
-types::Error FileExplorer::OpenFileExplorer(void) {
+types::Error FileExplorer::OpenFileExplorer(void)
+{
 #ifdef WIN32
     types::Error error;
     OPENFILENAME ofn;                 // Common dialog box structure
@@ -82,11 +84,13 @@ void FileExplorer::ExtractFileName(const std::string& full_path)
     }
 }
 
-std::filesystem::path FileExplorer::GetPath(void) const {
+std::filesystem::path FileExplorer::GetPath(void) const
+{
     return path_;
 }
 
-std::string FileExplorer::GetFileName(void) const {
+std::string FileExplorer::GetFileName(void) const
+{
     return file_name_;
 }
 

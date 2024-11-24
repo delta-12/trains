@@ -13,7 +13,8 @@
 
 namespace ctc
 {
-Ctc::Ctc(void) {
+Ctc::Ctc(void)
+{
 }
 
 void Ctc::SetTrackLayout(void)
