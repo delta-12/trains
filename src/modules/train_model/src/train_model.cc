@@ -244,6 +244,8 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
         force_ = std::min(power_ / velocity_, kMaximumForce);
     }
 
+    previous_acceleration_ = acceleration_;
+
     if (emergency_brake_ == true && velocity_ >= 0)
     {
         acceleration_ = kMaximumDecelerationLimit;
@@ -256,7 +258,6 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
     {
         acceleration_ = std::min((force_ / mass_), kMaximumAccelerationLimit);
     }
-    previous_acceleration_ = acceleration_;
 
     previous_velocity_ = velocity_;
     velocity_          = std::max((previous_velocity_ + ((delta.count() / 2) * (previous_acceleration_ + acceleration_))), 0.0);
