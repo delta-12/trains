@@ -4,9 +4,27 @@
 
 #include "launcher.h"
 #include "simulator.h"
+#include "ctc.h"
+#include "file_explorer.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+
+void AttachConsoleToApp() {
+    AllocConsole(); // Allocates a new console
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout); // Redirects stdout to the console
+    freopen_s(&fp, "CONOUT$", "w", stderr); // Redirects stderr to the console
+    freopen_s(&fp, "CONIN$", "r", stdin);  // Redirects stdin to the console
+}
+#endif
 
 int main(void)
 {
+    #ifdef _WIN32
+    AttachConsoleToApp(); 
+    #endif
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
     auto                 ctc_ui                = ui::CtcUi::create();
@@ -36,6 +54,34 @@ int main(void)
         train_controller_ui->show();
     });
 
+    ctc::Ctc ctc_office;
+    ctc_ui->on_choose_file([&]
+    {
+        FileExplorer file_explorer;
+        std::filesystem::path path = file_explorer.GetPath();
+        std::string file_name = file_explorer.GetFileName();
+
+        std::cout << "Selected Path: " << path << std::endl;
+        std::cout << "Selected File: " << file_name << std::endl;
+        ctc_office.SetTrackLayout(path);
+
+        auto block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(); 
+        std::vector<types::Block> blocks = ctc_office.GetBlocks(); 
+        blocks.erase(blocks.begin());
+        for (const types::Block &block : blocks) {
+            auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+            block_entry->push_back(slint::StandardListViewItem({text: std::string(1, block.section).c_str()}));
+            block_entry->push_back(slint::StandardListViewItem({text: std::to_string(block.block).c_str()}));
+            block_entry->push_back(slint::StandardListViewItem({text: block.maintenance ? "Maintenance" : "Open"}));
+            block_entry->push_back(slint::StandardListViewItem({text: "_"}));
+            block_entry->push_back(slint::StandardListViewItem({text: block.occupied ? "Occupied" : "_"}));
+            block_entry->push_back(slint::StandardListViewItem({text: block.power_failure ? "Failure" : "_"}));
+            block_data_model->push_back(block_entry);
+        }
+        ctc_ui->set_block_data(block_data_model);
+    });
+
+    
 
     std::thread worker_thread([&]
     {

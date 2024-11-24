@@ -13,10 +13,22 @@
 
 namespace ctc
 {
+Ctc::Ctc(void) {
+}
 
 void Ctc::SetTrackLayout(void)
 {
     CsvParser                 parser(schedule_file_path_);
+    BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    std::vector<types::Block> blocks = bb.GetBlocks();
+    SetBlocks(blocks);
+    SetStations(blocks_);
+    SetDefaultRoute();
+}
+
+void Ctc::SetTrackLayout(std::filesystem::path path)
+{
+    CsvParser                 parser(path);
     BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);

@@ -88,6 +88,8 @@ struct Train
 class Ctc
 {
     public:
+        Ctc(void);
+
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
         std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
@@ -99,6 +101,7 @@ class Ctc
 
         /* Setters */
         void SetTrackLayout(void);
+        void SetTrackLayout(std::filesystem::path path);
         void SetScheduleFilePath(std::filesystem::path path);
         void SetManualMode(void);
 
