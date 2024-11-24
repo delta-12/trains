@@ -14,9 +14,7 @@
 namespace ctc
 {
 
-Ctc::Ctc(void)
-{
-}
+Ctc::Ctc(void) = default;
 
 Ctc::Ctc(const types::TrackId track_id)
 {
@@ -58,7 +56,7 @@ void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::Train
 
 void Ctc::ManualDispatch(types::TrainId train_id, types::BlockId destination)
 {
-    std::vector<ctc::Train>::iterator train_it = std::find_if(
+    auto train_it = std::find_if(
         train_schedules_.begin(),
         train_schedules_.end(),
         [train_id](const ctc::Train &train) {

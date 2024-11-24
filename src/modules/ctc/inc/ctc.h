@@ -54,11 +54,11 @@ struct Station
 
 struct DestinationAndArrivalTime
 {
-    DestinationAndArrivalTime(void);
-    DestinationAndArrivalTime(const types::BlockId destination) : destination(destination)
+    DestinationAndArrivalTime(void) : destination(0), arrival_time(0){};
+    explicit DestinationAndArrivalTime(const types::BlockId destination) : destination(destination), arrival_time(0)
     {
     };
-    DestinationAndArrivalTime(const types::BlockId destination, types::Tick arrival_time) : destination(destination), arrival_time(arrival_time)
+    explicit DestinationAndArrivalTime(const types::BlockId destination, types::Tick arrival_time) : destination(destination), arrival_time(arrival_time)
     {
     };
     types::BlockId destination;
@@ -70,7 +70,7 @@ struct Train
     Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
-    Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
+    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
     {
     };
     Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
@@ -97,7 +97,7 @@ class Ctc
     public:
         /* Constructor */
         Ctc(void);
-        Ctc(const types::TrackId track_id);
+        explicit Ctc(const types::TrackId track_id);
 
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
