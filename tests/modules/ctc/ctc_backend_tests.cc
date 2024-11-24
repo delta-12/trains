@@ -30,6 +30,11 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
 }
 
+TEST(CtcBackEndTest, SetTrackLayoutAbort)
+{
+    ASSERT_DEATH(ctc::Ctc ctc_office(types::TrackId::TRACKID_BLUE), "");
+}
+
 TEST(CtcBackEndTest, SetStations)
 {
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
@@ -109,6 +114,9 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
     ctc.GetTrainById(1, train1);
     ASSERT_EQ(train1.authority.front(), 63);
 
+    types::Error error = ctc.UpdateSuggestedSpeedAndAuthority(2);
+    ASSERT_EQ(error, types::Error::ERROR_INVALID_TRAIN);
+
     ctc.UpdateSuggestedSpeedAndAuthority(1);
     ctc.GetTrainById(1, train1);
     ASSERT_EQ(train1.authority.front(), 64);
@@ -150,6 +158,10 @@ TEST(CtcBackEndTest, SetBlockStates)
     ASSERT_EQ(ctc.GetBlockById(63).occupied, true);
     ASSERT_EQ(ctc.GetBlockById(70).occupied, true);
     ASSERT_EQ(ctc.GetFailureBlocks()[0], 70);
+
+    block_states.emplace_back(151, true, false);
+    types::Error error = ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
+    ASSERT_EQ(error, types::Error::ERROR_INVALID_BLOCK);
 }
 
 TEST(CtcBackEndTest, TrainReceiveBlockOccupancy)

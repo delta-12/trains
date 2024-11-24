@@ -171,10 +171,6 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
                 train_it->current_position = block_state.block;
                 UpdateSuggestedSpeedAndAuthority(train_it->train_id);
             }
-            else
-            {
-                error = types::Error::ERROR_INVALID_TRAIN;
-            }
         }
     }
     return error;
