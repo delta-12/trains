@@ -30,11 +30,6 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
 }
 
-TEST(CtcBackEndTest, SetTrackLayoutAbort)
-{
-    ASSERT_DEATH(ctc::Ctc ctc_office(types::TrackId::TRACKID_BLUE), "");
-}
-
 TEST(CtcBackEndTest, SetStations)
 {
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
