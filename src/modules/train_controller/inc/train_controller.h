@@ -15,8 +15,8 @@
 #include "convert.h"
 #include "tick_source.h"
 
-#define TRAIN_CONTROLLER_DEFAULT_KP           (3000)
-#define TRAIN_CONTROLLER_DEFAULT_KI           (50)
+#define TRAIN_CONTROLLER_DEFAULT_KP           (500)
+#define TRAIN_CONTROLLER_DEFAULT_KI           (75)
 #define TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER (120000)
 #define TRAIN_SPEED_LIMIT                     (70)
 #define DEFAULT_BLOCK_SPEED_LIMIT             (50)
@@ -51,6 +51,7 @@ class TrainController
         virtual types::DegreesFahrenheit GetActualInternalTemperature(void) const    = 0;
         virtual types::Blocks GetAuthority(void) const                               = 0;
         virtual bool GetOperationMode(void) const                                    = 0;
+        virtual double GetIntegralSum(void) const                                    = 0;
 
         // Setter declarations
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                       = 0;
@@ -72,6 +73,7 @@ class TrainController
         virtual void SetKI(const uint16_t ki)                                                    = 0;
         virtual void SetOperationMode(const bool operation_mode)                                 = 0;
         virtual void SetPolartity(const types::Polarity polarity)                                = 0;
+        virtual void SetCommandedPower(const types::Watts power)                                 = 0;
 };
 
 
@@ -102,6 +104,7 @@ class SoftwareTrainController : public TrainController
         types::DegreesFahrenheit GetActualInternalTemperature(void) const;
         types::Blocks GetAuthority(void) const;
         bool GetOperationMode(void) const;
+        double GetIntegralSum(void) const;
 
 
         // Implementations for setters
@@ -125,6 +128,7 @@ class SoftwareTrainController : public TrainController
         void SetKI(const uint16_t ki);
         void SetOperationMode(const bool operation_mode);
         void SetPolartity(const types::Polarity polarity);
+        void SetCommandedPower(const types::Watts power);
 
         //local functions
         types::Second GetDeltaTime(void) const;
@@ -136,7 +140,6 @@ class SoftwareTrainController : public TrainController
         void UpdateTrainPosition(void);
         void CalculateDistanceToStopping();
         types::Meters GetDistanceOfAuthorityInMeters();
-
 
         /*
          *

@@ -1,12 +1,17 @@
 #include "train_controller.h"
 
+#include <iostream>
 #include <unistd.h>
 #include <cstdint>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 
 #include "types.h"
 #include "convert.h"
 #include "tick_source.h"
+
+using namespace std;
 
 namespace train_controller
 {
@@ -157,6 +162,11 @@ bool SoftwareTrainController::GetOperationMode() const
     return operation_mode_;
 }
 
+double SoftwareTrainController::GetIntegralSum() const
+{
+    return integral_sum_;
+}
+
 // Setters
 void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
 {
@@ -175,7 +185,18 @@ void SoftwareTrainController::SetCurrentSpeed(const types::MetersPerSecond speed
 
 void SoftwareTrainController::SetServiceBrake(const double percentage)
 {
-    service_brake_percentage_ = percentage;
+    if (percentage < 0)
+    {
+        service_brake_percentage_ = 0;
+    }
+    else if (percentage > 1)
+    {
+        service_brake_percentage_ = 1;
+    }
+    else 
+    {
+        service_brake_percentage_ = percentage;
+    }
 }
 
 void SoftwareTrainController::SetEmergencyBrake(const bool state)
@@ -267,7 +288,9 @@ void SoftwareTrainController::SetPolartity(const types::Polarity polarity)
     polarity_ = polarity;
 }
 
-
+void SoftwareTrainController::SetCommandedPower(const types::Watts power) {
+    commanded_power_ = power;
+}
 
 
 void SoftwareTrainController::Update()

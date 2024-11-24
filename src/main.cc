@@ -5,6 +5,7 @@
 #include <slint.h>
 #include <unistd.h>
 
+#include "common/inc/types.h"
 #include "launcher.h"
 #include "block_builder.h"
 #include "csv_parser.h"
@@ -49,11 +50,11 @@ int main(void)
 
     types::Meters dist = 0;
 
-    std::thread worker_thread([&world, &train_controllers, &dist]
+    std::thread worker_thread([&world, &train_controllers, &dist, &train_controller_ui]
     {
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
         tick_source.get()->Start();
-        tick_source.get()->SetMultiplier(8);
+        tick_source.get()->SetMultiplier(1);
 
         std::filesystem::path           base_path = std::filesystem::current_path();
         std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
@@ -165,18 +166,257 @@ int main(void)
             train_controllers[0].get()->Update();
 
 
+
+
             if(authority == 0 && current_speed == 0)
             {
                 break;
             }
-            
+
+            slint::invoke_from_event_loop([&train_controllers, &train_controller_ui]() {
+            train_controller_ui->set_current_velocity(train_controllers[0]->GetCurrentSpeed());
+            train_controller_ui->set_commanded_speed(train_controllers[0]->GetCommandedSpeed());
+            train_controller_ui->set_authority(train_controllers[0]->GetAuthority());
+            train_controller_ui->set_actual_internal_temperature(train_controllers[0]->GetActualInternalTemperature());
+            train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
+            train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0]->GetDistanceTravelledSinceLastUpdate());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
+            });
         }
     });
+
+
+    // std::thread ui_thread([&train_controller_ui, &train_controllers]
+    // {
+    //     while(1)
+    //     {
+    //     //  train_controller_ui->set_current_velocity(train_controllers[0].get()->GetCurrentSpeed());
+    //     // train_controller_ui->set_commanded_speed(train_controllers[0].get()->GetCommandedSpeed());
+    //     // train_controller_ui->set_authority(train_controllers[0].get()->GetAuthority());
+    //     // train_controller_ui->set_actual_internal_temperature(train_controllers[0].get()->GetActualInternalTemperature());
+    //     // train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
+    //     // train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
+    //     // train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+    //     // train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+    //     }
+    // });
+
+    
+    // TRAIN CONTROLLER CALLBACKS START
+
+
+    // automatic mode
+    train_controller_ui->on_request_automatic_mode([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1) {
+            train_controller_ui->set_operation_status_message("In Manual, cannot switch to Automatic");
+
+            // timer to clear the message after 3 seconds
+            auto timer = std::make_shared<slint::Timer>();
+            timer->single_shot(std::chrono::seconds(3), [train_controller_ui, timer]() {
+                train_controller_ui->set_operation_status_message("");
+            });
+        }
+    });
+
+    // manual mode
+    train_controller_ui->on_request_manual_mode([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 0) {
+            train_controllers[0].get()->SetOperationMode(1);
+            train_controller_ui->set_operation_mode_status("Manual");
+        }
+    });
+
+    // Update - Start
+
+    train_controller_ui->on_request_update([&] {
+       
+       bool inputError = false;
+
+        // current speed
+        auto temp_current_velocity_str = std::string(train_controller_ui->get_temp_current_velocity());
+        if (!temp_current_velocity_str.empty()) {
+            try {
+                float temp_current_velocity = std::stof(temp_current_velocity_str);
+                if (temp_current_velocity < 0)
+                {
+                    temp_current_velocity = 0;
+                }
+                train_controllers[0].get()->SetCurrentSpeed(temp_current_velocity);
+            } catch (const std::exception&) {
+                inputError = true;
+            }
+        }
+
+        // commanded speed
+        auto temp_commanded_speed_str = std::string(train_controller_ui->get_temp_commanded_speed());
+        if (!temp_commanded_speed_str.empty()) {
+            try {
+                float temp_commanded_speed = std::stof(temp_commanded_speed_str);
+                train_controllers[0].get()->SetCommandedSpeed(temp_commanded_speed);
+            } catch (const std::exception&) {
+                inputError = true;
+            }
+        }
+
+        // authority
+        auto temp_authority_str = std::string(train_controller_ui->get_temp_authority());
+        if (!temp_authority_str.empty()) {
+            try {
+                float temp_authority = std::stof(temp_authority_str);
+                train_controllers[0].get()->SetAuthority(temp_authority);
+            } catch (const std::exception&) {
+                inputError = true;
+            }
+        }
+
+        // actual internal temperature
+        auto temp_actual_internal_temperature_str = std::string(train_controller_ui->get_temp_actual_internal_temperature());
+        if (!temp_actual_internal_temperature_str.empty()) {
+            try {
+                float temp_actual_internal_temperature = std::stof(temp_actual_internal_temperature_str);
+                if (temp_actual_internal_temperature < 65) {
+                    temp_actual_internal_temperature = 65;
+                } else if (temp_actual_internal_temperature > 75) {
+                    temp_actual_internal_temperature = 75;
+                }
+                train_controllers[0].get()->SetActualInternalTemperature(temp_actual_internal_temperature);
+            } catch (const std::exception&) {
+                inputError = true;
+            }
+        }
+
+        if (inputError)
+        {
+            inputError = false;
+        }
+
+        // call update
+         train_controllers[0].get()->Update();
+
+        // assign all UI elements
+        train_controller_ui->set_current_velocity(train_controllers[0].get()->GetCurrentSpeed());
+        train_controller_ui->set_commanded_speed(train_controllers[0].get()->GetCommandedSpeed());
+        train_controller_ui->set_authority(train_controllers[0].get()->GetAuthority());
+        train_controller_ui->set_actual_internal_temperature(train_controllers[0].get()->GetActualInternalTemperature());
+        train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
+        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
+        train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+        train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+    });
+
+    // Update - End
+
+    // Failures - Start
+
+    // engine failure
+    train_controller_ui->on_request_engine_fail([&] {
+        if (train_controllers[0].get()->GetEngineFailure() == 0) {
+            train_controllers[0].get()->SetEngineFailure(1);
+            train_controllers[0].get()->SetEmergencyBrake(1);
+            train_controllers[0].get()->SetCommandedPower(0);
+            train_controllers[0].get()->SetServiceBrake(0);
+            train_controller_ui->set_engine_status(train_controllers[0].get()->GetEngineFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+        } else {
+            train_controllers[0].get()->SetEngineFailure(0);
+            train_controller_ui->set_engine_status(train_controllers[0].get()->GetEngineFailure());
+            train_controllers[0].get()->Update();
+            train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+        }
+    });
+
+    // brake failure
+    train_controller_ui->on_request_brake_fail([&] {
+        if (train_controllers[0].get()->GetBrakeFailure() == 0) {
+            train_controllers[0].get()->SetBrakeFailure(1);
+            train_controllers[0].get()->SetEmergencyBrake(1);
+            train_controllers[0].get()->SetCommandedPower(0);
+            train_controllers[0].get()->SetServiceBrake(0);
+            train_controller_ui->set_brake_status(train_controllers[0].get()->GetBrakeFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+        } else {
+            train_controllers[0].get()->SetBrakeFailure(0);
+            train_controller_ui->set_brake_status(train_controllers[0].get()->GetBrakeFailure());
+        }
+    });
+
+    // signal pickup failure
+    train_controller_ui->on_request_signal_fail([&] {
+        if (train_controllers[0].get()->GetSignalPickupFailure() == 0) {
+            train_controllers[0].get()->SetSignalPickupFailure(1);
+            train_controllers[0].get()->SetEmergencyBrake(1);
+            train_controllers[0].get()->SetCommandedPower(0);
+            train_controllers[0].get()->SetServiceBrake(0);
+            train_controller_ui->set_signal_status(train_controllers[0].get()->GetSignalPickupFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+        } else {
+            train_controllers[0].get()->SetSignalPickupFailure(0);
+            train_controller_ui->set_signal_status(train_controllers[0].get()->GetSignalPickupFailure());
+        }
+    });
+
+    // Failures - End
+
+    // Manual - UI input parameters - Start
+
+    // service brake input
+    train_controller_ui->on_request_update_service_brake([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1)
+        {
+            float temp = std::stof(std::string(train_controller_ui->get_temp_service_brake()));
+            train_controllers[0].get()->SetServiceBrake(temp);
+            //train_controllers[0].get()->SetCommandedPower(0);
+            train_controllers[0].get()->Update();
+            train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+            train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
+        }
+    });
+
+    // commanded internal temperature
+    train_controller_ui->on_request_update_commanded_internal_temperature([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1) {
+            float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_internal_temperature()));
+            if (temp < 65) {
+                temp = 65;
+            } else if (temp > 75) {
+                temp = 75;
+            }
+            train_controllers[0].get()->SetCommandedInternalTemperature(temp);
+            train_controller_ui->set_commanded_internal_temperature(train_controllers[0].get()->GetCommandedInternalTemperature());
+        }
+    });
+
+    // driver speed
+    train_controller_ui->on_request_update_driver_speed([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1) 
+        {
+            float temp = std::stof(std::string(train_controller_ui->get_temp_driver_speed()));
+            train_controllers[0].get()->SetDriverSpeed(temp);
+            train_controllers[0].get()->Update();
+            train_controller_ui->set_driver_speed(train_controllers[0].get()->GetDriverSpeed());
+            train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+            train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
+            train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
+        }
+    });
+
+    // TRAIN CONTROLLER CALLBACKS END
 
 
     //std::cout << x;
     launcher_ui->run();
     worker_thread.join();
+    // ui_thread.join();
 
     return 0;
 }
