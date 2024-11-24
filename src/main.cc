@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <slint.h>
+#include <slint_timer.h>
 #include <unistd.h>
 
 #include "common/inc/types.h"
@@ -15,6 +16,8 @@
 #include "train_model.h"
 #include "train_controller.h"
 
+
+
 int main(void)
 {
 
@@ -26,6 +29,9 @@ int main(void)
     auto                 track_model_ui        = ui::TrackModelUi::create();
     auto                 train_model_ui        = ui::TrainModelUi::create();
     auto                 train_controller_ui   = ui::TrainControllerUi::create();
+    slint::Timer timer;
+
+    
 
     launcher_ui->on_launch_ctc_window([&]
     {
@@ -55,6 +61,8 @@ int main(void)
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
         tick_source.get()->Start();
         tick_source.get()->SetMultiplier(1);
+        slint::Timer timer;
+
 
         std::filesystem::path           base_path = std::filesystem::current_path();
         std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
@@ -172,35 +180,21 @@ int main(void)
             {
                 break;
             }
-
-            slint::invoke_from_event_loop([&train_controllers, &train_controller_ui]() {
-            train_controller_ui->set_current_velocity(train_controllers[0]->GetCurrentSpeed());
-            train_controller_ui->set_commanded_speed(train_controllers[0]->GetCommandedSpeed());
-            train_controller_ui->set_authority(train_controllers[0]->GetAuthority());
-            train_controller_ui->set_actual_internal_temperature(train_controllers[0]->GetActualInternalTemperature());
-            train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
-            train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0]->GetDistanceTravelledSinceLastUpdate());
-            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
-            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
-            });
         }
     });
 
 
-    // std::thread ui_thread([&train_controller_ui, &train_controllers]
-    // {
-    //     while(1)
-    //     {
-    //     //  train_controller_ui->set_current_velocity(train_controllers[0].get()->GetCurrentSpeed());
-    //     // train_controller_ui->set_commanded_speed(train_controllers[0].get()->GetCommandedSpeed());
-    //     // train_controller_ui->set_authority(train_controllers[0].get()->GetAuthority());
-    //     // train_controller_ui->set_actual_internal_temperature(train_controllers[0].get()->GetActualInternalTemperature());
-    //     // train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
-    //     // train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
-    //     // train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
-    //     // train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
-    //     }
-    // });
+    timer.start(slint::TimerMode::Repeated, std::chrono::milliseconds(500), [&train_controller_ui, &train_controllers]() {
+        train_controller_ui->set_current_velocity(train_controllers[0].get()->GetCurrentSpeed());
+        train_controller_ui->set_commanded_speed(train_controllers[0].get()->GetCommandedSpeed());
+        train_controller_ui->set_authority(train_controllers[0].get()->GetAuthority());
+        train_controller_ui->set_actual_internal_temperature(train_controllers[0].get()->GetActualInternalTemperature());
+        train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
+        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
+        train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
+        train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+    });
+
 
     
     // TRAIN CONTROLLER CALLBACKS START
@@ -416,7 +410,9 @@ int main(void)
     //std::cout << x;
     launcher_ui->run();
     worker_thread.join();
-    // ui_thread.join();
+    //ui_thread.join();
 
+
+    timer.stop();
     return 0;
 }
