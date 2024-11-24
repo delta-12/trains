@@ -36,8 +36,8 @@ FileExplorer::FileExplorer(void)
 
 types::Error FileExplorer::OpenFileExplorer(void)
 {
-#ifdef WIN32
     types::Error error;
+#ifdef WIN32
     OPENFILENAME ofn;                 // Common dialog box structure
     char         file_name[MAX_PATH]; // Buffer for the file name
     ZeroMemory(&ofn, sizeof(ofn));    // Clear the structure
@@ -64,10 +64,10 @@ types::Error FileExplorer::OpenFileExplorer(void)
     {
         error = types::Error::ERROR_INVALID_FORMAT;
     }
-    return error;
 #else
     std::cout << "Operation not supported" << std::endl;
 #endif
+    return error;
 }
 
 void FileExplorer::ExtractFileName(const std::string& full_path)
