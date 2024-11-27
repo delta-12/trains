@@ -1,12 +1,37 @@
 #include <thread>
 
 #include <slint.h>
+#include <unistd.h>
 
 #include "launcher.h"
 #include "simulator.h"
+#include "ctc.h"
+#include "types.h"
+#include "ctc_callback_handler.h"
+#include "channel.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+
+void AttachConsoleToApp() {
+    AllocConsole(); // Allocates a new console
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout); // Redirects stdout to the console
+    freopen_s(&fp, "CONOUT$", "w", stderr); // Redirects stderr to the console
+    freopen_s(&fp, "CONIN$", "r", stdin);  // Redirects stdin to the console
+}
+#endif
+
 
 int main(void)
 {
+    #ifdef _WIN32
+    AttachConsoleToApp(); 
+    #endif
+    // Prevent worker_thread keep running after application window is closed
+    std::atomic<bool> keep_running(true);
+
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
     auto                 ctc_ui                = ui::CtcUi::create();
@@ -36,10 +61,22 @@ int main(void)
         train_controller_ui->show();
     });
 
+    // Setting Up CTC
+    ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
+    ctc::setup_ui(ctc_ui, ctc_office);  
 
     std::thread worker_thread([&]
-    {
-        // Main backend loop here
+        {   
+            while (keep_running.load())
+            {
+                ctc::backend_handler(ctc_office, ctc_ui);
+            }
+        });
+
+    // Stop work_thread when launcher is closed
+    launcher_ui->window().on_close_requested([&] {
+        keep_running.store(false);
+        return slint::CloseRequestResponse::HideWindow;
     });
 
     launcher_ui->run();

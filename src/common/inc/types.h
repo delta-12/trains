@@ -110,6 +110,7 @@ struct Block
     bool power_failure;
     bool track_circuit_failure;
     bool broken_rail;
+    bool failed;
     double grade;
     Meters length;
     MetersPerSecond speed_limit;
