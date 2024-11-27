@@ -17,12 +17,19 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
 static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseIf(SharedIfAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const std::string &symbol);
 static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseOpenBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseClosedBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool IsAlias(const std::string &lexeme);
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const size_t tokens_required);
+static inline bool IsElseNext(std::deque<lexer::Token> &tokens);
 
 StatementAstNode::StatementAstNode(void)
 {
@@ -199,10 +206,9 @@ static bool ParseStatement(SharedStatementAstNode &node, std::deque<lexer::Token
     SharedSetAstNode   set_node   = nullptr;
     SharedIfAstNode    if_node    = nullptr;
 
-
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else
     {
@@ -238,7 +244,7 @@ static bool ParseId(SharedIdAstNode &node, std::deque<lexer::Token> &tokens, std
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else
     {
@@ -269,7 +275,7 @@ static bool ParseSignal(SharedSignalAstNode &node, std::deque<lexer::Token> &tok
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else
     {
@@ -299,7 +305,33 @@ static bool ParseIdOrInputSignal(SharedIdAstNode &id_node, SharedSignalAstNode &
     id_node     = nullptr;
     signal_node = nullptr;
 
-    // TODO
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else
+    {
+        lexer::Token token = tokens.front();
+
+        if (lexer::TokenType::TOKENTYPE_ID == token.token_type)
+        {
+            parsed = ParseId(id_node, tokens, errors);
+        }
+        else if (lexer::TokenType::TOKENTYPE_INPUT_SIGNAL == token.token_type)
+        {
+            parsed = ParseSignal(signal_node, tokens, errors);
+        }
+        else if (lexer::TokenType::TOKENTYPE_OUTPUT_SIGNAL == token.token_type)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_SIGNAL, token);
+            tokens.pop_front();
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
+            tokens.pop_front();
+        }
+    }
 
     return parsed;
 }
@@ -310,7 +342,33 @@ static bool ParseIdOrOutputSignal(SharedIdAstNode &id_node, SharedSignalAstNode 
     id_node     = nullptr;
     signal_node = nullptr;
 
-    // TODO
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else
+    {
+        lexer::Token token = tokens.front();
+
+        if (lexer::TokenType::TOKENTYPE_ID == token.token_type)
+        {
+            parsed = ParseId(id_node, tokens, errors);
+        }
+        else if (lexer::TokenType::TOKENTYPE_OUTPUT_SIGNAL == token.token_type)
+        {
+            parsed = ParseSignal(signal_node, tokens, errors);
+        }
+        else if (lexer::TokenType::TOKENTYPE_INPUT_SIGNAL == token.token_type)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_SIGNAL, token);
+            tokens.pop_front();
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
+            tokens.pop_front();
+        }
+    }
 
     return parsed;
 }
@@ -321,7 +379,7 @@ static bool ParseLogicLevel(SharedLogicLevelAstNode &node, std::deque<lexer::Tok
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else
     {
@@ -353,7 +411,7 @@ static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &token
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else
     {
@@ -405,7 +463,7 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-        // Not enough tokens remaining, do nothing
+        // Not enough tokens remaining, verify function sets error, do nothing
     }
     else if (lexer::Token set_token = GetToken(tokens); "SET" != set_token.lexeme)
     {
@@ -444,60 +502,202 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
     return parsed;
 }
 
-// static SharedExpressionAstNode ParseExpression(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-// {
-// }
-
-// static SharedElseAstNode ParseElse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-// {
-// }
-
-// static SharedBodyAstNode ParseBody(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-// {
-// }
-
-// static SharedIfAstNode ParseIf(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-// {
-// }
-
-static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool is_equals = false;
+    // TODO create new ast node for operand?
 
-    if (VerifyRemainingTokens(tokens, errors, 1))
+    ExpressionAstNode::Operator boolean_operator = ExpressionAstNode::Operator::OPERATOR_MAX;
+
+    if (!ParseOpenParenthesis(tokens, errors))
     {
-        // Not enough tokens remaining, do nothing
+        // Parse function sets error, do nothing
     }
-    else if (lexer::Token equals_token = GetToken(tokens); "=" != equals_token.lexeme)
+    // TODO parse left operand
+    else if (!ParseOperator(boolean_operator, tokens, errors))
     {
-        errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, equals_token);
+        // Parse function sets error, do nothing
+    }
+    // TODO parse right operand
+    else if (!ParseClosedParenthesis(tokens, errors))
+    {
+        // Parse function sets error, do nothing
     }
     else
     {
-        is_equals = true;
+        // TODO new expression node
     }
 
-    return is_equals;
+    return false;
+}
+
+static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    // TODO
+    (void)node;
+    (void)tokens;
+    (void)errors;
+
+    // Parse else
+    // Parse body or parse if
+
+    return false;
+}
+
+static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    // TODO
+    (void)node;
+    (void)tokens;
+    (void)errors;
+
+    // Parse {
+    // Parse statement
+    // Parse }
+
+    return false;
+}
+
+static bool ParseIf(SharedIfAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    (void)node;
+    (void)tokens;
+    (void)errors;
+
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else
+    {
+        SharedExpressionAstNode expression_node = nullptr;
+        SharedBodyAstNode       body_node       = nullptr;
+        SharedElseAstNode       else_node       = nullptr;
+
+        if (lexer::Token token = GetToken(tokens); "IF" != token.lexeme)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
+        }
+        else if (!ParseExpression(expression_node, tokens, errors))
+        {
+            // Parse function sets error, do nothing
+        }
+        else if (!ParseBody(body_node, tokens, errors))
+        {
+            // Parse function sets error, do nothing
+        }
+        else if (IsElseNext(tokens) && !ParseElse(else_node, tokens, errors))
+        {
+            // Parse function sets error, do nothing
+        }
+        else if (nullptr != else_node)
+        {
+            node = std::make_shared<IfAstNode>(expression_node, body_node, else_node);
+        }
+        else
+        {
+            node = std::make_shared<IfAstNode>(expression_node, body_node);
+        }
+    }
+
+    return false;
+}
+
+static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    bool is_operator = false;
+    boolean_operator = ExpressionAstNode::Operator::OPERATOR_MAX;
+
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else
+    {
+        lexer::Token token = GetToken(tokens);
+
+        if ("==" == token.lexeme)
+        {
+            boolean_operator = ExpressionAstNode::Operator::OPERATOR_COMPARISON;
+            is_operator      = true;
+        }
+        else if ("&&" == token.lexeme)
+        {
+            boolean_operator = ExpressionAstNode::Operator::OPERATOR_AND;
+            is_operator      = true;
+        }
+        else if ("||" == token.lexeme)
+        {
+            boolean_operator = ExpressionAstNode::Operator::OPERATOR_OR;
+            is_operator      = true;
+        }
+        else if (lexer::TokenType::TOKENTYPE_SYMBOL == token.token_type)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, token);
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, token);
+        }
+    }
+
+    return is_operator;
+}
+
+static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const std::string &symbol)
+{
+    bool is_symbol = false;
+
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else if (lexer::Token token = GetToken(tokens); symbol != token.lexeme)
+    {
+        if (lexer::TokenType::TOKENTYPE_SYMBOL != token.token_type)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, token);
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, token);
+        }
+    }
+    else
+    {
+        is_symbol = true;
+    }
+
+    return is_symbol;
+}
+
+static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    return ParseSymbol(tokens, errors, "=");
 }
 
 static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool is_semicolon = false;
+    return ParseSymbol(tokens, errors, ";");
+}
 
-    if (VerifyRemainingTokens(tokens, errors, 1))
-    {
-        // Not enough tokens remaining, do nothing
-    }
-    else if (lexer::Token semicolon_token = GetToken(tokens); ";" != semicolon_token.lexeme)
-    {
-        errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, semicolon_token);
-    }
-    else
-    {
-        is_semicolon = true;
-    }
+static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    return ParseSymbol(tokens, errors, "(");
+}
 
-    return is_semicolon;
+static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    return ParseSymbol(tokens, errors, ")");
+}
+
+static inline bool ParseOpenBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    return ParseSymbol(tokens, errors, "{");
+}
+
+static inline bool ParseClosedBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    return ParseSymbol(tokens, errors, "}");
 }
 
 static inline bool IsAlias(const std::string &lexeme)
@@ -541,6 +741,18 @@ static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::
     }
 
     return remaining_tokens;
+}
+
+static inline bool IsElseNext(std::deque<lexer::Token> &tokens)
+{
+    bool is_else_next = false;
+
+    if (!tokens.empty() && ("ELSE" == tokens.front().lexeme))
+    {
+        is_else_next = true;
+    }
+
+    return is_else_next;
 }
 
 } // namespace plc_compiler::parser
