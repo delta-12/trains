@@ -182,12 +182,17 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
     std::vector<types::TrackCircuitData> suggested_speed_and_authorities;
     for (const ctc::Train &train : train_schedules_)
     {
-        suggested_speed_and_authorities.emplace_back(
-            GetBlockById(train.current_position).track,
-            train.current_position,
-            train.suggested_speed,
-            train.authority.size()
-            );
+        types::BlockId block = train.current_position;
+
+        if (types::kYardBlock != block)
+        {
+            suggested_speed_and_authorities.emplace_back(
+                GetBlockById(train.current_position).track,
+                block,
+                train.suggested_speed,
+                train.authority.size()
+                );
+        }
     }
     return suggested_speed_and_authorities;
 }

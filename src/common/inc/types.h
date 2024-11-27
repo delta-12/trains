@@ -41,7 +41,8 @@ using BlockState             = struct BlockState;
 using Second                 = std::chrono::duration<double>;
 using Millisecond            = std::chrono::milliseconds;
 
-static const BlockId kEndBlock = UINT32_MAX;
+static const BlockId kYardBlock = 0;
+static const BlockId kEndBlock  = UINT32_MAX;
 
 enum class Error
 {
