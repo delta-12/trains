@@ -2,13 +2,16 @@
 #include <thread>
 
 #include <slint.h>
+#include <unistd.h>
 
 #include "launcher.h"
 
 #include "block_builder.h"
-#include "csv_parser.h"
 #include "controller_handler.h"
 #include "controller_port.h"
+#include "csv_parser.h"
+#include "ctc.h"
+#include "ctc_callback_handler.h"
 #include "green_line_blocks.h"
 #include "logger.h"
 #include "ring_buffer.h"
@@ -17,10 +20,28 @@
 #include "tick_source.h"
 #include "track_model.h"
 #include "train_model.h"
+#include "types.h"
 #include "wayside_controller_handler.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+
+void AttachConsoleToApp() {
+    AllocConsole(); // Allocates a new console
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout); // Redirects stdout to the console
+    freopen_s(&fp, "CONOUT$", "w", stderr); // Redirects stderr to the console
+    freopen_s(&fp, "CONIN$", "r", stdin);  // Redirects stdin to the console
+}
+#endif
 
 int main(void)
 {
+    #ifdef _WIN32
+    AttachConsoleToApp(); 
+    #endif
+
     std::atomic_bool running(true);
     simulator::Simulator world;
     auto launcher_ui = ui::Launcher::create();
@@ -30,16 +51,11 @@ int main(void)
     auto train_model_ui = ui::TrainModelUi::create();
     auto train_controller_ui = ui::TrainControllerUi::create();
 
-    launcher_ui->on_launch_ctc_window([&]
-                                      { ctc_ui->show(); });
-    launcher_ui->on_launch_wayside_controller_window([&]
-                                                     { wayside_controller_ui->show(); });
-    launcher_ui->on_launch_track_model_window([&]
-                                              { track_model_ui->show(); });
-    launcher_ui->on_launch_train_model_window([&]
-                                              { train_model_ui->show(); });
-    launcher_ui->on_launch_train_controller_window([&]
-                                                   { train_controller_ui->show(); });
+    launcher_ui->on_launch_ctc_window([&]{ ctc_ui->show(); });
+    launcher_ui->on_launch_wayside_controller_window([&]{ wayside_controller_ui->show(); });
+    launcher_ui->on_launch_track_model_window([&]{ track_model_ui->show(); });
+    launcher_ui->on_launch_train_model_window([&]{ train_model_ui->show(); });
+    launcher_ui->on_launch_train_controller_window([&]{ train_controller_ui->show(); });
 
     std::thread worker_thread([&]
                               {
@@ -54,11 +70,10 @@ int main(void)
         // Create clock
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
 
-        // Create CTC
-        ctc::Ctc              ctc_office;
-        std::filesystem::path schedule_path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
-        ctc_office.SetScheduleFilePath(schedule_path);
-        ctc_office.SetTrackLayout();
+        // Setting Up CTC
+        ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
+        ctc::setup_ui(ctc_ui, ctc_office);  
+
 
         // Create train
         std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
@@ -79,6 +94,7 @@ int main(void)
         // });
 
         // Software wayside
+        std::filesystem::path schedule_path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
         RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
         wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
                                                                                             types::TrackId::TRACKID_GREEN,
@@ -94,7 +110,7 @@ int main(void)
         controller_handler.Update(ctc_office, world);
 
         // Manually dispatch train
-        ctc_office.ManualDispatch(80);
+        ctc_office.ManualDispatch(1, 80);
 
         // Main loop
         while (running.load())
@@ -113,6 +129,9 @@ int main(void)
             {
                 LOGGER_LOG_DEBUG(std::cout, "MAIN", "Speed: {}, Authority: {}", speed, authority);
             }
+
+            // Update UIs
+            ctc::backend_handler(ctc_office, ctc_ui);
         } });
 
     launcher_ui->run();
