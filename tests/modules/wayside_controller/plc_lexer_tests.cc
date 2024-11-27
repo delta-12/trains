@@ -5,7 +5,7 @@
 *****************************************************************************/
 
 #include <sstream>
-#include <vector>
+#include <deque>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -190,9 +190,9 @@ TEST(PlcTests, ErrorEquality)
 
 TEST(PlcTests, PlcLexerValidInput)
 {
-    std::vector<plc_compiler::lexer::Token> tokens;
-    std::vector<plc_compiler::lexer::Error> errors;
-    std::stringstream                       input;
+    std::deque<plc_compiler::lexer::Token> tokens;
+    std::deque<plc_compiler::lexer::Error> errors;
+    std::stringstream                      input;
     input << "BLOCK block_0 = IN_0;\n";
     input << "BLOCK block_1=IN_1;\n";
     input << "SWITCH switch_0= OUT_0;\n";
@@ -216,9 +216,9 @@ TEST(PlcTests, PlcLexerValidInput)
 
 TEST(PlcTests, PlcLexerInvalidInput)
 {
-    std::vector<plc_compiler::lexer::Token> tokens;
-    std::vector<plc_compiler::lexer::Error> errors;
-    std::stringstream                       input;
+    std::deque<plc_compiler::lexer::Token> tokens;
+    std::deque<plc_compiler::lexer::Error> errors;
+    std::stringstream                      input;
     input << "BLOCK @block_0 = IN_0;\n";
     input << "BLOCK _block_1=IN_1;\n";
     input << "SWITCH 8switch_0= OUT_0;\n";

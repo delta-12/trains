@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <istream>
 #include <string>
-#include <vector>
+#include <deque>
 
 namespace plc_compiler::lexer
 {
@@ -55,7 +55,7 @@ struct Error
         std::string lexeme;
 };
 
-bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &errors);
+bool Lexer(std::istream &input, std::deque<Token> &tokens, std::deque<Error> &errors);
 
 } // namespace plc_compiler::lexer
 
