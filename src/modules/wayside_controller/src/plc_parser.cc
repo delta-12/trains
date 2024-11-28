@@ -157,6 +157,43 @@ bool Error::operator==(const Error &error_right) const
     return (error_right.error_type == error_type) && (error_right.token == token);
 }
 
+std::ostream& operator<<(std::ostream& stream, const Error& error)
+{
+    stream << "Syntax error: ";
+
+    switch (error.error_type)
+    {
+    case ErrorType::ERRORTYPE_INVALID_INPUT:
+        stream << "Invalid input";
+        break;
+    case ErrorType::ERRORTYPE_KEYWORD_AS_ID:
+        stream << "Keyword cannot be used as an identifier";
+        break;
+    case ErrorType::ERRORTYPE_INVALID_SIGNAL:
+        stream << "Invalid signal";
+        break;
+    case ErrorType::ERRORTYPE_INVALID_LOGIC_LEVEL:
+        stream << "Invalid logic level";
+        break;
+    case ErrorType::ERRORTYPE_MISSING_SYMBOL:
+        stream << "Missing symbol";
+        break;
+    case ErrorType::ERRORTYPE_ILLEGAL_SYMBOL:
+        stream << "Illegal symbol";
+        break;
+    case ErrorType::ERRORTYPE_UNEXPECTED_END:
+        stream << "Unexpected end of file";
+        break;
+    default:
+        stream << "Unknown error";
+        break;
+    }
+
+    stream <<  " \"" << error.token.lexeme << "\"" << std::endl;
+
+    return stream;
+}
+
 SharedStatementAstNode Parse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     SharedStatementAstNode root = nullptr;
@@ -202,7 +239,8 @@ static bool ParseStatement(SharedStatementAstNode &node, std::deque<lexer::Token
     }
     else
     {
-        lexer::Token token = tokens.front();
+        size_t       tokens_size = tokens.size();
+        lexer::Token token       = tokens.front();
 
         if (IsAlias(token.lexeme) && ParseAlias(alias_node, tokens, errors))
         {
@@ -222,6 +260,11 @@ static bool ParseStatement(SharedStatementAstNode &node, std::deque<lexer::Token
         else
         {
             errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
+
+            if (tokens.size() == tokens_size)
+            {
+                tokens.pop_front();
+            }
         }
     }
 
@@ -275,11 +318,13 @@ static bool ParseSignal(SharedSignalAstNode &node, std::deque<lexer::Token> &tok
 
         if ((lexer::TokenType::TOKENTYPE_INPUT_SIGNAL == token.token_type) && GetInput(token.lexeme, signal))
         {
-            node = std::make_shared<SignalAstNode>(signal, SignalAstNode::SignalType::SIGNALTYPE_INPUT);
+            node   = std::make_shared<SignalAstNode>(signal, SignalAstNode::SignalType::SIGNALTYPE_INPUT);
+            parsed = true;
         }
         else if ((lexer::TokenType::TOKENTYPE_OUTPUT_SIGNAL == token.token_type) && GetOutput(token.lexeme, signal))
         {
-            node = std::make_shared<SignalAstNode>(signal, SignalAstNode::SignalType::SIGNALTYPE_OUTPUT);
+            node   = std::make_shared<SignalAstNode>(signal, SignalAstNode::SignalType::SIGNALTYPE_OUTPUT);
+            parsed = true;
         }
         else
         {
@@ -436,7 +481,7 @@ static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &token
         {
             errors.emplace_back(ErrorType::ERRORTYPE_INVALID_SIGNAL, lexer::Token(lexer::TokenType::TOKENTYPE_OUTPUT_SIGNAL, std::to_string(signal_node->signal)));
         }
-        else if (SignalAstNode::SignalType::SIGNALTYPE_INPUT == signal_node->type)
+        else if (("BLOCK" != alias_token.lexeme) && (SignalAstNode::SignalType::SIGNALTYPE_INPUT == signal_node->type))
         {
             errors.emplace_back(ErrorType::ERRORTYPE_INVALID_SIGNAL, lexer::Token(lexer::TokenType::TOKENTYPE_INPUT_SIGNAL, std::to_string(signal_node->signal)));
         }
@@ -556,6 +601,7 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
     {
         // Parse function sets error, do nothing
     }
+    // TODO parse operator and another expression depending on previous operator
     else if (!ParseClosedParenthesis(tokens, errors))
     {
         // Parse function sets error, do nothing
@@ -599,7 +645,7 @@ static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens,
     {
         // Not enough tokens remaining, verify function sets error, do nothing
     }
-    else if (lexer::Token token = GetToken(tokens); "ELSE" == token.lexeme)
+    else if (lexer::Token token = GetToken(tokens); "ELSE" != token.lexeme)
     {
         errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
     }

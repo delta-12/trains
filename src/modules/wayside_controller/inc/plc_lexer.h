@@ -51,6 +51,7 @@ struct Error
         Error(void);
         Error(const ErrorType error_type, const std::string &lexeme);
         bool operator==(const Error &error_right) const;
+        // TODO add ostream operator
         ErrorType error_type;
         std::string lexeme;
 };

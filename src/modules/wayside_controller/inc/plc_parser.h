@@ -173,6 +173,7 @@ struct Error
         Error(void);
         Error(const ErrorType error_type, const lexer::Token &token);
         bool operator==(const Error &error_right) const;
+        friend std::ostream& operator<<(std::ostream& stream, const Error& error);
         ErrorType error_type;
         lexer::Token token;
 };

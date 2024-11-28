@@ -13,23 +13,6 @@
 namespace plc_compiler
 {
 
-static const size_t kCharacterTypes            = 9;
-static const size_t kDefaultTokenCharacterSize = 16;
-static const size_t kKeywordCount              = 10;
-
-const std::array<const char *const, kKeywordCount> kKeywords = {
-    "HIGH",
-    "LOW",
-    "BLOCK",
-    "SWITCH",
-    "LIGHT",
-    "CROSSING",
-    "IF",
-    "ELSEIF",
-    "ELSE",
-    "SET"
-};
-
 const std::array<const char *const, wayside_controller::kTotalInputs> kInputSignals = {
     "IN_0",
     "IN_1",

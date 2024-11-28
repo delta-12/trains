@@ -4,19 +4,22 @@
 #include <deque>
 
 #include "plc_lexer.h"
+#include "plc_parser.h"
+#include "types.h"
 
 namespace plc_compiler
 {
 
-bool Compile(std::filesystem::path &file_path)
+types::Error Compile(std::filesystem::path &file_path)
 {
-    bool                     compiled = false;
-    std::deque<lexer::Token> tokens;
-    std::deque<lexer::Error> errors;
+    types::Error              error = types::Error::ERROR_NONE;
+    std::deque<lexer::Token>  tokens;
+    std::deque<lexer::Error>  lexer_errors;
+    std::deque<parser::Error> parser_errors;
 
     if (!std::filesystem::exists(file_path))
     {
-        // File does not exist, do nothing
+        error = types::Error::ERROR_FILE_NO_EXIST;
     }
     else
     {
@@ -24,18 +27,22 @@ bool Compile(std::filesystem::path &file_path)
 
         if (!program_file.is_open())
         {
-            // Failed to open file, do nothing
+            error = types::Error::ERROR_IO;
+        }
+        else if (!lexer::Lexer(program_file, tokens, lexer_errors) || !parser::Parse(tokens, parser_errors))
+        {
+            // TODO print errors
+
+            error = types::Error::ERROR_INVALID_FORMAT;
+            program_file.close();
         }
         else
         {
-            lexer::Lexer(program_file, tokens, errors);
-
-
-            program_file.close();
+            // TODO continue parsing
         }
     }
 
-    return compiled;
+    return error;
 }
 
 } // namespace plc_compiler

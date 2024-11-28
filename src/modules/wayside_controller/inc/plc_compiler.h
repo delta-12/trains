@@ -8,10 +8,12 @@
 
 #include <filesystem>
 
+#include "types.h"
+
 namespace plc_compiler
 {
 
-bool Compile(std::filesystem::path &file_path);
+types::Error Compile(std::filesystem::path &file_path);
 
 } // namespace plc_compiler
 
