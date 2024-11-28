@@ -13,6 +13,8 @@ static bool ParseIdOrOutputSignal(SharedIdAstNode &id_node, SharedSignalAstNode 
 static bool ParseLogicLevel(SharedLogicLevelAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static bool ParseLeftOperand(SharedIdAstNode &id_node, SharedSignalAstNode &signal_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static bool ParseRightOperand(SharedLogicLevelAstNode &logic_level_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
@@ -30,6 +32,9 @@ static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const size_t tokens_required);
 static inline bool IsElseNext(std::deque<lexer::Token> &tokens);
+static inline bool IsBodyNext(std::deque<lexer::Token> &tokens);
+static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens);
+static std::string LogicLevelToString(const LogicLevelAstNode::LogicLevel logic_level);
 
 StatementAstNode::StatementAstNode(void)
 {
@@ -103,24 +108,8 @@ ExpressionAstNode::ExpressionAstNode(SharedSignalAstNode signal_node, SharedLogi
 {
 }
 
-ExpressionAstNode::ExpressionAstNode(SharedExpressionAstNode left_expression_node, SharedExpressionAstNode right_expression_node, const std::string &operator_lexeme) : left_operand(left_expression_node), right_operand(right_expression_node)
+ExpressionAstNode::ExpressionAstNode(SharedExpressionAstNode left_expression_node, SharedExpressionAstNode right_expression_node, const Operator boolean_operator) : left_operand(left_expression_node), right_operand(right_expression_node), boolean_operator(boolean_operator)
 {
-    if ("&&" == operator_lexeme)
-    {
-        boolean_operator = Operator::OPERATOR_AND;
-    }
-    else if ("||" == operator_lexeme)
-    {
-        boolean_operator = Operator::OPERATOR_OR;
-    }
-    else if ("==" == operator_lexeme)
-    {
-        boolean_operator = Operator::OPERATOR_COMPARISON;
-    }
-    else
-    {
-        boolean_operator = Operator::OPERATOR_MAX;
-    }
 }
 
 ElseAstNode::ElseAstNode(void)
@@ -205,6 +194,7 @@ static bool ParseStatement(SharedStatementAstNode &node, std::deque<lexer::Token
     SharedAliasAstNode alias_node = nullptr;
     SharedSetAstNode   set_node   = nullptr;
     SharedIfAstNode    if_node    = nullptr;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -241,6 +231,7 @@ static bool ParseStatement(SharedStatementAstNode &node, std::deque<lexer::Token
 static bool ParseId(SharedIdAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     bool parsed = false;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -265,13 +256,13 @@ static bool ParseId(SharedIdAstNode &node, std::deque<lexer::Token> &tokens, std
         }
     }
 
-
     return parsed;
 }
 
 static bool ParseSignal(SharedSignalAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     bool parsed = false;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -376,6 +367,7 @@ static bool ParseIdOrOutputSignal(SharedIdAstNode &id_node, SharedSignalAstNode 
 static bool ParseLogicLevel(SharedLogicLevelAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     bool parsed = false;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -408,6 +400,7 @@ static bool ParseLogicLevel(SharedLogicLevelAstNode &node, std::deque<lexer::Tok
 static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     bool parsed = false;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -459,7 +452,11 @@ static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &token
 
 static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool parsed = false;
+    bool                    parsed           = false;
+    SharedIdAstNode         id_node          = nullptr;
+    SharedSignalAstNode     signal_node      = nullptr;
+    SharedLogicLevelAstNode logic_level_node = nullptr;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -469,34 +466,64 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
     {
         errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, set_token);
     }
+    else if (!ParseIdOrOutputSignal(id_node, signal_node, tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (!ParseLogicLevel(logic_level_node, tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (!ParseSemicolon(tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (nullptr != id_node)
+    {
+        node   = std::make_shared<SetAstNode>(signal_node, logic_level_node);
+        parsed = true;
+    }
     else
     {
-        SharedIdAstNode         id_node          = nullptr;
-        SharedSignalAstNode     signal_node      = nullptr;
-        SharedLogicLevelAstNode logic_level_node = nullptr;
+        node   = std::make_shared<SetAstNode>(signal_node, logic_level_node);
+        parsed = true;
+    }
 
-        if (!ParseIdOrOutputSignal(id_node, signal_node, tokens, errors))
-        {
-            // Parse function sets error, do nothing
-        }
-        else if (!ParseLogicLevel(logic_level_node, tokens, errors))
-        {
-            // Parse function sets error, do nothing
-        }
-        else if (!ParseSemicolon(tokens, errors))
-        {
-            // Parse function sets error, do nothing
-        }
-        else if (nullptr != id_node)
-        {
-            node   = std::make_shared<SetAstNode>(signal_node, logic_level_node);
-            parsed = true;
-        }
-        else
-        {
-            node   = std::make_shared<SetAstNode>(signal_node, logic_level_node);
-            parsed = true;
-        }
+    return parsed;
+}
+
+static bool ParseLeftOperand(SharedIdAstNode &id_node, SharedSignalAstNode &signal_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    bool parsed = false;
+    id_node         = nullptr;
+    signal_node     = nullptr;
+    expression_node = nullptr;
+
+    if (IsExpressionNext(tokens))
+    {
+        parsed = ParseExpression(expression_node, tokens, errors);
+    }
+    else
+    {
+        parsed = ParseIdOrInputSignal(id_node, signal_node, tokens, errors);
+    }
+
+    return parsed;
+}
+
+static bool ParseRightOperand(SharedLogicLevelAstNode &logic_level_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    bool parsed = false;
+    logic_level_node = nullptr;
+    expression_node  = nullptr;
+
+    if (IsExpressionNext(tokens))
+    {
+        parsed = ParseExpression(expression_node, tokens, errors);
+    }
+    else
+    {
+        parsed = ParseLogicLevel(logic_level_node, tokens, errors);
     }
 
     return parsed;
@@ -504,64 +531,141 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
 
 static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    // TODO create new ast node for operand?
-
-    ExpressionAstNode::Operator boolean_operator = ExpressionAstNode::Operator::OPERATOR_MAX;
+    bool                        parsed                = false;
+    ExpressionAstNode::Operator boolean_operator      = ExpressionAstNode::Operator::OPERATOR_MAX;
+    SharedIdAstNode             id_node               = nullptr;
+    SharedSignalAstNode         signal_node           = nullptr;
+    SharedExpressionAstNode     left_expression_node  = nullptr;
+    SharedLogicLevelAstNode     logic_level_node      = nullptr;
+    SharedExpressionAstNode     right_expression_node = nullptr;
+    node = nullptr;
 
     if (!ParseOpenParenthesis(tokens, errors))
     {
         // Parse function sets error, do nothing
     }
-    // TODO parse left operand
+    else if (!ParseLeftOperand(id_node, signal_node, left_expression_node, tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
     else if (!ParseOperator(boolean_operator, tokens, errors))
     {
         // Parse function sets error, do nothing
     }
-    // TODO parse right operand
+    else if (!ParseRightOperand(logic_level_node, right_expression_node, tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
     else if (!ParseClosedParenthesis(tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (nullptr != logic_level_node)
+    {
+        if (nullptr != id_node)
+        {
+            node   = std::make_shared<ExpressionAstNode>(id_node, logic_level_node);
+            parsed = true;
+        }
+        else if (nullptr != signal_node)
+        {
+            node   = std::make_shared<ExpressionAstNode>(signal_node, logic_level_node);
+            parsed = true;
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, lexer::Token(lexer::TokenType::TOKENTYPE_KEYWORD, LogicLevelToString(logic_level_node->logic_level)));
+        }
+    }
+    else if ((nullptr != left_expression_node) && (nullptr != right_expression_node))
+    {
+        node   = std::make_shared<ExpressionAstNode>(left_expression_node, right_expression_node, boolean_operator);
+        parsed = true;
+    }
+    else
+    {
+        errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, lexer::Token(lexer::TokenType::TOKENTYPE_KEYWORD, "")); // TODO set correct lexeme for token
+    }
+
+    return parsed;
+}
+
+static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    bool parsed = false;
+    node = nullptr;
+
+    if (!VerifyRemainingTokens(tokens, errors, 1))
+    {
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else if (lexer::Token token = GetToken(tokens); "ELSE" == token.lexeme)
+    {
+        errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, token);
+    }
+    else if (IsBodyNext(tokens))
+    {
+        SharedBodyAstNode body_node = nullptr;
+
+        if (!ParseBody(body_node, tokens, errors))
+        {
+            // Parse function sets error, do nothing
+        }
+        else
+        {
+            node   = std::make_shared<ElseAstNode>(body_node);
+            parsed = true;
+        }
+    }
+    else
+    {
+        SharedIfAstNode if_node = nullptr;
+
+        if (!ParseIf(if_node, tokens, errors))
+        {
+            // Parse function sets error, do nothing
+        }
+        else
+        {
+            node   = std::make_shared<ElseAstNode>(if_node);
+            parsed = true;
+        }
+    }
+
+    return parsed;
+}
+
+static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+{
+    bool                   parsed         = false;
+    SharedStatementAstNode statement_node = nullptr;
+    node = nullptr;
+
+    if (!ParseOpenBracket(tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (!ParseStatement(statement_node, tokens, errors))
+    {
+        // Parse function sets error, do nothing
+    }
+    else if (!ParseClosedBracket(tokens, errors))
     {
         // Parse function sets error, do nothing
     }
     else
     {
-        // TODO new expression node
+        node   = std::make_shared<BodyAstNode>(statement_node);
+        parsed = true;
     }
 
-    return false;
-}
-
-static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    // TODO
-    (void)node;
-    (void)tokens;
-    (void)errors;
-
-    // Parse else
-    // Parse body or parse if
-
-    return false;
-}
-
-static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    // TODO
-    (void)node;
-    (void)tokens;
-    (void)errors;
-
-    // Parse {
-    // Parse statement
-    // Parse }
-
-    return false;
+    return parsed;
 }
 
 static bool ParseIf(SharedIfAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    (void)node;
-    (void)tokens;
-    (void)errors;
+    bool parsed = false;
+    node = nullptr;
 
     if (!VerifyRemainingTokens(tokens, errors, 1))
     {
@@ -591,15 +695,17 @@ static bool ParseIf(SharedIfAstNode &node, std::deque<lexer::Token> &tokens, std
         }
         else if (nullptr != else_node)
         {
-            node = std::make_shared<IfAstNode>(expression_node, body_node, else_node);
+            node   = std::make_shared<IfAstNode>(expression_node, body_node, else_node);
+            parsed = true;
         }
         else
         {
-            node = std::make_shared<IfAstNode>(expression_node, body_node);
+            node   = std::make_shared<IfAstNode>(expression_node, body_node);
+            parsed = true;
         }
     }
 
-    return false;
+    return parsed;
 }
 
 static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
@@ -753,6 +859,49 @@ static inline bool IsElseNext(std::deque<lexer::Token> &tokens)
     }
 
     return is_else_next;
+}
+
+static inline bool IsBodyNext(std::deque<lexer::Token> &tokens)
+{
+    bool is_body_next = false;
+
+    if (!tokens.empty() && ("{" == tokens.front().lexeme))
+    {
+        is_body_next = true;
+    }
+
+    return is_body_next;
+}
+
+static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens)
+{
+    bool is_expression_next = false;
+
+    if (!tokens.empty() && ("(" == tokens.front().lexeme))
+    {
+        is_expression_next = true;
+    }
+
+    return is_expression_next;
+}
+
+static std::string LogicLevelToString(const LogicLevelAstNode::LogicLevel logic_level)
+{
+    std::string logic_level_string("");
+
+    switch (logic_level)
+    {
+    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_LOW:
+        logic_level_string = "LOW";
+        break;
+    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_HIGH:
+        logic_level_string = "HIGH";
+        break;
+    default:
+        break;
+    }
+
+    return logic_level_string;
 }
 
 } // namespace plc_compiler::parser

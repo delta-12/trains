@@ -131,7 +131,7 @@ struct ExpressionAstNode
         ExpressionAstNode(void);
         ExpressionAstNode(SharedIdAstNode id_node, SharedLogicLevelAstNode logic_level_node);
         ExpressionAstNode(SharedSignalAstNode signal_node, SharedLogicLevelAstNode logic_level_node);
-        ExpressionAstNode(SharedExpressionAstNode left_expression_node, SharedExpressionAstNode right_expression_node, const std::string &operator_lexeme);
+        ExpressionAstNode(SharedExpressionAstNode left_expression_node, SharedExpressionAstNode right_expression_node, const Operator boolean_operator);
         std::variant<SharedIdAstNode, SharedSignalAstNode, SharedExpressionAstNode> left_operand;
         std::variant<SharedLogicLevelAstNode, SharedExpressionAstNode> right_operand;
         Operator boolean_operator;
