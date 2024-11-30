@@ -415,11 +415,11 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     }
 
     //Checking if Service brake is on
-    else if (service_brake_percentage_ > 0)
-    {
-        integral_sum_    = 0;
-        commanded_power_ = 0;
-    }
+    // else if (service_brake_percentage_ > 0)
+    // {
+    //     integral_sum_    = 0;
+    //     commanded_power_ = 0;
+    // }
 
     //Normal power calculation
     else
@@ -431,6 +431,12 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         {
             commanded_power_ = max_power_;
         }
+    }
+
+    if(service_brake_percentage_ > 0)
+    {
+        integral_sum_    = 0;
+        commanded_power_ = 0;
     }
 }
 
