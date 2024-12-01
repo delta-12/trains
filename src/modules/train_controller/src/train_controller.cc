@@ -167,6 +167,8 @@ double SoftwareTrainController::GetIntegralSum() const
     return integral_sum_;
 }
 
+
+
 // Setters
 void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
 {
@@ -305,7 +307,7 @@ void SoftwareTrainController::Update()
     CalculateDistanceToStopping();
     UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
-
+    UpdateLightsAndDoors();
 
     delta_time_ = delta_time;
 }
@@ -566,6 +568,120 @@ void SoftwareTrainController::CalculateDistanceToStopping()
 types::Meters SoftwareTrainController::GetDistanceOfAuthorityInMeters()
 {
     return distance_of_authority_in_meters_;
+}
+
+bool SoftwareTrainController::IsAtStation() const
+{
+    int current_block = green_default_route_vector_[set_route_position_];
+    auto it = green_infrastructure_data_map_.find(current_block);
+    if (it != green_infrastructure_data_map_.end())
+    {
+        std::string infrastructure = it->second[0];
+        if (infrastructure.find("STATION") != std::string::npos)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// New Getter: Check if doors can be opened
+bool SoftwareTrainController::CanOpenDoors() const
+{
+    return (current_speed_ == 0 && IsAtStation());
+}
+
+// New Getter: Check if the train is underground
+bool SoftwareTrainController::IsUnderground() const
+{
+    int current_block = green_default_route_vector_[set_route_position_];
+    auto it = green_block_data_map_.find(current_block);
+    if (it != green_block_data_map_.end())
+    {
+        int underground = static_cast<int>((it->second)[5]);
+        return (underground == 1);
+    }
+    return false;
+}
+
+// New Getter: Get station side
+std::string SoftwareTrainController::GetStationSide() const
+{
+    int current_block = green_default_route_vector_[set_route_position_];
+    auto it = green_infrastructure_data_map_.find(current_block);
+    if (it != green_infrastructure_data_map_.end())
+    {
+        // index 1 contains station side
+        return it->second[1];
+    }
+    return "";
+}
+
+void SoftwareTrainController::UpdateLightsAndDoors()
+{
+    // Interior Lights
+    if (IsAtStation())
+    {
+        // Interior lights must be on at stations
+        interior_lights_ = true;
+    }
+    else
+    {
+        // In manual mode, driver can control the lights
+        // Do nothing here
+    }
+
+    // Exterior Lights
+    if (IsUnderground())
+    {
+        // Exterior lights must be on when underground
+        headlights_ = true;
+    }
+    else
+    {
+        // In manual mode, driver can control the lights
+        // Do nothing here
+    }
+
+    // Doors
+    if (IsAtStation() && current_speed_ == 0)
+    {
+        // Automatically open doors on the correct side(s)
+        std::string station_side = GetStationSide();
+        if (station_side == "Left")
+        {
+            left_door_ = true;
+            right_door_ = false;
+        }
+        else if (station_side == "Right")
+        {
+            left_door_ = false;
+            right_door_ = true;
+        }
+        else if (station_side == "Left/Right")
+        {
+            left_door_ = true;
+            right_door_ = true;
+        }
+        else
+        {
+            // Default to both doors if side information is missing
+            left_door_ = true;
+            right_door_ = true;
+        }
+    }
+    else
+    {
+        // Doors must be closed when not at a station or when moving
+        left_door_ = false;
+        right_door_ = false;
+    }
+
+    // Prevent driver from turning off exterior lights when underground
+    if (IsUnderground() && !headlights_)
+    {
+        headlights_ = true;
+    }
 }
 
 }

@@ -27,10 +27,10 @@ export component TrainControllerUi inherits Window {
 
     // false = off
     // true  = on
-    in-out property<bool> int-lights: false;
-    in-out property<bool> ext-lights: false;
-    in-out property<bool> right-doors: false;
-    in-out property<bool> left-doors: false;
+    in-out property<bool> int_lights: false;
+    in-out property<bool> ext_lights: false;
+    in-out property<bool> right_doors: false;
+    in-out property<bool> left_doors: false;
 
 
     callback request_automatic_mode();
@@ -42,6 +42,10 @@ export component TrainControllerUi inherits Window {
     callback request_update_service_brake();
     callback request_update_commanded_internal_temperature();
     callback request_update_power();
+    callback request_toggle_int_lights();
+    callback request_toggle_ext_lights();
+    callback request_toggle_left_doors();
+    callback request_toggle_right_doors();
 
     // unique to test bench
     callback request_update_current_velocity();
@@ -459,16 +463,14 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual") {
-                                        root.int-lights = !root.int-lights;
-                                    }
+                                    root.request_toggle_int_lights();
                                 }
                             }
                             Text {
-                                text: root.int-lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
+                                text: root.int_lights ? "Turn Off Interior Lights" : "Turn On Interior Lights";
                                 font-size: 20px;
                             }
-                            background: root.int-lights ? green : #3b3b3b;
+                            background: root.int_lights ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -479,16 +481,14 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual") {
-                                        root.ext-lights = !root.ext-lights;
-                                    }
+                                    root.request_toggle_ext_lights();
                                 }
                             }
                             Text {
-                                text: root.ext-lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
+                                text: root.ext_lights ? "Turn Off Exterior Lights" : "Turn On Exterior Lights";                    
                                 font-size: 20px;
                             }
-                            background: root.ext-lights ? green : #3b3b3b;
+                            background: root.ext_lights ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -499,16 +499,14 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual" && current_velocity == 0 && driver_speed == 0 && authority == 0){
-                                        root.right-doors = !root.right-doors;
-                                    }
+                                    root.request_toggle_right_doors();
                                 }
                             }
                             Text {
-                                text: root.right-doors ? "Close Right Doors" : "Open Right Doors";
+                                text: root.right_doors ? "Close Right Doors" : "Open Right Doors";
                                 font-size: 20px;
                             }
-                            background: root.right-doors ? green : #3b3b3b;
+                            background: root.right_doors ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;
@@ -520,16 +518,14 @@ export component TrainControllerUi inherits Window {
                                 width: parent.width;
                                 height: parent.height;
                                 clicked => {
-                                    if (operation-mode-status == "Manual" && current_velocity == 0 && driver_speed == 0 && authority == 0) {
-                                        root.left-doors = !root.left-doors;
-                                    }
+                                    root.request_toggle_left_doors();
                                 }
                             }
                             Text {
-                                text: root.left-doors ? "Close Left Doors" : "Open Left Doors";
+                                text: root.left_doors ? "Close Left Doors" : "Open Left Doors";
                                 font-size: 20px;
                             }
-                            background: root.left-doors ? green : #3b3b3b;
+                            background: root.left_doors ? green : #3b3b3b;
                             preferred-height: 20px;
                             max-height: 50px;
                             preferred-width: 60px;

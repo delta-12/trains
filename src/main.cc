@@ -98,12 +98,12 @@ int main(void)
             }
 
             types::Watts commanded_power = train_controllers[0].get()->GetCommandedPower();
-            types::Meters ditsance_traveled_since_last_update = train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate();
+            types::Meters distance_traveled_since_last_update = train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate();
             double brake = train_controllers[0].get()->GetServiceBrake();
 
 
             track.get()->GetTrainModel(0).get()->SetCommandedPower(commanded_power);
-            track.get()->GetTrainModel(0).get()->SetDistanceTraveled(ditsance_traveled_since_last_update);
+            track.get()->GetTrainModel(0).get()->SetDistanceTraveled(distance_traveled_since_last_update);
             track.get()->GetTrainModel(0).get()->SetBrake(brake);
             
             if (dist > 100 && dist <= 200)
@@ -297,6 +297,10 @@ int main(void)
         train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
         train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
         train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+        train_controller_ui->set_int_lights(train_controllers[0].get()->GetInteriorLights());
+        train_controller_ui->set_ext_lights(train_controllers[0].get()->GetHeadLights());
+        train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
+        train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
     });
 
     // Update - End
@@ -401,6 +405,54 @@ int main(void)
             train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
             train_controller_ui->set_distance_traveled(train_controllers[0].get()->GetDistanceTravelled());
             train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
+        }
+    });
+
+    // Interior Lights
+    train_controller_ui->on_request_toggle_int_lights([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1 && !train_controllers[0].get()->IsAtStation()) {
+            bool current_state = train_controllers[0].get()->GetInteriorLights();
+            train_controllers[0].get()->SetInteriorLights(!current_state);
+            train_controller_ui->set_int_lights(train_controllers[0].get()->GetInteriorLights());
+        }
+    });
+
+    // Exterior Lights
+    train_controller_ui->on_request_toggle_ext_lights([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1 && !train_controllers[0].get()->IsUnderground()) {
+            bool current_state = train_controllers[0].get()->GetHeadLights();
+            train_controllers[0].get()->SetHeadLights(!current_state);
+            train_controller_ui->set_ext_lights(train_controllers[0].get()->GetHeadLights());
+        } else if (train_controllers[0].get()->IsUnderground()) {
+            // Do not allow turning off exterior lights when underground
+            train_controllers[0].get()->SetHeadLights(true);
+            train_controller_ui->set_ext_lights(true);
+        }
+    });
+
+    // Left Doors
+    train_controller_ui->on_request_toggle_left_doors([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1 && train_controllers[0].get()->CanOpenDoors()) {
+            // Doors will open automatically at stations
+            // Allow manual closing
+            bool current_state = train_controllers[0].get()->GetLeftDoors();
+            if (current_state) {
+                train_controllers[0].get()->SetLeftDoors(false);
+                train_controller_ui->set_left_doors(false);
+            }
+        }
+    });
+
+    // Right Doors
+    train_controller_ui->on_request_toggle_right_doors([&] {
+        if (train_controllers[0].get()->GetOperationMode() == 1 && train_controllers[0].get()->CanOpenDoors()) {
+            // Doors will open automatically at stations
+            // Allow manual closing
+            bool current_state = train_controllers[0].get()->GetRightDoors();
+            if (current_state) {
+                train_controllers[0].get()->SetRightDoors(false);
+                train_controller_ui->set_right_doors(false);
+            }
         }
     });
 

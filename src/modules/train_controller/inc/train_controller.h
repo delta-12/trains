@@ -9,9 +9,11 @@
 
 #include <string>
 #include <cstdint>
+#include <unordered_map>
+#include <vector>
+#include <memory>
 
 #include "types.h"
-#include <unordered_map>
 #include "convert.h"
 #include "tick_source.h"
 
@@ -74,6 +76,10 @@ class TrainController
         virtual void SetOperationMode(const bool operation_mode)                                 = 0;
         virtual void SetPolartity(const types::Polarity polarity)                                = 0;
         virtual void SetCommandedPower(const types::Watts power)                                 = 0;
+        virtual bool IsAtStation() const                                                         = 0;
+        virtual bool CanOpenDoors() const                                                        = 0;
+        virtual bool IsUnderground() const                                                       = 0;
+        virtual std::string GetStationSide() const                                               = 0;
 };
 
 
@@ -140,6 +146,11 @@ class SoftwareTrainController : public TrainController
         void UpdateTrainPosition(void);
         void CalculateDistanceToStopping();
         types::Meters GetDistanceOfAuthorityInMeters();
+        bool IsAtStation() const;
+        bool CanOpenDoors() const;
+        bool IsUnderground() const;
+        std::string GetStationSide() const;
+        void UpdateLightsAndDoors();
 
         /*
          *
