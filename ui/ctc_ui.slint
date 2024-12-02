@@ -90,7 +90,6 @@ component TransitSystem inherits Rectangle {
                         has_input = false;
                     } else {
                         has_input = true;
-                        reflect_operation_mode();
                     }
                 }
             }
@@ -340,7 +339,7 @@ component Dispatch inherits Rectangle {
 
 component TBInputs inherits Rectangle {
     in-out property <string> block_occupancy;
-
+    in-out property <bool> occupied;
     in-out property <string> confirm_occupancy_message;
     // Callbacks
     callback send_occupancy_signal();
@@ -356,6 +355,11 @@ component TBInputs inherits Rectangle {
                 height: 50px;
                 placeholder-text: @tr("Block Number");
                 edited(input) => {block_occupancy = input}
+            }
+            Switch {
+                checked: occupied;
+                text: "Occupied";
+                toggled => {occupied = !occupied}
             }
             Button {
                 height: 40px;
@@ -411,9 +415,9 @@ export component CtcUi inherits Window {
 
     //TestBench
     in-out property <string> block_occupancy;
-    in-out property <bool> occupancy;
     in-out property <string> train_tb;
     in-out property <[string]> trains_tb;
+    in-out property <bool> occupied;
 
     in-out property <int> authority;
     in-out property <int> suggested_speed;
@@ -441,6 +445,7 @@ export component CtcUi inherits Window {
     // Testbench 
     callback show-train-output();
     callback wc_send_block_states();
+    
 
     title: "CTC Office";
     preferred-width: 600px;
@@ -501,6 +506,7 @@ export component CtcUi inherits Window {
                             text: "Inputs";
                         }
                         TBInputs {
+                            occupied <=> occupied;
                             block_occupancy <=> block_occupancy;
                             confirm_occupancy_message: confirm_occupancy_message;
                             send_occupancy_signal => {root.send_occupancy()}

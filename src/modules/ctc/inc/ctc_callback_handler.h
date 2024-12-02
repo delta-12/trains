@@ -16,7 +16,7 @@ namespace ctc
 {
 extern Channel<std::vector<types::BlockState>> wc_ctc_block_occupancy_channel;
 
-void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc);
+void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 }

@@ -45,7 +45,7 @@ static inline void send_occupancy_callback(slint::ComponentHandle<ui::CtcUi> &ct
 static inline void send_failure_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
-static inline void reflect_operation_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+
 static inline void choose_file_callback();
 
 // Backend Handlers
@@ -53,29 +53,16 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
 static void send_occupancy_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void maintenance_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
-static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+
 static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 
-void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc)
+void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
     register_callbacks(ctc_ui);
 
     auto block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
-    // std::vector<types::Block> blocks           = ctc.GetBlocks();
-    // blocks.erase(blocks.begin());
-    // for (const types::Block &block : blocks)
-    // {
-    //     auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
-    //     block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
-    //     block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
-    //     block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
-    //     block_entry->push_back(slint::StandardListViewItem("_"));
-    //     block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
-    //     block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
-    //     block_data_model->push_back(block_entry);
-    // }
     ctc_ui->set_block_data(block_data_model);
     // Create Model to Populate Train Schedule Table
     auto train_schedule_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
@@ -88,11 +75,6 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc)
 
     // Create Model to Populate Stations
     auto                      stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
-    std::vector<ctc::Station> stations       = ctc.GetStations();
-    for (const ctc::Station &station : stations)
-    {
-        stations_model->push_back(station.station_name.c_str());
-    }
     ctc_ui->set_stations(stations_model);
 }
 
@@ -103,7 +85,6 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     send_occupancy_handler(ctc_office, ctc_ui);
     maintenance_mode_handler(ctc_office, ctc_ui);
     fix_block_handler(ctc_office, ctc_ui);
-    reflect_operation_mode_handler(ctc_office, ctc_ui);
     choose_file_handler(ctc_office, ctc_ui);
     tick_source_handler(ctc_office, ctc_ui);
     // TODO repeat for each callback that needs to be handled in the backend
@@ -134,10 +115,6 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
     // On switching Maintenance mode OFF
     ctc_ui->on_fix_block([&ctc_ui] {
             fix_block_callback(ctc_ui);
-        });
-
-    ctc_ui->on_reflect_operation_mode([&ctc_ui] {
-            reflect_operation_mode_callback(ctc_ui);
         });
 
     ctc_ui->on_choose_file([&ctc_ui] {
@@ -242,13 +219,15 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
 static inline void send_occupancy_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
     std::string occupied_blocks = std::string(ctc_ui->get_block_occupancy());
+    bool occupied = ctc_ui->get_occupied();
     std::cout << "Occupied Blocks: " << occupied_blocks << std::endl;
     std::vector<types::BlockId>    blocks = TokenizeOccupancyInput(occupied_blocks, ',');
     std::vector<types::BlockState> block_states;
-    std::for_each(blocks.begin(), blocks.end(), [&block_states] (types::BlockId block_id) {
-            block_states.emplace_back(block_id, true, false);
+    std::for_each(blocks.begin(), blocks.end(), [&block_states, occupied] (types::BlockId block_id) {
+            block_states.emplace_back(block_id, occupied, false);
         });
     block_occupancy_channel.Send(block_states);
+
     // TODO update UI if necessary
 }
 
@@ -335,34 +314,6 @@ static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::C
     }
 }
 
-static inline void reflect_operation_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
-{
-    std::vector<types::BlockId> blocks = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
-    block_input_channel.Send(blocks);
-}
-
-static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
-{
-    if (block_input_channel.DataAvailable())
-    {
-        std::vector<types::BlockId> input_blocks = block_input_channel.Receive();
-        types::Block                block        = ctc_office.GetBlockById(input_blocks[0]);
-
-        std::cout << "Block Operation Mode: " << block.maintenance << std::endl;
-
-        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-        slint::invoke_from_event_loop([weak_ui_handle, block] () {
-                if (auto ui = weak_ui_handle.lock())
-                {
-                    if (ui.has_value())
-                    {
-                        ui.value()->set_block_maintenance_mode(block.maintenance);
-                    }
-                }
-            });
-    }
-}
-
 /*----------------------------------- Choose File -----------------------------------*/
 static inline void choose_file_callback()
 {
@@ -377,6 +328,7 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
         std::string               file_name;
         std::vector<types::Block> blocks;
         types::Error              error = ctc_office.ChooseFileAndSetTrackLayout(file_name);
+        std::vector<ctc::Station> stations       = ctc_office.GetStations();
         if (error == types::Error::ERROR_NONE)
         {
             blocks = ctc_office.GetBlocks();
@@ -384,7 +336,7 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
         }
 
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-        slint::invoke_from_event_loop([weak_ui_handle, blocks, file_name, choose_file, error] () {
+        slint::invoke_from_event_loop([weak_ui_handle, blocks, file_name, choose_file, stations, error] () {
                 if (auto ui = weak_ui_handle.lock())
                 {
                     if (ui.has_value())
@@ -406,6 +358,13 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
                             ui.value()->set_block_data(block_data_model);
                             ui.value()->set_selected_fileName(file_name.c_str());
                             ui.value()->set_file_chosen(choose_file);
+
+                            auto stations_model = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ui.value()->get_stations());
+                            for (const ctc::Station &station : stations)
+                            {
+                                stations_model->push_back(station.station_name.c_str());
+                            }
+                            ui.value()->set_stations(stations_model);
                         }
                     }
                 }
@@ -472,7 +431,7 @@ static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<
                         }
                         else
                         {
-                            block_entry->set_row_data(4, slint::StandardListViewItem("Occupied"));
+                            block_entry->set_row_data(4, slint::StandardListViewItem(block_state.occupied ? "Occupied" : "_"));
                         }
                     });
                 }
