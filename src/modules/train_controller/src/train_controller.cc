@@ -24,7 +24,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
     commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
     train_max_speed_                = TRAIN_SPEED_LIMIT;
-    set_route_position_             = 0;
+    set_route_position_             = -1;
 
 
     distance_of_authority_in_meters_     = 0;
@@ -47,12 +47,12 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     actual_internal_temperature_         = 0;
     distance_travelled_                  = 0;
     distance_prior_to_current_authority_ = 0;
-    total_blocks_accessed_length_        = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+    total_blocks_accessed_length_        = 0; //(green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
     arrived_                             = 0;
     operation_mode_                      = false;
     last_tick_updated_                   = (*clock_).GetTick();
 
-    polarity_          = types::Polarity::POLARITY_POSITIVE;
+    polarity_          = types::Polarity::POLARITY_NEGATIVE;
     last_polarity_     = polarity_;
     usable_authority_  = authority_;
     authority_counter_ = authority_;
@@ -303,9 +303,10 @@ void SoftwareTrainController::Update()
 
     last_tick_updated_ = (*clock_).GetTick();
 
+    UpdateDistanceTravelled(delta_time);
     UpdateTrainPosition();
     CalculateDistanceToStopping();
-    UpdateDistanceTravelled(delta_time);
+    
     CalculateCommandedPower(delta_time);
     UpdateLightsAndDoors();
 
@@ -514,6 +515,10 @@ void SoftwareTrainController::UpdateTrainPosition(void)
 {
     if (last_polarity_ != polarity_)
     {
+        // if(authority_ == 0 && current_speed_ == 0)
+        // {        
+        //     usleep(100);
+        // }
         set_route_position_++;
         authority_counter_--;
         double block_length = (green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
@@ -572,6 +577,11 @@ types::Meters SoftwareTrainController::GetDistanceOfAuthorityInMeters()
 
 bool SoftwareTrainController::IsAtStation() const
 {
+    // if(authority_ == 0 && current_speed_ == 0)
+    // {        
+    //     usleep(100);
+    // }
+
     int current_block = green_default_route_vector_[set_route_position_];
     auto it = green_infrastructure_data_map_.find(current_block);
     if (it != green_infrastructure_data_map_.end())
@@ -607,6 +617,7 @@ bool SoftwareTrainController::IsUnderground() const
 // New Getter: Get station side
 std::string SoftwareTrainController::GetStationSide() const
 {
+
     int current_block = green_default_route_vector_[set_route_position_];
     auto it = green_infrastructure_data_map_.find(current_block);
     if (it != green_infrastructure_data_map_.end())

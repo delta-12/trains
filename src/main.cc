@@ -178,6 +178,7 @@ int main(void)
 
             if(authority == 0 && current_speed == 0)
             {
+                train_controllers[0].get()->Update();
                 break;
             }
         }
@@ -193,6 +194,10 @@ int main(void)
         train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate());
         train_controller_ui->set_commanded_power(train_controllers[0].get()->GetCommandedPower());
         train_controller_ui->set_service_brake(train_controllers[0].get()->GetServiceBrake() * 100);
+        train_controller_ui->set_int_lights(train_controllers[0].get()->GetInteriorLights());
+        train_controller_ui->set_ext_lights(train_controllers[0].get()->GetHeadLights());
+        train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
+        train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
     });
 
 
