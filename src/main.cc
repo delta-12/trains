@@ -60,7 +60,7 @@ int main(void)
     {
         std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
         tick_source.get()->Start();
-        tick_source.get()->SetMultiplier(1);
+        tick_source.get()->SetMultiplier(50);
         slint::Timer timer;
 
 

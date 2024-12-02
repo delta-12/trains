@@ -303,10 +303,10 @@ void SoftwareTrainController::Update()
 
     last_tick_updated_ = (*clock_).GetTick();
 
-    UpdateDistanceTravelled(delta_time);
+    
     UpdateTrainPosition();
     CalculateDistanceToStopping();
-    
+    UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
     UpdateLightsAndDoors();
 
@@ -363,7 +363,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
     CheckFailureStates();
 
-    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters_ - 236.196;
+    types::Meters distance_to_start_slowing_down = distance_of_authority_in_meters_ - 157.464;
 
     if (distance_to_start_slowing_down < 0)
     {

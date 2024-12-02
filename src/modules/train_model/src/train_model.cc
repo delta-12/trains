@@ -456,6 +456,7 @@ void SoftwareTrainModel::SetTrackPolarity(const types::Polarity polarity)
 void SoftwareTrainModel::SpeedCalc(types::Second delta)
 
 {
+    previous_velocity_ = velocity_;
 
     if (velocity_ == 0 && power_ != 0)        //avoids dividing by 0
 
@@ -512,7 +513,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
 
 
 
-    previous_velocity_ = velocity_;
+    
 
     velocity_          = std::max((previous_velocity_ + ((delta.count() / 2) * (previous_acceleration_ + acceleration_))), 0.0);
 
