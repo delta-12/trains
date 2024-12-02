@@ -304,8 +304,9 @@ void SoftwareTrainController::Update()
     last_tick_updated_ = (*clock_).GetTick();
 
     
-    UpdateTrainPosition();
+    
     CalculateDistanceToStopping();
+    UpdateTrainPosition();
     UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
     UpdateLightsAndDoors();
