@@ -615,7 +615,6 @@ bool SoftwareTrainController::IsUnderground() const
     return false;
 }
 
-// New Getter: Get station side
 std::string SoftwareTrainController::GetStationSide() const
 {
 
@@ -631,34 +630,24 @@ std::string SoftwareTrainController::GetStationSide() const
 
 void SoftwareTrainController::UpdateLightsAndDoors()
 {
-    // Interior Lights
-    if (IsAtStation())
-    {
-        // Interior lights must be on at stations
-        interior_lights_ = true;
-    }
-    else
-    {
-        // In manual mode, driver can control the lights
-        // Do nothing here
-    }
-
-    // Exterior Lights
-    if (IsUnderground())
-    {
-        // Exterior lights must be on when underground
-        headlights_ = true;
-    }
-    else
-    {
-        // In manual mode, driver can control the lights
-        // Do nothing here
-    }
-
-    // Doors
+    // interior Lights
     if (IsAtStation() && current_speed_ == 0)
     {
-        // Automatically open doors on the correct side(s)
+        // on at stations
+        interior_lights_ = true;
+    }
+
+    // exterior Lights
+    if (IsUnderground())
+    {
+        // on when underground
+        headlights_ = true;
+    }
+
+    // doors
+    if (IsAtStation() && current_speed_ == 0)
+    {
+        // open doors on the correct side(s)
         std::string station_side = GetStationSide();
         if (station_side == "Left")
         {
@@ -677,19 +666,19 @@ void SoftwareTrainController::UpdateLightsAndDoors()
         }
         else
         {
-            // Default to both doors if side information is missing
+            // default to both doors if side information is missing
             left_door_ = true;
             right_door_ = true;
         }
     }
     else
     {
-        // Doors must be closed when not at a station or when moving
+        // doors must be closed when not at a station or when moving
         left_door_ = false;
         right_door_ = false;
     }
 
-    // Prevent driver from turning off exterior lights when underground
+    // prevent driver from turning off exterior lights when underground
     if (IsUnderground() && !headlights_)
     {
         headlights_ = true;
