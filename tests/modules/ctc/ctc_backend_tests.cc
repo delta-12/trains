@@ -151,8 +151,8 @@ TEST(CtcBackEndTest, SetBlockStates)
     ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
 
     ASSERT_EQ(ctc.GetBlockById(63).occupied, true);
-    ASSERT_EQ(ctc.GetBlockById(70).occupied, true);
-    ASSERT_EQ(ctc.GetFailureBlocks()[0], 70);
+    ASSERT_EQ(ctc.GetBlockById(70).occupied, false);
+    ASSERT_EQ(ctc.GetBlockById(70).failed, true);
 
     block_states.emplace_back(151, true, false);
     types::Error error = ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);

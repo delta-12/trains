@@ -1,10 +1,12 @@
 #include "file_explorer.h"
 
-FileExplorer::FileExplorer(void) {
+FileExplorer::FileExplorer(void)
+{
     OpenFileExplorer();
 }
 
-types::Error FileExplorer::OpenFileExplorer(void) {
+types::Error FileExplorer::OpenFileExplorer(void)
+{
 #ifdef WIN32
     types::Error error = types::Error::ERROR_NONE;
     OPENFILENAME ofn;                 // Common dialog box structure
@@ -33,8 +35,6 @@ types::Error FileExplorer::OpenFileExplorer(void) {
         error = types::Error::ERROR_INVALID_FORMAT;
     }
     return error;
-#else
-    std::cout << "Operation not supported" << std::endl;
 #endif
 }
 
@@ -52,10 +52,12 @@ void FileExplorer::ExtractFileName(const std::string& full_path)
     }
 }
 
-std::filesystem::path FileExplorer::GetPath(void) const {
+std::filesystem::path FileExplorer::GetPath(void) const
+{
     return path_;
 }
 
-std::string FileExplorer::GetFileName(void) const {
+std::string FileExplorer::GetFileName(void) const
+{
     return file_name_;
 }

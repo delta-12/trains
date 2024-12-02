@@ -21,6 +21,18 @@
         <fileName>*/src/common/src/convert.cc</fileName>
     </suppress>
 
+    <!-- Suppress useStlAlgorithm suggestion ctc callback handler -->
+    <suppress>
+        <id>useStlAlgorithm</id>
+        <fileName>*/src/modules/ctc/src/ctc_callback_handler.cc</fileName>
+    </suppress>
+
+    <!-- Suppress unused ctc callback handler functions -->
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>*/src/modules/ctc/src/ctc_callback_handler.cc</fileName>
+    </suppress>
+
     <!-- Suppress unused lexer functions -->
     <suppress>
         <id>unusedFunction</id>

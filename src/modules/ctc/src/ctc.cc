@@ -8,7 +8,8 @@ namespace ctc
 
 Ctc::Ctc(void) = default;
 
-Ctc::Ctc(std::shared_ptr<TickSource> clk) {
+Ctc::Ctc(std::shared_ptr<TickSource> clk)
+{
     clock_ = clk;
 }
 
@@ -47,15 +48,18 @@ void Ctc::SetTrackLayout(std::filesystem::path path)
     SetDefaultRoute();
 }
 
-types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name) {
-    types::Error error = types::Error::ERROR_NONE;
-    FileExplorer file_explorer;
+types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name)
+{
+    types::Error          error = types::Error::ERROR_NONE;
+    FileExplorer          file_explorer;
     std::filesystem::path path = file_explorer.GetPath();
     file_name = file_explorer.GetFileName();
-    if (path.empty() | file_name.empty()) {
+    if (path.empty() | file_name.empty())
+    {
         error = types::Error::ERROR_INVALID_FORMAT;
     }
-    else {
+    else
+    {
         SetTrackLayout(path);
     }
     return error;
@@ -172,7 +176,8 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
                 {
                     block_it->failed = block_state.track_failure;
                 }
-                else {
+                else
+                {
                     block_it->occupied = block_state.occupied;
                 }
             }
@@ -275,7 +280,8 @@ void Ctc::SetManualMode(void)
     ctc_mode_ = CtcOperationMode::MANUAL_MODE;
 }
 
-void Ctc::SetBlockToMaintenance(types::BlockId block_id) {
+void Ctc::SetBlockToMaintenance(types::BlockId block_id)
+{
     std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
             return block.block == block_id;
         });
@@ -286,7 +292,8 @@ void Ctc::SetBlockToMaintenance(types::BlockId block_id) {
     }
 }
 
-void Ctc::SetBlockToOpen(types::BlockId block_id) {
+void Ctc::SetBlockToOpen(types::BlockId block_id)
+{
     std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
             return block.block == block_id;
         });
@@ -294,7 +301,7 @@ void Ctc::SetBlockToOpen(types::BlockId block_id) {
     if (block_it != blocks_.end())
     {
         block_it->maintenance = false;
-        block_it->failed = false;
+        block_it->failed      = false;
     }
 }
 
@@ -402,7 +409,8 @@ std::vector<ctc::Train> Ctc::GetTrains(void) const
     return train_schedules_;
 }
 
-std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const {
+std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const
+{
     return updated_blocks_;
 }
 
@@ -471,11 +479,13 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
     }
 }
 
-std::string Ctc::GetTimeString(void) const {
+std::string Ctc::GetTimeString(void) const
+{
     return clock_->GetTimeString();
 }
 
-void Ctc::ClearUpdatedBlocks(void) {
+void Ctc::ClearUpdatedBlocks(void)
+{
     updated_blocks_.clear();
 }
 

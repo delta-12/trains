@@ -41,6 +41,22 @@ typedef enum
     MAINTENANCE_MODE
 } CtcOperationMode;
 
+struct Line
+{
+    Line(void) : track(types::TrackId::TRACKID_NONE)
+    {
+    };
+    types::TrackId track;
+    std::vector<types::Block> blocks;
+    std::vector<ctc::Station> stations;
+    std::vector<ctc::Train> train_schedules;
+    std::filesystem::path schedule_file_path;
+    Graph<types::BlockId, types::Meters> graph;
+    std::vector<types::BlockId> default_route;
+    std::vector<types::BlockId> failure_blocks;
+    std::vector<types::BlockId> updated_blocks;
+};
+
 struct Station
 {
     Station(void) : station_name(""), block_id(0)

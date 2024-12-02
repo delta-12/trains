@@ -19,7 +19,7 @@ static Channel<std::string> suggested_speed_channel;
 
 // Occupancy Related Channels
 static Channel<std::vector<types::BlockState>> block_occupancy_channel;
-Channel<std::vector<types::BlockState>> wc_ctc_block_occupancy_channel;
+Channel<std::vector<types::BlockState>>        wc_ctc_block_occupancy_channel;
 
 // Maintenance Mode Channels
 static Channel<std::vector<types::BlockId>> block_maintenance_channel;
@@ -62,7 +62,7 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc)
 {
     register_callbacks(ctc_ui);
 
-    auto                      block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
+    auto block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
     // std::vector<types::Block> blocks           = ctc.GetBlocks();
     // blocks.erase(blocks.begin());
     // for (const types::Block &block : blocks)
@@ -113,36 +113,36 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
     // On clicking Dispatch
     ctc_ui->on_manual_dispatch([&ctc_ui] {
-        manual_dispatch_callback(ctc_ui);
-    });
+            manual_dispatch_callback(ctc_ui);
+        });
 
     // On clicking Send Block Occupancy
     ctc_ui->on_send_occupancy([&ctc_ui] {
-        send_occupancy_callback(ctc_ui);
-    });
+            send_occupancy_callback(ctc_ui);
+        });
 
     // On clicking Send Failure Occupancy
     ctc_ui->on_send_failure_signal([&ctc_ui] {
-        send_failure_callback(ctc_ui);
-    });
+            send_failure_callback(ctc_ui);
+        });
 
     // On switching Maintenance mode ON
     ctc_ui->on_set_maintenance_mode([&ctc_ui] {
-        set_maintenance_mode_callback(ctc_ui);
-    });
+            set_maintenance_mode_callback(ctc_ui);
+        });
 
     // On switching Maintenance mode OFF
     ctc_ui->on_fix_block([&ctc_ui] {
-        fix_block_callback(ctc_ui);
-    });
+            fix_block_callback(ctc_ui);
+        });
 
     ctc_ui->on_reflect_operation_mode([&ctc_ui] {
-        reflect_operation_mode_callback(ctc_ui);
-    });
+            reflect_operation_mode_callback(ctc_ui);
+        });
 
     ctc_ui->on_choose_file([&ctc_ui] {
-        choose_file_callback();
-    });
+            choose_file_callback();
+        });
 
     // TODO repeat for each event listener
 }
@@ -243,11 +243,11 @@ static inline void send_occupancy_callback(slint::ComponentHandle<ui::CtcUi> &ct
 {
     std::string occupied_blocks = std::string(ctc_ui->get_block_occupancy());
     std::cout << "Occupied Blocks: " << occupied_blocks << std::endl;
-    std::vector<types::BlockId> blocks = TokenizeOccupancyInput(occupied_blocks, ',');
+    std::vector<types::BlockId>    blocks = TokenizeOccupancyInput(occupied_blocks, ',');
     std::vector<types::BlockState> block_states;
     std::for_each(blocks.begin(), blocks.end(), [&block_states] (types::BlockId block_id) {
-        block_states.emplace_back(block_id, true, false);
-    });
+            block_states.emplace_back(block_id, true, false);
+        });
     block_occupancy_channel.Send(block_states);
     // TODO update UI if necessary
 }
@@ -256,28 +256,30 @@ static inline void send_failure_callback(slint::ComponentHandle<ui::CtcUi> &ctc_
 {
     std::string occupied_blocks = std::string(ctc_ui->get_block_occupancy());
     std::cout << "Occupied Blocks: " << occupied_blocks << std::endl;
-    std::vector<types::BlockId> blocks = TokenizeOccupancyInput(occupied_blocks, ',');
+    std::vector<types::BlockId>    blocks = TokenizeOccupancyInput(occupied_blocks, ',');
     std::vector<types::BlockState> block_states;
     std::for_each(blocks.begin(), blocks.end(), [&block_states] (types::BlockId block_id) {
-        block_states.emplace_back(block_id, true, true);
-    });
+            block_states.emplace_back(block_id, true, true);
+        });
     block_occupancy_channel.Send(block_states);
     // TODO update UI if necessary
 }
 
-static void send_occupancy_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static void send_occupancy_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     if (block_occupancy_channel.DataAvailable())
     {
         std::vector<types::BlockState> block_states = block_occupancy_channel.Receive();
         ctc_office.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
     }
-    else if (!ctc_office.GetUpdatedBlocks().empty()) {
-        std::vector<types::BlockId> updated_blocks = ctc_office.GetUpdatedBlocks();
+    else if (!ctc_office.GetUpdatedBlocks().empty())
+    {
+        std::vector<types::BlockId>    updated_blocks = ctc_office.GetUpdatedBlocks();
         std::vector<types::BlockState> block_states;
         std::for_each(updated_blocks.begin(), updated_blocks.end(), [&block_states, ctc_office] (types::BlockId block_id) {
-            types::Block block = ctc_office.GetBlockById(block_id);
-            block_states.emplace_back(block.block, block.occupied, block.failed);
-        });
+                types::Block block = ctc_office.GetBlockById(block_id);
+                block_states.emplace_back(block.block, block.occupied, block.failed);
+            });
         ctc_office.ClearUpdatedBlocks();
         UpdateBlockOccupancyUI(ctc_office, ctc_ui, block_states);
     }
@@ -285,211 +287,228 @@ static void send_occupancy_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<
 
 /*----------------------------------- Maintenance Mode and Block Fix -----------------------------------*/
 // Set Block To Maintenance Mode
-static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     std::vector<types::BlockId> blocks = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
     block_maintenance_channel.Send(blocks);
     std::for_each(blocks.begin(), blocks.end(), [] (types::BlockId block_id) {
-        std::cout << "Input Block: " << block_id << std::endl;
-    });
+            std::cout << "Input Block: " << block_id << std::endl;
+        });
 }
 
-static void maintenance_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static void maintenance_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     if (block_maintenance_channel.DataAvailable())
     {
         std::vector<types::BlockId> input_blocks = block_maintenance_channel.Receive();
-        std::vector<types::Block> maintenance_block;
+        std::vector<types::Block>   maintenance_block;
         std::for_each(input_blocks.begin(), input_blocks.end(), [&ctc_office, &maintenance_block] (types::BlockId block_id) {
-            ctc_office.SetBlockToMaintenance(block_id);
-            maintenance_block.push_back(ctc_office.GetBlockById(block_id));
-        });
-        
+                ctc_office.SetBlockToMaintenance(block_id);
+                maintenance_block.push_back(ctc_office.GetBlockById(block_id));
+            });
+
         UpdateBlockMaintenanceUI(ctc_ui, maintenance_block);
     }
 }
 
-static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     std::vector<types::BlockId> blocks = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
     block_fix_channel.Send(blocks);
     std::for_each(blocks.begin(), blocks.end(), [] (types::BlockId block_id) {
-        std::cout << "Input Block: " << block_id << std::endl;
-    });
+            std::cout << "Input Block: " << block_id << std::endl;
+        });
 }
 
-static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     if (block_fix_channel.DataAvailable())
     {
         std::vector<types::BlockId> input_blocks = block_fix_channel.Receive();
-        std::vector<types::Block> fix_blocks;
+        std::vector<types::Block>   fix_blocks;
         std::for_each(input_blocks.begin(), input_blocks.end(), [&ctc_office, &fix_blocks] (types::BlockId block_id) {
-            ctc_office.SetBlockToOpen(block_id);
-            fix_blocks.push_back(ctc_office.GetBlockById(block_id));
-        });
-        
+                ctc_office.SetBlockToOpen(block_id);
+                fix_blocks.push_back(ctc_office.GetBlockById(block_id));
+            });
+
         UpdateBlockMaintenanceUI(ctc_ui, fix_blocks);
     }
 }
 
-static inline void reflect_operation_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static inline void reflect_operation_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     std::vector<types::BlockId> blocks = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
     block_input_channel.Send(blocks);
 }
 
-static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     if (block_input_channel.DataAvailable())
     {
         std::vector<types::BlockId> input_blocks = block_input_channel.Receive();
-        types::Block block = ctc_office.GetBlockById(input_blocks[0]);
+        types::Block                block        = ctc_office.GetBlockById(input_blocks[0]);
 
         std::cout << "Block Operation Mode: " << block.maintenance << std::endl;
-        
+
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
         slint::invoke_from_event_loop([weak_ui_handle, block] () {
-            if (auto ui = weak_ui_handle.lock())
-            {
-                if (ui.has_value())
+                if (auto ui = weak_ui_handle.lock())
                 {
-                    ui.value()->set_block_maintenance_mode(block.maintenance);
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_block_maintenance_mode(block.maintenance);
+                    }
                 }
-            }
-        });
+            });
     }
 }
 
 /*----------------------------------- Choose File -----------------------------------*/
-static inline void choose_file_callback() {
+static inline void choose_file_callback()
+{
     choose_file_channel.Send(true);
 }
 
-static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
-    if (choose_file_channel.DataAvailable()) {
-        bool choose_file = choose_file_channel.Receive();
-        std::string file_name;
+static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    if (choose_file_channel.DataAvailable())
+    {
+        bool                      choose_file = choose_file_channel.Receive();
+        std::string               file_name;
         std::vector<types::Block> blocks;
-        types::Error error = ctc_office.ChooseFileAndSetTrackLayout(file_name);
-        if (error == types::Error::ERROR_NONE) {
+        types::Error              error = ctc_office.ChooseFileAndSetTrackLayout(file_name);
+        if (error == types::Error::ERROR_NONE)
+        {
             blocks = ctc_office.GetBlocks();
             blocks.erase(blocks.begin());
         }
 
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
         slint::invoke_from_event_loop([weak_ui_handle, blocks, file_name, choose_file, error] () {
-            if (auto ui = weak_ui_handle.lock())
-            {
-                if (ui.has_value())
+                if (auto ui = weak_ui_handle.lock())
                 {
-                    if (error == types::Error::ERROR_NONE) {
-                        auto block_data_model = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
-                        for (const types::Block &block : blocks)
+                    if (ui.has_value())
+                    {
+                        if (error == types::Error::ERROR_NONE)
                         {
-                            auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
-                            block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
-                            block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
-                            block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
-                            block_entry->push_back(slint::StandardListViewItem("_"));
-                            block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
-                            block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
-                            block_data_model->push_back(block_entry);
+                            auto block_data_model = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                            for (const types::Block &block : blocks)
+                            {
+                                auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+                                block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
+                                block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
+                                block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
+                                block_entry->push_back(slint::StandardListViewItem("_"));
+                                block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
+                                block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
+                                block_data_model->push_back(block_entry);
+                            }
+                            ui.value()->set_block_data(block_data_model);
+                            ui.value()->set_selected_fileName(file_name.c_str());
+                            ui.value()->set_file_chosen(choose_file);
                         }
-                        ui.value()->set_block_data(block_data_model);
-                        ui.value()->set_selected_fileName(file_name.c_str());
-                        ui.value()->set_file_chosen(choose_file);
                     }
                 }
-            }
-        });
+            });
     }
 }
 
 /*----------------------------------- Tick Source -----------------------------------*/
 
-static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
     std::string current_time = ctc_office.GetTimeString();
     std::cout << "Time: " << current_time << std::endl;
     slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
     slint::invoke_from_event_loop([weak_ui_handle, current_time] () {
-        if (auto ui = weak_ui_handle.lock())
-        {
-            if (ui.has_value())
+            if (auto ui = weak_ui_handle.lock())
             {
-                ui.value()->set_time(current_time.c_str());
+                if (ui.has_value())
+                {
+                    ui.value()->set_time(current_time.c_str());
+                }
             }
-        }
-    });
+        });
 }
 
 /*----------------------------------- Helper Methods -----------------------------------*/
 
-static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states) {
+static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states)
+{
     std::vector<ctc::Train> trains = ctc_office.GetTrains();
 
     // Update UI
     slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
     slint::invoke_from_event_loop([weak_ui_handle, trains, block_states] () {
-        if (auto ui = weak_ui_handle.lock())
-        {
-            if (ui.has_value())
+            if (auto ui = weak_ui_handle.lock())
             {
-                // Update Train Schedule
-                auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
-                std::for_each(trains.begin(), trains.end(), [&train_schedules_ui] (ctc::Train train) {
-                    auto train_entry        = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
-                    train_entry->set_row_data(1, slint::StandardListViewItem(std::to_string(train.current_position).c_str()));
-                    train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
-                    train_entry->set_row_data(3, slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
-                    types::BlockId destination = train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination;
-                    if (destination == 0)
-                    {
-                        train_entry->set_row_data(4, slint::StandardListViewItem("Yard"));
-                    }
-                    else
-                    {
-                        train_entry->set_row_data(4, slint::StandardListViewItem(std::to_string(destination).c_str()));
-                    }
-                });
+                if (ui.has_value())
+                {
+                    // Update Train Schedule
+                    auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
+                    std::for_each(trains.begin(), trains.end(), [&train_schedules_ui] (ctc::Train train) {
+                        auto train_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
+                        train_entry->set_row_data(1, slint::StandardListViewItem(std::to_string(train.current_position).c_str()));
+                        train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
+                        train_entry->set_row_data(3, slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
+                        types::BlockId destination = train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination;
+                        if (destination == 0)
+                        {
+                            train_entry->set_row_data(4, slint::StandardListViewItem("Yard"));
+                        }
+                        else
+                        {
+                            train_entry->set_row_data(4, slint::StandardListViewItem(std::to_string(destination).c_str()));
+                        }
+                    });
 
-                // Update Block Table
-                auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
-                std::for_each(block_states.begin(), block_states.end(), [&block_table_ui] (types::BlockState block_state) {
-                    auto block_entry      = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block_state.block-1).value());
-                    if (block_state.track_failure == true) {
-                        block_entry->set_row_data(5, slint::StandardListViewItem("Failure"));
-                    } 
-                    else 
-                    {
-                        block_entry->set_row_data(4, slint::StandardListViewItem("Occupied"));
-                    }
-                });
+                    // Update Block Table
+                    auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                    std::for_each(block_states.begin(), block_states.end(), [&block_table_ui] (types::BlockState block_state) {
+                        auto block_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block_state.block - 1).value());
+                        if (block_state.track_failure == true)
+                        {
+                            block_entry->set_row_data(5, slint::StandardListViewItem("Failure"));
+                        }
+                        else
+                        {
+                            block_entry->set_row_data(4, slint::StandardListViewItem("Occupied"));
+                        }
+                    });
+                }
             }
-        }
-    });
+        });
 }
 
-static void UpdateBlockMaintenanceUI(slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::Block> &blocks) {
+static void UpdateBlockMaintenanceUI(slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::Block> &blocks)
+{
     slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
     slint::invoke_from_event_loop([weak_ui_handle, blocks] () {
-        if (auto ui = weak_ui_handle.lock())
-        {
-            if (ui.has_value())
+            if (auto ui = weak_ui_handle.lock())
             {
-                auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
-                std::for_each(blocks.begin(), blocks.end(), [&block_table_ui] (types::Block block) {
-                    auto block_entry      = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block.block-1).value());
-                    block_entry->set_row_data(2, slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
-                    block_entry->set_row_data(5, slint::StandardListViewItem(block.failed ? "Failure" : "_"));
-                });
+                if (ui.has_value())
+                {
+                    auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                    std::for_each(blocks.begin(), blocks.end(), [&block_table_ui] (types::Block block) {
+                        auto block_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block.block - 1).value());
+                        block_entry->set_row_data(2, slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
+                        block_entry->set_row_data(5, slint::StandardListViewItem(block.failed ? "Failure" : "_"));
+                    });
+                }
             }
-        }
-    });
+        });
 }
 
 
-std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter) {
+std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter)
+{
     std::vector<types::BlockId> occupied_blocks;
-    std::stringstream ss(input);
-    std::string token;
+    std::stringstream           ss(input);
+    std::string                 token;
 
     // Split the string using the delimiter
-    while (std::getline(ss, token, delimiter)) {
+    while (std::getline(ss, token, delimiter))
+    {
         // Remove whitespace and convert to integer
         occupied_blocks.push_back(std::stoi(token));
     }
