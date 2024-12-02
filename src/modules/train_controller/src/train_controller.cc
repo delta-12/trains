@@ -310,6 +310,7 @@ void SoftwareTrainController::Update()
     UpdateDistanceTravelled(delta_time);
     CalculateCommandedPower(delta_time);
     UpdateLightsAndDoors();
+    GetCurrentStationName();
 
     delta_time_ = delta_time;
 }
@@ -683,6 +684,28 @@ void SoftwareTrainController::UpdateLightsAndDoors()
     {
         headlights_ = true;
     }
+}
+
+std::string SoftwareTrainController::GetCurrentStationName() const
+{
+    if (IsAtStation() && current_speed_ == 0)
+    {
+        int current_block = green_default_route_vector_[set_route_position_];
+        auto it = green_infrastructure_data_map_.find(current_block);
+        if (it != green_infrastructure_data_map_.end())
+        {
+            std::string infrastructure = it->second[0]; // infrastructure string
+            // assuming infrastructure string is of the format "STATION; <station_name>"
+            size_t pos = infrastructure.find("STATION; ");
+            if (pos != std::string::npos)
+            {
+                std::string station_name = infrastructure.substr(pos + 9); // 8 is the length of "STATION; "
+                return station_name;
+            }
+        }
+    }
+    // Not at a station or train is moving
+    return "";
 }
 
 }

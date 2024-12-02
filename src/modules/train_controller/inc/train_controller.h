@@ -80,6 +80,7 @@ class TrainController
         virtual bool CanOpenDoors() const                                                        = 0;
         virtual bool IsUnderground() const                                                       = 0;
         virtual std::string GetStationSide() const                                               = 0;
+        virtual std::string GetCurrentStationName() const                                        = 0;
 };
 
 
@@ -151,6 +152,7 @@ class SoftwareTrainController : public TrainController
         bool IsUnderground() const;
         std::string GetStationSide() const;
         void UpdateLightsAndDoors();
+        std::string GetCurrentStationName() const;
 
         /*
          *

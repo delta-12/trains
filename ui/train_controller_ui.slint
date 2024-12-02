@@ -4,6 +4,7 @@ export component TrainControllerUi inherits Window {
 
     in-out property <string> operation-mode-status: "Automatic";
     in-out property <string> operation-status-message: "";
+    in-out property <string> station_name: "";
     in-out property <float> commanded_power: 0.0;
     in-out property <float> commanded_internal_temperature;
     in-out property <float> authority: 0;
@@ -11,8 +12,8 @@ export component TrainControllerUi inherits Window {
     in-out property <float> commanded_speed: 0.0;
     in-out property <float> driver_speed: 0.0;
     in-out property <float> actual_internal_temperature: 70;
-    in-out property <float> kp: 500;
-    in-out property <float> ki: 75;
+    in-out property <float> kp: 5000;
+    in-out property <float> ki: 100;
     in-out property <float> grade_percent: 0.0;
     in-out property <float> distance_traveled: 0.0;
     in-out property <float> distance_traveled_since_last_update: 0.0;
@@ -909,7 +910,7 @@ export component TrainControllerUi inherits Window {
                                 }
                             }
                             // distance traveled since last update
-                            HorizontalBox {
+                            /*HorizontalBox {
                                 Text {
                                     text: "Distance\nTraveled Since\nLast Update:";
                                     vertical-alignment: center;
@@ -928,6 +929,22 @@ export component TrainControllerUi inherits Window {
                                     vertical-alignment: center;
                                     font-size: 18px;
                                     preferred-width: 250px;
+                                }
+                            }*/
+                            // station announcement
+                            HorizontalBox {
+                                Text {
+                                    text: "Station\nName:";
+                                    vertical-alignment: center;
+                                    font-size: 18px;
+                                    preferred-width: 250px;
+                                }
+                                Text {
+                                    text: root.station_name;
+                                    font-size: 18px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    preferred-width: 18px;
                                 }
                             }
                             // emergency brake

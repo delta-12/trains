@@ -1,4 +1,5 @@
 #include <memory>
+#include <slint_string.h>
 #include <thread>
 #include <iostream>
 #include <map>
@@ -198,6 +199,7 @@ int main(void)
         train_controller_ui->set_ext_lights(train_controllers[0].get()->GetHeadLights());
         train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
+        train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
     });
 
 
@@ -306,6 +308,7 @@ int main(void)
         train_controller_ui->set_ext_lights(train_controllers[0].get()->GetHeadLights());
         train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
+        train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
     });
 
     // Update - End
