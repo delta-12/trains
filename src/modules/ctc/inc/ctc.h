@@ -8,10 +8,12 @@
 
 #include <queue>
 
+#include "types.h"
 #include "block_builder.h"
 #include "csv_parser.h"
 #include "graph.h"
-#include "types.h"
+#include "file_explorer.h"
+#include "tick_source.h"
 
 #define CTC_YARD_BLOCK_0              0
 #define CTC_SECTION_D_BLOCK_13        13
@@ -99,6 +101,7 @@ class Ctc
     public:
         /* Constructor */
         Ctc(void);
+        Ctc(std::shared_ptr<TickSource> clk);
         explicit Ctc(const types::TrackId track_id);
 
         /* Integration */
@@ -109,9 +112,11 @@ class Ctc
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
         void ManualDispatch(types::TrainId train_id, types::BlockId destination);                             // Manual Dispatch to Block (not station)
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
+        types::Error ChooseFileAndSetTrackLayout(std::string &file_name);
 
         /* Setters */
         void SetTrackLayout(void);
+        void SetTrackLayout(std::filesystem::path path);
         void SetScheduleFilePath(std::filesystem::path path);
         void SetManualMode(void);
         void SetBlockToMaintenance(types::BlockId block_id);
@@ -126,6 +131,7 @@ class Ctc
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
         std::vector<types::BlockId> GetUpdatedBlocks(void) const;
+        std::string GetTimeString(void) const;
         void ClearUpdatedBlocks(void);
 
         // Train Specific
@@ -146,6 +152,7 @@ class Ctc
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
 
+        std::shared_ptr<TickSource> clock_;
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
         std::vector<ctc::Train> train_schedules_;

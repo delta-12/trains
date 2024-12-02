@@ -12,6 +12,7 @@ component TransitSystem inherits Rectangle {
     in-out property <string> time;
     in-out property <bool> switch_enabled;
     in-out property <bool> has_input;
+    in-out property <bool> green_line: true;
 
     callback reflect_operation_mode();
     callback set_maintenance_mode();
@@ -78,7 +79,7 @@ component TransitSystem inherits Rectangle {
         ManageBlock := HorizontalLayout {
             alignment: start;
             padding: 15px;
-            spacing: 10px;
+            spacing: 20px;
             LineEdit {
                 width: 120px;
                 height: 30px;
@@ -94,6 +95,7 @@ component TransitSystem inherits Rectangle {
                 }
             }
             HorizontalLayout {
+                spacing: 5px;
                 Switch {
                     enabled: has_input;
                     checked: block_maintenance_mode;
@@ -111,11 +113,21 @@ component TransitSystem inherits Rectangle {
                 Text {text:"  Maintenance Mode"; y: 7px;}
             }
             HorizontalLayout {
+                spacing: 5px;
                 Switch {
                     enabled: switch_enabled;
                     toggled => {switch = !switch}
                 }
                 Text {text:" Switch"; y: 7px;}
+            }
+            HorizontalLayout {
+                spacing: 5px;
+                padding-left: 200px;
+                Button {
+                    width: 100px;
+                    text: green_line ? " Green Line" : "Red Line";  
+                    clicked => {green_line = !green_line}
+                }
             }
         }
     }
@@ -391,6 +403,7 @@ export component CtcUi inherits Window {
     in-out property <string> block_id;
 
     //Dispatch 
+    in-out property <bool> file_chosen;
     in-out property <[string]> stations;
     in-out property <string> train_id;
     in-out property <[string]> trains;

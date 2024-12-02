@@ -31,6 +31,9 @@ int main(void)
     #endif
     // Prevent worker_thread keep running after application window is closed
     std::atomic<bool> keep_running(true);
+    TickSource tick_source("08:00:00");
+    tick_source.Start();
+    std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
 
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
@@ -62,7 +65,7 @@ int main(void)
     });
 
     // Setting Up CTC
-    ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
+    ctc::Ctc ctc_office(clock);
     ctc::setup_ui(ctc_ui, ctc_office);  
 
     std::thread worker_thread([&]

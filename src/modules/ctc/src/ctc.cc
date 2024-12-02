@@ -1,11 +1,3 @@
-/*****************************************************************************
-* @file ctc.h
-*
-* @brief Implements the CTC backend.
-*****************************************************************************/
-#ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_CC
-#define TRAINS_SRC_MODULES_CTC_INC_CTC_CC
-
 #include "ctc.h"
 
 #include <sstream>
@@ -15,6 +7,10 @@ namespace ctc
 {
 
 Ctc::Ctc(void) = default;
+
+Ctc::Ctc(std::shared_ptr<TickSource> clk) {
+    clock_ = clk;
+}
 
 Ctc::Ctc(const types::TrackId track_id)
 {
@@ -39,6 +35,30 @@ void Ctc::SetTrackLayout(void)
     SetBlocks(blocks);
     SetStations(blocks_);
     SetDefaultRoute();
+}
+
+void Ctc::SetTrackLayout(std::filesystem::path path)
+{
+    CsvParser                 parser(path);
+    BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    std::vector<types::Block> blocks = bb.GetBlocks();
+    SetBlocks(blocks);
+    SetStations(blocks_);
+    SetDefaultRoute();
+}
+
+types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name) {
+    types::Error error = types::Error::ERROR_NONE;
+    FileExplorer file_explorer;
+    std::filesystem::path path = file_explorer.GetPath();
+    file_name = file_explorer.GetFileName();
+    if (path.empty() | file_name.empty()) {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else {
+        SetTrackLayout(path);
+    }
+    return error;
 }
 
 void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id)
@@ -451,10 +471,12 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
     }
 }
 
+std::string Ctc::GetTimeString(void) const {
+    return clock_->GetTimeString();
+}
+
 void Ctc::ClearUpdatedBlocks(void) {
     updated_blocks_.clear();
 }
 
 } // namespace ctc
-
-#endif // TRAINS_SRC_MODULES_CTC_INC_CTC_CC

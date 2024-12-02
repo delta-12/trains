@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace ctc
 {
@@ -25,6 +26,9 @@ static Channel<std::vector<types::BlockId>> block_maintenance_channel;
 static Channel<std::vector<types::BlockId>> block_fix_channel;
 static Channel<std::vector<types::BlockId>> block_input_channel;
 
+// Choose File Channel
+static Channel<bool> choose_file_channel;
+
 // Helper
 static std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter);
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states);
@@ -42,6 +46,7 @@ static inline void send_failure_callback(slint::ComponentHandle<ui::CtcUi> &ctc_
 static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void reflect_operation_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static inline void choose_file_callback();
 
 // Backend Handlers
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
@@ -49,6 +54,8 @@ static void send_occupancy_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<
 static void maintenance_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc)
@@ -56,19 +63,19 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui, ctc::Ctc &ctc)
     register_callbacks(ctc_ui);
 
     auto                      block_data_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
-    std::vector<types::Block> blocks           = ctc.GetBlocks();
-    blocks.erase(blocks.begin());
-    for (const types::Block &block : blocks)
-    {
-        auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
-        block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
-        block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
-        block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
-        block_entry->push_back(slint::StandardListViewItem("_"));
-        block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
-        block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
-        block_data_model->push_back(block_entry);
-    }
+    // std::vector<types::Block> blocks           = ctc.GetBlocks();
+    // blocks.erase(blocks.begin());
+    // for (const types::Block &block : blocks)
+    // {
+    //     auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+    //     block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
+    //     block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
+    //     block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
+    //     block_entry->push_back(slint::StandardListViewItem("_"));
+    //     block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
+    //     block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
+    //     block_data_model->push_back(block_entry);
+    // }
     ctc_ui->set_block_data(block_data_model);
     // Create Model to Populate Train Schedule Table
     auto train_schedule_model = std::make_shared<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>();
@@ -97,6 +104,8 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     maintenance_mode_handler(ctc_office, ctc_ui);
     fix_block_handler(ctc_office, ctc_ui);
     reflect_operation_mode_handler(ctc_office, ctc_ui);
+    choose_file_handler(ctc_office, ctc_ui);
+    tick_source_handler(ctc_office, ctc_ui);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -129,6 +138,10 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 
     ctc_ui->on_reflect_operation_mode([&ctc_ui] {
         reflect_operation_mode_callback(ctc_ui);
+    });
+
+    ctc_ui->on_choose_file([&ctc_ui] {
+        choose_file_callback();
     });
 
     // TODO repeat for each event listener
@@ -340,6 +353,68 @@ static void reflect_operation_mode_handler(ctc::Ctc &ctc_office, slint::Componen
             }
         });
     }
+}
+
+/*----------------------------------- Choose File -----------------------------------*/
+static inline void choose_file_callback() {
+    choose_file_channel.Send(true);
+}
+
+static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+    if (choose_file_channel.DataAvailable()) {
+        bool choose_file = choose_file_channel.Receive();
+        std::string file_name;
+        std::vector<types::Block> blocks;
+        types::Error error = ctc_office.ChooseFileAndSetTrackLayout(file_name);
+        if (error == types::Error::ERROR_NONE) {
+            blocks = ctc_office.GetBlocks();
+            blocks.erase(blocks.begin());
+        }
+
+        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+        slint::invoke_from_event_loop([weak_ui_handle, blocks, file_name, choose_file, error] () {
+            if (auto ui = weak_ui_handle.lock())
+            {
+                if (ui.has_value())
+                {
+                    if (error == types::Error::ERROR_NONE) {
+                        auto block_data_model = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                        for (const types::Block &block : blocks)
+                        {
+                            auto block_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+                            block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
+                            block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
+                            block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
+                            block_entry->push_back(slint::StandardListViewItem("_"));
+                            block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
+                            block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
+                            block_data_model->push_back(block_entry);
+                        }
+                        ui.value()->set_block_data(block_data_model);
+                        ui.value()->set_selected_fileName(file_name.c_str());
+                        ui.value()->set_file_chosen(choose_file);
+                    }
+                }
+            }
+        });
+    }
+}
+
+/*----------------------------------- Tick Source -----------------------------------*/
+
+static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui) {
+    std::string current_time = ctc_office.GetTimeString();
+    std::cout << "Time: " << current_time << std::endl;
+    slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+    slint::invoke_from_event_loop([weak_ui_handle, current_time] () {
+        if (auto ui = weak_ui_handle.lock())
+        {
+            if (ui.has_value())
+            {
+                ui.value()->set_time(current_time.c_str());
+            }
+        }
+    });
 }
 
 /*----------------------------------- Helper Methods -----------------------------------*/
