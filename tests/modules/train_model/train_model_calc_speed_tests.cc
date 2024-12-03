@@ -21,6 +21,7 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
 
     types::Second elapsed_time0(0);
     types::Second elapsed_time1(1);
+    types::Second elapsed_time2(2);
 
     EXPECT_DOUBLE_EQ(0.0, TM.GetActualSpeed());
 
@@ -34,11 +35,13 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc1)
 
     TM.SpeedCalc(elapsed_time1);
 
-    ASSERT_EQ(.5, TM.GetActualSpeed());
+    ASSERT_EQ(.25, TM.GetActualSpeed());
+    ASSERT_EQ(.5, round(TM.GetAcceleration() * 10) / 10);
 
-    TM.SpeedCalc(elapsed_time1);
+    TM.SpeedCalc(elapsed_time2);
 
-    ASSERT_EQ(1, TM.GetActualSpeed());
+    ASSERT_EQ(1.25, TM.GetActualSpeed());
+    ASSERT_EQ(.5, round(TM.GetAcceleration() * 10) / 10);
 
 }
 TEST(TrainModelSpeedCalcTests, SpeedCalc2)
@@ -61,12 +64,12 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc2)
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(.5, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(.25, round(TM.GetActualSpeed() * 100) / 100);
 
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(1.0, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(.75, round(TM.GetActualSpeed() * 100) / 100);
 
     tick_source.Stop();
 }
@@ -84,7 +87,7 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc3)
     ASSERT_EQ(0, TM.GetActualSpeed());
 
     //Setting commanded power to 60kW
-    TM.SetCommandedPower(1000);
+    TM.SetCommandedPower(60000);
 
     //waiting 1 second
     usleep(100000);
@@ -108,12 +111,12 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc3)
     usleep(100000);
     TM.Update();
 
-    ASSERT_EQ(.2, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(.5, round(TM.GetActualSpeed() * 10) / 10);
 
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(.4, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(1, round(TM.GetActualSpeed() * 10) / 10);
 
     tick_source.Stop();
 }
@@ -133,18 +136,28 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc4)
     //Setting commanded power to 60kW
     TM.SetCommandedPower(60000);
 
+    TM.Update();
+    ASSERT_EQ(.5, round(TM.GetAcceleration() * 10) / 10);
+
     //waiting 5 seconds
     usleep(5000000);
+
+    //wait for 1 min
+    //usleep(60000000);
     TM.Update();
+
+    ASSERT_EQ(.5, round(TM.GetAcceleration() * 10) / 10);
+
+    //ASSERT_EQ("07:00:05", tick_source.GetTimeString());
 
     ASSERT_EQ(2.5, round(TM.GetActualSpeed() * 10) / 10);
 
-    TM.SetBrake(.5);
+    TM.SetBrake(1);
 
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(1.9, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(2.15, round(TM.GetActualSpeed() * 100) / 100);
 
     tick_source.Stop();
 }
@@ -164,6 +177,10 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc5)
     //Setting commanded power to 60kW
     TM.SetCommandedPower(60000);
 
+    TM.Update();
+
+    ASSERT_EQ(.5, round(TM.GetAcceleration() * 10) / 10);
+
     //waiting 5 secondd
     usleep(5000000);
     TM.Update();
@@ -175,7 +192,14 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc5)
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(2.2, round(TM.GetActualSpeed() * 10) / 10);
+    ASSERT_EQ(-.3, round(TM.GetAcceleration() * 10) / 10);
+
+    ASSERT_EQ(2.6, round(TM.GetActualSpeed() * 10) / 10);
+
+    usleep(1000000);
+    TM.Update();
+
+    ASSERT_EQ(2.3, round(TM.GetActualSpeed() * 10) / 10);
 
     tick_source.Stop();
 }
@@ -194,8 +218,9 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc6)
 
     //Setting commanded power to 60kW
     TM.SetCommandedPower(60000);
+    TM.Update();
 
-    //waiting 5 seconds
+    //waiting 10 seconds
     usleep(10000000);
     TM.Update();
 
@@ -206,7 +231,7 @@ TEST(TrainModelSpeedCalcTests, SpeedCalc6)
     usleep(1000000);
     TM.Update();
 
-    ASSERT_EQ(2.27, round(TM.GetActualSpeed() * 100) / 100);
+    ASSERT_EQ(3.9, round(TM.GetActualSpeed() * 10) / 10);
 
     TM.SetEmergencyBrake(false);
 

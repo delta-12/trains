@@ -261,6 +261,7 @@ void SoftwareTrainModel::SpeedCalc(types::Second delta)
 
     previous_velocity_ = velocity_;
     velocity_          = std::max((previous_velocity_ + ((delta.count() / 2) * (previous_acceleration_ + acceleration_))), 0.0);
+
 }
 double SoftwareTrainModel::GetBrake()
 {
