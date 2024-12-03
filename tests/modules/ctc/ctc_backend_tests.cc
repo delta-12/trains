@@ -50,6 +50,17 @@ TEST(CtcBackEndTest, SetManualMode)
     ASSERT_EQ(ctc.GetOperationMode(), ctc::MANUAL_MODE);
 }
 
+TEST(CtcBackEndTest, SetSwitchPosition)
+{
+    ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
+    ASSERT_EQ(ctc.GetBlockById(12).has_switch, true);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, false);
+    ctc.SetSwitchPosition(12, true);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, true);
+    ctc.SetSwitchPosition(12, false);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, false);
+}
+
 TEST(CtcBackEndTest, DispatchMultipleDestination)
 {
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);

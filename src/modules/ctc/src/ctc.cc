@@ -310,6 +310,24 @@ void Ctc::SetSimulationSpeedMultiplier(int multiplier)
     clock_->SetMultiplier(static_cast<uint8_t>(multiplier));
 }
 
+types::Error Ctc::SetSwitchPosition(const types::BlockId block_id, const bool switched)
+{
+    types::Error                        error    = types::Error::ERROR_NONE;
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        block_it->switched = switched;
+    }
+    else
+    {
+        error = types::Error::ERROR_INVALID_BLOCK;
+    }
+    return error;
+}
+
 /*------------------------------------- Getters -------------------------------------*/
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {

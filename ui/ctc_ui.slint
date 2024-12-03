@@ -15,7 +15,7 @@ component TransitSystem inherits Rectangle {
     in-out property <bool> green_line: true;
     in-out property <string> simulation_speed;
 
-    callback reflect_operation_mode();
+    callback set_switch_position();
     callback set_maintenance_mode();
     callback fix_block();
     callback set_simulation_speed();
@@ -121,7 +121,10 @@ component TransitSystem inherits Rectangle {
                 spacing: 5px;
                 Switch {
                     enabled: switch_enabled;
-                    toggled => {switch = !switch}
+                    toggled => {
+                        switch = !switch;
+                        set_switch_position();
+                    }
                 }
                 Text {text:" Switch"; y: 7px;}
             }
@@ -439,6 +442,7 @@ export component CtcUi inherits Window {
     callback set_maintenance_mode();
     callback fix_block();
     callback set_simulation_speed();
+    callback set_switch_position();
 
     callback send_occupancy();
     callback print-output-to-wayside();
@@ -473,7 +477,8 @@ export component CtcUi inherits Window {
                     time: time;
                     block_id <=> block_id;
                     block_maintenance_mode <=> block_maintenance_mode;
-                    reflect_operation_mode => {root.reflect_operation_mode()}
+                    switch <=> switch_state;
+                    set_switch_position => {root.set_switch_position()}
                     set_maintenance_mode => {root.set_maintenance_mode()}
                     fix_block => {root.fix_block()}
                     set_simulation_speed => {root.set_simulation_speed()}

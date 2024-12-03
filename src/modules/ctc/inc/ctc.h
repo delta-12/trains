@@ -138,6 +138,7 @@ class Ctc
         void SetBlockToMaintenance(types::BlockId block_id);
         void SetBlockToOpen(types::BlockId block_id);
         void SetSimulationSpeedMultiplier(int multiplier);
+        types::Error SetSwitchPosition(const types::BlockId block_id, const bool switched);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;

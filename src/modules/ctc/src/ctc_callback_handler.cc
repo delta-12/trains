@@ -32,6 +32,10 @@ static Channel<bool> choose_file_channel;
 // Simulation Speed Channel
 static Channel<int> simulation_speed_channel;
 
+// Switch Position Channel
+static Channel<std::vector<types::BlockId>> switch_block_channel;
+static Channel<bool>                        switch_position_channel;
+
 // Helper
 static std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter);
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states);
@@ -50,6 +54,7 @@ static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcU
 static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void choose_file_callback();
 static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static inline void set_switch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 // Backend Handlers
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
@@ -60,6 +65,7 @@ static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::C
 static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void simulation_speed_handler(ctc::Ctc &ctc_office);
+static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
@@ -92,6 +98,7 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     choose_file_handler(ctc_office, ctc_ui);
     tick_source_handler(ctc_office, ctc_ui);
     simulation_speed_handler(ctc_office);
+    set_switch_handler(ctc_office, ctc_ui);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -128,6 +135,10 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 
     ctc_ui->on_set_simulation_speed([&ctc_ui] {
             simulation_speed_callback(ctc_ui);
+        });
+
+    ctc_ui->on_set_switch_position([&ctc_ui] {
+            set_switch_callback(ctc_ui);
         });
 
     // TODO repeat for each event listener
@@ -359,7 +370,14 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
                                 block_entry->push_back(slint::StandardListViewItem(std::string(1, block.section).c_str()));
                                 block_entry->push_back(slint::StandardListViewItem(std::to_string(block.block).c_str()));
                                 block_entry->push_back(slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
-                                block_entry->push_back(slint::StandardListViewItem("_"));
+                                if (block.has_switch)
+                                {
+                                    block_entry->push_back(slint::StandardListViewItem(block.switched ? "Secondary" : "Primary"));
+                                }
+                                else
+                                {
+                                    block_entry->push_back(slint::StandardListViewItem("_"));
+                                }
                                 block_entry->push_back(slint::StandardListViewItem(block.occupied ? "Occupied" : "_"));
                                 block_entry->push_back(slint::StandardListViewItem(block.power_failure ? "Failure" : "_"));
                                 block_data_model->push_back(block_entry);
@@ -432,6 +450,53 @@ static void simulation_speed_handler(ctc::Ctc &ctc_office)
         ctc_office.SetSimulationSpeedMultiplier(multiplier);
     }
 }
+
+/*----------------------------------- Switch Position -----------------------------------*/
+static inline void set_switch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    std::vector<types::BlockId> blocks          = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
+    bool                        switch_position = ctc_ui->get_switch_state();
+    switch_position_channel.Send(switch_position);
+    switch_block_channel.Send(blocks);
+    std::for_each(blocks.begin(), blocks.end(), [] (types::BlockId block_id) {
+            std::cout << "Input Block: " << block_id << std::endl;
+        });
+}
+
+static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    if (switch_block_channel.DataAvailable() && switch_position_channel.DataAvailable())
+    {
+        std::vector<types::BlockId> blocks   = switch_block_channel.Receive();
+        bool                        switched = switch_position_channel.Receive();
+        types::BlockId              updated_block;
+        for (types::BlockId block_id : blocks)
+        {
+            if (ctc_office.GetBlockById(block_id).has_switch == true)
+            {
+                ctc_office.SetSwitchPosition(block_id, switched);
+                updated_block = block_id;
+
+                bool switch_position = ctc_office.GetBlockById(updated_block).switched;
+
+                slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+                slint::invoke_from_event_loop([weak_ui_handle, updated_block, switch_position] () {
+                        if (auto ui = weak_ui_handle.lock())
+                        {
+                            if (ui.has_value())
+                            {
+                                auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                                auto block_entry    = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(updated_block - 1).value());
+                                block_entry->set_row_data(3, slint::StandardListViewItem(switch_position ? "Secondary" : "Primary"));
+                            }
+                        }
+                    });
+            }
+        }
+    }
+}
+
+
 
 /*----------------------------------- Helper Methods -----------------------------------*/
 
