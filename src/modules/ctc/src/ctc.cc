@@ -305,6 +305,11 @@ void Ctc::SetBlockToOpen(types::BlockId block_id)
     }
 }
 
+void Ctc::SetSimulationSpeedMultiplier(int multiplier)
+{
+    clock_->SetMultiplier(static_cast<uint8_t>(multiplier));
+}
+
 /*------------------------------------- Getters -------------------------------------*/
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {

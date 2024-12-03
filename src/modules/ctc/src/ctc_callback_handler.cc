@@ -29,6 +29,9 @@ static Channel<std::vector<types::BlockId>> block_input_channel;
 // Choose File Channel
 static Channel<bool> choose_file_channel;
 
+// Simulation Speed Channel
+static Channel<int> simulation_speed_channel;
+
 // Helper
 static std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter);
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states);
@@ -45,8 +48,8 @@ static inline void send_occupancy_callback(slint::ComponentHandle<ui::CtcUi> &ct
 static inline void send_failure_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
-
 static inline void choose_file_callback();
+static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 // Backend Handlers
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
@@ -56,6 +59,7 @@ static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::C
 
 static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void simulation_speed_handler(ctc::Ctc &ctc_office);
 
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
@@ -87,6 +91,7 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     fix_block_handler(ctc_office, ctc_ui);
     choose_file_handler(ctc_office, ctc_ui);
     tick_source_handler(ctc_office, ctc_ui);
+    simulation_speed_handler(ctc_office);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -119,6 +124,10 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 
     ctc_ui->on_choose_file([&ctc_ui] {
             choose_file_callback();
+        });
+
+    ctc_ui->on_set_simulation_speed([&ctc_ui] {
+            simulation_speed_callback(ctc_ui);
         });
 
     // TODO repeat for each event listener
@@ -396,6 +405,34 @@ static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
     }
 }
 
+/*----------------------------------- Simulation Speed -----------------------------------*/
+
+static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    std::string simulation_speed = std::string(ctc_ui->get_simulation_speed());
+    size_t      i                = 0;
+    std::string multiplier;
+    if (simulation_speed[i] == 'x')
+    {
+        i++;
+        while (i < simulation_speed.length() && std::isdigit(simulation_speed[i]))
+        {
+            multiplier += simulation_speed[i++];
+        }
+    }
+    std::cout << "Set Simulation Speed Multiplier to: " << multiplier << std::endl;
+    simulation_speed_channel.Send(std::stoi(multiplier));
+}
+
+static void simulation_speed_handler(ctc::Ctc &ctc_office)
+{
+    if (simulation_speed_channel.DataAvailable())
+    {
+        int multiplier = simulation_speed_channel.Receive();
+        ctc_office.SetSimulationSpeedMultiplier(multiplier);
+    }
+}
+
 /*----------------------------------- Helper Methods -----------------------------------*/
 
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states)
@@ -413,7 +450,7 @@ static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<
                     auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
                     std::for_each(trains.begin(), trains.end(), [&train_schedules_ui] (ctc::Train train) {
                         auto train_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
-                        train_entry->set_row_data(1, slint::StandardListViewItem(std::to_string(train.current_position).c_str()));
+                        train_entry->set_row_data(1, slint::StandardListViewItem(train.current_position == 0 ? "Yard" : std::to_string(train.current_position).c_str()));
                         train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
                         train_entry->set_row_data(3, slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
                         types::BlockId destination = train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination;

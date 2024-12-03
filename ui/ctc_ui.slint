@@ -13,10 +13,12 @@ component TransitSystem inherits Rectangle {
     in-out property <bool> switch_enabled;
     in-out property <bool> has_input;
     in-out property <bool> green_line: true;
+    in-out property <string> simulation_speed;
 
     callback reflect_operation_mode();
     callback set_maintenance_mode();
     callback fix_block();
+    callback set_simulation_speed();
 
     VerticalLayout {
         padding-top: 10px;
@@ -58,7 +60,11 @@ component TransitSystem inherits Rectangle {
                 padding-right: 15px;
                 ComboBox {
                     y: -3px;
-                    model: [@tr("Simulation Speed"), @tr("x1"), @tr("x10"), @tr("x50")];
+                    model: [@tr("Simulation Speed"), "x1", "x10", "x50"];
+                    selected(input) => {
+                        simulation_speed = input;
+                        set_simulation_speed();
+                    }
                 }
             }
         }
@@ -315,6 +321,7 @@ component Dispatch inherits Rectangle {
                     padding: 10px;
                     height: 35px;
                     clicked => {automatic_mode = !automatic_mode;}
+                    enabled: automatic_mode;
                     text: automatic_mode ? "Automatic Mode" : "Manual Mode";
                 }
             }
@@ -405,6 +412,7 @@ export component CtcUi inherits Window {
     in-out property <string> failure_signal;
     in-out property <string> time;
     in-out property <string> block_id;
+    in-out property <string> simulation_speed;
 
     //Dispatch 
     in-out property <bool> file_chosen;
@@ -430,6 +438,7 @@ export component CtcUi inherits Window {
     callback reflect_operation_mode();
     callback set_maintenance_mode();
     callback fix_block();
+    callback set_simulation_speed();
 
     callback send_occupancy();
     callback print-output-to-wayside();
@@ -459,6 +468,7 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
+                    simulation_speed <=> simulation_speed;
                     block_data: block_data;
                     time: time;
                     block_id <=> block_id;
@@ -466,6 +476,7 @@ export component CtcUi inherits Window {
                     reflect_operation_mode => {root.reflect_operation_mode()}
                     set_maintenance_mode => {root.set_maintenance_mode()}
                     fix_block => {root.fix_block()}
+                    set_simulation_speed => {root.set_simulation_speed()}
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;

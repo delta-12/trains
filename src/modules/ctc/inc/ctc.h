@@ -137,6 +137,7 @@ class Ctc
         void SetManualMode(void);
         void SetBlockToMaintenance(types::BlockId block_id);
         void SetBlockToOpen(types::BlockId block_id);
+        void SetSimulationSpeedMultiplier(int multiplier);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;
