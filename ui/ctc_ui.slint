@@ -8,6 +8,7 @@ component TransitSystem inherits Rectangle {
     in-out property <string> block_id;
     in-out property <bool> mode;
     in-out property <bool> switch;
+    in-out property <string> time;
 
     VerticalLayout {
         padding-top: 10px;
@@ -29,7 +30,7 @@ component TransitSystem inherits Rectangle {
                     height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
-                    Text {text: "hh:mm:ss";}
+                    Text {text: time;}
                 }
             }
             HorizontalLayout {
@@ -117,7 +118,8 @@ component TrainSchedule inherits Rectangle {
                 columns: [
                     { title: @tr("Train") },
                     { title: @tr("Position") },
-                    { title: @tr("ETA") },
+                    { title: @tr("Authority (blocks)") },
+                    { title: @tr("S.Speed (m/s)") },
                     { title: @tr("DST(s)") },
                 ];
                 rows: train_schedules;
@@ -127,10 +129,12 @@ component TrainSchedule inherits Rectangle {
 }
 
 component ManualMode inherits Rectangle {
-    in-out property <int> train_id;
+    in-out property <string> train_id;
+    in-out property <string> arrival_station;
     in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
+    in-out property <[string]> trains;
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
@@ -142,6 +146,9 @@ component ManualMode inherits Rectangle {
             ComboBox {
                 height: 30px;
                 y: -3px;
+                model: trains;
+                current-value: train_id;
+                selected(input) => {train_id = input}
             } 
         }
         HorizontalLayout {
@@ -152,6 +159,8 @@ component ManualMode inherits Rectangle {
                 height: 30px;
                 y: -3px;
                 model: stations;
+                current-value: arrival_station;
+                selected(input) => {arrival_station = input}
             } 
         }
         HorizontalLayout {
@@ -230,10 +239,12 @@ component AutomaticMode inherits Rectangle {
 component Dispatch inherits Rectangle {
     property <bool> automatic_mode: true;
     in-out property<string> fileName: "";
-    in-out property <int> train_id;
+    in-out property <string> train_id;
+    in-out property <string> arrival_station;
     in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
+    in-out property <[string]> trains;
 
     callback choose-file();
     callback parse-file();
@@ -278,6 +289,8 @@ component Dispatch inherits Rectangle {
         }
         if(automatic_mode == false) : ManualMode {
             train_id <=> train_id;
+            trains <=> trains;
+            arrival_station <=> arrival_station;
             stations: stations;
             destination <=> destination;
             arrival_time <=> arrival_time;
@@ -293,6 +306,7 @@ component TBInputs inherits Rectangle {
     // Callbacks
     callback send_occupancy_signal();
     callback send_failure_signal();
+    callback wc_send_block_states();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -322,13 +336,19 @@ component TBInputs inherits Rectangle {
             Text {
                 text: confirm_occupancy_message;
             }
+            Button {
+                height: 40px;
+                text:  "Send Dummy Block States";
+                clicked => {
+                    root.wc_send_block_states();
+                }
+            }
         }
     }
 }
 
 export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
-    in-out property <int> train_id;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <[[StandardListViewItem]]> train_schedules;
     in-out property <string> destination;
@@ -340,13 +360,19 @@ export component CtcUi inherits Window {
     in-out property <bool> maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
+    in-out property <string> time;
 
     //Dispatch 
     in-out property <[string]> stations;
+    in-out property <string> train_id;
+    in-out property <[string]> trains;
+    in-out property <string> arrival_station;
 
     //TestBench
     in-out property <string> block_occupancy;
     in-out property <bool> occupancy;
+    in-out property <string> train_tb;
+    in-out property <[string]> trains_tb;
 
     in-out property <int> authority;
     in-out property <int> suggested_speed;
@@ -368,6 +394,10 @@ export component CtcUi inherits Window {
     callback parse-file();
     callback manual-dispatch();
 
+    // Testbench 
+    callback show-train-output();
+    callback wc_send_block_states();
+
     title: "CTC Office";
     preferred-width: 600px;
     preferred-height: 600px;
@@ -381,6 +411,7 @@ export component CtcUi inherits Window {
                 alignment: stretch;
                 TransitSystem {
                     block_data: block_data;
+                    time: time;
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -394,6 +425,8 @@ export component CtcUi inherits Window {
                         parse-file => {root.parse-file()}
                         stations <=> stations;
                         train_id <=> train_id;
+                        trains <=> trains;
+                        arrival_station <=> arrival_station;
                         destination <=> destination;
                         arrival_time <=> arrival_time;
                         manual-dispatch => {root.manual-dispatch()}
@@ -423,6 +456,7 @@ export component CtcUi inherits Window {
                             confirm_occupancy_message: confirm_occupancy_message;
                             send_occupancy_signal => {root.send_occupancy()}
                             send_failure_signal => {root.send-failure-signal()}
+                            wc_send_block_states => {root.wc_send_block_states()}
                         }     
                     }
                 } 
@@ -440,9 +474,20 @@ export component CtcUi inherits Window {
                         }
                         VerticalBox {
                             padding-bottom: 20px;
-                            Text {
-                                font-size: 20px;
-                                text: "Train: \{root.train_id}";
+                            HorizontalLayout {
+                                alignment: start;
+                                Text { font-size: 15px; text: "Train:            ";}
+                                Rectangle {width: 10px;}
+                                ComboBox {
+                                    height: 30px;
+                                    y: -3px;
+                                    model: trains_tb;
+                                    current-value: train_tb;
+                                    selected(input) => { 
+                                        train_tb = input;
+                                        root.show-train-output();
+                                    }
+                                } 
                             }
                             Text {
                                 font-size: 20px;
