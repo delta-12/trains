@@ -200,6 +200,7 @@ int main(void)
         train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
         train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
+        train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
     });
 
 
@@ -309,6 +310,7 @@ int main(void)
         train_controller_ui->set_left_doors(train_controllers[0].get()->GetLeftDoors());
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
         train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
+        train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
     });
 
     // Update - End
@@ -462,6 +464,13 @@ int main(void)
                 train_controller_ui->set_right_doors(false);
             }
         }
+    });
+
+    // Emergency brake
+    train_controller_ui->on_request_toggle_emergency_brake([&] {
+        bool current_state = train_controllers[0]->GetEmergencyBrake();
+        train_controllers[0]->SetEmergencyBrake(!current_state);
+        train_controller_ui->set_emergency_brake(!current_state);
     });
 
     // TRAIN CONTROLLER CALLBACKS END

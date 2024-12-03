@@ -382,6 +382,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         integral_sum_             = 0;
         commanded_power_          = 0;
         service_brake_percentage_ =  0;
+        return;
     }
 
     // Checking if we've reached a distance to start slowing down for authority

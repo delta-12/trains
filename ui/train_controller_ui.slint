@@ -47,6 +47,7 @@ export component TrainControllerUi inherits Window {
     callback request_toggle_ext_lights();
     callback request_toggle_left_doors();
     callback request_toggle_right_doors();
+    callback request_toggle_emergency_brake();
 
     // unique to test bench
     callback request_update_current_velocity();
@@ -561,8 +562,7 @@ export component TrainControllerUi inherits Window {
                             width: parent.width;
                             height: 100px;
                             clicked => {
-                                root.emergency_brake = !root.emergency_brake;
-                                root.commanded_power = 0;
+                                root.request_toggle_emergency_brake();
                             }
                         }
                         Text {
