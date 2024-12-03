@@ -6,6 +6,8 @@
 #ifndef TRAINS_SRC_MODULES_CTC_INC_CTC_CALLBACK_HANDLER_H
 #define TRAINS_SRC_MODULES_CTC_INC_CTC_CALLBACK_HANDLER_H
 
+#include <chrono>
+
 #include "channel.h"
 #include "ctc.h"
 #include "launcher.h"

@@ -69,7 +69,6 @@ int main(void)
         {   
             TickSource tick_source("08:00:00", std::chrono::milliseconds(1));
             tick_source.Start();
-            usleep(5e5);
             std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
             ctc::Ctc ctc_office(clock);
             

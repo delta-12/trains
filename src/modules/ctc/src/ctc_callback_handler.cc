@@ -74,7 +74,7 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
     ctc_ui->set_trains(train_ids);
 
     // Create Model to Populate Stations
-    auto                      stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
+    auto stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
     ctc_ui->set_stations(stations_model);
 }
 
@@ -219,7 +219,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
 static inline void send_occupancy_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
     std::string occupied_blocks = std::string(ctc_ui->get_block_occupancy());
-    bool occupied = ctc_ui->get_occupied();
+    bool        occupied        = ctc_ui->get_occupied();
     std::cout << "Occupied Blocks: " << occupied_blocks << std::endl;
     std::vector<types::BlockId>    blocks = TokenizeOccupancyInput(occupied_blocks, ',');
     std::vector<types::BlockState> block_states;
@@ -327,8 +327,8 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
         bool                      choose_file = choose_file_channel.Receive();
         std::string               file_name;
         std::vector<types::Block> blocks;
-        types::Error              error = ctc_office.ChooseFileAndSetTrackLayout(file_name);
-        std::vector<ctc::Station> stations       = ctc_office.GetStations();
+        types::Error              error    = ctc_office.ChooseFileAndSetTrackLayout(file_name);
+        std::vector<ctc::Station> stations = ctc_office.GetStations();
         if (error == types::Error::ERROR_NONE)
         {
             blocks = ctc_office.GetBlocks();
@@ -376,18 +376,24 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
 
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
-    std::string current_time = ctc_office.GetTimeString();
-    std::cout << "Time: " << current_time << std::endl;
-    slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-    slint::invoke_from_event_loop([weak_ui_handle, current_time] () {
-            if (auto ui = weak_ui_handle.lock())
-            {
-                if (ui.has_value())
+    static auto last_call_time = std::chrono::steady_clock::now();
+    auto        now            = std::chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::seconds>(now - last_call_time).count() >= 1)
+    {
+        last_call_time = now;
+
+        std::string                           current_time = ctc_office.GetTimeString();
+        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+        slint::invoke_from_event_loop([weak_ui_handle, current_time] () {
+                if (auto ui = weak_ui_handle.lock())
                 {
-                    ui.value()->set_time(current_time.c_str());
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_time(current_time.c_str());
+                    }
                 }
-            }
-        });
+            });
+    }
 }
 
 /*----------------------------------- Helper Methods -----------------------------------*/
