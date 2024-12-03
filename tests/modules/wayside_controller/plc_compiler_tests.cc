@@ -88,7 +88,8 @@ static const plc_compiler::lexer::Token kValidInputTokens[] = {
     {plc_compiler::lexer::TokenType::TOKENTYPE_KEYWORD, "LOW"},
     {plc_compiler::lexer::TokenType::TOKENTYPE_SYMBOL, ";"},
     {plc_compiler::lexer::TokenType::TOKENTYPE_SYMBOL, "}"},
-    {plc_compiler::lexer::TokenType::TOKENTYPE_KEYWORD, "ELSEIF"},
+    {plc_compiler::lexer::TokenType::TOKENTYPE_KEYWORD, "ELSE"},
+    {plc_compiler::lexer::TokenType::TOKENTYPE_KEYWORD, "IF"},
     {plc_compiler::lexer::TokenType::TOKENTYPE_SYMBOL, "("},
     {plc_compiler::lexer::TokenType::TOKENTYPE_SYMBOL, "("},
     {plc_compiler::lexer::TokenType::TOKENTYPE_ID, "block_0"},
@@ -247,7 +248,7 @@ TEST(PlcCompilerTests, LexerValidInput)
     input << "\n\n";
     input << "IF ((block_0 == HIGH)&&(block_1 == LOW)){\n";
     input << "    SET switch_0 LOW;\n";
-    input << "}ELSEIF ((block_0==LOW) && (block_1 == HIGH))\n";
+    input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
     input << "{SET switch_0 HIGH;}\n";
 
     // Lexer
@@ -315,7 +316,7 @@ TEST(PlcCompilerTests, InvalidInput)
     input << "\n\n";
     input << "IF ((block_0 == HIGH)&&(block_1 == LOW)){\n";
     input << "    SET switch_0 LOW%%;\n";
-    input << "}ELSEIF ((block_0==LOW) && (block_1 == HIGH))\n";
+    input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
     input << "{SET #switch_0 HIGH;}\n";
 
     ASSERT_FALSE(plc_compiler::lexer::Lexer(input, tokens, errors));

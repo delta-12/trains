@@ -10,7 +10,7 @@ namespace plc_compiler::lexer
 
 static const size_t kCharacterTypes            = 9;
 static const size_t kDefaultTokenCharacterSize = 16;
-static const size_t kKeywordCount              = 10;
+static const size_t kKeywordCount              = 9;
 
 const std::array<const char *const, kKeywordCount> kKeywords = {
     "HIGH",
@@ -20,7 +20,6 @@ const std::array<const char *const, kKeywordCount> kKeywords = {
     "LIGHT",
     "CROSSING",
     "IF",
-    "ELSEIF",
     "ELSE",
     "SET"
 };

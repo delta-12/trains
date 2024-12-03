@@ -25,8 +25,8 @@ static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Erro
 static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static inline bool ParseOpenBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static inline bool ParseClosedBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool IsAlias(const std::string &lexeme);
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
@@ -601,7 +601,6 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
     {
         // Parse function sets error, do nothing
     }
-    // TODO parse operator and another expression depending on previous operator
     else if (!ParseClosedParenthesis(tokens, errors))
     {
         // Parse function sets error, do nothing
@@ -687,7 +686,7 @@ static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens,
     SharedStatementAstNode statement_node = nullptr;
     node = nullptr;
 
-    if (!ParseOpenBracket(tokens, errors))
+    if (!ParseOpenBrace(tokens, errors))
     {
         // Parse function sets error, do nothing
     }
@@ -695,7 +694,7 @@ static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens,
     {
         // Parse function sets error, do nothing
     }
-    else if (!ParseClosedBracket(tokens, errors))
+    else if (!ParseClosedBrace(tokens, errors))
     {
         // Parse function sets error, do nothing
     }
@@ -842,12 +841,12 @@ static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std:
     return ParseSymbol(tokens, errors, ")");
 }
 
-static inline bool ParseOpenBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     return ParseSymbol(tokens, errors, "{");
 }
 
-static inline bool ParseClosedBracket(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     return ParseSymbol(tokens, errors, "}");
 }
