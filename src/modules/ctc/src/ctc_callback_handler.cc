@@ -181,7 +181,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
             //Capture Variable to update
             current_position = std::to_string(ctc_office.GetTrainCurrentPosition(new_train.train_id));
             train_id         = std::to_string(new_train.train_id);
-            authority        = std::to_string(ctc_office.GetTrainAutgithority(new_train.train_id));
+            authority        = std::to_string(ctc_office.GetTrainAuthority(new_train.train_id));
             suggested_speed  = std::to_string(static_cast<int>(ctc_office.GetTrainSuggestedSpeed(new_train.train_id)));
             departure_time   = ctc_office.GetTrainDepartureTime(new_train.train_id);
 
