@@ -17,12 +17,13 @@
 namespace wayside_controller
 {
 
-using InputId                =  uint16_t;
-using OutputId               =  uint16_t;
-using WaysideBlock           =  struct WaysideBlock;
-using BlockConnection        =  struct BlockConnection;
-using PlcInstructionArgument =  uint32_t;
-using PlcInstruction         =  struct PlcInstruction;
+using SignalId               = uint16_t;
+using InputId                = SignalId;
+using OutputId               = SignalId;
+using WaysideBlock           = struct WaysideBlock;
+using BlockConnection        = struct BlockConnection;
+using PlcInstructionArgument = uint32_t;
+using PlcInstruction         = struct PlcInstruction;
 
 static const size_t kPhysicalInputs         = 78;
 static const size_t kVirtualInputs          = 7;

@@ -55,7 +55,8 @@ enum class Error
     ERROR_INVALID_SIZE,
     ERROR_INVALID_FORMAT,
     ERROR_INVALID_CONTROLLER,
-    ERROR_IO
+    ERROR_IO,
+    ERROR_FILE_NO_EXIST
 };
 
 enum class Polarity

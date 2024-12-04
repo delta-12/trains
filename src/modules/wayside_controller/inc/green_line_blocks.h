@@ -7,7 +7,6 @@ namespace wayside_controller
 {
 
 const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
-    WaysideBlock(0, 53, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 76, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(53, 54, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(54, 55, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 1, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(55, 56, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 2, 0, false, false, IoSignal::IOSIGNAL_LOW),

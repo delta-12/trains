@@ -3,10 +3,26 @@
 #include <functional>
 #include <ranges>
 
-#include "wayside_controller.h"
+#include "plc_signals.h"
 
 namespace plc_compiler::lexer
 {
+
+static const size_t kCharacterTypes            = 9;
+static const size_t kDefaultTokenCharacterSize = 16;
+static const size_t kKeywordCount              = 9;
+
+const std::array<const char *const, kKeywordCount> kKeywords = {
+    "HIGH",
+    "LOW",
+    "BLOCK",
+    "SWITCH",
+    "LIGHT",
+    "CROSSING",
+    "IF",
+    "ELSE",
+    "SET"
+};
 
 enum class DfaState
 {
@@ -35,136 +51,6 @@ enum class DfaIndex
     DFAINDEX_VERTICAL_BAR,
     DFAINDEX_VALID_SYMBOL,
     DFAINDEX_INVALID_SYMBOL
-};
-
-static const size_t kCharacterTypes            = 9;
-static const size_t kDefaultTokenCharacterSize = 16;
-static const size_t kKeywordCount              = 10;
-
-static const std::array<const char *const, kKeywordCount> kKeywords = {
-    "HIGH",
-    "LOW",
-    "BLOCK",
-    "SWITCH",
-    "LIGHT",
-    "CROSSING",
-    "IF",
-    "ELSEIF",
-    "ELSE",
-    "SET"};
-
-static const std::array<const char *const, wayside_controller::kTotalInputs> kInputSignals = {
-    "IN_0",
-    "IN_1",
-    "IN_2",
-    "IN_3",
-    "IN_4",
-    "IN_5",
-    "IN_6",
-    "IN_7",
-    "IN_8",
-    "IN_9",
-    "IN_10",
-    "IN_11",
-    "IN_12",
-    "IN_13",
-    "IN_14",
-    "IN_15",
-    "IN_16",
-    "IN_17",
-    "IN_18",
-    "IN_19",
-    "IN_20",
-    "IN_21",
-    "IN_22",
-    "IN_23",
-    "IN_24",
-    "IN_25",
-    "IN_26",
-    "IN_27",
-    "IN_28",
-    "IN_29",
-    "IN_30",
-    "IN_31",
-    "IN_32",
-    "IN_33",
-    "IN_34",
-    "IN_35",
-    "IN_36",
-    "IN_37",
-    "IN_38",
-    "IN_39",
-    "IN_40",
-    "IN_41",
-    "IN_42",
-    "IN_43",
-    "IN_44",
-    "IN_45",
-    "IN_46",
-    "IN_47",
-    "IN_48",
-    "IN_49",
-    "IN_50",
-    "IN_51",
-    "IN_52",
-    "IN_53",
-    "IN_54",
-    "IN_55",
-    "IN_56",
-    "IN_57",
-    "IN_58",
-    "IN_59",
-    "IN_60",
-    "IN_61",
-    "IN_62",
-    "IN_63",
-    "IN_64",
-    "IN_65",
-    "IN_66",
-    "IN_67",
-    "IN_68",
-    "IN_69",
-    "IN_70",
-    "IN_71",
-    "IN_72",
-    "IN_73",
-    "IN_74",
-    "IN_75",
-    "IN_76",
-    "IN_77",
-    "IN_78",
-    "IN_79",
-    "IN_80",
-    "IN_81",
-    "IN_82",
-    "IN_83",
-    "IN_84"
-};
-
-static const std::array<const char *const, wayside_controller::kTotalOutputs> kOutputSignals = {
-    "OUT_0",
-    "OUT_1",
-    "OUT_2",
-    "OUT_3",
-    "OUT_4",
-    "OUT_5",
-    "OUT_6",
-    "OUT_7",
-    "OUT_8",
-    "OUT_9",
-    "OUT_10",
-    "OUT_11",
-    "OUT_12",
-    "OUT_13",
-    "OUT_14",
-    "OUT_15",
-    "OUT_16",
-    "OUT_17",
-    "OUT_18",
-    "OUT_19",
-    "OUT_20",
-    "OUT_21",
-    "OUT_22"
 };
 
 // TODO NNF-239 singular end state with all next states pointing back to initial state
@@ -213,7 +99,29 @@ bool Error::operator==(const Error &error_right) const
     return (0 == error_right.lexeme.compare(lexeme)) && (error_right.error_type == error_type);
 }
 
-bool Lexer(std::istream &input, std::vector<Token> &tokens, std::vector<Error> &errors)
+std::ostream& operator<<(std::ostream& stream, const Error& error)
+{
+    stream << "Lexical error: ";
+
+    switch (error.error_type)
+    {
+    case ErrorType::ERRORTYPE_INVALID_INPUT:
+        stream << "Invalid input";
+        break;
+    case ErrorType::ERRORTYPE_ILLEGAL_SYMBOL:
+        stream << "Illegal symbol";
+        break;
+    default:
+        stream << "Unknown error";
+        break;
+    }
+
+    stream << " \"" << error.lexeme << "\"";
+
+    return stream;
+}
+
+bool Lexer(std::istream &input, std::deque<Token> &tokens, std::deque<Error> &errors)
 {
     using enum DfaState;
 
