@@ -57,6 +57,7 @@ struct StatementAstNode
         StatementAstNode(SharedAliasAstNode alias_node);
         StatementAstNode(SharedSetAstNode set_node);
         StatementAstNode(SharedIfAstNode if_node);
+        friend std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node);
         std::variant<SharedAliasAstNode, SharedSetAstNode, SharedIfAstNode> node;
         SharedStatementAstNode next_statement = nullptr;
 };
@@ -66,6 +67,7 @@ struct IdAstNode
     public:
         IdAstNode(void);
         IdAstNode(const std::string &id);
+        friend std::ostream& operator<<(std::ostream& stream, const IdAstNode& node);
         std::string id;
 };
 
@@ -80,6 +82,7 @@ struct SignalAstNode
 
         SignalAstNode(void);
         SignalAstNode(const wayside_controller::SignalId signal, const SignalType type);
+        friend std::ostream& operator<<(std::ostream& stream, const SignalAstNode& node);
         SignalType type;
         wayside_controller::SignalId signal;
 };
@@ -95,6 +98,7 @@ struct LogicLevelAstNode
 
         LogicLevelAstNode(void);
         LogicLevelAstNode(const LogicLevel logic_level);
+        friend std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node);
         LogicLevel logic_level;
 };
 
@@ -103,6 +107,7 @@ struct AliasAstNode
     public:
         AliasAstNode(void);
         AliasAstNode(SharedIdAstNode id_node, SharedSignalAstNode signal_node);
+        friend std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node);
         SharedIdAstNode id_node;
         SharedSignalAstNode signal_node;
 };
@@ -113,6 +118,7 @@ struct SetAstNode
         SetAstNode(void);
         SetAstNode(SharedIdAstNode id_node, SharedLogicLevelAstNode logic_level_node);
         SetAstNode(SharedSignalAstNode signal_node, SharedLogicLevelAstNode logic_level_node);
+        friend std::ostream& operator<<(std::ostream& stream, const SetAstNode& node);
         std::variant<SharedIdAstNode, SharedSignalAstNode> signal;
         SharedLogicLevelAstNode logic_level_node;
 };
@@ -132,6 +138,7 @@ struct ExpressionAstNode
         ExpressionAstNode(SharedIdAstNode id_node, SharedLogicLevelAstNode logic_level_node);
         ExpressionAstNode(SharedSignalAstNode signal_node, SharedLogicLevelAstNode logic_level_node);
         ExpressionAstNode(SharedExpressionAstNode left_expression_node, SharedExpressionAstNode right_expression_node, const Operator boolean_operator);
+        friend std::ostream& operator<<(std::ostream& stream, const ExpressionAstNode& node);
         std::variant<SharedIdAstNode, SharedSignalAstNode, SharedExpressionAstNode> left_operand;
         std::variant<SharedLogicLevelAstNode, SharedExpressionAstNode> right_operand;
         Operator boolean_operator;
@@ -143,6 +150,7 @@ struct ElseAstNode
         ElseAstNode(void);
         ElseAstNode(SharedIfAstNode if_node);
         ElseAstNode(SharedBodyAstNode body_node);
+        friend std::ostream& operator<<(std::ostream& stream, const ElseAstNode& node);
         std::variant<SharedIfAstNode, SharedBodyAstNode> predicate_node;
 };
 
@@ -151,6 +159,7 @@ struct BodyAstNode
     public:
         BodyAstNode(void);
         BodyAstNode(SharedStatementAstNode statement_node);
+        friend std::ostream& operator<<(std::ostream& stream, const BodyAstNode& node);
         SharedStatementAstNode statement_node;
 };
 
@@ -161,6 +170,7 @@ struct IfAstNode
         IfAstNode(void);
         IfAstNode(SharedExpressionAstNode expression_node, SharedBodyAstNode body_node);
         IfAstNode(SharedExpressionAstNode expression_node, SharedBodyAstNode body_node, SharedElseAstNode else_node);
+        friend std::ostream& operator<<(std::ostream& stream, const IfAstNode& node);
         bool has_else_node;
         SharedExpressionAstNode expression_node;
         SharedBodyAstNode body_node;

@@ -276,6 +276,7 @@ TEST(PlcCompilerTests, ParserValidInput)
     input << "\n\n";
     input << "IF ((block_0 == HIGH)&&(block_1 == LOW)){\n";
     input << "    SET switch_0 LOW;\n";
+    input << "SET Crossing_0 HIGH;\n";
     input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
     input << "{SET switch_0 HIGH;}\n";
 
@@ -286,15 +287,12 @@ TEST(PlcCompilerTests, ParserValidInput)
     // Parser
     plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
     ASSERT_NE(nullptr, node);
-    ASSERT_EQ(0, parser_errors.size());
-    for (const plc_compiler::parser::Error &error : parser_errors)
+    for (const auto &error : parser_errors)
     {
-        std::cout << error;
+        std::cout << error << std::endl;
     }
-    // while (node != nullptr)
-    // {
-
-    // }
+    ASSERT_EQ(0, parser_errors.size());
+    std::cout << *node << std::endl;
 }
 
 TEST(PlcCompilerTests, InvalidLexerInput)

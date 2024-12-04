@@ -33,6 +33,8 @@ static inline bool IsElseNext(std::deque<lexer::Token> &tokens);
 static inline bool IsBodyNext(std::deque<lexer::Token> &tokens);
 static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens);
 static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+template<typename T>
+static inline void StreamOutNullableArg(std::ostream& stream, const T arg);
 
 StatementAstNode::StatementAstNode(void)
 {
@@ -155,6 +157,244 @@ bool Error::operator==(const Error &error_right) const
     return (error_right.error_type == error_type) && (error_right.token == token);
 }
 
+std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node)
+{
+    stream << "Statement: ";
+
+    std::visit([&stream](auto &&arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, SharedAliasAstNode>)
+            {
+                stream << "ALIAS";
+            }
+            else if constexpr (std::is_same_v<T, SharedSetAstNode>)
+            {
+                stream << "SET";
+            }
+            else if constexpr (std::is_same_v<T, SharedIfAstNode>)
+            {
+                stream << "IF";
+            }
+            else
+            {
+                stream << "UNKNOWN";
+            }
+
+            stream << "\n";
+            StreamOutNullableArg<T>(stream, arg);
+        }, node.node);
+
+    if (nullptr != node.next_statement)
+    {
+        stream << "\n";
+        stream << *node.next_statement;
+    }
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const IdAstNode& node)
+{
+    stream << "ID: " << node.id;
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const SignalAstNode& node)
+{
+    stream << "Signal: ";
+
+    switch (node.type)
+    {
+    case SignalAstNode::SignalType::SIGNALTYPE_INPUT:
+        stream << "INPUT";
+        break;
+    case SignalAstNode::SignalType::SIGNALTYPE_OUTPUT:
+        stream << "OUTPUT";
+        break;
+    default:
+        stream << "UNKNOWN";
+        break;
+    }
+
+    stream << " " << node.signal;
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node)
+{
+    stream << "Logic level: ";
+
+    switch (node.logic_level)
+    {
+    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_LOW:
+        stream << "LOW";
+        break;
+    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_HIGH:
+        stream << "HIGH";
+        break;
+    default:
+        stream << "UNKNOWN";
+        break;
+    }
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node)
+{
+    stream << "Alias:\n";
+    StreamOutNullableArg<SharedIdAstNode>(stream, node.id_node);
+    stream << "\n";
+    StreamOutNullableArg<SharedSignalAstNode>(stream, node.signal_node);
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const SetAstNode& node)
+{
+    stream << "Set: ";
+
+    std::visit([&stream](auto &&arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, SharedIdAstNode>)
+            {
+                stream << "ID";
+            }
+            else if constexpr (std::is_same_v<T, SharedSignalAstNode>)
+            {
+                stream << "SIGNAL";
+            }
+            else
+            {
+                stream << "UNKNOWN";
+            }
+
+            stream << "\n";
+            StreamOutNullableArg<T>(stream, arg);
+        }, node.signal);
+
+    stream << "\n";
+    StreamOutNullableArg<SharedLogicLevelAstNode>(stream, node.logic_level_node);
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const ExpressionAstNode& node)
+{
+    stream << "Expression: ";
+
+    std::visit([&stream](auto &&arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, SharedIdAstNode>)
+            {
+                stream << "ID";
+            }
+            else if constexpr (std::is_same_v<T, SharedSignalAstNode>)
+            {
+                stream << "SIGNAL";
+            }
+            else if constexpr (std::is_same_v<T, SharedExpressionAstNode>)
+            {
+                stream << "EXPRESSION";
+            }
+            else
+            {
+                stream << "UNKNOWN";
+            }
+
+            stream << "\nLeft operand: ";
+            StreamOutNullableArg<T>(stream, arg);
+        }, node.left_operand);
+
+    stream << "\nOperator: ";
+
+    switch (node.boolean_operator)
+    {
+    case ExpressionAstNode::Operator::OPERATOR_COMPARISON:
+        stream << "COMPARISON";
+        break;
+    case ExpressionAstNode::Operator::OPERATOR_AND:
+        stream << "AND";
+        break;
+    case ExpressionAstNode::Operator::OPERATOR_OR:
+        stream << "OR";
+        break;
+    default:
+        stream << "UNKNOWN";
+        break;
+    }
+
+    stream << "\nRight operand: ";
+
+    std::visit([&stream](auto &&arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+            StreamOutNullableArg<T>(stream, arg);
+        }, node.right_operand);
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const ElseAstNode& node)
+{
+    stream << "Else: ";
+
+    std::visit([&stream](auto &&arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, SharedIfAstNode>)
+            {
+                stream << "IF";
+            }
+            else if constexpr (std::is_same_v<T, SharedBodyAstNode>)
+            {
+                stream << "BODY";
+            }
+            else
+            {
+                stream << "UNKNOWN";
+            }
+
+            stream << "\n";
+            StreamOutNullableArg(stream, arg);
+        }, node.predicate_node);
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const BodyAstNode& node)
+{
+    stream << "Body:\n";
+    StreamOutNullableArg<SharedStatementAstNode>(stream, node.statement_node);
+
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const IfAstNode& node)
+{
+    stream << "If:\n";
+    StreamOutNullableArg(stream, node.expression_node);
+    stream << "\n";
+    StreamOutNullableArg(stream, node.body_node);
+
+    if (node.has_else_node)
+    {
+        stream << "\n";
+        StreamOutNullableArg(stream, node.else_node);
+    }
+
+    return stream;
+}
+
 std::ostream& operator<<(std::ostream& stream, const Error& error)
 {
     stream << "Syntax error: ";
@@ -187,7 +427,7 @@ std::ostream& operator<<(std::ostream& stream, const Error& error)
         break;
     }
 
-    stream <<  " \"" << error.token.lexeme << "\"" << std::endl;
+    stream <<  " \"" << error.token.lexeme << "\"";
 
     return stream;
 }
@@ -523,7 +763,7 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
     }
     else if (nullptr != id_node)
     {
-        node   = std::make_shared<SetAstNode>(signal_node, logic_level_node);
+        node   = std::make_shared<SetAstNode>(id_node, logic_level_node);
         parsed = true;
     }
     else
@@ -537,16 +777,11 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
 
 static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool                                parsed = true;
     std::deque<lexer::Token>            postfix_expression;
+    bool                                parsed = ExpressionToPostfix(postfix_expression, tokens, errors);
     std::deque<lexer::Token>            operands;
     std::deque<SharedExpressionAstNode> expressions;
     node = nullptr;
-
-    if (!ExpressionToPostfix(postfix_expression, tokens, errors))
-    {
-        parsed = false;
-    }
 
     while (!postfix_expression.empty() && parsed)
     {
@@ -676,26 +911,45 @@ static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens,
 
 static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool                   parsed         = false;
+    bool                   parsed         = ParseOpenBrace(tokens, errors);
     SharedStatementAstNode statement_node = nullptr;
+    SharedStatementAstNode next           = nullptr;
     node = nullptr;
 
-    if (!ParseOpenBrace(tokens, errors))
+    while (VerifyRemainingTokens(tokens, errors, 1) && parsed)
     {
-        // Parse function sets error, do nothing
+        SharedStatementAstNode new_node = nullptr;
+
+        if ("}" == tokens.front().lexeme)
+        {
+            break;
+        }
+        else if (!ParseStatement(new_node, tokens, errors))
+        {
+            parsed = false;
+        }
+        else if (nullptr == statement_node)
+        {
+            statement_node = new_node;
+            next           = new_node;
+        }
+        else
+        {
+            next->next_statement = new_node;
+            next                 = new_node;
+        }
     }
-    else if (!ParseStatement(statement_node, tokens, errors))
+
+    if (parsed)
     {
-        // Parse function sets error, do nothing
-    }
-    else if (!ParseClosedBrace(tokens, errors))
-    {
-        // Parse function sets error, do nothing
-    }
-    else
-    {
-        node   = std::make_shared<BodyAstNode>(statement_node);
-        parsed = true;
+        if (!ParseClosedBrace(tokens, errors))
+        {
+            parsed = false;
+        }
+        else
+        {
+            node = std::make_shared<BodyAstNode>(statement_node);
+        }
     }
 
     return parsed;
@@ -1009,6 +1263,19 @@ static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, st
     }
 
     return converted;
+}
+
+template<typename T>
+static inline void StreamOutNullableArg(std::ostream& stream, const T arg)
+{
+    if (nullptr == arg)
+    {
+        stream << "nullptr";
+    }
+    else
+    {
+        stream << *arg;
+    }
 }
 
 } // namespace plc_compiler::parser
