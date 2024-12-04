@@ -4,9 +4,17 @@
 
 #include "launcher.h"
 #include "simulator.h"
+#include "ctc.h"
+#include "types.h"
+#include "ctc_callback_handler.h"
+#include "channel.h"
+
 
 int main(void)
 {
+    // Prevent worker_thread keep running after application window is closed
+    std::atomic<bool> keep_running(true);
+
     simulator::Simulator world;
     auto                 launcher_ui           = ui::Launcher::create();
     auto                 ctc_ui                = ui::CtcUi::create();
@@ -36,10 +44,22 @@ int main(void)
         train_controller_ui->show();
     });
 
+    // Setting Up CTC
+    ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
+    ctc::setup_ui(ctc_ui, ctc_office);
 
     std::thread worker_thread([&]
-    {
-        // Main backend loop here
+        {
+                              while (keep_running.load())
+                              {
+                                  ctc::backend_handler(ctc_office, ctc_ui);
+                              }
+        });
+
+    // Stop work_thread when launcher is closed
+    launcher_ui->window().on_close_requested([&] {
+        keep_running = false;
+        return slint::CloseRequestResponse::HideWindow;
     });
 
     launcher_ui->run();

@@ -54,6 +54,9 @@ file(GLOB CONTROLLER_NETWORK_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
 file(GLOB CTC_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${CTC_DIR}/src/*.cc"
 )
+file(GLOB CTC_HANDLER_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    "${CTC_DIR}/src/*_handler.cc"
+)
 file(GLOB WAYSIDE_CONTROLLER_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${WAYSIDE_CONTROLLER_DIR}/src/*.cc"
 )
@@ -84,7 +87,11 @@ set(TRAINS_SRCS
     ${SIMULATOR_SRCS}
 )
 
-set(SLINT_STYLE cosmic-dark)
+# Copy of TRAINS_SRCS exclude backend-frontend handlers to avoid launcher.h not found
+set(TEST_TRAINS_SRCS ${TRAINS_SRCS})
+list(REMOVE_ITEM TEST_TRAINS_SRCS ${CTC_HANDLER_SRCS})
+
+set(SLINT_STYLE native)
 
 find_package(Slint REQUIRED)
 
@@ -108,7 +115,7 @@ if (WIN32)
 else()
     add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()
-target_include_directories(trains PRIVATE ${INC_DIRS})
+target_include_directories(trains PRIVATE ${INC_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(trains PRIVATE Slint::Slint)
 slint_target_sources(trains ${UI_DIR}/launcher.slint NAMESPACE ui)
 if (WIN32)
@@ -120,7 +127,7 @@ endif()
 ################################################################################
 enable_testing()
 include(GoogleTest)
-add_library(trains_lib STATIC ${TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
+add_library(trains_lib STATIC ${TEST_TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
     target_link_options(trains_lib PRIVATE --coverage)
