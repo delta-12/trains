@@ -85,6 +85,7 @@ types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name)
     else
     {
         SetTrackLayout(path);
+        SetScheduleFilePath(path);
     }
     return error;
 }
@@ -603,6 +604,11 @@ std::string Ctc::GetTrainDepartureTime(const types::TrainId train_id)
 std::string Ctc::GetTimeString(void) const
 {
     return clock_->GetTimeString();
+}
+
+std::chrono::system_clock::time_point Ctc::GetTime(void) const 
+{
+    return clock_->GetTime();
 }
 
 void Ctc::ClearUpdatedBlocks(void)

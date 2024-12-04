@@ -149,6 +149,7 @@ class Ctc
         std::vector<types::BlockId> GetFailureBlocks(void) const;
         std::vector<types::BlockId> GetRoute(const types::BlockId start, const types::BlockId end);
         std::string TimePointToString(const std::chrono::system_clock::time_point& time_point);
+        std::chrono::system_clock::time_point GetTime(void) const;
 
     private:
         void SetBlocks(std::vector<types::Block> &blocks);

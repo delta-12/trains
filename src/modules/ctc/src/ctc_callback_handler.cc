@@ -13,6 +13,7 @@ namespace ctc
 /*----------------------------------- Channels Start -----------------------------------*/
 // Manual Dispatch Channel
 static Channel<std::string> destination_channel;
+static Channel<std::string> arrival_time_channel;
 
 // Train Schedules Channel
 static Channel<std::string> train_id_channel;
@@ -68,6 +69,7 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void simulation_speed_handler(ctc::Ctc &ctc_office);
 static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void departure_time_handler(ctc::Ctc &ctc_office);
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
@@ -100,6 +102,7 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     tick_source_handler(ctc_office, ctc_ui);
     simulation_speed_handler(ctc_office);
     set_switch_handler(ctc_office, ctc_ui);
+    departure_time_handler(ctc_office);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -149,7 +152,7 @@ static inline void manual_dispatch_callback(slint::ComponentHandle<ui::CtcUi> &c
 {
     destination_channel.Send(std::string(ctc_ui->get_destination()));
     train_id_channel.Send(std::string(ctc_ui->get_train_id()));
-
+    arrival_time_channel.Send(std::string(ctc_ui->get_arrival_time()));
     // TODO update UI if necessary
 
 }
@@ -162,6 +165,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
         // TODO need a function that instantiates a new train model and train controller with the same id
         std::string train_id    = train_id_channel.Receive();
         std::string destination = destination_channel.Receive();
+        std::string arrival_time = arrival_time_channel.Receive();
         std::string current_position;
         std::string authority;
         std::string suggested_speed;
@@ -171,7 +175,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
         {
             // Backend Dispatch
             ctc::Train new_train;
-            ctc_office.ManualDispatch(new_train.train_id, static_cast<uint16_t>(std::stoi(destination)));
+            ctc_office.DispatchToStation(new_train.train_id, static_cast<uint16_t>(std::stoi(destination)), arrival_time);
 
             //Capture Variable to update
             current_position = std::to_string(ctc_office.GetTrainCurrentPosition(new_train.train_id));
@@ -496,6 +500,19 @@ static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::
     }
 }
 
+/*----------------------------------- Departure Time -----------------------------------*/
+static void departure_time_handler(ctc::Ctc &ctc_office) {
+    std::chrono::system_clock::time_point current_time = ctc_office.GetTime();
+    std::vector<ctc::Train> trains = ctc_office.GetTrains();
+    for (ctc::Train train : trains) {
+        if (train.departure_time == current_time) {
+            std::vector<types::BlockState> block_states;
+            block_states.emplace_back(63, true, false);
+            ctc_office.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
+        }
+    }
+    std::cout << "Current Time: " << ctc_office.TimePointToString(current_time) << std::endl;
+}
 
 
 /*----------------------------------- Helper Methods -----------------------------------*/
