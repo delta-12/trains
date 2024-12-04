@@ -392,7 +392,8 @@ types::Error Ctc::SetSwitchPosition(const types::BlockId block_id, const bool sw
     return error;
 }
 
-void Ctc::SetTrainDispatched(const types::TrainId train_id) {
+void Ctc::SetTrainDispatched(const types::TrainId train_id)
+{
     std::vector<ctc::Train>::iterator train_it = std::find_if(
         train_schedules_.begin(),
         train_schedules_.end(),
@@ -620,7 +621,7 @@ std::string Ctc::GetTimeString(void) const
     return clock_->GetTimeString();
 }
 
-std::chrono::system_clock::time_point Ctc::GetTime(void) const 
+std::chrono::system_clock::time_point Ctc::GetTime(void) const
 {
     return clock_->GetTime();
 }

@@ -163,13 +163,12 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
     if (destination_channel.DataAvailable())
     {
         // TODO need a function that instantiates a new train model and train controller with the same id
-        std::string train_id    = train_id_channel.Receive();
-        std::string destination = destination_channel.Receive();
+        std::string train_id     = train_id_channel.Receive();
+        std::string destination  = destination_channel.Receive();
         std::string arrival_time = arrival_time_channel.Receive();
         std::string current_position;
         std::string authority;
         std::string suggested_speed;
-        std::string departure_time;
 
         // Dispatch new train
         if (train_id == "New Train")
@@ -183,9 +182,6 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
             train_id         = std::to_string(new_train.train_id);
             authority        = std::to_string(ctc_office.GetTrainAuthority(new_train.train_id));
             suggested_speed  = std::to_string(static_cast<int>(ctc_office.GetTrainSuggestedSpeed(new_train.train_id)));
-            departure_time   = ctc_office.GetTrainDepartureTime(new_train.train_id);
-
-            std::cout << "Train Dispatch! Departure Time: " << departure_time << std::endl;
 
             // Update UI
             slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
@@ -505,11 +501,14 @@ static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::
 }
 
 /*----------------------------------- Departure Time -----------------------------------*/
-static void departure_time_handler(ctc::Ctc &ctc_office) {
+static void departure_time_handler(ctc::Ctc &ctc_office)
+{
     std::chrono::system_clock::time_point current_time = ctc_office.GetTime();
-    std::vector<ctc::Train> trains = ctc_office.GetTrains();
-    for (ctc::Train train : trains) {
-        if (train.departure_time <= current_time && !train.dispatched) {
+    std::vector<ctc::Train>               trains       = ctc_office.GetTrains();
+    for (ctc::Train train : trains)
+    {
+        if (train.departure_time <= current_time && !train.dispatched)
+        {
             ctc_office.SetTrainDispatched(train.train_id);
             std::vector<types::BlockState> block_states;
             block_states.emplace_back(63, true, false);
