@@ -15,7 +15,7 @@ else()
 endif()
 
 message(STATUS "Adding files to Uncrustify")
-set(UNCRUSTIFY_SOURCES ${TRAINS_SRCS} ${TEST_SRCS} ${CMAKE_SOURCE_DIR}/src/main.cc)
+set(UNCRUSTIFY_SOURCES ${TRAINS_SRCS} ${TEST_SRCS} ${SRC_DIR}/main.cc)
 foreach(INC_DIR ${INTERNAL_INC_DIRS})
     file(GLOB INC_DIR_H_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS
         "${INC_DIR}/*.h"

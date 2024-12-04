@@ -6,16 +6,9 @@ component TransitSystem inherits Rectangle {
     preferred-height: 300px;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <string> block_id;
-    in-out property <bool> block_maintenance_mode;
-    in-out property <bool> maintenance_switch_mode;
+    in-out property <bool> mode;
     in-out property <bool> switch;
     in-out property <string> time;
-    in-out property <bool> switch_enabled;
-    in-out property <bool> has_input;
-
-    callback reflect_operation_mode();
-    callback set_maintenance_mode();
-    callback fix_block();
 
     VerticalLayout {
         padding-top: 10px;
@@ -83,36 +76,16 @@ component TransitSystem inherits Rectangle {
                 width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Block");
-                edited(input) => { 
-                    block_id = input; 
-                    if (block_id == "") {
-                        has_input = false;
-                    } else {
-                        has_input = true;
-                        reflect_operation_mode();
-                    }
-                }
+                edited(input) => { block_id = input }
             }
             HorizontalLayout {
                 Switch {
-                    enabled: has_input;
-                    checked: block_maintenance_mode;
-                    toggled => {
-                        maintenance_switch_mode = !maintenance_switch_mode;
-                        if (maintenance_switch_mode == true) {
-                            switch_enabled = true;
-                            set_maintenance_mode();
-                        } else {
-                            switch_enabled = false;
-                            fix_block();
-                        }
-                    }
+                    toggled => {mode = !mode}
                 }
                 Text {text:"  Maintenance Mode"; y: 7px;}
             }
             HorizontalLayout {
                 Switch {
-                    enabled: switch_enabled;
                     toggled => {switch = !switch}
                 }
                 Text {text:" Switch"; y: 7px;}
@@ -384,11 +357,10 @@ export component CtcUi inherits Window {
     in-out property <string> maintenance_block;
 
     //Transit System
-    in-out property <bool> block_maintenance_mode;
+    in-out property <bool> maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
     in-out property <string> time;
-    in-out property <string> block_id;
 
     //Dispatch 
     in-out property <[string]> stations;
@@ -408,11 +380,8 @@ export component CtcUi inherits Window {
     in-out property <string> confirm_occupancy_message;
     in-out property <string> confirm_output_message;
     in-out property <string> confirm_maintenance_message;
-
-    // Transit callbacks
-    callback reflect_operation_mode();
-    callback set_maintenance_mode();
-    callback fix_block();
+    in-out property <string> confirm_switch_message;
+    in-out property <string> confirm_automatic_dispatch;
 
     callback send_occupancy();
     callback print-output-to-wayside();
@@ -443,11 +412,6 @@ export component CtcUi inherits Window {
                 TransitSystem {
                     block_data: block_data;
                     time: time;
-                    block_id <=> block_id;
-                    block_maintenance_mode <=> block_maintenance_mode;
-                    reflect_operation_mode => {root.reflect_operation_mode()}
-                    set_maintenance_mode => {root.set_maintenance_mode()}
-                    fix_block => {root.fix_block()}
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -538,15 +502,15 @@ export component CtcUi inherits Window {
                             padding-bottom: 20px;
                             Text {
                                 font-size: 20px;
-                                text: "Section: \{block_maintenance_mode ? maintenance_section : ""}";
+                                text: "Section: \{maintenance_mode ? maintenance_section : ""}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Block: \{block_maintenance_mode ? maintenance_block : ""}";
+                                text: "Block: \{maintenance_mode ? maintenance_block : ""}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Mainteance Signal: \{block_maintenance_mode ? "True" : "False" }" ;
+                                text: "Mainteance Signal: \{maintenance_mode ? "True" : "False" }" ;
                             }
                         }
                         VerticalBox {
@@ -570,4 +534,3 @@ export component CtcUi inherits Window {
         }
     }
 }
-

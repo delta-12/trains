@@ -125,9 +125,6 @@ class Ctc
         std::size_t GetNumTrains(void) const;
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
-        std::vector<types::BlockId> GetUpdatedBlocks(void) const;
-        void ClearUpdatedBlocks(void);
-
         // Train Specific
         types::Error GetTrainById(const types::TrainId train_id, ctc::Train &train) const;
         std::size_t GetTrainAuthority(const types::TrainId train_id);
@@ -145,6 +142,7 @@ class Ctc
         void AddTrainToTrainSchedule(ctc::Train train);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
+
 
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;

@@ -74,88 +74,88 @@ int main(void)
 
     std::thread worker_thread([&]
         {
-            std::filesystem::path base_path = std::filesystem::current_path();
-            std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
-            std::filesystem::path path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
-            CsvParser parser(path);
-            CsvParser parser2(path2);
-            BlockBuilder bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
-            BlockBuilder bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                              std::filesystem::path base_path = std::filesystem::current_path();
+                              std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
+                              std::filesystem::path path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
+                              CsvParser parser(path);
+                              CsvParser parser2(path2);
+                              BlockBuilder bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                              BlockBuilder bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
 
-            // Create clock
-            std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+                              // Create clock
+                              std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
 
-            // Create train
-            std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
+                              // Create train
+                              std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
 
-            // Create track
-            std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
-            track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
+                              // Create track
+                              std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
+                              track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
 
-            // Add track and train to simulator
-            world.AddTrackModel(track);
-            world.AddTrainModel(track->GetTrackId(), train);
+                              // Add track and train to simulator
+                              world.AddTrackModel(track);
+                              world.AddTrainModel(track->GetTrackId(), train);
 
-            // Hardware wayside
-            // Create controller handler and start TCP server
-            // controller_network::ControllerHandler<1024> controller_handler;
-            // controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
-            //     controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
-            // });
+                              // Hardware wayside
+                              // Create controller handler and start TCP server
+                              // controller_network::ControllerHandler<1024> controller_handler;
+                              // controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
+                              //     controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
+                              // });
 
-            // Software wayside
-            std::filesystem::path schedule_path = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
-            RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
-            wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
-                                                                                                types::TrackId::TRACKID_GREEN,
-                                                                                                wayside_controller::kGreenLineBlocksWayside0,
-                                                                                                controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
-            CsvParser csv_parser(schedule_path);
-            BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
-            std::vector<types::Block> blocks = bb.GetBlocks();
-            controller_network::ControllerHandler<1024> controller_handler;
-            controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
-            controller_handler.SetWaysideLayout(block_builder.GetBlocks());
-            wayside_controller_handler.Connect();
-            controller_handler.Update(ctc_office, world);
+                              // Software wayside
+                              std::filesystem::path schedule_path = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+                              RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
+                              wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
+                                                                                                                    types::TrackId::TRACKID_GREEN,
+                                                                                                                    wayside_controller::kGreenLineBlocksWayside0,
+                                                                                                                    controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
+                              CsvParser csv_parser(schedule_path);
+                              BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+                              std::vector<types::Block> blocks = bb.GetBlocks();
+                              controller_network::ControllerHandler<1024> controller_handler;
+                              controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
+                              controller_handler.SetWaysideLayout(block_builder.GetBlocks());
+                              wayside_controller_handler.Connect();
+                              controller_handler.Update(ctc_office, world);
 
-            // Manually dispatch train
-            ctc_office.ManualDispatch(1, 80);
+                              // Manually dispatch train
+                              ctc_office.ManualDispatch(1, 80);
 
-            train->SetDistanceTraveled(1);
+                              train->SetDistanceTraveled(1);
 
 
-            std::chrono::steady_clock::time_point last_ui_update = std::chrono::steady_clock::now();
+                              std::chrono::steady_clock::time_point last_ui_update = std::chrono::steady_clock::now();
 
-            // Main loop
-            while (running.load())
-            {
-                // TODO run simulator update, controller handler update, and wayside update
+                              // Main loop
+                              while (running.load())
+                              {
+                                  // TODO run simulator update, controller handler update, and wayside update
 
-                // tcp_server.RunFor(std::chrono::milliseconds(10));
-                controller_handler.Update(ctc_office, world);
-                wayside_controller_handler.Update();
-                world.Update();
+                                  // tcp_server.RunFor(std::chrono::milliseconds(10));
+                                  controller_handler.Update(ctc_office, world);
+                                  wayside_controller_handler.Update();
+                                  world.Update();
 
-                types::MetersPerSecond speed = train->GetCommandedSpeed();
-                types::Blocks authority      = train->GetAuthority();
+                                  types::MetersPerSecond speed = train->GetCommandedSpeed();
+                                  types::Blocks authority      = train->GetAuthority();
 
-                if ((speed != 0) || (authority != 0))
-                {
-                    LOGGER_LOG_DEBUG(std::cout, "MAIN", "Speed: {}, Authority: {}", speed, authority);
+                                  if ((speed != 0) || (authority != 0))
+                                  {
+                                      LOGGER_LOG_DEBUG(std::cout, "MAIN", "Speed: {}, Authority: {}", speed, authority);
 
-                    train->SetDistanceTraveled(100);
-                }
+                                      train->SetDistanceTraveled(100);
+                                  }
 
-                // Update UIs
-                if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - last_ui_update).count() > 10)
-                {
-                    ctc::backend_handler(ctc_office, ctc_ui);
-                    last_ui_update = std::chrono::steady_clock::now();
+                                  // Update UIs
+                                  if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - last_ui_update).count() > 10)
+                                  {
+                                      ctc::backend_handler(ctc_office, ctc_ui);
+                                      last_ui_update = std::chrono::steady_clock::now();
 
-                    LOGGER_LOG_DEBUG(std::cout, "MAIN", "Updated UI");
-                }
-            }
+                                      LOGGER_LOG_DEBUG(std::cout, "MAIN", "Updated UI");
+                                  }
+                              }
         });
 
     launcher_ui->run();

@@ -135,9 +135,6 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
     {
         for (const types::BlockState &block_state : block_states)
         {
-            // Push block ID back to updated_blocks_
-            updated_blocks_.emplace_back(block_state.block);
-
             // Update block states in private data memer blocks_ which stores all blocks information
             std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_state](const types::Block &block) {
                     return block.block == block_state.block;
@@ -145,13 +142,10 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
 
             if (block_it != blocks_.end())
             {
+                block_it->occupied = block_state.occupied;
                 if (block_state.track_failure == true)
                 {
-                    block_it->failed = block_state.track_failure;
-                }
-                else
-                {
-                    block_it->occupied = block_state.occupied;
+                    failure_blocks_.push_back(block_state.block);
                 }
             }
             else
@@ -182,23 +176,17 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
     std::vector<types::TrackCircuitData> suggested_speed_and_authorities;
     for (const ctc::Train &train : train_schedules_)
     {
-        types::BlockId block = train.current_position;
-
-        if (types::kYardBlock != block)
-        {
-            suggested_speed_and_authorities.emplace_back(
-                GetBlockById(train.current_position).track,
-                block,
-                train.suggested_speed,
-                train.authority.size()
-                );
-        }
+        suggested_speed_and_authorities.emplace_back(
+            GetBlockById(train.current_position).track,
+            train.current_position,
+            train.suggested_speed,
+            train.authority.size()
+            );
     }
     return suggested_speed_and_authorities;
 }
 
 /*------------------------------------- Setters -------------------------------------*/
-
 void Ctc::SetBlocks(std::vector<types::Block> &blocks)
 {
     track_ = blocks[CTC_FIRST_BLOCK].track;
@@ -259,33 +247,7 @@ void Ctc::SetManualMode(void)
     ctc_mode_ = CtcOperationMode::MANUAL_MODE;
 }
 
-void Ctc::SetBlockToMaintenance(types::BlockId block_id)
-{
-    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
-            return block.block == block_id;
-        });
-
-    if (block_it != blocks_.end())
-    {
-        block_it->maintenance = true;
-    }
-}
-
-void Ctc::SetBlockToOpen(types::BlockId block_id)
-{
-    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
-            return block.block == block_id;
-        });
-
-    if (block_it != blocks_.end())
-    {
-        block_it->maintenance = false;
-        block_it->failed      = false;
-    }
-}
-
 /*------------------------------------- Getters -------------------------------------*/
-
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {
     types::Block result;
@@ -389,11 +351,6 @@ std::vector<ctc::Train> Ctc::GetTrains(void) const
     return train_schedules_;
 }
 
-std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const
-{
-    return updated_blocks_;
-}
-
 std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id)
 {
     std::size_t                       authority;
@@ -457,11 +414,6 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
         }
         return current_position;
     }
-}
-
-void Ctc::ClearUpdatedBlocks(void)
-{
-    updated_blocks_.clear();
 }
 
 } // namespace ctc
