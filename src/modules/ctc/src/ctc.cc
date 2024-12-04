@@ -392,6 +392,20 @@ types::Error Ctc::SetSwitchPosition(const types::BlockId block_id, const bool sw
     return error;
 }
 
+void Ctc::SetTrainDispatched(const types::TrainId train_id) {
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        train_it->dispatched = true;
+    }
+}
+
 /*------------------------------------- Getters -------------------------------------*/
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {

@@ -181,7 +181,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
             //Capture Variable to update
             current_position = std::to_string(ctc_office.GetTrainCurrentPosition(new_train.train_id));
             train_id         = std::to_string(new_train.train_id);
-            authority        = std::to_string(ctc_office.GetTrainAuthority(new_train.train_id));
+            authority        = std::to_string(ctc_office.GetTrainAutgithority(new_train.train_id));
             suggested_speed  = std::to_string(static_cast<int>(ctc_office.GetTrainSuggestedSpeed(new_train.train_id)));
             departure_time   = ctc_office.GetTrainDepartureTime(new_train.train_id);
 
@@ -509,7 +509,8 @@ static void departure_time_handler(ctc::Ctc &ctc_office) {
     std::chrono::system_clock::time_point current_time = ctc_office.GetTime();
     std::vector<ctc::Train> trains = ctc_office.GetTrains();
     for (ctc::Train train : trains) {
-        if (train.departure_time == current_time) {
+        if (train.departure_time <= current_time && !train.dispatched) {
+            ctc_office.SetTrainDispatched(train.train_id);
             std::vector<types::BlockState> block_states;
             block_states.emplace_back(63, true, false);
             ctc_office.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);

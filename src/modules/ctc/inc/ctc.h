@@ -72,10 +72,10 @@ struct DestinationAndArrivalTime
 
 struct Train
 {
-    Train(void) : train_id(GetNextId()), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS)
+    Train(void) : train_id(GetNextId()), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS), dispatched(false)
     {
     };
-    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS)
+    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS), dispatched(false)
     {
     };
     types::TrainId train_id;
@@ -86,6 +86,7 @@ struct Train
     std::vector<DestinationAndArrivalTime> destination_list;
     std::chrono::system_clock::time_point departure_time;
     std::chrono::duration<double> dwell_time;
+    bool dispatched;
     static types::TrainId last_id;
 
     static types::TrainId GetNextId()
@@ -124,6 +125,7 @@ class Ctc
         void SetSimulationSpeedMultiplier(int multiplier);
         types::Error SetSwitchPosition(const types::BlockId block_id, const bool switched);
         types::Error SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time);
+        void SetTrainDispatched(const types::TrainId train_id);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;
