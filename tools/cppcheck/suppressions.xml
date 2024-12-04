@@ -33,10 +33,10 @@
         <fileName>*/src/modules/ctc/src/ctc_callback_handler.cc</fileName>
     </suppress>
 
-    <!-- Suppress unused lexer functions -->
+    <!-- Suppress unused PLC compiler functions -->
     <suppress>
         <id>unusedFunction</id>
-        <fileName>*/src/modules/wayside_controller/src/plc_lexer.cc</fileName>
+        <fileName>*/src/modules/wayside_controller/src/plc_compiler.cc</fileName>
     </suppress>
 
 </suppressions>
