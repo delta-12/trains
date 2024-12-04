@@ -4,13 +4,15 @@
 * @brief Unit testing for the PLC compiler.
 *****************************************************************************/
 
-#include <sstream>
 #include <deque>
+#include <filesystem>
+#include <sstream>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <gmock/gmock-matchers.h>
 
+#include "plc_compiler.h"
 #include "plc_lexer.h"
 #include "plc_parser.h"
 
@@ -269,7 +271,7 @@ TEST(PlcCompilerTests, ParserValidInput)
     input << "\n\r\t \n";
     input << "IF ((block_0 == HIGH\n) ||\t ((IN_2 == HIGH)&&(IN_3 ==LOW))|| ( block_1 == HIGH))\n";
     input << "{\n";
-    input << "\tSET Crossing_0 HIGH;\n";
+    input << "\tSET OUT_0 HIGH;\n";
     input << "}\n";
     input << "ELSE{SET Crossing_0 LOW;\r\n}\n";
     input << "\n\n";
@@ -289,6 +291,17 @@ TEST(PlcCompilerTests, ParserValidInput)
     ASSERT_EQ(0, parser_errors.size());
 
     // TODO NNF-273 verify parser nodes
+    testing::internal::CaptureStdout();
+    std::cout << *node << std::endl;
+    testing::internal::GetCapturedStdout();
+}
+
+TEST(PlcCompilerTests, Compile)
+{
+
+    std::filesystem::path path = std::filesystem::current_path() / ".." / "tests" / "modules" / "wayside_controller" / "plc_program.plc";
+
+    ASSERT_EQ(types::Error::ERROR_NONE, plc_compiler::Compile(path));
 }
 
 TEST(PlcCompilerTests, InvalidLexerInput)
@@ -324,6 +337,8 @@ TEST(PlcCompilerTests, InvalidParserInput)
     std::deque<plc_compiler::lexer::Error>  lexer_errors;
     std::deque<plc_compiler::parser::Error> parser_errors;
     std::stringstream                       input;
+    input << "foobar\n";
+    input << "BLOCK HIGH = IN_0;\n";
     input << "BLOCK block_0 = IN_0;\n";
     input << "BLOCK block_1=IN_1;\n";
     input << "SWITCH switch_0= OUT_0;\n";
@@ -338,7 +353,7 @@ TEST(PlcCompilerTests, InvalidParserInput)
     input << "IF (((block_0 == HIGH)&&(block_1 == LOW)){\n";
     input << "    SET switch_0 LOW;\n";
     input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
-    input << "{SET switch_0 HIGH;}\n";
+    input << "{SET OUT_100 LOW; SET switch_0 HGH; SET switch_0";
 
     // Lexer
     ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, lexer_errors));
@@ -349,4 +364,10 @@ TEST(PlcCompilerTests, InvalidParserInput)
     ASSERT_NE(0, parser_errors.size());
 
     // TODO NNF-273 verify parser nodes
+    testing::internal::CaptureStdout();
+    for (const plc_compiler::parser::Error &parser_error : parser_errors)
+    {
+        std::cout << parser_error << std::endl;
+    }
+    testing::internal::GetCapturedStdout();
 }

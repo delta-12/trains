@@ -1,0 +1,23 @@
+BLOCK block_0 = IN_0;
+BLOCK block_1 = IN_1;
+SWITCH switch_0 = OUT_0;
+CROSSING Crossing_0 = OUT_1;
+ 
+IF ((block_0 == HIGH) || ((IN_2 == HIGH) && (IN_3 ==LOW))|| (block_1 == HIGH))
+{
+    SET OUT_0 HIGH;
+}
+ELSE
+{
+    SET Crossing_0 LOW;
+}
+
+IF ((block_0 == HIGH) && (block_1 == LOW))
+{
+    SET switch_0 LOW;
+    SET Crossing_0 HIGH;
+}
+ELSE IF ((block_0==LOW) && (block_1 == HIGH))
+{
+    SET switch_0 HIGH;
+}

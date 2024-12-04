@@ -830,9 +830,14 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
     {
         // Not parsed, nothing to check
     }
-    else if (!operands.empty() || (expressions.size() > 1))
+    else if (!operands.empty())
     {
-        // TODO error
+        errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, operands.back());
+        parsed = false;
+    }
+    else if (expressions.size() > 1)
+    {
+        errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, lexer::Token(lexer::TokenType::TOKENTYPE_SYMBOL, "("));
         parsed = false;
     }
     else
