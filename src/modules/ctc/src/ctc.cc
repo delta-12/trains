@@ -142,8 +142,10 @@ types::Error Ctc::DispatchToStation(types::TrainId train_id, types::BlockId dest
     else
     {
         ctc::Train train(train_id);
-        train.destination_list.emplace_back(DestinationAndArrivalTime(destination));
-        error = SetTrainDepartureTime(arrival_time, GetBlockById(destination).total_time_to_station, train.destination_list.back().arrival_time);
+        std::chrono::system_clock::time_point arrival_time_point;
+        clock_->GetTimePoint(arrival_time, arrival_time_point);
+        train.destination_list.emplace_back(DestinationAndArrivalTime(destination, arrival_time_point));
+        error = SetTrainDepartureTime(arrival_time, GetBlockById(destination).total_time_to_station, train.departure_time);
         if (error == types::Error::ERROR_NONE)
         {
             AddTrainToTrainSchedule(train);
