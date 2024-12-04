@@ -13,8 +13,6 @@ static bool ParseIdOrOutputSignal(SharedIdAstNode &id_node, SharedSignalAstNode 
 static bool ParseLogicLevel(SharedLogicLevelAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseAlias(SharedAliasAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static bool ParseLeftOperand(SharedIdAstNode &id_node, SharedSignalAstNode &signal_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static bool ParseRightOperand(SharedLogicLevelAstNode &logic_level_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
@@ -27,14 +25,14 @@ static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::d
 static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static inline bool IsAlias(const std::string &lexeme);
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const size_t tokens_required);
+static inline bool IsAlias(const std::string &lexeme);
 static inline bool IsElseNext(std::deque<lexer::Token> &tokens);
 static inline bool IsBodyNext(std::deque<lexer::Token> &tokens);
 static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens);
-static std::string LogicLevelToString(const LogicLevelAstNode::LogicLevel logic_level);
+static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 
 StatementAstNode::StatementAstNode(void)
 {
@@ -537,99 +535,95 @@ static bool ParseSet(SharedSetAstNode &node, std::deque<lexer::Token> &tokens, s
     return parsed;
 }
 
-static bool ParseLeftOperand(SharedIdAstNode &id_node, SharedSignalAstNode &signal_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    bool parsed = false;
-    id_node         = nullptr;
-    signal_node     = nullptr;
-    expression_node = nullptr;
-
-    if (IsExpressionNext(tokens))
-    {
-        parsed = ParseExpression(expression_node, tokens, errors);
-    }
-    else
-    {
-        parsed = ParseIdOrInputSignal(id_node, signal_node, tokens, errors);
-    }
-
-    return parsed;
-}
-
-static bool ParseRightOperand(SharedLogicLevelAstNode &logic_level_node, SharedExpressionAstNode &expression_node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    bool parsed = false;
-    logic_level_node = nullptr;
-    expression_node  = nullptr;
-
-    if (IsExpressionNext(tokens))
-    {
-        parsed = ParseExpression(expression_node, tokens, errors);
-    }
-    else
-    {
-        parsed = ParseLogicLevel(logic_level_node, tokens, errors);
-    }
-
-    return parsed;
-}
-
 static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    bool                        parsed                = false;
-    ExpressionAstNode::Operator boolean_operator      = ExpressionAstNode::Operator::OPERATOR_MAX;
-    SharedIdAstNode             id_node               = nullptr;
-    SharedSignalAstNode         signal_node           = nullptr;
-    SharedExpressionAstNode     left_expression_node  = nullptr;
-    SharedLogicLevelAstNode     logic_level_node      = nullptr;
-    SharedExpressionAstNode     right_expression_node = nullptr;
+    bool                                parsed = true;
+    std::deque<lexer::Token>            postfix_expression;
+    std::deque<lexer::Token>            operands;
+    std::deque<SharedExpressionAstNode> expressions;
     node = nullptr;
 
-    if (!ParseOpenParenthesis(tokens, errors))
+    if (!ExpressionToPostfix(postfix_expression, tokens, errors))
     {
-        // Parse function sets error, do nothing
+        parsed = false;
     }
-    else if (!ParseLeftOperand(id_node, signal_node, left_expression_node, tokens, errors))
+
+    while (!postfix_expression.empty() && parsed)
     {
-        // Parse function sets error, do nothing
-    }
-    else if (!ParseOperator(boolean_operator, tokens, errors))
-    {
-        // Parse function sets error, do nothing
-    }
-    else if (!ParseRightOperand(logic_level_node, right_expression_node, tokens, errors))
-    {
-        // Parse function sets error, do nothing
-    }
-    else if (!ParseClosedParenthesis(tokens, errors))
-    {
-        // Parse function sets error, do nothing
-    }
-    else if (nullptr != logic_level_node)
-    {
-        if (nullptr != id_node)
+        ExpressionAstNode::Operator boolean_operator = ExpressionAstNode::Operator::OPERATOR_MAX;
+        lexer::Token                token            = GetToken(postfix_expression);
+
+        if (lexer::TokenType::TOKENTYPE_SYMBOL != token.token_type)
         {
-            node   = std::make_shared<ExpressionAstNode>(id_node, logic_level_node);
-            parsed = true;
+            operands.emplace_back(token);
         }
-        else if (nullptr != signal_node)
+        else if (operands.size() > 1)
         {
-            node   = std::make_shared<ExpressionAstNode>(signal_node, logic_level_node);
-            parsed = true;
+            SharedIdAstNode          id_node          = nullptr;
+            SharedSignalAstNode      signal_node      = nullptr;
+            SharedLogicLevelAstNode  logic_level_node = nullptr;
+            std::deque<lexer::Token> expression_tokens;
+
+            expression_tokens.emplace_front(operands.back());
+            operands.pop_back();
+            expression_tokens.emplace_front(token);
+            expression_tokens.emplace_front(operands.back());
+            operands.pop_back();
+
+            if (!ParseIdOrInputSignal(id_node, signal_node, expression_tokens, errors) ||
+                !ParseOperator(boolean_operator, expression_tokens, errors) ||
+                !ParseLogicLevel(logic_level_node, expression_tokens, errors))
+            {
+                parsed = false;
+            }
+            else if (nullptr != id_node)
+            {
+                expressions.push_back(std::make_shared<ExpressionAstNode>(id_node, logic_level_node));
+            }
+            else
+            {
+                expressions.push_back(std::make_shared<ExpressionAstNode>(signal_node, logic_level_node));
+            }
+        }
+        else if (expressions.size() > 1)
+        {
+            std::deque<lexer::Token> expression_tokens;
+            expression_tokens.emplace_back(token);
+
+            if (!ParseOperator(boolean_operator, expression_tokens, errors))
+            {
+                parsed = false;
+            }
+            else
+            {
+                SharedExpressionAstNode right_expression_node = expressions.back();
+                expressions.pop_back();
+
+                SharedExpressionAstNode left_expression_node = expressions.back();
+                expressions.pop_back();
+
+                expressions.push_back(std::make_shared<ExpressionAstNode>(left_expression_node, right_expression_node, boolean_operator));
+            }
         }
         else
         {
-            errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, lexer::Token(lexer::TokenType::TOKENTYPE_KEYWORD, LogicLevelToString(logic_level_node->logic_level)));
+            errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, token);
+            parsed = false;
         }
     }
-    else if ((nullptr != left_expression_node) && (nullptr != right_expression_node))
+
+    if (!parsed)
     {
-        node   = std::make_shared<ExpressionAstNode>(left_expression_node, right_expression_node, boolean_operator);
-        parsed = true;
+        // Not parsed, nothing to check
+    }
+    else if ((operands.size() > 0) || (expressions.size() > 1))
+    {
+        // TODO error
+        parsed = false;
     }
     else
     {
-        errors.emplace_back(ErrorType::ERRORTYPE_INVALID_INPUT, lexer::Token(lexer::TokenType::TOKENTYPE_KEYWORD, "")); // TODO set correct lexeme for token
+        node = expressions.front();
     }
 
     return parsed;
@@ -851,18 +845,6 @@ static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque
     return ParseSymbol(tokens, errors, "}");
 }
 
-static inline bool IsAlias(const std::string &lexeme)
-{
-    bool is_alias = false;
-
-    if (("BLOCK" == lexeme) || ("SWITCH" == lexeme) || ("LIGHT" == lexeme) || ("CROSSING" == lexeme))
-    {
-        is_alias = true;
-    }
-
-    return is_alias;
-}
-
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens)
 {
     lexer::Token token = tokens.front();
@@ -874,7 +856,14 @@ static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens)
 
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    errors.emplace_back(ErrorType::ERRORTYPE_UNEXPECTED_END, tokens.back());
+    lexer::Token token;
+
+    if (!tokens.empty())
+    {
+        token = tokens.back();
+    }
+
+    errors.emplace_back(ErrorType::ERRORTYPE_UNEXPECTED_END, token);
     tokens.clear();
 }
 
@@ -892,6 +881,18 @@ static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::
     }
 
     return remaining_tokens;
+}
+
+static inline bool IsAlias(const std::string &lexeme)
+{
+    bool is_alias = false;
+
+    if (("BLOCK" == lexeme) || ("SWITCH" == lexeme) || ("LIGHT" == lexeme) || ("CROSSING" == lexeme))
+    {
+        is_alias = true;
+    }
+
+    return is_alias;
 }
 
 static inline bool IsElseNext(std::deque<lexer::Token> &tokens)
@@ -930,23 +931,84 @@ static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens)
     return is_expression_next;
 }
 
-static std::string LogicLevelToString(const LogicLevelAstNode::LogicLevel logic_level)
+static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
-    std::string logic_level_string("");
+    bool                     converted   = false;
+    bool                     symbol_next = false;
+    std::deque<lexer::Token> symbols;
 
-    switch (logic_level)
+    if (!VerifyRemainingTokens(tokens, errors, 1))
     {
-    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_LOW:
-        logic_level_string = "LOW";
-        break;
-    case LogicLevelAstNode::LogicLevel::LOGICLEVEL_HIGH:
-        logic_level_string = "HIGH";
-        break;
-    default:
-        break;
+        // Not enough tokens remaining, verify function sets error, do nothing
+    }
+    else if ("(" != tokens.front().lexeme)
+    {
+        lexer::Token token = GetToken(tokens);
+
+        if (lexer::TokenType::TOKENTYPE_SYMBOL == token.token_type)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, token);
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, token);
+        }
+    }
+    else
+    {
+        symbols.emplace_back(GetToken(tokens));
+        converted = true;
     }
 
-    return logic_level_string;
+    while (!symbols.empty() && !tokens.empty())
+    {
+        lexer::Token token = GetToken(tokens);
+
+        if (")" == token.lexeme)
+        {
+            while ("(" != symbols.back().lexeme)
+            {
+                postfix_expression.emplace_back(symbols.back());
+                symbols.pop_back();
+            }
+
+            symbols.pop_back();
+            symbol_next = false;
+        }
+        else if (lexer::TokenType::TOKENTYPE_SYMBOL == token.token_type)
+        {
+            symbols.emplace_back(token);
+            symbol_next = false;
+        }
+        else if (symbol_next)
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, token);
+            converted = false;
+
+            break;
+        }
+        else
+        {
+            postfix_expression.emplace_back(token);
+            symbol_next = true;
+        }
+    }
+
+    if (converted && !symbols.empty())
+    {
+        if (!postfix_expression.empty())
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, postfix_expression.back());
+        }
+        else
+        {
+            errors.emplace_back(ErrorType::ERRORTYPE_MISSING_SYMBOL, symbols.back());
+        }
+
+        converted = false;
+    }
+
+    return converted;
 }
 
 } // namespace plc_compiler::parser

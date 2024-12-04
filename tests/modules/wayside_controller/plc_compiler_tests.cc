@@ -268,8 +268,7 @@ TEST(PlcCompilerTests, ParserValidInput)
     input << "SWITCH switch_0= OUT_0;\n";
     input << "CROSSING Crossing_0 =OUT_1;\n";
     input << "\n\r\t \n";
-    // input << "IF ((block_0 == HIGH\n) ||\t (IN_2 == HIGH)|| ( block_1 == HIGH))\n";
-    input << "IF ((block_0 == HIGH\n) ||\t (IN_2 == HIGH))\n";
+    input << "IF ((block_0 == HIGH\n) ||\t ((IN_2 == HIGH)&&(IN_3 ==LOW))|| ( block_1 == HIGH))\n";
     input << "{\n";
     input << "\tSET Crossing_0 HIGH;\n";
     input << "}\n";
@@ -287,7 +286,7 @@ TEST(PlcCompilerTests, ParserValidInput)
     // Parser
     plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
     ASSERT_NE(nullptr, node);
-    // ASSERT_EQ(0, parser_errors.size());
+    ASSERT_EQ(0, parser_errors.size());
     for (const plc_compiler::parser::Error &error : parser_errors)
     {
         std::cout << error;
@@ -298,7 +297,7 @@ TEST(PlcCompilerTests, ParserValidInput)
     // }
 }
 
-TEST(PlcCompilerTests, InvalidInput)
+TEST(PlcCompilerTests, InvalidLexerInput)
 {
     std::deque<plc_compiler::lexer::Token> tokens;
     std::deque<plc_compiler::lexer::Error> errors;
@@ -323,4 +322,31 @@ TEST(PlcCompilerTests, InvalidInput)
     ASSERT_NE(0, errors.size());
     ASSERT_THAT(tokens, testing::ElementsAreArray(kValidInputTokens));
     ASSERT_THAT(errors, testing::ElementsAreArray(kInvalidInputErrors));
+}
+
+TEST(PlcCompilerTests, InvalidParserInput)
+{
+    std::deque<plc_compiler::lexer::Token> tokens;
+    std::deque<plc_compiler::lexer::Error> errors;
+    std::stringstream                      input;
+    input << "BLOCK block_0 = IN_0;\n";
+    input << "BLOCK block_1=IN_1;\n";
+    input << "SWITCH switch_0= OUT_0;\n";
+    input << "CROSSING Crossing_0 =OUT_1;\n";
+    input << "\n\r\t \n";
+    input << "IF ((block_0 == HIGH\n) ||\t ((IN_2 == HIGH)&&(IN_3 ==LOW))|| &&( block_1 == HIGH))\n";
+    input << "{\n";
+    input << "\tSET Crossing_0 HIGH;\n";
+    input << "}\n";
+    input << "ELSE{SET Crossing_0 LOW;\r\n}\n";
+    input << "\n\n";
+    input << "IF (((block_0 == HIGH)&&(block_1 == LOW)){\n";
+    input << "    SET switch_0 LOW;\n";
+    input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
+    input << "{SET switch_0 HIGH;}\n";
+
+    ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, errors));
+    ASSERT_EQ(0, errors.size());
+
+    // TODO
 }
