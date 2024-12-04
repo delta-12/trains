@@ -63,8 +63,8 @@ TEST(CtcBackEndTest, GetDepartureTime)
     ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
     ASSERT_EQ(ctc_office.TimePointToString(departure_time), "09:58:30");
 
-    std::chrono::duration<double>         travel_time(138);
-    ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
+    std::chrono::duration<double>         new_travel_time(138);
+    ctc_office.SetTrainDepartureTime("10:00:00", new_travel_time, departure_time);
     ASSERT_EQ(ctc_office.TimePointToString(departure_time), "09:57:42");
 }
 
