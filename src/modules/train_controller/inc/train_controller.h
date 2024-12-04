@@ -54,6 +54,8 @@ class TrainController
         virtual types::Blocks GetAuthority(void) const                               = 0;
         virtual bool GetOperationMode(void) const                                    = 0;
         virtual double GetIntegralSum(void) const                                    = 0;
+        virtual uint16_t GetKP() const                                               = 0;
+        virtual uint16_t GetKI() const                                               = 0;
 
         // Setter declarations
         virtual void SetCommandedSpeed(const types::MetersPerSecond speed)                       = 0;
@@ -112,6 +114,8 @@ class SoftwareTrainController : public TrainController
         types::Blocks GetAuthority(void) const;
         bool GetOperationMode(void) const;
         double GetIntegralSum(void) const;
+        uint16_t GetKP(void) const;
+        uint16_t GetKI(void) const;
 
 
         // Implementations for setters

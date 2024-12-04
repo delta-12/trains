@@ -201,6 +201,8 @@ int main(void)
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
         train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
         train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+        train_controller_ui->set_kp(train_controllers[0]->GetKP());
+        train_controller_ui->set_ki(train_controllers[0]->GetKI());
     });
 
 
@@ -311,6 +313,8 @@ int main(void)
         train_controller_ui->set_right_doors(train_controllers[0].get()->GetRightDoors());
         train_controller_ui->set_station_name(slint::SharedString(train_controllers[0].get()->GetCurrentStationName()));
         train_controller_ui->set_emergency_brake(train_controllers[0].get()->GetEmergencyBrake());
+        train_controller_ui->set_kp(train_controllers[0]->GetKP());
+        train_controller_ui->set_ki(train_controllers[0]->GetKI());
     });
 
     // Update - End
@@ -472,6 +476,72 @@ int main(void)
         train_controllers[0]->SetEmergencyBrake(!current_state);
         train_controller_ui->set_emergency_brake(!current_state);
     });
+
+    // Update Kp and Ki values
+    train_controller_ui->on_request_update_kp_ki([&] {
+        if (train_controllers[0]->GetDistanceTravelled() == 0)
+        {
+            // Get the temporary kp and ki values from the UI
+            auto temp_kp_str = std::string(train_controller_ui->get_temp_kp());
+            auto temp_ki_str = std::string(train_controller_ui->get_temp_ki());
+
+            bool inputError = false;
+
+            // Parse and set Kp
+            if (!temp_kp_str.empty()) {
+                try {
+                    uint16_t temp_kp = static_cast<uint16_t>(std::stoul(temp_kp_str));
+                    train_controllers[0]->SetKP(temp_kp);
+                    // Update UI
+                    train_controller_ui->set_kp(temp_kp);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            // Parse and set Ki
+            if (!temp_ki_str.empty()) {
+                try {
+                    uint16_t temp_ki = static_cast<uint16_t>(std::stoul(temp_ki_str));
+                    train_controllers[0]->SetKI(temp_ki);
+                    // Update UI
+                    train_controller_ui->set_ki(temp_ki);
+                } catch (const std::exception&) {
+                    inputError = true;
+                }
+            }
+
+            if (inputError) {
+                // Handle input error (e.g., display a message to the user)
+                std::cout << "Invalid Kp or Ki value entered." << std::endl;
+            }
+        } else {
+            // Cannot update kp and ki after the train has been dispatched
+            std::cout << "Cannot update Kp and Ki after the train has been dispatched." << std::endl;
+        }
+    });
+
+    // Reset Kp and Ki to default values
+    train_controller_ui->on_request_reset_kp_ki([&] {
+        if (train_controllers[0]->GetDistanceTravelled() == 0)
+        {
+            // Reset to default values
+            train_controllers[0]->SetKP(5000);
+            train_controllers[0]->SetKI(100);
+
+            // Update UI
+            train_controller_ui->set_kp(5000);
+            train_controller_ui->set_ki(100);
+
+            // Clear temporary inputs
+            train_controller_ui->set_temp_kp("");
+            train_controller_ui->set_temp_ki("");
+        } else {
+            // Cannot reset kp and ki after the train has been dispatched
+            std::cout << "Cannot reset Kp and Ki after the train has been dispatched." << std::endl;
+        }
+    });
+
 
     // TRAIN CONTROLLER CALLBACKS END
 

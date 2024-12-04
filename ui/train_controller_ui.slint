@@ -48,6 +48,8 @@ export component TrainControllerUi inherits Window {
     callback request_toggle_left_doors();
     callback request_toggle_right_doors();
     callback request_toggle_emergency_brake();
+    callback request_update_kp_ki();
+    callback request_reset_kp_ki();
 
     // unique to test bench
     callback request_update_current_velocity();
@@ -64,6 +66,8 @@ export component TrainControllerUi inherits Window {
     in-out property <string> temp_current_velocity;
     in-out property <string> temp_service_brake;
     in-out property <string> temp_authority;
+    in-out property <string> temp_kp;
+    in-out property <string> temp_ki;
     
 
     min-height: 845px;
@@ -332,6 +336,7 @@ export component TrainControllerUi inherits Window {
                                     horizontal-alignment: center;
                                     width: 75px;
                                     edited(val) => {temp_driver_speed = val}
+                                    enabled: root.operation-mode-status == "Manual";
                                 }
                                 Text {
                                     text: "mph";
@@ -347,6 +352,7 @@ export component TrainControllerUi inherits Window {
                                         }
                                     }
                                     preferred-width: 50px;
+                                    enabled: root.operation-mode-status == "Manual";
                                 }
                             }
                         }
@@ -378,6 +384,7 @@ export component TrainControllerUi inherits Window {
                                         placeholder-text: "Enter";
                                         width: 75px;
                                         edited(val) => {temp_service_brake = val}
+                                        enabled: root.operation-mode-status == "Manual";
                                     }
                                     Button {
                                         text: "Accept\nValue";
@@ -387,6 +394,7 @@ export component TrainControllerUi inherits Window {
                                             }
                                         }
                                         preferred-width: 50px;
+                                        enabled: root.operation-mode-status == "Manual";
                                     }
                                 }
                             }
@@ -434,6 +442,7 @@ export component TrainControllerUi inherits Window {
                                         font-size: 20px;
                                         placeholder-text: "Enter";
                                         edited(val) => {temp_commanded_internal_temperature = val}
+                                        enabled: root.operation-mode-status == "Manual";
                                     }
                                     Text {
                                         text: "F";
@@ -448,6 +457,7 @@ export component TrainControllerUi inherits Window {
                                             }
                                         }
                                         min-width: 75px;
+                                        enabled: root.operation-mode-status == "Manual";
                                     }
                                 }
                             }
@@ -537,12 +547,82 @@ export component TrainControllerUi inherits Window {
                         border-color: white;
                         border-radius: 20px;
                         border-width: 5px;
-                        preferred-height: 250px;
+                        preferred-height: 300px;
                         preferred-width: 50px;
-                        min-height:100px;
-                        max-height:250px;
+                        min-height:170px;
+                        max-height:300px;
                         max-width: 400px;
+
                         VerticalBox {
+                            HorizontalBox {
+                                Text {
+                                    text: "Kp:";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    width: 50px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter";
+                                    horizontal-alignment: center;
+                                    width: 75px;
+                                    enabled: root.distance_traveled == 0;
+                                    edited(val) => { temp_kp = val; }
+                                }
+                                Text {
+                                    text: "Current Kp: \{root.kp}";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            HorizontalBox {
+                                Text {
+                                    text: "Ki:";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                    width: 50px;
+                                }
+                                LineEdit {
+                                    font-size: 20px;
+                                    placeholder-text: "Enter";
+                                    horizontal-alignment: center;
+                                    width: 75px;
+                                    enabled: root.distance_traveled == 0;
+                                    edited(val) => { temp_ki = val; }
+                                }
+                                Text {
+                                    text: "Current Ki: \{root.ki}";
+                                    font-size: 20px;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            HorizontalBox {
+                                Button {
+                                    text: "Accept Kp and Ki";
+                                    clicked => {
+                                        root.request_update_kp_ki();
+                                    }
+                                    enabled: root.distance_traveled == 0;
+                                }
+                                Button {
+                                    text: "Reset to Default";
+                                    clicked => {
+                                        root.request_reset_kp_ki();
+                                    }
+                                    enabled: root.distance_traveled == 0;
+                                }
+                            }
+                            // Display current kp and ki values
+                            
+                            
+                        }
+                        
+
+                        /*VerticalBox {
                             Text {
                                 text: "Kp: \{root.kp}";
                                 font-size: 20px;
@@ -555,8 +635,10 @@ export component TrainControllerUi inherits Window {
                                 horizontal-alignment: center;
                                 vertical-alignment: center;
                             }
-                        }
+                        }*/
                     }
+
+
                     Rectangle {
                         area5 := TouchArea {
                             width: parent.width;

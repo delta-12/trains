@@ -167,7 +167,15 @@ double SoftwareTrainController::GetIntegralSum() const
     return integral_sum_;
 }
 
+uint16_t SoftwareTrainController::GetKP() const
+{
+    return kp_;
+}
 
+uint16_t SoftwareTrainController::GetKI() const
+{
+    return ki_;
+}
 
 // Setters
 void SoftwareTrainController::SetCommandedSpeed(const types::MetersPerSecond speed)
