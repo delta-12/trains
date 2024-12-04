@@ -15,16 +15,17 @@
 #include "file_explorer.h"
 #include "tick_source.h"
 
-#define CTC_YARD_BLOCK_0              0
-#define CTC_SECTION_D_BLOCK_13        13
-#define CTC_SECTION_F_BLOCK_28        28
-#define CTC_SECTION_J_BLOCK_58        58
-#define CTC_SECTION_K_BLOCK_63        63
-#define CTC_SECTION_M_BLOCK_76        76
-#define CTC_SECTION_N_BLOCK_85        85
-#define CTC_SECTION_R_BLOCK_101       101
-#define CTC_FIRST_BLOCK               0
-#define CTC_TRAIN_CURRENT_DESTINATION 0
+#define CTC_YARD_BLOCK_0                  0
+#define CTC_SECTION_D_BLOCK_13            13
+#define CTC_SECTION_F_BLOCK_28            28
+#define CTC_SECTION_J_BLOCK_58            58
+#define CTC_SECTION_K_BLOCK_63            63
+#define CTC_SECTION_M_BLOCK_76            76
+#define CTC_SECTION_N_BLOCK_85            85
+#define CTC_SECTION_R_BLOCK_101           101
+#define CTC_FIRST_BLOCK                   0
+#define CTC_TRAIN_CURRENT_DESTINATION     0
+#define CTC_DEFAULT_DWELL_TIME_IN_SECONDS 300
 
 namespace ctc
 {
@@ -71,10 +72,10 @@ struct DestinationAndArrivalTime
 
 struct Train
 {
-    Train(void) : train_id(GetNextId()), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now())
+    Train(void) : train_id(GetNextId()), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS)
     {
     };
-    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now())
+    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now()), dwell_time(CTC_DEFAULT_DWELL_TIME_IN_SECONDS)
     {
     };
     types::TrainId train_id;
@@ -84,6 +85,7 @@ struct Train
     std::queue<types::BlockId> authority;
     std::vector<DestinationAndArrivalTime> destination_list;
     std::chrono::system_clock::time_point departure_time;
+    std::chrono::duration<double> dwell_time;
     static types::TrainId last_id;
 
     static types::TrainId GetNextId()
@@ -100,6 +102,7 @@ class Ctc
         Ctc(void);
         explicit Ctc(const types::TrackId track_id);
         Ctc(std::shared_ptr<TickSource> clk);
+        Ctc(const types::TrackId track_id, std::shared_ptr<TickSource> clk);
 
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
@@ -108,6 +111,7 @@ class Ctc
         /* Train Dispatch Specific */
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
         void ManualDispatch(types::TrainId train_id, types::BlockId destination);                             // Manual Dispatch to Block (not station)
+        types::Error DispatchToStation(types::TrainId train_id, types::BlockId destination, std::string& arrival_time);
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
         types::Error ChooseFileAndSetTrackLayout(std::string &file_name);
 
@@ -138,10 +142,13 @@ class Ctc
         std::size_t GetTrainAuthority(const types::TrainId train_id);
         types::MetersPerSecond GetTrainSuggestedSpeed(const types::TrainId train_id);
         types::BlockId GetTrainCurrentPosition(const types::TrainId train_id);
+        ctc::DestinationAndArrivalTime GetTrainCurrentDestinationAndArrivalTime(const types::TrainId train_id);
+        std::string GetTrainDepartureTime(const types::TrainId train_id);
         ctc::CtcOperationMode GetOperationMode(void) const;
         types::TrackId GetTrack(void) const;
         std::vector<types::BlockId> GetFailureBlocks(void) const;
         std::vector<types::BlockId> GetRoute(const types::BlockId start, const types::BlockId end);
+        std::string TimePointToString(const std::chrono::system_clock::time_point& time_point);
 
     private:
         void SetBlocks(std::vector<types::Block> &blocks);

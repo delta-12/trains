@@ -8,7 +8,6 @@
 
 #include "ctc.h"
 
-static std::string TimePointToString(const std::chrono::system_clock::time_point& time_point);
 
 TEST(CtcBackEndTest, SetTrackLayout)
 {
@@ -27,6 +26,7 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ASSERT_EQ(ctc.GetBlockById(50).speed_limit, 19);
 
     ASSERT_EQ(ctc.GetBlockById(2).station_name, "Pioneer");
+    ASSERT_EQ(ctc.GetBlockById(2).total_time_to_station.count(), 138);
     ASSERT_EQ(ctc.GetBlockById(22).station_name, "Whited");
     ASSERT_EQ(ctc.GetBlockById(31).station_name, "South bank");
     ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
@@ -61,7 +61,7 @@ TEST(CtcBackEndTest, GetDepartureTime)
     std::chrono::system_clock::time_point departure_time;
     std::chrono::duration<double>         travel_time(90);
     ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
-    ASSERT_EQ(TimePointToString(departure_time), "09:58:30");
+    ASSERT_EQ(ctc_office.TimePointToString(departure_time), "09:58:30");
 }
 
 TEST(CtcBackEndTest, SetSwitchPosition)
@@ -161,6 +161,20 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
         train1.authority.pop();
     }
     ASSERT_EQ(authority[authority.size() - 1], 105);
+}
+
+TEST(CtcBackEndTest, ManualDispatchToStation)
+{
+    TickSource                  tick_source("08:00:00");
+    std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
+    ctc::Ctc                    ctc_office(types::TrackId::TRACKID_GREEN, clock);
+    std::string                 arrival_time = "10:00:00";
+    types::Error                error        = ctc_office.DispatchToStation(1, 2, arrival_time);
+    ASSERT_EQ(error, types::Error::ERROR_NONE);
+    ASSERT_EQ(ctc_office.GetTrainCurrentPosition(1), 0);
+    ASSERT_EQ(ctc_office.GetTrainSuggestedSpeed(1), 0);
+    ASSERT_EQ(ctc_office.GetTrainDepartureTime(1), "09:57:42");
+    // ctc::DestinationAndArrivalTime destination_arrival_time = ctc_office.GetTrainCurrentDestinationAndArrivalTime(1);
 }
 
 TEST(CtcBackEndTest, SetBlockStates)
@@ -267,11 +281,3 @@ TEST(CtcBackEndTest, GetSuggestedSpeedAndAuthorities)
     ASSERT_EQ(data.speed, 19);
 }
 
-static std::string TimePointToString(const std::chrono::system_clock::time_point& time_point)
-{
-    std::stringstream buffer;
-    std::time_t       time_t_point = std::chrono::system_clock::to_time_t(time_point);
-    std::tm           local_time   = *std::localtime(&time_t_point);
-    buffer << std::put_time(&local_time, "%T");
-    return buffer.str();
-}

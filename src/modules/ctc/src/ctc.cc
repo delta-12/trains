@@ -26,7 +26,23 @@ Ctc::Ctc(const types::TrackId track_id)
     if (track_id == types::TrackId::TRACKID_GREEN)
     {
         std::filesystem::path base_path = std::filesystem::current_path();
-        std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+        std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+        // Check if path exist
+        if (std::filesystem::exists(path))
+        {
+            SetScheduleFilePath(path);
+            SetTrackLayout();
+        }
+    }
+}
+
+Ctc::Ctc(const types::TrackId track_id, std::shared_ptr<TickSource> clk)
+{
+    clock_ = clk;
+    if (track_id == types::TrackId::TRACKID_GREEN)
+    {
+        std::filesystem::path base_path = std::filesystem::current_path();
+        std::filesystem::path path      = base_path / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
         // Check if path exist
         if (std::filesystem::exists(path))
         {
@@ -107,6 +123,35 @@ void Ctc::ManualDispatch(types::TrainId train_id, types::BlockId destination)
         std::vector<types::BlockId> route = GetRoute(destination);
         AssignAuthority(route, train.train_id);
     }
+}
+
+types::Error Ctc::DispatchToStation(types::TrainId train_id, types::BlockId destination, std::string& arrival_time)
+{
+    types::Error error    = types::Error::ERROR_NONE;
+    auto         train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        train_it->destination_list.emplace_back(DestinationAndArrivalTime(destination));
+    }
+    else
+    {
+        ctc::Train train(train_id);
+        train.destination_list.emplace_back(DestinationAndArrivalTime(destination));
+        error = SetTrainDepartureTime(arrival_time, GetBlockById(destination).total_time_to_station, train.destination_list.back().arrival_time);
+        if (error == types::Error::ERROR_NONE)
+        {
+            AddTrainToTrainSchedule(train);
+            std::vector<types::BlockId> route = GetRoute(destination);
+            AssignAuthority(route, train.train_id);
+        }
+    }
+    return error;
 }
 
 void Ctc::AddTrainToTrainSchedule(ctc::Train train)
@@ -518,6 +563,41 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
     }
 }
 
+ctc::DestinationAndArrivalTime Ctc::GetTrainCurrentDestinationAndArrivalTime(const types::TrainId train_id)
+{
+    ctc::DestinationAndArrivalTime    destination_and_arrival_time;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        destination_and_arrival_time = train_it->destination_list[CTC_TRAIN_CURRENT_DESTINATION];
+    }
+    return destination_and_arrival_time;
+}
+
+std::string Ctc::GetTrainDepartureTime(const types::TrainId train_id)
+{
+    std::string                       departure_time;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        std::chrono::system_clock::time_point departure_time_point = train_it->departure_time;
+        departure_time = TimePointToString(departure_time_point);
+    }
+    return departure_time;
+}
+
 std::string Ctc::GetTimeString(void) const
 {
     return clock_->GetTimeString();
@@ -526,6 +606,15 @@ std::string Ctc::GetTimeString(void) const
 void Ctc::ClearUpdatedBlocks(void)
 {
     updated_blocks_.clear();
+}
+
+std::string Ctc::TimePointToString(const std::chrono::system_clock::time_point& time_point)
+{
+    std::stringstream buffer;
+    std::time_t       time_t_point = std::chrono::system_clock::to_time_t(time_point);
+    std::tm           local_time   = *std::localtime(&time_t_point);
+    buffer << std::put_time(&local_time, "%T");
+    return buffer.str();
 }
 
 } // namespace ctc
