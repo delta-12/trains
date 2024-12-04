@@ -56,37 +56,34 @@ struct Station
 
 struct DestinationAndArrivalTime
 {
-    DestinationAndArrivalTime(void) : destination(0), arrival_time(0)
+    DestinationAndArrivalTime(void) : destination(0), arrival_time(std::chrono::system_clock::now())
     {
     };
-    explicit DestinationAndArrivalTime(const types::BlockId destination) : destination(destination), arrival_time(0)
+    explicit DestinationAndArrivalTime(const types::BlockId destination) : destination(destination), arrival_time(std::chrono::system_clock::now())
     {
     };
-    explicit DestinationAndArrivalTime(const types::BlockId destination, types::Tick arrival_time) : destination(destination), arrival_time(arrival_time)
+    explicit DestinationAndArrivalTime(const types::BlockId destination, std::chrono::system_clock::time_point arrival_time) : destination(destination), arrival_time(arrival_time)
     {
     };
     types::BlockId destination;
-    types::Tick arrival_time;
+    std::chrono::system_clock::time_point arrival_time;
 };
 
 struct Train
 {
-    Train(void) : train_id(GetNextId()), train_name(""), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
+    Train(void) : train_id(GetNextId()), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now())
     {
     };
-    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
-    {
-    };
-    Train(std::string train_name) : train_name(train_name), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({})
+    explicit Train(types::TrainId train_id) : train_id(train_id), block_occupancy({}), current_position(0), suggested_speed(0), authority(), destination_list({}), departure_time(std::chrono::system_clock::now())
     {
     };
     types::TrainId train_id;
-    std::string train_name;
     std::vector<types::BlockId> block_occupancy;
     types::BlockId current_position;
     types::MetersPerSecond suggested_speed;
     std::queue<types::BlockId> authority;
     std::vector<DestinationAndArrivalTime> destination_list;
+    std::chrono::system_clock::time_point departure_time;
     static types::TrainId last_id;
 
     static types::TrainId GetNextId()
@@ -119,10 +116,10 @@ class Ctc
         void SetTrackLayout(std::filesystem::path path);
         void SetScheduleFilePath(std::filesystem::path path);
         void SetManualMode(void);
-        void SetBlockToMaintenance(types::BlockId block_id);
-        void SetBlockToOpen(types::BlockId block_id);
+        void SetBlockMaintenanceMode(const types::BlockId block_id, bool maintenance);
         void SetSimulationSpeedMultiplier(int multiplier);
         types::Error SetSwitchPosition(const types::BlockId block_id, const bool switched);
+        types::Error SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;

@@ -302,7 +302,7 @@ static void maintenance_mode_handler(ctc::Ctc &ctc_office, slint::ComponentHandl
         std::vector<types::BlockId> input_blocks = block_maintenance_channel.Receive();
         std::vector<types::Block>   maintenance_block;
         std::for_each(input_blocks.begin(), input_blocks.end(), [&ctc_office, &maintenance_block] (types::BlockId block_id) {
-                ctc_office.SetBlockToMaintenance(block_id);
+                ctc_office.SetBlockMaintenanceMode(block_id, true);
                 maintenance_block.push_back(ctc_office.GetBlockById(block_id));
             });
 
@@ -326,7 +326,7 @@ static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::C
         std::vector<types::BlockId> input_blocks = block_fix_channel.Receive();
         std::vector<types::Block>   fix_blocks;
         std::for_each(input_blocks.begin(), input_blocks.end(), [&ctc_office, &fix_blocks] (types::BlockId block_id) {
-                ctc_office.SetBlockToOpen(block_id);
+                ctc_office.SetBlockMaintenanceMode(block_id, false);
                 fix_blocks.push_back(ctc_office.GetBlockById(block_id));
             });
 

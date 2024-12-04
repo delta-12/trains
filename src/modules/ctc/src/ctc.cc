@@ -227,6 +227,17 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
     return suggested_speed_and_authorities;
 }
 
+types::Error Ctc::SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time) {
+    types::Error error = types::Error::ERROR_NONE;
+    std::chrono::system_clock::time_point arrival_time_point; 
+    error = clock_->GetTimePoint(arrival_time, arrival_time_point);
+    if (error == types::Error::ERROR_NONE) {
+        std::chrono::seconds travel_time = std::chrono::duration_cast<std::chrono::seconds>(seconds_to_travel_to_block);
+        departure_time = arrival_time_point - travel_time;
+    }
+    return error;
+}
+
 /*------------------------------------- Setters -------------------------------------*/
 void Ctc::SetBlocks(std::vector<types::Block> &blocks)
 {
@@ -288,7 +299,7 @@ void Ctc::SetManualMode(void)
     ctc_mode_ = CtcOperationMode::MANUAL_MODE;
 }
 
-void Ctc::SetBlockToMaintenance(types::BlockId block_id)
+void Ctc::SetBlockMaintenanceMode(const types::BlockId block_id, bool maintenance)
 {
     std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
             return block.block == block_id;
@@ -296,20 +307,14 @@ void Ctc::SetBlockToMaintenance(types::BlockId block_id)
 
     if (block_it != blocks_.end())
     {
-        block_it->maintenance = true;
-    }
-}
-
-void Ctc::SetBlockToOpen(types::BlockId block_id)
-{
-    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
-            return block.block == block_id;
-        });
-
-    if (block_it != blocks_.end())
-    {
-        block_it->maintenance = false;
-        block_it->failed      = false;
+        if (maintenance == true) {
+            block_it->maintenance = true;
+        }
+        else {
+            block_it->maintenance = false;
+            block_it->failed      = false;
+        }
+        
     }
 }
 
