@@ -172,6 +172,7 @@ TEST(CtcBackEndTest, ManualDispatchToStation)
     TickSource                  tick_source("08:00:00");
     std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
     ctc::Ctc                    ctc_office(types::TrackId::TRACKID_GREEN, clock);
+    ASSERT_EQ(ctc_office.GetBlockById(2).total_time_to_station.count(), 138);
     std::string                 arrival_time = "10:00:00";
     types::Error                error        = ctc_office.DispatchToStation(1, 2, arrival_time);
     ASSERT_EQ(error, types::Error::ERROR_NONE);
