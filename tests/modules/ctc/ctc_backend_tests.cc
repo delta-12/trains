@@ -63,7 +63,7 @@ TEST(CtcBackEndTest, GetDepartureTime)
     ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
     ASSERT_EQ(ctc_office.TimePointToString(departure_time), "09:58:30");
 
-    std::chrono::duration<double>         new_travel_time(138);
+    std::chrono::duration<double> new_travel_time(138);
     ctc_office.SetTrainDepartureTime("10:00:00", new_travel_time, departure_time);
     ASSERT_EQ(ctc_office.TimePointToString(departure_time), "09:57:42");
 }
@@ -173,8 +173,8 @@ TEST(CtcBackEndTest, ManualDispatchToStation)
     std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
     ctc::Ctc                    ctc_office(types::TrackId::TRACKID_GREEN, clock);
     ASSERT_EQ(ctc_office.GetBlockById(2).total_time_to_station.count(), 138);
-    std::string                 arrival_time = "10:00:00";
-    types::Error                error        = ctc_office.DispatchToStation(1, 2, arrival_time);
+    std::string  arrival_time = "10:00:00";
+    types::Error error        = ctc_office.DispatchToStation(1, 2, arrival_time);
     ASSERT_EQ(error, types::Error::ERROR_NONE);
     ASSERT_EQ(ctc_office.GetTrainCurrentPosition(1), 0);
     ASSERT_EQ(ctc_office.GetTrainSuggestedSpeed(1), 0);

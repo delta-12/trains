@@ -141,7 +141,7 @@ types::Error Ctc::DispatchToStation(types::TrainId train_id, types::BlockId dest
     }
     else
     {
-        ctc::Train train(train_id);
+        ctc::Train                            train(train_id);
         std::chrono::system_clock::time_point arrival_time_point;
         clock_->GetTimePoint(arrival_time, arrival_time_point);
         train.destination_list.emplace_back(DestinationAndArrivalTime(destination, arrival_time_point));
