@@ -1,6 +1,7 @@
 #include <thread>
 
 #include <slint.h>
+#include <unistd.h>
 
 #include "launcher.h"
 #include "simulator.h"
@@ -9,9 +10,25 @@
 #include "ctc_callback_handler.h"
 #include "channel.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+
+void AttachConsoleToApp()
+{
+    AllocConsole(); // Allocates a new console
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout); // Redirects stdout to the console
+    freopen_s(&fp, "CONOUT$", "w", stderr); // Redirects stderr to the console
+    freopen_s(&fp, "CONIN$", "r", stdin);   // Redirects stdin to the console
+}
+#endif
 
 int main(void)
 {
+    #ifdef _WIN32
+    AttachConsoleToApp();
+    #endif
     // Prevent worker_thread keep running after application window is closed
     std::atomic<bool> keep_running(true);
 
@@ -45,11 +62,14 @@ int main(void)
     });
 
     // Setting Up CTC
-    ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
-    ctc::setup_ui(ctc_ui, ctc_office);
+    ctc::setup_ui(ctc_ui);
 
     std::thread worker_thread([&]
         {
+                              TickSource tick_source("08:00:00", std::chrono::milliseconds(1));
+                              tick_source.Start();
+                              std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
+                              ctc::Ctc ctc_office(clock);
                               while (keep_running.load())
                               {
                                   ctc::backend_handler(ctc_office, ctc_ui);

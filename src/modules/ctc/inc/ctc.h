@@ -12,6 +12,8 @@
 #include "csv_parser.h"
 #include "graph.h"
 #include "types.h"
+#include "file_explorer.h"
+#include "tick_source.h"
 
 #define CTC_YARD_BLOCK_0              0
 #define CTC_SECTION_D_BLOCK_13        13
@@ -100,6 +102,7 @@ class Ctc
         /* Constructor */
         Ctc(void);
         explicit Ctc(const types::TrackId track_id);
+        Ctc(std::shared_ptr<TickSource> clk);
 
         /* Integration */
         types::Error SetBlockStates(const types::TrackId track, const std::vector<types::BlockState> &block_states);
@@ -109,11 +112,17 @@ class Ctc
         void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
         void ManualDispatch(types::TrainId train_id, types::BlockId destination);                             // Manual Dispatch to Block (not station)
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
+        types::Error ChooseFileAndSetTrackLayout(std::string &file_name);
 
         /* Setters */
         void SetTrackLayout(void);
+        void SetTrackLayout(std::filesystem::path path);
         void SetScheduleFilePath(std::filesystem::path path);
         void SetManualMode(void);
+        void SetBlockToMaintenance(types::BlockId block_id);
+        void SetBlockToOpen(types::BlockId block_id);
+        void SetSimulationSpeedMultiplier(int multiplier);
+        types::Error SetSwitchPosition(const types::BlockId block_id, const bool switched);
 
         /* Getters */
         types::Block GetBlockById(const types::BlockId block_id) const;
@@ -123,6 +132,10 @@ class Ctc
         std::size_t GetNumTrains(void) const;
         std::vector<ctc::Station> GetStations(void) const;
         std::vector<types::BlockId> GetDefaultRoute(void) const;
+        std::vector<types::BlockId> GetUpdatedBlocks(void) const;
+        std::string GetTimeString(void) const;
+        void ClearUpdatedBlocks(void);
+
         // Train Specific
         types::Error GetTrainById(const types::TrainId train_id, ctc::Train &train) const;
         std::size_t GetTrainAuthority(const types::TrainId train_id);
@@ -141,7 +154,7 @@ class Ctc
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
         std::vector<types::BlockId> GetRoute(const types::BlockId destination);
 
-
+        std::shared_ptr<TickSource> clock_;
         std::vector<types::Block> blocks_;
         std::vector<ctc::Station> stations_;
         std::vector<ctc::Train> train_schedules_;
@@ -150,7 +163,8 @@ class Ctc
         Graph<types::BlockId, types::Meters> graph_;
         std::vector<types::BlockId> default_route_;
         types::TrackId track_;
-        std::vector<types::BlockId> failure_blocks_;
+        // std::vector<types::BlockId> failure_blocks_;
+        std::vector<types::BlockId> updated_blocks_;
 };
 
 } // namespace ctc

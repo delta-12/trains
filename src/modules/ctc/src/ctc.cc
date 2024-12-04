@@ -16,6 +16,11 @@ namespace ctc
 
 Ctc::Ctc(void) = default;
 
+Ctc::Ctc(std::shared_ptr<TickSource> clk)
+{
+    clock_ = clk;
+}
+
 Ctc::Ctc(const types::TrackId track_id)
 {
     if (track_id == types::TrackId::TRACKID_GREEN)
@@ -39,6 +44,33 @@ void Ctc::SetTrackLayout(void)
     SetBlocks(blocks);
     SetStations(blocks_);
     SetDefaultRoute();
+}
+
+void Ctc::SetTrackLayout(std::filesystem::path path)
+{
+    CsvParser                 parser(path);
+    BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    std::vector<types::Block> blocks = bb.GetBlocks();
+    SetBlocks(blocks);
+    SetStations(blocks_);
+    SetDefaultRoute();
+}
+
+types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name)
+{
+    types::Error          error = types::Error::ERROR_NONE;
+    FileExplorer          file_explorer;
+    std::filesystem::path path = file_explorer.GetPath();
+    file_name = file_explorer.GetFileName();
+    if (path.empty() | file_name.empty())
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else
+    {
+        SetTrackLayout(path);
+    }
+    return error;
 }
 
 void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id)
@@ -138,6 +170,9 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
     {
         for (const types::BlockState &block_state : block_states)
         {
+            // Push block ID back to updated_blocks_
+            updated_blocks_.emplace_back(block_state.block);
+
             // Update block states in private data memer blocks_ which stores all blocks information
             std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_state](const types::Block &block) {
                     return block.block == block_state.block;
@@ -145,10 +180,13 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
 
             if (block_it != blocks_.end())
             {
-                block_it->occupied = block_state.occupied;
                 if (block_state.track_failure == true)
                 {
-                    failure_blocks_.push_back(block_state.block);
+                    block_it->failed = block_state.track_failure;
+                }
+                else
+                {
+                    block_it->occupied = block_state.occupied;
                 }
             }
             else
@@ -250,6 +288,54 @@ void Ctc::SetManualMode(void)
     ctc_mode_ = CtcOperationMode::MANUAL_MODE;
 }
 
+void Ctc::SetBlockToMaintenance(types::BlockId block_id)
+{
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        block_it->maintenance = true;
+    }
+}
+
+void Ctc::SetBlockToOpen(types::BlockId block_id)
+{
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        block_it->maintenance = false;
+        block_it->failed      = false;
+    }
+}
+
+void Ctc::SetSimulationSpeedMultiplier(int multiplier)
+{
+    clock_->SetMultiplier(static_cast<uint8_t>(multiplier));
+}
+
+types::Error Ctc::SetSwitchPosition(const types::BlockId block_id, const bool switched)
+{
+    types::Error                        error    = types::Error::ERROR_NONE;
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        block_it->switched = switched;
+    }
+    else
+    {
+        error = types::Error::ERROR_INVALID_BLOCK;
+    }
+    return error;
+}
+
 /*------------------------------------- Getters -------------------------------------*/
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {
@@ -334,10 +420,10 @@ types::TrackId Ctc::GetTrack(void) const
     return track_;
 }
 
-std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
-{
-    return failure_blocks_;
-}
+// std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
+// {
+//     return failure_blocks_;
+// }
 
 std::vector<types::Block> Ctc::GetBlocks(void) const
 {
@@ -352,6 +438,11 @@ std::size_t Ctc::GetNumTrains(void) const
 std::vector<ctc::Train> Ctc::GetTrains(void) const
 {
     return train_schedules_;
+}
+
+std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const
+{
+    return updated_blocks_;
 }
 
 std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id)
@@ -417,6 +508,16 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
         }
         return current_position;
     }
+}
+
+std::string Ctc::GetTimeString(void) const
+{
+    return clock_->GetTimeString();
+}
+
+void Ctc::ClearUpdatedBlocks(void)
+{
+    updated_blocks_.clear();
 }
 
 } // namespace ctc

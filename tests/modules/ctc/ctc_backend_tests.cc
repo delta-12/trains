@@ -50,6 +50,17 @@ TEST(CtcBackEndTest, SetManualMode)
     ASSERT_EQ(ctc.GetOperationMode(), ctc::MANUAL_MODE);
 }
 
+TEST(CtcBackEndTest, SetSwitchPosition)
+{
+    ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
+    ASSERT_EQ(ctc.GetBlockById(12).has_switch, true);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, false);
+    ctc.SetSwitchPosition(12, true);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, true);
+    ctc.SetSwitchPosition(12, false);
+    ASSERT_EQ(ctc.GetBlockById(12).switched, false);
+}
+
 TEST(CtcBackEndTest, DispatchMultipleDestination)
 {
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
@@ -151,8 +162,8 @@ TEST(CtcBackEndTest, SetBlockStates)
     ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
 
     ASSERT_EQ(ctc.GetBlockById(63).occupied, true);
-    ASSERT_EQ(ctc.GetBlockById(70).occupied, true);
-    ASSERT_EQ(ctc.GetFailureBlocks()[0], 70);
+    ASSERT_EQ(ctc.GetBlockById(70).occupied, false);
+    ASSERT_EQ(ctc.GetBlockById(70).failed, true);
 
     block_states.emplace_back(151, true, false);
     types::Error error = ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);

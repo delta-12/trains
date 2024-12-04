@@ -107,6 +107,7 @@ struct Block
     bool crossing_state;
     bool has_light;
     TrafficLightColor light_color;
+    bool failed;
     bool power_failure;
     bool track_circuit_failure;
     bool broken_rail;
