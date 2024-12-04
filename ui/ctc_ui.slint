@@ -178,10 +178,10 @@ component TrainSchedule inherits Rectangle {
 component ManualMode inherits Rectangle {
     in-out property <string> train_id;
     in-out property <string> arrival_station;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
     in-out property <[string]> trains;
+    in-out property <string> dispatch_message;
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
@@ -212,16 +212,6 @@ component ManualMode inherits Rectangle {
         }
         HorizontalLayout {
             alignment: start;
-            Text { font-size: 15px;text: "Destination:  ";}
-            Rectangle {width: 10px;}
-            LineEdit {
-                height: 30px;
-                y: -3px;
-                edited(input) => {destination = input}
-            } 
-        }
-        HorizontalLayout {
-            alignment: start;
             Text { font-size: 15px;text: "Arrival Time: ";}
             Rectangle {width: 10px;}
             LineEdit {
@@ -229,6 +219,9 @@ component ManualMode inherits Rectangle {
                 placeholder-text: @tr("10:00:00");
                 edited(input) => {arrival_time = input}
             } 
+        }
+        HorizontalLayout {
+            Text {text: dispatch_message;}
         }
         VerticalLayout {
             alignment: end; 
@@ -288,10 +281,10 @@ component Dispatch inherits Rectangle {
     in-out property<string> fileName: "";
     in-out property <string> train_id;
     in-out property <string> arrival_station;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
     in-out property <[string]> trains;
+    in-out property <string> dispatch_message;
 
     callback choose-file();
     callback parse-file();
@@ -340,9 +333,9 @@ component Dispatch inherits Rectangle {
             trains <=> trains;
             arrival_station <=> arrival_station;
             stations: stations;
-            destination <=> destination;
             arrival_time <=> arrival_time;
             manual-dispatch => {manual-dispatch()}
+            dispatch_message: dispatch_message;
         }    
     }
 }
@@ -389,13 +382,6 @@ component TBInputs inherits Rectangle {
             Text {
                 text: confirm_occupancy_message;
             }
-            Button {
-                height: 40px;
-                text:  "Send Dummy Block States";
-                clicked => {
-                    root.wc_send_block_states();
-                }
-            }
         }
     }
 }
@@ -404,7 +390,6 @@ export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <[[StandardListViewItem]]> train_schedules;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <string> maintenance_section;
     in-out property <string> maintenance_block;
@@ -423,6 +408,7 @@ export component CtcUi inherits Window {
     in-out property <string> train_id;
     in-out property <[string]> trains;
     in-out property <string> arrival_station;
+    in-out property <string> dispatch_message;
 
     //TestBench
     in-out property <string> block_occupancy;
@@ -497,8 +483,8 @@ export component CtcUi inherits Window {
                         train_id <=> train_id;
                         trains <=> trains;
                         arrival_station <=> arrival_station;
-                        destination <=> destination;
                         arrival_time <=> arrival_time;
+                        dispatch_message: dispatch_message;
                         manual-dispatch => {root.manual-dispatch()}
                     }
                 }   

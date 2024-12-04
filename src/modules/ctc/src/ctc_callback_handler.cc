@@ -150,32 +150,32 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 // Callbacks run on the frontend thread
 static inline void manual_dispatch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
-    destination_channel.Send(std::string(ctc_ui->get_destination()));
+    destination_channel.Send(std::string(ctc_ui->get_arrival_station()));
     train_id_channel.Send(std::string(ctc_ui->get_train_id()));
     arrival_time_channel.Send(std::string(ctc_ui->get_arrival_time()));
-    // TODO update UI if necessary
-
 }
 
 // Handlers run on the backend thread
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
-    if (destination_channel.DataAvailable())
+    if (destination_channel.DataAvailable() && arrival_time_channel.DataAvailable() && train_id_channel.DataAvailable())
     {
         // TODO need a function that instantiates a new train model and train controller with the same id
         std::string train_id     = train_id_channel.Receive();
-        std::string destination  = destination_channel.Receive();
+        std::string station_name = destination_channel.Receive();
         std::string arrival_time = arrival_time_channel.Receive();
         std::string current_position;
         std::string authority;
         std::string suggested_speed;
+
+        ctc::Station station = ctc_office.GetStationByName(station_name);
 
         // Dispatch new train
         if (train_id == "New Train")
         {
             // Backend Dispatch
             ctc::Train new_train;
-            ctc_office.DispatchToStation(new_train.train_id, static_cast<uint16_t>(std::stoi(destination)), arrival_time);
+            ctc_office.DispatchToStation(new_train.train_id, static_cast<uint16_t>(station.block_id), arrival_time);
 
             //Capture Variable to update
             current_position = std::to_string(ctc_office.GetTrainCurrentPosition(new_train.train_id));
@@ -185,7 +185,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
 
             // Update UI
             slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-            slint::invoke_from_event_loop([weak_ui_handle, train_id, current_position, authority, suggested_speed, destination] () {
+            slint::invoke_from_event_loop([weak_ui_handle, train_id, current_position, authority, suggested_speed, station_name] () {
                     if (auto ui = weak_ui_handle.lock())
                     {
                         if (ui.has_value())
@@ -203,7 +203,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
                             }
                             train_entry->push_back(slint::StandardListViewItem(authority.c_str()));
                             train_entry->push_back(slint::StandardListViewItem(suggested_speed.c_str()));
-                            train_entry->push_back(slint::StandardListViewItem(destination.c_str()));
+                            train_entry->push_back(slint::StandardListViewItem(station_name.c_str()));
                             auto received_train_schedules = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
                             received_train_schedules->push_back(train_entry);
 
@@ -218,10 +218,10 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
         else
         {
             // Backend Dispatch
-            ctc_office.ManualDispatch(std::stoi(train_id), static_cast<uint16_t>(std::stoi(destination)));
+            ctc_office.ManualDispatch(std::stoi(train_id), static_cast<uint16_t>(station.block_id));
             // Update UI
             slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-            slint::invoke_from_event_loop([weak_ui_handle, train_id, destination] () {
+            slint::invoke_from_event_loop([weak_ui_handle, train_id, station_name] () {
                     if (auto ui = weak_ui_handle.lock())
                     {
                         if (ui.has_value())
@@ -230,7 +230,7 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
                             auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
                             auto train_entry        = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(std::stoi(train_id) - 1).value());
                             auto train_destination  = train_entry->row_data(4).value();
-                            train_destination.text  = train_destination.text + ", " + destination.c_str();
+                            train_destination.text  = train_destination.text + ", " + station_name.c_str();
                             train_entry->set_row_data(4, train_destination);
                         }
                     }
@@ -357,6 +357,12 @@ static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
         {
             blocks = ctc_office.GetBlocks();
             blocks.erase(blocks.begin());
+        }
+
+        std::vector<types::BlockId> default_route = ctc_office.GetDefaultRoute();
+        for (types::BlockId block_id : default_route)
+        {
+            std::cout << "Block: " << block_id << std::endl;
         }
 
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
@@ -515,7 +521,6 @@ static void departure_time_handler(ctc::Ctc &ctc_office)
             ctc_office.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
         }
     }
-    std::cout << "Current Time: " << ctc_office.TimePointToString(current_time) << std::endl;
 }
 
 
@@ -523,18 +528,19 @@ static void departure_time_handler(ctc::Ctc &ctc_office)
 
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states)
 {
-    std::vector<ctc::Train> trains = ctc_office.GetTrains();
+    std::vector<ctc::Train>   trains   = ctc_office.GetTrains();
+    std::vector<ctc::Station> stations = ctc_office.GetStations();
 
     // Update UI
     slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
-    slint::invoke_from_event_loop([weak_ui_handle, trains, block_states] () {
+    slint::invoke_from_event_loop([weak_ui_handle, trains, block_states, stations] () {
             if (auto ui = weak_ui_handle.lock())
             {
                 if (ui.has_value())
                 {
                     // Update Train Schedule
                     auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
-                    std::for_each(trains.begin(), trains.end(), [&train_schedules_ui] (ctc::Train train) {
+                    std::for_each(trains.begin(), trains.end(), [&train_schedules_ui, stations] (ctc::Train train) {
                         auto train_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
                         train_entry->set_row_data(1, slint::StandardListViewItem(train.current_position == 0 ? "Yard" : std::to_string(train.current_position).c_str()));
                         train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
@@ -546,7 +552,13 @@ static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<
                         }
                         else
                         {
-                            train_entry->set_row_data(4, slint::StandardListViewItem(std::to_string(destination).c_str()));
+                            for (ctc::Station station : stations)
+                            {
+                                if (station.block_id == destination)
+                                {
+                                    train_entry->set_row_data(4, slint::StandardListViewItem(station.station_name.c_str()));
+                                }
+                            }
                         }
                     });
 

@@ -134,6 +134,7 @@ class Ctc
         std::size_t GetNumStation(void) const;
         std::size_t GetNumTrains(void) const;
         std::vector<ctc::Station> GetStations(void) const;
+        ctc::Station GetStationByName(const std::string& station_name);
         std::vector<types::BlockId> GetDefaultRoute(void) const;
         std::vector<types::BlockId> GetUpdatedBlocks(void) const;
         std::string GetTimeString(void) const;
@@ -150,6 +151,7 @@ class Ctc
         types::TrackId GetTrack(void) const;
         std::vector<types::BlockId> GetFailureBlocks(void) const;
         std::vector<types::BlockId> GetRoute(const types::BlockId start, const types::BlockId end);
+        std::vector<types::BlockId> GetRoute(const types::BlockId destination);
         std::string TimePointToString(const std::chrono::system_clock::time_point& time_point);
         std::chrono::system_clock::time_point GetTime(void) const;
 
@@ -159,7 +161,7 @@ class Ctc
         void SetDefaultRoute(void);
         void AddTrainToTrainSchedule(ctc::Train train);
         void AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id);
-        std::vector<types::BlockId> GetRoute(const types::BlockId destination);
+
 
         std::shared_ptr<TickSource> clock_;
         std::vector<types::Block> blocks_;
@@ -170,7 +172,6 @@ class Ctc
         Graph<types::BlockId, types::Meters> graph_;
         std::vector<types::BlockId> default_route_;
         types::TrackId track_;
-        // std::vector<types::BlockId> failure_blocks_;
         std::vector<types::BlockId> updated_blocks_;
 };
 

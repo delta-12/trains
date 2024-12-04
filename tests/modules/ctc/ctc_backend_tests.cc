@@ -110,6 +110,70 @@ TEST(CtcBackEndTest, Authority)
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
     ctc.ManualDispatch(1, 70);
     ASSERT_EQ(ctc.GetTrainAuthority(1), 8);
+
+    // NNF-256 Authority Bug Fix Test
+    // Dispatch to all blocks in N
+    ctc.ManualDispatch(2, 77);
+    ASSERT_EQ(ctc.GetTrainAuthority(2), 15);
+    ctc.ManualDispatch(3, 78);
+    ASSERT_EQ(ctc.GetTrainAuthority(3), 16);
+    ctc.ManualDispatch(4, 79);
+    ASSERT_EQ(ctc.GetTrainAuthority(4), 17);
+    ctc.ManualDispatch(5, 80);
+    ASSERT_EQ(ctc.GetTrainAuthority(5), 18);
+    ctc.ManualDispatch(6, 81);
+    ASSERT_EQ(ctc.GetTrainAuthority(6), 19);
+    ctc.ManualDispatch(7, 82);
+    ASSERT_EQ(ctc.GetTrainAuthority(7), 20);
+    ctc.ManualDispatch(8, 83);
+    ASSERT_EQ(ctc.GetTrainAuthority(8), 21);
+    ctc.ManualDispatch(9, 84);
+    ASSERT_EQ(ctc.GetTrainAuthority(9), 22);
+    ctc.ManualDispatch(10, 85);
+    ASSERT_EQ(ctc.GetTrainAuthority(10), 23);
+    ctc.ManualDispatch(11, 86);
+    ASSERT_EQ(ctc.GetTrainAuthority(11), 24);
+    // Dispatch to F
+    ctc.ManualDispatch(12, 25);
+    ASSERT_EQ(ctc.GetTrainAuthority(12), 101);
+    // Dispatch to E
+    ctc.ManualDispatch(13, 17);
+    ASSERT_EQ(ctc.GetTrainAuthority(13), 109);
+    // Dispatch to D
+    ctc.ManualDispatch(14, 13);
+    ASSERT_EQ(ctc.GetTrainAuthority(14), 113);
+}
+
+TEST(CtcBackEndTest, AuthorityToStationTest)
+{
+    ctc::Ctc                  ctc(types::TrackId::TRACKID_GREEN);
+    std::vector<ctc::Station> stations     = ctc.GetStations();
+    int                       i            = 1;
+    std::string               arrival_time = "10:00:00";
+    for (ctc::Station station : stations)
+    {
+        ctc.DispatchToStation(i, station.block_id, arrival_time);
+        std::cout << "Dispatch Train " << i << " to " << station.station_name << std::endl;
+        ++i;
+    }
+    ASSERT_EQ(ctc.GetTrainAuthority(1), 124);
+    ASSERT_EQ(ctc.GetTrainAuthority(2), 117);
+    ASSERT_EQ(ctc.GetTrainAuthority(3), 110);
+    ASSERT_EQ(ctc.GetTrainAuthority(4), 104);
+    ASSERT_EQ(ctc.GetTrainAuthority(5), 144);
+    ASSERT_EQ(ctc.GetTrainAuthority(6), 152);
+    ASSERT_EQ(ctc.GetTrainAuthority(7), 161);
+    ASSERT_EQ(ctc.GetTrainAuthority(8), 170);
+    ASSERT_EQ(ctc.GetTrainAuthority(9), 3);
+    ASSERT_EQ(ctc.GetTrainAuthority(10), 11);
+    ASSERT_EQ(ctc.GetTrainAuthority(11), 15);
+    ASSERT_EQ(ctc.GetTrainAuthority(12), 26);
+    ASSERT_EQ(ctc.GetTrainAuthority(13), 34);
+    ASSERT_EQ(ctc.GetTrainAuthority(14), 52);
+    ASSERT_EQ(ctc.GetTrainAuthority(15), 61);
+    ASSERT_EQ(ctc.GetTrainAuthority(16), 70);
+    ASSERT_EQ(ctc.GetTrainAuthority(17), 79);
+    ASSERT_EQ(ctc.GetTrainAuthority(18), 88);
 }
 
 TEST(CtcBackEndTest, ReturnToYard)

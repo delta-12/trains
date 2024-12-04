@@ -9,6 +9,7 @@
 #include "ctc.h"
 
 #include <sstream>
+#include <iostream>
 #include "unordered_map"
 
 namespace ctc
@@ -439,13 +440,15 @@ std::vector<types::BlockId> Ctc::GetDefaultRoute(void) const
 std::vector<types::BlockId> Ctc::GetRoute(const types::BlockId destination)
 {
     std::vector<types::BlockId> route;
-    for (size_t i = 0; i < default_route_.size(); ++i)
+    // Find the first occurrence of the destination block
+    auto it = std::find(default_route_.begin(), default_route_.end(), destination);
+
+    // If the destination block is found, copy the portion of the route
+    if (it != default_route_.end())
     {
-        if (default_route_[i] == destination)
-        {
-            std::copy(default_route_.begin(), default_route_.begin() + i + 1, std::back_inserter(route));
-        }
+        std::copy(default_route_.begin(), it + 1, std::back_inserter(route));
     }
+
     return route;
 }
 
@@ -624,6 +627,19 @@ std::string Ctc::GetTimeString(void) const
 std::chrono::system_clock::time_point Ctc::GetTime(void) const
 {
     return clock_->GetTime();
+}
+
+ctc::Station Ctc::GetStationByName(const std::string& station_name)
+{
+    ctc::Station result;
+    for (ctc::Station station : stations_)
+    {
+        if (station.station_name == station_name)
+        {
+            result = station;
+        }
+    }
+    return result;
 }
 
 void Ctc::ClearUpdatedBlocks(void)
