@@ -230,7 +230,7 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
 types::Error Ctc::SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time)
 {
     std::chrono::system_clock::time_point arrival_time_point;
-    types::Error error = clock_->GetTimePoint(arrival_time, arrival_time_point);
+    types::Error                          error = clock_->GetTimePoint(arrival_time, arrival_time_point);
     if (error == types::Error::ERROR_NONE)
     {
         std::chrono::seconds travel_time = std::chrono::duration_cast<std::chrono::seconds>(seconds_to_travel_to_block);
