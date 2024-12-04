@@ -494,11 +494,6 @@ types::TrackId Ctc::GetTrack(void) const
     return track_;
 }
 
-// std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
-// {
-//     return failure_blocks_;
-// }
-
 std::vector<types::Block> Ctc::GetBlocks(void) const
 {
     return blocks_;

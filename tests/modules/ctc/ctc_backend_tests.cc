@@ -30,6 +30,32 @@ TEST(CtcBackEndTest, SetTrackLayout)
     ASSERT_EQ(ctc.GetBlockById(22).station_name, "Whited");
     ASSERT_EQ(ctc.GetBlockById(31).station_name, "South bank");
     ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
+    ASSERT_EQ(ctc.GetStationByName("Dormont").total_time_to_station_with_dwell.count(), 150);
+}
+
+TEST(CtcBackEndTest, SetTrackLayoutWithPath)
+{
+    ctc::Ctc              ctc;
+    std::filesystem::path base_path = std::filesystem::current_path();
+    std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+    ctc.SetTrackLayout(path);
+    std::vector<types::Block> blocks = ctc.GetBlocks();
+    ASSERT_EQ(blocks.size(), 151);
+
+    ASSERT_EQ(ctc.GetBlockById(1).block, 1);
+    ASSERT_EQ(ctc.GetBlockById(1).speed_limit, 15);
+
+    ASSERT_EQ(ctc.GetBlockById(20).block, 20);
+    ASSERT_EQ(ctc.GetBlockById(20).speed_limit, 17);
+
+    ASSERT_EQ(ctc.GetBlockById(50).block, 50);
+    ASSERT_EQ(ctc.GetBlockById(50).speed_limit, 19);
+
+    ASSERT_EQ(ctc.GetBlockById(2).station_name, "Pioneer");
+    ASSERT_EQ(ctc.GetBlockById(2).total_time_to_station.count(), 138);
+    ASSERT_EQ(ctc.GetBlockById(22).station_name, "Whited");
+    ASSERT_EQ(ctc.GetBlockById(31).station_name, "South bank");
+    ASSERT_EQ(ctc.GetBlockById(73).station_name, "Dormont");
 }
 
 TEST(CtcBackEndTest, SetStations)
@@ -231,6 +257,16 @@ TEST(CtcBackEndTest, ManualDispatchToBlock)
     ASSERT_EQ(authority[authority.size() - 1], 105);
 }
 
+TEST(CtcBackEndTest, Timing)
+{
+    TickSource                  tick_source("08:00:00");
+    std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
+    ctc::Ctc                    ctc_office(types::TrackId::TRACKID_GREEN, clock);
+    ctc_office.SetSimulationSpeedMultiplier(50);
+    std::string time = "08:00:00";
+    ASSERT_EQ(ctc_office.GetTimeString(), time);
+}
+
 TEST(CtcBackEndTest, ManualDispatchToStation)
 {
     TickSource                  tick_source("08:00:00");
@@ -243,7 +279,13 @@ TEST(CtcBackEndTest, ManualDispatchToStation)
     ASSERT_EQ(ctc_office.GetTrainCurrentPosition(1), 0);
     ASSERT_EQ(ctc_office.GetTrainSuggestedSpeed(1), 0);
     ASSERT_EQ(ctc_office.GetTrainDepartureTime(1), "09:57:42");
-    // ctc::DestinationAndArrivalTime destination_arrival_time = ctc_office.GetTrainCurrentDestinationAndArrivalTime(1);
+    ctc_office.SetTrainDispatched(1);
+    ctc::Train train;
+    ctc_office.GetTrainById(1, train);
+    ASSERT_EQ(train.dispatched, true);
+    ctc::DestinationAndArrivalTime dst_arr_t = ctc_office.GetTrainCurrentDestinationAndArrivalTime(1);
+    ASSERT_EQ(ctc_office.TimePointToString(dst_arr_t.arrival_time), arrival_time);
+    ASSERT_EQ(dst_arr_t.destination, 2);
 }
 
 TEST(CtcBackEndTest, SetBlockStates)
@@ -257,6 +299,7 @@ TEST(CtcBackEndTest, SetBlockStates)
     block_states.push_back(block_state_2);
 
     ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
+    ASSERT_EQ(ctc.GetUpdatedBlocks().size(), 2);
 
     ASSERT_EQ(ctc.GetBlockById(63).occupied, true);
     ASSERT_EQ(ctc.GetBlockById(70).occupied, false);
@@ -265,6 +308,12 @@ TEST(CtcBackEndTest, SetBlockStates)
     block_states.emplace_back(151, true, false);
     types::Error error = ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
     ASSERT_EQ(error, types::Error::ERROR_INVALID_BLOCK);
+
+    ctc.SetBlockMaintenanceMode(70, true);
+    ASSERT_EQ(ctc.GetBlockById(70).maintenance, true);
+    ctc.SetBlockMaintenanceMode(70, false);
+    ASSERT_EQ(ctc.GetBlockById(70).maintenance, false);
+    ASSERT_EQ(ctc.GetBlockById(70).failed, false);
 }
 
 TEST(CtcBackEndTest, TrainReceiveBlockOccupancy)
