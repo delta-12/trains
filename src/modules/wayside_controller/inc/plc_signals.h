@@ -127,7 +127,7 @@ const std::array<const char *const, wayside_controller::kTotalOutputs> kOutputSi
     "OUT_22"
 };
 
-inline bool GetInput(const std::string &lexeme, wayside_controller::InputId &input)
+inline bool GetInput(std::string_view lexeme, wayside_controller::InputId &input)
 {
     bool valid = true;
 
@@ -143,7 +143,7 @@ inline bool GetInput(const std::string &lexeme, wayside_controller::InputId &inp
     return valid;
 }
 
-inline bool GetOutput(const std::string &lexeme, wayside_controller::OutputId &output)
+inline bool GetOutput(std::string_view lexeme, wayside_controller::OutputId &output)
 {
     bool valid = true;
 

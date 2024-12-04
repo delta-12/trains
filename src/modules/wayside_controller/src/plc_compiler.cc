@@ -11,7 +11,7 @@
 namespace plc_compiler
 {
 
-types::Error Compile(std::filesystem::path &file_path)
+types::Error Compile(const std::filesystem::path &file_path)
 {
     types::Error error = types::Error::ERROR_NONE;
 
@@ -33,7 +33,10 @@ types::Error Compile(std::filesystem::path &file_path)
         }
         else if (!lexer::Lexer(program_file, tokens, lexer_errors))
         {
-            // TODO print error
+            for (const lexer::Error &parser_error : lexer_errors)
+            {
+                std::cout << parser_error << std::endl;
+            }
 
             error = types::Error::ERROR_INVALID_FORMAT;
             program_file.close();
@@ -50,7 +53,7 @@ types::Error Compile(std::filesystem::path &file_path)
         }
         else
         {
-            // TODO continue parsing
+            // TODO NNF-216 continue parsing
         }
     }
 

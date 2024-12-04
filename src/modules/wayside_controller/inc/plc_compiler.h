@@ -13,7 +13,7 @@
 namespace plc_compiler
 {
 
-types::Error Compile(std::filesystem::path &file_path);
+types::Error Compile(const std::filesystem::path &file_path);
 
 } // namespace plc_compiler
 

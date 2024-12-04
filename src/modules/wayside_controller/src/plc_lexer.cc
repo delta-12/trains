@@ -99,6 +99,28 @@ bool Error::operator==(const Error &error_right) const
     return (0 == error_right.lexeme.compare(lexeme)) && (error_right.error_type == error_type);
 }
 
+std::ostream& operator<<(std::ostream& stream, const Error& error)
+{
+    stream << "Lexical error: ";
+
+    switch (error.error_type)
+    {
+    case ErrorType::ERRORTYPE_INVALID_INPUT:
+        stream << "Invalid input";
+        break;
+    case ErrorType::ERRORTYPE_ILLEGAL_SYMBOL:
+        stream << "Illegal symbol";
+        break;
+    default:
+        stream << "Unknown error";
+        break;
+    }
+
+    stream << " \"" << error.lexeme << "\"";
+
+    return stream;
+}
+
 bool Lexer(std::istream &input, std::deque<Token> &tokens, std::deque<Error> &errors)
 {
     using enum DfaState;

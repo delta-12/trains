@@ -53,10 +53,9 @@ enum class ErrorType
 struct StatementAstNode
 {
     public:
-        StatementAstNode(void);
-        StatementAstNode(SharedAliasAstNode alias_node);
-        StatementAstNode(SharedSetAstNode set_node);
-        StatementAstNode(SharedIfAstNode if_node);
+        explicit StatementAstNode(SharedAliasAstNode alias_node);
+        explicit StatementAstNode(SharedSetAstNode set_node);
+        explicit StatementAstNode(SharedIfAstNode if_node);
         friend std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node);
         std::variant<SharedAliasAstNode, SharedSetAstNode, SharedIfAstNode> node;
         SharedStatementAstNode next_statement = nullptr;
@@ -65,8 +64,7 @@ struct StatementAstNode
 struct IdAstNode
 {
     public:
-        IdAstNode(void);
-        IdAstNode(const std::string &id);
+        explicit IdAstNode(const std::string &id);
         friend std::ostream& operator<<(std::ostream& stream, const IdAstNode& node);
         std::string id;
 };
@@ -97,7 +95,7 @@ struct LogicLevelAstNode
         };
 
         LogicLevelAstNode(void);
-        LogicLevelAstNode(const LogicLevel logic_level);
+        explicit LogicLevelAstNode(const LogicLevel logic_level);
         friend std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node);
         LogicLevel logic_level;
 };
@@ -115,7 +113,6 @@ struct AliasAstNode
 struct SetAstNode
 {
     public:
-        SetAstNode(void);
         SetAstNode(SharedIdAstNode id_node, SharedLogicLevelAstNode logic_level_node);
         SetAstNode(SharedSignalAstNode signal_node, SharedLogicLevelAstNode logic_level_node);
         friend std::ostream& operator<<(std::ostream& stream, const SetAstNode& node);
@@ -147,9 +144,8 @@ struct ExpressionAstNode
 struct ElseAstNode
 {
     public:
-        ElseAstNode(void);
-        ElseAstNode(SharedIfAstNode if_node);
-        ElseAstNode(SharedBodyAstNode body_node);
+        explicit ElseAstNode(SharedIfAstNode if_node);
+        explicit ElseAstNode(SharedBodyAstNode body_node);
         friend std::ostream& operator<<(std::ostream& stream, const ElseAstNode& node);
         std::variant<SharedIfAstNode, SharedBodyAstNode> predicate_node;
 };
@@ -157,8 +153,7 @@ struct ElseAstNode
 struct BodyAstNode
 {
     public:
-        BodyAstNode(void);
-        BodyAstNode(SharedStatementAstNode statement_node);
+        explicit BodyAstNode(SharedStatementAstNode statement_node);
         friend std::ostream& operator<<(std::ostream& stream, const BodyAstNode& node);
         SharedStatementAstNode statement_node;
 };

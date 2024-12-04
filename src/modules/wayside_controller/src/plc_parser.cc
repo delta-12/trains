@@ -18,7 +18,7 @@ static bool ParseElse(SharedElseAstNode &node, std::deque<lexer::Token> &tokens,
 static bool ParseBody(SharedBodyAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseIf(SharedIfAstNode &node, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const std::string &symbol);
+static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, std::string_view symbol);
 static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
@@ -26,16 +26,12 @@ static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const size_t tokens_required);
-static inline bool IsAlias(const std::string &lexeme);
+static inline bool IsAlias(std::string_view lexeme);
 static inline bool IsElseNext(const std::deque<lexer::Token> &tokens);
 static inline bool IsBodyNext(const std::deque<lexer::Token> &tokens);
 static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 template<typename T>
 static inline void StreamOutNullableArg(std::ostream& stream, const T arg);
-
-StatementAstNode::StatementAstNode(void)
-{
-}
 
 StatementAstNode::StatementAstNode(SharedAliasAstNode alias_node) :  node(alias_node)
 {
@@ -46,10 +42,6 @@ StatementAstNode::StatementAstNode(SharedSetAstNode set_node) :  node(set_node)
 }
 
 StatementAstNode::StatementAstNode(SharedIfAstNode if_node) :  node(if_node)
-{
-}
-
-IdAstNode::IdAstNode(void)
 {
 }
 
@@ -81,10 +73,6 @@ AliasAstNode::AliasAstNode(SharedIdAstNode id_node, SharedSignalAstNode signal_n
 {
 }
 
-SetAstNode::SetAstNode(void)
-{
-}
-
 SetAstNode::SetAstNode(SharedIdAstNode id_node, SharedLogicLevelAstNode logic_level_node) : signal(id_node), logic_level_node(logic_level_node)
 {
 }
@@ -109,19 +97,11 @@ ExpressionAstNode::ExpressionAstNode(SharedExpressionAstNode left_expression_nod
 {
 }
 
-ElseAstNode::ElseAstNode(void)
-{
-}
-
 ElseAstNode::ElseAstNode(SharedIfAstNode if_node) : predicate_node(if_node)
 {
 }
 
 ElseAstNode::ElseAstNode(SharedBodyAstNode body_node) : predicate_node(body_node)
-{
-}
-
-BodyAstNode::BodyAstNode(void)
 {
 }
 
@@ -394,29 +374,31 @@ std::ostream& operator<<(std::ostream& stream, const IfAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const Error& error)
 {
+    using enum ErrorType;
+
     stream << "Syntax error: ";
 
     switch (error.error_type)
     {
-    case ErrorType::ERRORTYPE_INVALID_INPUT:
+    case ERRORTYPE_INVALID_INPUT:
         stream << "Invalid input";
         break;
-    case ErrorType::ERRORTYPE_KEYWORD_AS_ID:
+    case ERRORTYPE_KEYWORD_AS_ID:
         stream << "Keyword cannot be used as an identifier";
         break;
-    case ErrorType::ERRORTYPE_INVALID_SIGNAL:
+    case ERRORTYPE_INVALID_SIGNAL:
         stream << "Invalid signal";
         break;
-    case ErrorType::ERRORTYPE_INVALID_LOGIC_LEVEL:
+    case ERRORTYPE_INVALID_LOGIC_LEVEL:
         stream << "Invalid logic level";
         break;
-    case ErrorType::ERRORTYPE_MISSING_SYMBOL:
+    case ERRORTYPE_MISSING_SYMBOL:
         stream << "Missing symbol";
         break;
-    case ErrorType::ERRORTYPE_ILLEGAL_SYMBOL:
+    case ERRORTYPE_ILLEGAL_SYMBOL:
         stream << "Illegal symbol";
         break;
-    case ErrorType::ERRORTYPE_UNEXPECTED_END:
+    case ERRORTYPE_UNEXPECTED_END:
         stream << "Unexpected end of file";
         break;
     default:
@@ -848,7 +830,7 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
     {
         // Not parsed, nothing to check
     }
-    else if ((operands.size() > 0) || (expressions.size() > 1))
+    else if (!operands.empty() || (expressions.size() > 1))
     {
         // TODO error
         parsed = false;
@@ -1039,7 +1021,7 @@ static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::de
     return is_operator;
 }
 
-static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const std::string &symbol)
+static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, std::string_view symbol)
 {
     bool is_symbol = false;
 
@@ -1124,7 +1106,7 @@ static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::
     return remaining_tokens;
 }
 
-static inline bool IsAlias(const std::string &lexeme)
+static inline bool IsAlias(std::string_view lexeme)
 {
     bool is_alias = false;
 
