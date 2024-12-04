@@ -53,17 +53,15 @@ TEST(CtcBackEndTest, SetManualMode)
 }
 
 TEST(CtcBackEndTest, GetDepartureTime)
-{   
+{
 
-    // TickSource tick_source("08:00:00");
-    // std::shared_ptr<TickSource> clock = std::make_shared<TickSource>(tick_source);
-    // ctc::Ctc ctc_office(clock);
-    // std::chrono::system_clock::time_point departure_time; 
-    // std::chrono::duration<double> travel_time(90);
-    // ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
-    // ASSERT_EQ(TimePointToString(departure_time), "09:50:00");
-    std::chrono::system_clock::time_point current_time = std::chrono::system_clock::now();
-    ASSERT_EQ(TimePointToString(current_time), "10:44:00");
+    TickSource                            tick_source("08:00:00");
+    std::shared_ptr<TickSource>           clock = std::make_shared<TickSource>(tick_source);
+    ctc::Ctc                              ctc_office(clock);
+    std::chrono::system_clock::time_point departure_time;
+    std::chrono::duration<double>         travel_time(90);
+    ctc_office.SetTrainDepartureTime("10:00:00", travel_time, departure_time);
+    ASSERT_EQ(TimePointToString(departure_time), "09:58:30");
 }
 
 TEST(CtcBackEndTest, SetSwitchPosition)
@@ -269,10 +267,11 @@ TEST(CtcBackEndTest, GetSuggestedSpeedAndAuthorities)
     ASSERT_EQ(data.speed, 19);
 }
 
-static std::string TimePointToString(const std::chrono::system_clock::time_point& time_point) {
+static std::string TimePointToString(const std::chrono::system_clock::time_point& time_point)
+{
     std::stringstream buffer;
-    std::time_t time_t_point = std::chrono::system_clock::to_time_t(time_point);
-    std::tm local_time = *std::localtime(&time_t_point);
+    std::time_t       time_t_point = std::chrono::system_clock::to_time_t(time_point);
+    std::tm           local_time   = *std::localtime(&time_t_point);
     buffer << std::put_time(&local_time, "%T");
     return buffer.str();
 }

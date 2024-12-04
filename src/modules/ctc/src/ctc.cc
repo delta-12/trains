@@ -227,11 +227,12 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
     return suggested_speed_and_authorities;
 }
 
-types::Error Ctc::SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time) {
-    types::Error error = types::Error::ERROR_NONE;
-    std::chrono::system_clock::time_point arrival_time_point; 
-    error = clock_->GetTimePoint(arrival_time, arrival_time_point);
-    if (error == types::Error::ERROR_NONE) {
+types::Error Ctc::SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time)
+{
+    std::chrono::system_clock::time_point arrival_time_point;
+    types::Error error = clock_->GetTimePoint(arrival_time, arrival_time_point);
+    if (error == types::Error::ERROR_NONE)
+    {
         std::chrono::seconds travel_time = std::chrono::duration_cast<std::chrono::seconds>(seconds_to_travel_to_block);
         departure_time = arrival_time_point - travel_time;
     }
@@ -307,14 +308,16 @@ void Ctc::SetBlockMaintenanceMode(const types::BlockId block_id, bool maintenanc
 
     if (block_it != blocks_.end())
     {
-        if (maintenance == true) {
+        if (maintenance == true)
+        {
             block_it->maintenance = true;
         }
-        else {
+        else
+        {
             block_it->maintenance = false;
             block_it->failed      = false;
         }
-        
+
     }
 }
 
