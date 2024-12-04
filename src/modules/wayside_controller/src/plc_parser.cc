@@ -21,17 +21,14 @@ static bool ParseOperator(ExpressionAstNode::Operator &boolean_operator, std::de
 static bool ParseSymbol(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const std::string &symbol);
 static inline bool ParseEquals(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
-static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool ParseClosedBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline lexer::Token GetToken(std::deque<lexer::Token> &tokens);
 static inline void AddUnexpectedEndError(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 static inline bool VerifyRemainingTokens(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, const size_t tokens_required);
 static inline bool IsAlias(const std::string &lexeme);
-static inline bool IsElseNext(std::deque<lexer::Token> &tokens);
-static inline bool IsBodyNext(std::deque<lexer::Token> &tokens);
-static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens);
+static inline bool IsElseNext(const std::deque<lexer::Token> &tokens);
+static inline bool IsBodyNext(const std::deque<lexer::Token> &tokens);
 static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
 template<typename T>
 static inline void StreamOutNullableArg(std::ostream& stream, const T arg);
@@ -427,7 +424,7 @@ std::ostream& operator<<(std::ostream& stream, const Error& error)
         break;
     }
 
-    stream <<  " \"" << error.token.lexeme << "\"";
+    stream << " \"" << error.token.lexeme << "\"";
 
     return stream;
 }
@@ -1079,16 +1076,6 @@ static inline bool ParseSemicolon(std::deque<lexer::Token> &tokens, std::deque<E
     return ParseSymbol(tokens, errors, ";");
 }
 
-static inline bool ParseOpenParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    return ParseSymbol(tokens, errors, "(");
-}
-
-static inline bool ParseClosedParenthesis(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
-{
-    return ParseSymbol(tokens, errors, ")");
-}
-
 static inline bool ParseOpenBrace(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
 {
     return ParseSymbol(tokens, errors, "{");
@@ -1149,7 +1136,7 @@ static inline bool IsAlias(const std::string &lexeme)
     return is_alias;
 }
 
-static inline bool IsElseNext(std::deque<lexer::Token> &tokens)
+static inline bool IsElseNext(const std::deque<lexer::Token> &tokens)
 {
     bool is_else_next = false;
 
@@ -1161,7 +1148,7 @@ static inline bool IsElseNext(std::deque<lexer::Token> &tokens)
     return is_else_next;
 }
 
-static inline bool IsBodyNext(std::deque<lexer::Token> &tokens)
+static inline bool IsBodyNext(const std::deque<lexer::Token> &tokens)
 {
     bool is_body_next = false;
 
@@ -1171,18 +1158,6 @@ static inline bool IsBodyNext(std::deque<lexer::Token> &tokens)
     }
 
     return is_body_next;
-}
-
-static inline bool IsExpressionNext(std::deque<lexer::Token> &tokens)
-{
-    bool is_expression_next = false;
-
-    if (!tokens.empty() && ("(" == tokens.front().lexeme))
-    {
-        is_expression_next = true;
-    }
-
-    return is_expression_next;
 }
 
 static bool ExpressionToPostfix(std::deque<lexer::Token> &postfix_expression, std::deque<lexer::Token> &tokens, std::deque<Error> &errors)

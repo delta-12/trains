@@ -251,7 +251,6 @@ TEST(PlcCompilerTests, LexerValidInput)
     input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
     input << "{SET switch_0 HIGH;}\n";
 
-    // Lexer
     ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, lexer_errors));
     ASSERT_EQ(0, lexer_errors.size());
     ASSERT_THAT(tokens, testing::ElementsAreArray(kValidInputTokens));
@@ -287,12 +286,9 @@ TEST(PlcCompilerTests, ParserValidInput)
     // Parser
     plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
     ASSERT_NE(nullptr, node);
-    for (const auto &error : parser_errors)
-    {
-        std::cout << error << std::endl;
-    }
     ASSERT_EQ(0, parser_errors.size());
-    std::cout << *node << std::endl;
+
+    // TODO NNF-273 verify parser nodes
 }
 
 TEST(PlcCompilerTests, InvalidLexerInput)
@@ -324,9 +320,10 @@ TEST(PlcCompilerTests, InvalidLexerInput)
 
 TEST(PlcCompilerTests, InvalidParserInput)
 {
-    std::deque<plc_compiler::lexer::Token> tokens;
-    std::deque<plc_compiler::lexer::Error> errors;
-    std::stringstream                      input;
+    std::deque<plc_compiler::lexer::Token>  tokens;
+    std::deque<plc_compiler::lexer::Error>  lexer_errors;
+    std::deque<plc_compiler::parser::Error> parser_errors;
+    std::stringstream                       input;
     input << "BLOCK block_0 = IN_0;\n";
     input << "BLOCK block_1=IN_1;\n";
     input << "SWITCH switch_0= OUT_0;\n";
@@ -343,8 +340,13 @@ TEST(PlcCompilerTests, InvalidParserInput)
     input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
     input << "{SET switch_0 HIGH;}\n";
 
-    ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, errors));
-    ASSERT_EQ(0, errors.size());
+    // Lexer
+    ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, lexer_errors));
+    ASSERT_EQ(0, lexer_errors.size());
 
-    // TODO
+    // Parser
+    plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
+    ASSERT_NE(0, parser_errors.size());
+
+    // TODO NNF-273 verify parser nodes
 }
