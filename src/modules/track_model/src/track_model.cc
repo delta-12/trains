@@ -190,36 +190,75 @@ types::Error SoftwareTrackModel::SetCrossingState(const types::BlockId block, co
 
 types::Error SoftwareTrackModel::SetRedTrafficLight(const types::BlockId block, const bool on)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(on);
-    return types::Error::ERROR_NONE;
+    bool isValid = blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1;
+    if (isValid)
+    {
+        if (on == 1)
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_RED;
+        }
+        else
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_NONE;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetYellowTrafficLight(const types::BlockId block, const bool on)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(on);
-    return types::Error::ERROR_NONE;
+    bool isValid = blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1;
+    if (isValid)
+    {
+        if (on == 1)
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_YELLOW;
+        }
+        else
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_NONE;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetGreenTrafficLight(const types::BlockId block, const bool on)
 {
-    LOGGER_UNUSED(block);
-    LOGGER_UNUSED(on);
-    return types::Error::ERROR_NONE;
+    bool isValid = blocks_.size() > block && block > 0 && blocks_[block].has_switch == 1;
+    if (isValid)
+    {
+        if (on == 1)
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_GREEN;
+        }
+        else
+        {
+            blocks_[block].light_color = types::TrafficLightColor::TRAFFICLIGHTCOLOR_NONE;
+        }
+    }
+
+    return isValid ? types::Error::ERROR_NONE : types::Error::ERROR_INVALID_BLOCK;
     //NNF233
 }
 
 types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, const types::MetersPerSecond speed)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetCommandedSpeed(speed);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)
@@ -235,12 +274,18 @@ types::Error SoftwareTrackModel::SetCommandedSpeed(const types::BlockId block, c
 
 types::Error SoftwareTrackModel::SetAuthority(const types::BlockId block, const types::Blocks authority)
 {
-    bool isValid = blocks_.size() > block && block > 0;
+    bool isValid = blocks_.size() > block;
 
     if (isValid)
     {
         for (size_t i = 0; i < trains_.size(); i++)
         {
+            //check if train is in yard
+            if (occupied_train_blocks_[i].size() == 0 && block == 0)
+            {
+                trains_[i]->SetAuthority(authority);
+            }
+
             for (size_t j = 0; j < occupied_train_blocks_[i].size(); j++)
             {
                 if (occupied_train_blocks_[i][j] == block)

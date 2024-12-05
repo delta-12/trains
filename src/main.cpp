@@ -298,19 +298,6 @@ int main(void)
     std::string input_file_path2="";
 
     std::filesystem::path           base_path = std::filesystem::current_path();
-
-    //channel instantiations
-    Channel<std::string> block_number_channel;
-    Channel<std::string> tcfail_block_channel;
-    Channel<std::string> pfail_block_channel;
-    Channel<std::string> brail_block_channel;
-    Channel<bool> tcfail_bool_channel;
-    Channel<bool> pfail_bool_channel;
-    Channel<bool> brail_bool_channel;
-    Channel<std::string> distance_traveled_channel;
-    Channel<std::string> train_block_channel;
-    Channel<std::string> occupied_block_channel;
-    Channel<std::string> 
         
     track_model_ui->on_choose_file([&]() {
             // For other platforms
