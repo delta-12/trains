@@ -5,15 +5,16 @@
 namespace wayside_controller
 {
 
-WaysideBlock::WaysideBlock(void) : block(0), primary_connection(0), switch_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
+WaysideBlock::WaysideBlock(void) : block(0), next_block(0), primary_connection(0), secondary_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
     maintenance_mode(false), occupancy_signal(IoSignal::IOSIGNAL_LOW)
 {
 }
 
-WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
-                           const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const IoSignal occupancy_signal)
-    : block(block), primary_connection(primary_connection), switch_connection(switch_connection), direction(direction), track_circuit_input(track_circuit_input),
-    switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupancy_signal(occupancy_signal)
+WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId next_block, const types::BlockId primary_connection, const types::BlockId secondary_connection,
+                           const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const bool has_switch,
+                           const bool maintenance_mode, const IoSignal occupancy_signal)
+    : block(block), next_block(next_block), primary_connection(primary_connection), secondary_connection(secondary_connection), direction(direction),
+    track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupancy_signal(occupancy_signal)
 {
 }
 
@@ -82,11 +83,11 @@ Error WaysideController::Configure(const std::vector<WaysideBlock> &blocks)
         {
             block_configuration_[wayside_block.block] = wayside_block;
             mapped_inputs.insert(wayside_block.track_circuit_input);
-            block_layout_.AddEdge(wayside_block.block, wayside_block.primary_connection, 1);
+            block_layout_.AddEdge(wayside_block.block, wayside_block.next_block, 1);
 
             if (types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL == wayside_block.direction)
             {
-                block_layout_.AddEdge(wayside_block.primary_connection, wayside_block.block, 1);
+                block_layout_.AddEdge(wayside_block.next_block, wayside_block.block, 1);
             }
 
             if (wayside_block.has_switch)

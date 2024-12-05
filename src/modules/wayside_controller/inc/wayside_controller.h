@@ -68,11 +68,13 @@ struct WaysideBlock
 {
     public:
         WaysideBlock(void);
-        WaysideBlock(const types::BlockId block, const types::BlockId primary_connection, const types::BlockId switch_connection, const types::BlockDirection direction,
-                     const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode, const IoSignal occupancy_signal);
+        WaysideBlock(const types::BlockId block, const types::BlockId next_block, const types::BlockId primary_connection, const types::BlockId secondary_connection,
+                     const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode,
+                     const IoSignal occupancy_signal);
         types::BlockId block;
+        types::BlockId next_block;
         types::BlockId primary_connection;
-        types::BlockId switch_connection;
+        types::BlockId secondary_connection;
         types::BlockDirection direction;
         InputId track_circuit_input;
         InputId switch_input;
