@@ -305,6 +305,9 @@ TEST(CtcBackEndTest, SetBlockStates)
     ASSERT_EQ(ctc.GetBlockById(70).occupied, false);
     ASSERT_EQ(ctc.GetBlockById(70).failed, true);
 
+    ctc.ClearUpdatedBlocks();
+    ASSERT_EQ(ctc.GetUpdatedBlocks().size(), 0);
+
     block_states.emplace_back(151, true, false);
     types::Error error = ctc.SetBlockStates(types::TrackId::TRACKID_GREEN, block_states);
     ASSERT_EQ(error, types::Error::ERROR_INVALID_BLOCK);
@@ -336,6 +339,11 @@ TEST(CtcBackEndTest, TrainReceiveBlockOccupancy)
     ASSERT_EQ(train1.authority.front(), 64);
     ASSERT_EQ(ctc.GetTrainCurrentPosition(1), 63);
     ASSERT_EQ(ctc.GetTrainSuggestedSpeed(1), 19);
+
+    // Invalid Train Id
+    ASSERT_EQ(ctc.GetTrainCurrentPosition(10), 0);
+    ASSERT_EQ(ctc.GetTrainSuggestedSpeed(10), 0);
+    ASSERT_EQ(ctc.GetTrainCurrentPosition(10), 0);
 }
 
 TEST(CtcBackEndTest, ManualDispatchToMultipleBlock)
