@@ -107,6 +107,7 @@ jobs:
             -Dsonar.organization=delta-12 \
             -Dsonar.sources=src \
             -Dsonar.exclusions=**/*_handler.cc \
+            -Dsonar.exclusions=**/*file_explorer.cc \
             --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
             --define sonar.coverageReportPaths=build/coverage.xml
   uncrustify:
