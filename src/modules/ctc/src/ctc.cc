@@ -201,6 +201,19 @@ types::Error Ctc::DispatchToStation(types::TrainId train_id, types::BlockId dest
     return error;
 }
 
+types::Error Ctc::AutomaticDispatch(void) {
+    types::Error error = types::Error::ERROR_NONE;
+    for (ctc::Train train : csv_schedules_) {
+        std::string arrival_time = TimePointToString(train.destination_list[0].arrival_time);
+        types::BlockId destination = train.destination_list[0].destination;
+        error = DispatchToStation(train.train_id, destination, arrival_time);
+        if (error != types::Error::ERROR_NONE) {
+            break;
+        }
+    }
+    return error;
+}
+
 void Ctc::AddTrainToTrainSchedule(ctc::Train train)
 {
     train_schedules_.push_back(train);

@@ -83,6 +83,13 @@ TEST(CtcBackEndTest, SetSchedule)
     ASSERT_EQ(ctc.TimePointToString(train1.destination_list[0].arrival_time), "00:01:00");
 }
 
+TEST(CtcBackEndTest, AutomaticDispatch)
+{
+    ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
+    types::Error error = ctc.AutomaticDispatch();
+    ASSERT_EQ(error, types::Error::ERROR_NONE);
+}
+
 TEST(CtcBackEndTest, SetManualMode)
 {
     ctc::Ctc ctc;

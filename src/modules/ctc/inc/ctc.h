@@ -112,6 +112,7 @@ class Ctc
         /* Train Dispatch Specific */
         void SetSchedule(const std::vector<std::vector<std::string>> &records);   // Automatic Dispatch
         void ManualDispatch(types::TrainId train_id, types::BlockId destination); // Manual Dispatch to Block (not station)
+        types::Error AutomaticDispatch(void);
         types::Error DispatchToStation(types::TrainId train_id, types::BlockId destination, std::string& arrival_time);
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
         types::Error ChooseFileAndSetTrackLayout(std::string &file_name);
