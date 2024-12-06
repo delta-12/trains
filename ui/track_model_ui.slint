@@ -144,21 +144,39 @@ export component TrackModelUi inherits Window {
                                 choose-file=>{root.choose-file()}
                                 parse-file=>{root.parse-file()}
                                 }
+                            }
+                        VerticalBox {
+                            max-height: 5px;
+                            HorizontalBox {
                                 Image {
                                     source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
-                                    height: 100px;
-                                    width: 100px;
+                                    height: 50px;
+                                    width: 50px;
                                 }
                                 Text{
                                     y: 0px;
-                                    width: 100px;
-                                    height: 100px;
-                                    text: ": " + train-block;
-                                    font-size: 30px;
-                                    preferred-width: 250px;
-                                
+                                    //width: 100px;
+                                    //height: 100px;
+                                    text: ": " + blocks-occupied-train;
+                                    font-size: 25px;
+                                    //preferred-width: 250px;                
+                                }
+                                Image {
+                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
+                                    height: 50px;
+                                    width: 50px;
+                                }
+                                Text{
+                                    y: 0px;
+                                    //width: 100px;
+                                    //height: 100px;
+                                    text: "Heads: " + train-block;
+                                    font-size: 25px;
+                                    //preferred-width: 250px;
                                 }
                             }
+                        }
+
                             HorizontalBox {
                                 if track_id=="green" : Image {
                                     source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/green_line_picture.png");
@@ -252,9 +270,9 @@ export component TrackModelUi inherits Window {
                                                 edited(val)=>{external_temp=val}
                                             }
                                             Text {
-                                                text: "Degrees Fahrenheit";
+                                                text: "° Fahrenheit";
                                                 vertical-alignment: center;
-                                                font-size: 15px;
+                                                font-size: 20px;
                                             }
                                             Button {
                                                 text: "Confirm";
@@ -320,17 +338,32 @@ export component TrackModelUi inherits Window {
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
+                                        Text{
+                                            max-width: 40px;
+                                            max-height: 30px;
+                                            text: "Ticket Sales:";
+                                            font-size: 20px;
+                                            preferred-width: 40px;
+                                        }
+                                        if block-station=="YES":
+                                        Text{
+                                            text: " 200";
+                                            font-size: 20px;
+                                        }
+                                        if block-station=="NO":
+                                        Text{
+                                            text: " N/A";
+                                            font-size: 20px;
+                                        }
                                     }
                                     HorizontalBox {
                                         Text{
-                                            max-width: 150px;
+                                            max-width: 200px;
                                             max-height: 30px;
                                             text: "Elevation: " + block-elevation + " Feet";
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
-                                    }
-                                    HorizontalBox {
                                         Text{
                                             max-width: 150px;
                                             max-height: 30px;
@@ -339,6 +372,15 @@ export component TrackModelUi inherits Window {
                                             preferred-width: 250px;
                                         }
                                     }
+                                    // HorizontalBox {
+                                    //     Text{
+                                    //         max-width: 150px;
+                                    //         max-height: 30px;
+                                    //         text: "Cumulative Elevation: " + block-cumulative-elevation + " Feet";
+                                    //         font-size: 20px;
+                                    //         preferred-width: 250px;
+                                    //     }
+                                    // }
                                     HorizontalBox {
                                         Text{
                                             max-width: 150px;
@@ -363,7 +405,7 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             max-width: 100px;
                                             max-height: 30px;
-                                            text: "Broken Rail:" + current-brail;
+                                            text: "Broken Rail: " + current-brail;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -381,7 +423,7 @@ export component TrackModelUi inherits Window {
                                         Text{
                                             max-width: 100px;
                                             max-height: 30px;
-                                            text: "Power Failure:" + current-pfail;
+                                            text: "Power Failure: " + current-pfail;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -399,7 +441,14 @@ export component TrackModelUi inherits Window {
                                     }
                                     HorizontalBox {
                                         Text{
-                                            max-width: 200px;
+                                            max-width: 150px;
+                                            max-height: 30px;
+                                            text: "Occupied: " + block-occupied;
+                                            font-size: 20px;
+                                            preferred-width: 250px;
+                                        }
+                                        Text{
+                                            max-width: 175px;
                                             max-height: 30px;
                                             text: "Underground: " + block-underground;
                                             font-size: 20px;
@@ -409,13 +458,6 @@ export component TrackModelUi inherits Window {
                                             max-width: 150px;
                                             max-height: 30px;
                                             text: "Heater: " + block-heater;
-                                            font-size: 20px;
-                                            preferred-width: 250px;
-                                        }
-                                        Text{
-                                            max-width: 150px;
-                                            max-height: 30px;
-                                            text: "Occupied: " + block-occupied;
                                             font-size: 20px;
                                             preferred-width: 250px;
                                         }
@@ -564,7 +606,7 @@ export component TrackModelUi inherits Window {
                                     edited(val)=>{external_temp=val}
                                 }
                                 Text {
-                                    text: "Degrees Fahrenheit";
+                                    text: "° Fahrenheit";
                                     vertical-alignment: center;
                                     font-size: 20px;
                                 }
