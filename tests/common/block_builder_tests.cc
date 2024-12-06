@@ -126,7 +126,7 @@ TEST(BlockBuilderTests, GreenLineV4)
 
     ASSERT_EQ(types::Error::ERROR_NONE, bb.GetBlock(141, block));
     ASSERT_EQ(block.has_station, true);
-    ASSERT_EQ(block.station_name, "Central");
+    ASSERT_EQ(block.station_name, "New central");
     ASSERT_EQ(block.underground, true);
     ASSERT_EQ(0, block.wayside);
 }

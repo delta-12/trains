@@ -37,10 +37,10 @@ class TickSource
         std::string GetTimeString(void) const;
         std::chrono::milliseconds GetElapsedTime(const types::Tick start) const;
         std::chrono::milliseconds GetElapsedTime(const types::Tick start, const types::Tick end) const;
+        types::Error GetTimePoint(const std::string &hours_minutes_seconds, std::chrono::system_clock::time_point &time_point) const;
 
     private:
         void Initialize(const std::chrono::system_clock::time_point, const std::chrono::milliseconds tick_duration);
-        types::Error GetTimePoint(const std::string &hours_minutes_seconds, std::chrono::system_clock::time_point &time_point) const;
         std::chrono::milliseconds GetDuration(const types::Tick ticks) const;
 
         types::Tick tick_;

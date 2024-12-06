@@ -9,6 +9,7 @@
 #include "ctc.h"
 
 #include <sstream>
+#include <iostream>
 #include "unordered_map"
 
 namespace ctc
@@ -16,8 +17,29 @@ namespace ctc
 
 Ctc::Ctc(void) = default;
 
+Ctc::Ctc(std::shared_ptr<TickSource> clk)
+{
+    clock_ = clk;
+}
+
 Ctc::Ctc(const types::TrackId track_id)
 {
+    if (track_id == types::TrackId::TRACKID_GREEN)
+    {
+        std::filesystem::path base_path = std::filesystem::current_path();
+        std::filesystem::path path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv";
+        // Check if path exist
+        if (std::filesystem::exists(path))
+        {
+            SetScheduleFilePath(path);
+            SetTrackLayout();
+        }
+    }
+}
+
+Ctc::Ctc(const types::TrackId track_id, std::shared_ptr<TickSource> clk)
+{
+    clock_ = clk;
     if (track_id == types::TrackId::TRACKID_GREEN)
     {
         std::filesystem::path base_path = std::filesystem::current_path();
@@ -39,6 +61,34 @@ void Ctc::SetTrackLayout(void)
     SetBlocks(blocks);
     SetStations(blocks_);
     SetDefaultRoute();
+}
+
+void Ctc::SetTrackLayout(std::filesystem::path path)
+{
+    CsvParser                 parser(path);
+    BlockBuilder              bb(parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    std::vector<types::Block> blocks = bb.GetBlocks();
+    SetBlocks(blocks);
+    SetStations(blocks_);
+    SetDefaultRoute();
+}
+
+types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name)
+{
+    types::Error          error = types::Error::ERROR_NONE;
+    FileExplorer          file_explorer;
+    std::filesystem::path path = file_explorer.GetPath();
+    file_name = file_explorer.GetFileName();
+    if (path.empty() | file_name.empty())
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else
+    {
+        SetTrackLayout(path);
+        SetScheduleFilePath(path);
+    }
+    return error;
 }
 
 void Ctc::AssignAuthority(const std::vector<types::BlockId> &route, types::TrainId train_id)
@@ -75,6 +125,37 @@ void Ctc::ManualDispatch(types::TrainId train_id, types::BlockId destination)
         std::vector<types::BlockId> route = GetRoute(destination);
         AssignAuthority(route, train.train_id);
     }
+}
+
+types::Error Ctc::DispatchToStation(types::TrainId train_id, types::BlockId destination, std::string& arrival_time)
+{
+    types::Error error    = types::Error::ERROR_NONE;
+    auto         train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        train_it->destination_list.emplace_back(DestinationAndArrivalTime(destination));
+    }
+    else
+    {
+        ctc::Train                            train(train_id);
+        std::chrono::system_clock::time_point arrival_time_point;
+        clock_->GetTimePoint(arrival_time, arrival_time_point);
+        train.destination_list.emplace_back(DestinationAndArrivalTime(destination, arrival_time_point));
+        error = SetTrainDepartureTime(arrival_time, GetBlockById(destination).total_time_to_station, train.departure_time);
+        if (error == types::Error::ERROR_NONE)
+        {
+            AddTrainToTrainSchedule(train);
+            std::vector<types::BlockId> route = GetRoute(destination);
+            AssignAuthority(route, train.train_id);
+        }
+    }
+    return error;
 }
 
 void Ctc::AddTrainToTrainSchedule(ctc::Train train)
@@ -138,6 +219,9 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
     {
         for (const types::BlockState &block_state : block_states)
         {
+            // Push block ID back to updated_blocks_
+            updated_blocks_.emplace_back(block_state.block);
+
             // Update block states in private data memer blocks_ which stores all blocks information
             std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_state](const types::Block &block) {
                     return block.block == block_state.block;
@@ -145,10 +229,13 @@ types::Error Ctc::SetBlockStates(const types::TrackId track, const std::vector<t
 
             if (block_it != blocks_.end())
             {
-                block_it->occupied = block_state.occupied;
                 if (block_state.track_failure == true)
                 {
-                    failure_blocks_.push_back(block_state.block);
+                    block_it->failed = block_state.track_failure;
+                }
+                else
+                {
+                    block_it->occupied = block_state.occupied;
                 }
             }
             else
@@ -187,6 +274,18 @@ std::vector<types::TrackCircuitData> Ctc::GetSuggestedSpeedsAndAuthorities(void)
             );
     }
     return suggested_speed_and_authorities;
+}
+
+types::Error Ctc::SetTrainDepartureTime(const std::string arrival_time, const types::Second seconds_to_travel_to_block, std::chrono::system_clock::time_point& departure_time)
+{
+    std::chrono::system_clock::time_point arrival_time_point;
+    types::Error                          error = clock_->GetTimePoint(arrival_time, arrival_time_point);
+    if (error == types::Error::ERROR_NONE)
+    {
+        std::chrono::seconds travel_time = std::chrono::duration_cast<std::chrono::seconds>(seconds_to_travel_to_block);
+        departure_time = arrival_time_point - travel_time;
+    }
+    return error;
 }
 
 /*------------------------------------- Setters -------------------------------------*/
@@ -250,6 +349,65 @@ void Ctc::SetManualMode(void)
     ctc_mode_ = CtcOperationMode::MANUAL_MODE;
 }
 
+void Ctc::SetBlockMaintenanceMode(const types::BlockId block_id, bool maintenance)
+{
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        if (maintenance == true)
+        {
+            block_it->maintenance = true;
+        }
+        else
+        {
+            block_it->maintenance = false;
+            block_it->failed      = false;
+        }
+
+    }
+}
+
+void Ctc::SetSimulationSpeedMultiplier(int multiplier)
+{
+    clock_->SetMultiplier(static_cast<uint8_t>(multiplier));
+}
+
+types::Error Ctc::SetSwitchPosition(const types::BlockId block_id, const bool switched)
+{
+    types::Error                        error    = types::Error::ERROR_NONE;
+    std::vector<types::Block>::iterator block_it = std::find_if(blocks_.begin(), blocks_.end(), [block_id](const types::Block &block) {
+            return block.block == block_id;
+        });
+
+    if (block_it != blocks_.end())
+    {
+        block_it->switched = switched;
+    }
+    else
+    {
+        error = types::Error::ERROR_INVALID_BLOCK;
+    }
+    return error;
+}
+
+void Ctc::SetTrainDispatched(const types::TrainId train_id)
+{
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        train_it->dispatched = true;
+    }
+}
+
 /*------------------------------------- Getters -------------------------------------*/
 types::Block Ctc::GetBlockById(const types::BlockId block_id) const
 {
@@ -282,13 +440,15 @@ std::vector<types::BlockId> Ctc::GetDefaultRoute(void) const
 std::vector<types::BlockId> Ctc::GetRoute(const types::BlockId destination)
 {
     std::vector<types::BlockId> route;
-    for (size_t i = 0; i < default_route_.size(); ++i)
+    // Find the first occurrence of the destination block
+    auto it = std::find(default_route_.begin(), default_route_.end(), destination);
+
+    // If the destination block is found, copy the portion of the route
+    if (it != default_route_.end())
     {
-        if (default_route_[i] == destination)
-        {
-            std::copy(default_route_.begin(), default_route_.begin() + i + 1, std::back_inserter(route));
-        }
+        std::copy(default_route_.begin(), it + 1, std::back_inserter(route));
     }
+
     return route;
 }
 
@@ -334,11 +494,6 @@ types::TrackId Ctc::GetTrack(void) const
     return track_;
 }
 
-std::vector<types::BlockId> Ctc::GetFailureBlocks(void) const
-{
-    return failure_blocks_;
-}
-
 std::vector<types::Block> Ctc::GetBlocks(void) const
 {
     return blocks_;
@@ -352,6 +507,11 @@ std::size_t Ctc::GetNumTrains(void) const
 std::vector<ctc::Train> Ctc::GetTrains(void) const
 {
     return train_schedules_;
+}
+
+std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const
+{
+    return updated_blocks_;
 }
 
 std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id)
@@ -417,6 +577,78 @@ types::BlockId Ctc::GetTrainCurrentPosition(const types::TrainId train_id)
         }
         return current_position;
     }
+}
+
+ctc::DestinationAndArrivalTime Ctc::GetTrainCurrentDestinationAndArrivalTime(const types::TrainId train_id)
+{
+    ctc::DestinationAndArrivalTime    destination_and_arrival_time;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        destination_and_arrival_time = train_it->destination_list[CTC_TRAIN_CURRENT_DESTINATION];
+    }
+    return destination_and_arrival_time;
+}
+
+std::string Ctc::GetTrainDepartureTime(const types::TrainId train_id)
+{
+    std::string                       departure_time;
+    std::vector<ctc::Train>::iterator train_it = std::find_if(
+        train_schedules_.begin(),
+        train_schedules_.end(),
+        [train_id](const ctc::Train &train) {
+            return train.train_id == train_id;
+        }
+        );
+    if (train_it != train_schedules_.end())
+    {
+        std::chrono::system_clock::time_point departure_time_point = train_it->departure_time;
+        departure_time = TimePointToString(departure_time_point);
+    }
+    return departure_time;
+}
+
+std::string Ctc::GetTimeString(void) const
+{
+    return clock_->GetTimeString();
+}
+
+std::chrono::system_clock::time_point Ctc::GetTime(void) const
+{
+    return clock_->GetTime();
+}
+
+ctc::Station Ctc::GetStationByName(const std::string& station_name)
+{
+    ctc::Station result;
+    for (ctc::Station station : stations_)
+    {
+        if (station.station_name == station_name)
+        {
+            result = station;
+        }
+    }
+    return result;
+}
+
+void Ctc::ClearUpdatedBlocks(void)
+{
+    updated_blocks_.clear();
+}
+
+std::string Ctc::TimePointToString(const std::chrono::system_clock::time_point& time_point)
+{
+    std::stringstream buffer;
+    std::time_t       time_t_point = std::chrono::system_clock::to_time_t(time_point);
+    std::tm           local_time   = *std::localtime(&time_t_point);
+    buffer << std::put_time(&local_time, "%T");
+    return buffer.str();
 }
 
 } // namespace ctc
