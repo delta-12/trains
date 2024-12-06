@@ -88,6 +88,11 @@ TEST(CtcBackEndTest, AutomaticDispatch)
     ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
     types::Error error = ctc.AutomaticDispatch();
     ASSERT_EQ(error, types::Error::ERROR_NONE);
+    std::vector<ctc::Train> trains = ctc.GetTrains();
+    ASSERT_EQ(trains.size(), 10);
+
+    ASSERT_EQ(trains[0].destination_list[0].destination, 2);
+    ASSERT_EQ(ctc.TimePointToString(trains[0].destination_list[0].arrival_time), "00:01:00");
 }
 
 TEST(CtcBackEndTest, SetManualMode)
