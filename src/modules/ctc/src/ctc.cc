@@ -60,6 +60,7 @@ void Ctc::SetTrackLayout(void)
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
+    SetSchedule(parser.GetRecords());
     SetDefaultRoute();
 }
 
@@ -71,6 +72,48 @@ void Ctc::SetTrackLayout(std::filesystem::path path)
     SetBlocks(blocks);
     SetStations(blocks_);
     SetDefaultRoute();
+}
+
+void Ctc::SetSchedule(const std::vector<std::vector<std::string>> &records)
+{
+    std::vector<std::string> first_record = records[0];
+    for (size_t i = 0; i < first_record.size(); ++i)
+    {
+        std::string input   = first_record[i];
+        std::string keyword = "Train";
+        size_t      pos     = input.find(keyword);
+        if (pos != std::string::npos)
+        {
+            pos += keyword.length();
+
+            // Skip any spaces after "Train"
+            while (pos < input.length() && std::isspace(input[pos]))
+            {
+                pos++;
+            }
+            int trainNumber = 0;
+            while (pos < input.length() && std::isdigit(input[pos]))
+            {
+                trainNumber = trainNumber * 10 + (input[pos] - '0');
+                pos++;
+            }
+            if (trainNumber > 0)
+            {
+                ctc::Train train(trainNumber);
+                // Iterate through all rows
+                for (size_t j = 1; j < records.size(); ++j)
+                {
+                    if (!records[j][i].empty() && GetBlockById(std::stoi(records[j][2])).has_station)
+                    {
+                        std::chrono::system_clock::time_point arrival_time_point;
+                        clock_->GetTimePoint(records[j][i], arrival_time_point);
+                        train.destination_list.emplace_back(std::stoi(records[j][2]), arrival_time_point);
+                    }
+                }
+                csv_schedules_.push_back(train);
+            }
+        }
+    }
 }
 
 types::Error Ctc::ChooseFileAndSetTrackLayout(std::string &file_name)
@@ -612,6 +655,11 @@ std::string Ctc::GetTrainDepartureTime(const types::TrainId train_id)
         departure_time = TimePointToString(departure_time_point);
     }
     return departure_time;
+}
+
+std::vector<ctc::Train> Ctc::GetParsedSchedule(void) const
+{
+    return csv_schedules_;
 }
 
 std::string Ctc::GetTimeString(void) const

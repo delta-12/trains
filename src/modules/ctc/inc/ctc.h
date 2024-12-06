@@ -110,8 +110,8 @@ class Ctc
         std::vector<types::TrackCircuitData> GetSuggestedSpeedsAndAuthorities(void) const;
 
         /* Train Dispatch Specific */
-        void SetSchedule(const types::TrainId train, const std::vector<DestinationAndArrivalTime> &schedule); // Automatic Dispatch
-        void ManualDispatch(types::TrainId train_id, types::BlockId destination);                             // Manual Dispatch to Block (not station)
+        void SetSchedule(const std::vector<std::vector<std::string>> &records);   // Automatic Dispatch
+        void ManualDispatch(types::TrainId train_id, types::BlockId destination); // Manual Dispatch to Block (not station)
         types::Error DispatchToStation(types::TrainId train_id, types::BlockId destination, std::string& arrival_time);
         types::Error UpdateSuggestedSpeedAndAuthority(const types::TrainId train_id);
         types::Error ChooseFileAndSetTrackLayout(std::string &file_name);
@@ -137,6 +137,7 @@ class Ctc
         ctc::Station GetStationByName(const std::string& station_name);
         std::vector<types::BlockId> GetDefaultRoute(void) const;
         std::vector<types::BlockId> GetUpdatedBlocks(void) const;
+        std::vector<ctc::Train> GetParsedSchedule(void) const;
         std::string GetTimeString(void) const;
         void ClearUpdatedBlocks(void);
 
@@ -173,6 +174,7 @@ class Ctc
         std::vector<types::BlockId> default_route_;
         types::TrackId track_;
         std::vector<types::BlockId> updated_blocks_;
+        std::vector<ctc::Train> csv_schedules_;
 };
 
 } // namespace ctc

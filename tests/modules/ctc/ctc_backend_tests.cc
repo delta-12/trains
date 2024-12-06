@@ -71,6 +71,18 @@ TEST(CtcBackEndTest, SetStations)
     ASSERT_EQ(total_time_to_Pioneer, 138);
 }
 
+TEST(CtcBackEndTest, SetSchedule)
+{
+    ctc::Ctc ctc(types::TrackId::TRACKID_GREEN);
+    ASSERT_EQ(ctc.GetNumStation(), 18);
+    ASSERT_EQ(ctc.GetParsedSchedule().size(), 10);
+
+    std::vector<ctc::Train> csv_trains_schedule = ctc.GetParsedSchedule();
+    ctc::Train              train1              = csv_trains_schedule[0];
+    ASSERT_EQ(train1.destination_list[0].destination, 2);
+    ASSERT_EQ(ctc.TimePointToString(train1.destination_list[0].arrival_time), "00:01:00");
+}
+
 TEST(CtcBackEndTest, SetManualMode)
 {
     ctc::Ctc ctc;
@@ -179,7 +191,6 @@ TEST(CtcBackEndTest, AuthorityToStationTest)
     for (ctc::Station station : stations)
     {
         ctc.DispatchToStation(i, station.block_id, arrival_time);
-        std::cout << "Dispatch Train " << i << " to " << station.station_name << std::endl;
         ++i;
     }
     ASSERT_EQ(ctc.GetTrainAuthority(1), 124);
