@@ -293,6 +293,8 @@ int main(void)
 
     std::shared_ptr<train_model::TrainModel> ptr = std::make_shared<train_model::TrainModelImpl>(train);
     track.AddTrainModel(ptr);
+    std::vector<std::shared_ptr<train_model::TrainModel>> train_ptrs;
+    train_ptrs.push_back(ptr);
 
     std::string input_file_path="";
     std::string input_file_path2="";
@@ -396,7 +398,15 @@ int main(void)
             if (auto ui = weak_ui_handle.lock()) {
             std::string d_traveled_string = std::string(track_model_ui->get_d_traveled());
             int d_traveled_int = std::stoi(d_traveled_string);
-            ptr->SetDistanceTraveled(d_traveled_int);
+            std::string train_id_string = std::string(track_model_ui->get_train_id());
+            int train_id = std::stoi(train_id_string);
+
+            for (int i=0;i<train_ptrs.size();i++)
+            {
+                train_ptrs[i]->SetDistanceTraveled(0);
+            }
+
+            train_ptrs[train_id-1]->SetDistanceTraveled(d_traveled_int);
             track.Update();
             std::vector<std::shared_ptr<train_model::TrainModel>> trains;
             track.GetTrainModels(trains);
@@ -409,16 +419,27 @@ int main(void)
             else 
             {
                 auto otb = track.GetOccupiedTrainBlocks();
-                for (int i=0;i<otb[0].size();i++)
+                for (int j=0;j<otb.size();j++)
                 {
-                    otb_string+=std::to_string(otb[0][i]);
-                    otb_string+=" ";
+                    for (int i=0;i<otb[j].size();i++)
+                    {
+                        otb_string+=std::to_string(otb[j][i]);
+                        otb_string+=" ";
+                    }
                 }
                 //track_model_ui->set_blocks_occupied(otb_string.c_str());
                 track_model_ui->set_blocks_occupied_train(otb_string.c_str());
-                types::BlockId train_block=otb[0][0];
-                std::cout << "train block is " << train_block << std::endl;
-                track_model_ui->set_train_block(float(train_block));
+
+                std::string train_block_string;
+
+                for (int k=0;k<trains.size();k++)
+                {
+                    train_block_string+=std::to_string(otb[k][0]);
+                    train_block_string+=" ";
+                }
+
+
+                track_model_ui->set_train_block(train_block_string.c_str());
             }
                 auto failed = track.GetFailedBlocks();
                 for (int i=0;i<failed.size();i++)
@@ -450,6 +471,15 @@ int main(void)
                     types::Blocks train_authority = trains[0]->GetAuthority();
                     track_model_ui->set_train_authority(std::to_string(train_authority).c_str());
                 }
+            }
+        });
+
+        track_model_ui->on_request_add_train([&]() {
+            if (auto ui = weak_ui_handle.lock()) {
+                train_model::TrainModelImpl     train_temp;
+                std::shared_ptr<train_model::TrainModel> ptr_temp = std::make_shared<train_model::TrainModelImpl>(train_temp);
+                track.AddTrainModel(ptr_temp);
+                train_ptrs.push_back(ptr_temp);
             }
         });
 
@@ -501,6 +531,33 @@ int main(void)
             }
         });
 
+        track_model_ui->on_request_update_green_block([&]() {
+            if (auto ui = weak_ui_handle.lock()) {
+            std::string string_green_block = std::string(track_model_ui->get_green_block());
+            bool green_bool = track_model_ui->get_green_bool();
+            int int_green_block = std::stoi(string_green_block);
+            track.SetGreenTrafficLight(int_green_block, green_bool);
+            }
+        });
+
+        track_model_ui->on_request_update_yellow_block([&]() {
+            if (auto ui = weak_ui_handle.lock()) {
+            std::string string_yellow_block = std::string(track_model_ui->get_yellow_block());
+            bool yellow_bool = track_model_ui->get_yellow_bool();
+            int int_yellow_block = std::stoi(string_yellow_block);
+            track.SetYellowTrafficLight(int_yellow_block, yellow_bool);
+            }
+        });
+
+        track_model_ui->on_request_update_red_block([&]() {
+            if (auto ui = weak_ui_handle.lock()) {
+            std::string string_red_block = std::string(track_model_ui->get_red_block());
+            bool red_bool = track_model_ui->get_red_bool();
+            int int_red_block = std::stoi(string_red_block);
+            track.SetRedTrafficLight(int_red_block, red_bool);
+            }
+        });
+
         track_model_ui->on_request_update_tc_fail_block_tb([&]() {
             if (auto ui = weak_ui_handle.lock()) {
             std::string string_block_num = std::string(track_model_ui->get_tcfail_block());
@@ -520,11 +577,16 @@ int main(void)
                 }
                 if (!trains.empty())
                 {
-                    for (int i=0;i<otb[0].size();i++)
+                    auto otb = track.GetOccupiedTrainBlocks();
+                    for (int j=0;j<otb.size();j++)
                     {
-                        otb_string+=std::to_string(otb[0][i]);
-                        otb_string+=" ";
-                    }
+                        for (int i=0;i<otb[j].size();i++)
+                        {
+                            otb_string+=std::to_string(otb[j][i]);
+                            otb_string+=" ";
+                        }
+                }
+                //track_model_ui->set_blocks_occupied_train(otb_string.c_str());
                 }
                 track_model_ui->set_blocks_occupied(otb_string.c_str());
             }
@@ -549,10 +611,14 @@ int main(void)
                 }
                 if (!trains.empty())
                 {
-                    for (int i=0;i<otb[0].size();i++)
+                    auto otb = track.GetOccupiedTrainBlocks();
+                    for (int j=0;j<otb.size();j++)
                     {
-                        otb_string+=std::to_string(otb[0][i]);
-                        otb_string+=" ";
+                        for (int i=0;i<otb[j].size();i++)
+                        {
+                            otb_string+=std::to_string(otb[j][i]);
+                            otb_string+=" ";
+                        }
                     }
                 }
                 track_model_ui->set_blocks_occupied(otb_string.c_str());
@@ -578,10 +644,14 @@ int main(void)
                 }
                 if (!trains.empty())
                 {
-                    for (int i=0;i<otb[0].size();i++)
+                    auto otb = track.GetOccupiedTrainBlocks();
+                    for (int j=0;j<otb.size();j++)
                     {
-                        otb_string+=std::to_string(otb[0][i]);
-                        otb_string+=" ";
+                        for (int i=0;i<otb[j].size();i++)
+                        {
+                            otb_string+=std::to_string(otb[j][i]);
+                            otb_string+=" ";
+                        }
                     }
                 }
                 track_model_ui->set_blocks_occupied(otb_string.c_str());
@@ -653,10 +723,10 @@ int main(void)
                     std::string block_grade = std::to_string(requested_block.grade);
                     track_model_ui->set_block_grade(block_grade.substr(0, 4).c_str());
 
-                    std::string block_elevation = std::to_string(requested_block.elevation);
+                    std::string block_elevation = std::to_string(requested_block.elevation*3.28);
                     track_model_ui->set_block_elevation(block_elevation.substr(0, 4).c_str());
 
-                    std::string block_cum_elevation = std::to_string(requested_block.cumulative_elevation);
+                    std::string block_cum_elevation = std::to_string(requested_block.cumulative_elevation*3.28);
                     track_model_ui->set_block_cumulative_elevation(block_cum_elevation.substr(0, 4).c_str());
 
                     if (requested_block.underground==1)
@@ -707,7 +777,7 @@ int main(void)
                         track_model_ui->set_block_occupied("NO");
                     }
 
-                    if (requested_block.has_light==1)
+                    if (requested_block.has_switch==1)
                     {
                         if (requested_block.light_color==types::TrafficLightColor::TRAFFICLIGHTCOLOR_GREEN)
                         {
@@ -716,6 +786,10 @@ int main(void)
                         if (requested_block.light_color==types::TrafficLightColor::TRAFFICLIGHTCOLOR_RED)
                         {
                             track_model_ui->set_block_light_color("RED");
+                        }
+                        if (requested_block.light_color==types::TrafficLightColor::TRAFFICLIGHTCOLOR_YELLOW)
+                        {
+                            track_model_ui->set_block_light_color("YELLOW");
                         }
                         if (requested_block.light_color==types::TrafficLightColor::TRAFFICLIGHTCOLOR_NONE)
                         {
@@ -736,7 +810,7 @@ int main(void)
                         track_model_ui->set_block_direction("UNIDIRECTIONAL");
                     }
 
-                    std::string block_length = std::to_string(requested_block.length);
+                    std::string block_length = std::to_string(requested_block.length*3.28);
                     track_model_ui->set_block_length(block_length.substr(0, 5).c_str());
                 }
         });
