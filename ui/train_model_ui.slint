@@ -193,14 +193,16 @@ TabWidget{
                         read-only:true;
                     }
                 }
-                VerticalBox{
                 TextEdit{
                     max-height: 30px;
                     min-height: 30px;
-                    text: "Power: " + actual-power + " W";
+                    max-width: 100px;
+                    min-width: 100px;
+                    font-size: 15px;
+                    horizontal-alignment: center;
+                    text: "Power: \n" + actual-power + " W";
                     read-only:true;
                 }
-            }
             }
             Rectangle{
                 //background: #000000;
