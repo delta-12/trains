@@ -546,9 +546,19 @@ static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHan
     {
         bool automatic_dispatch_signal = automatic_dispatch_channel.Receive();
         std::cout << "Automatic Dispatch Handler Received!" << std::endl;
-        ctc_office.AutomaticDispatch();
+        types::Error error = ctc_office.AutomaticDispatch();
 
-        std::vector<ctc::Train>   trains   = ctc_office.GetTrains();
+        if (error == types::Error::ERROR_NONE)
+        {
+            std::cout << "Automatic Dispatch Successful" << std::endl;
+        }
+        else
+        {
+            std::cout << "Automatic Dispatch Failed" << std::endl;
+        }
+
+        std::vector<ctc::Train> trains = ctc_office.GetTrains();
+        std::cout << "Number of trains dispatched: " << trains.size() << std::endl;
         std::vector<ctc::Station> stations = ctc_office.GetStations();
 
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
