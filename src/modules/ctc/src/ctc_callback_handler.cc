@@ -567,28 +567,35 @@ static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHan
                 {
                     if (ui.has_value())
                     {
-                        auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
-                        std::for_each(trains.begin(), trains.end(), [&train_schedules_ui, stations] (ctc::Train train) {
-                            auto train_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
-                            train_entry->set_row_data(1, slint::StandardListViewItem(train.current_position == 0 ? "Yard" : std::to_string(train.current_position).c_str()));
-                            train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
-                            train_entry->set_row_data(3, slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
-                            types::BlockId destination = train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination;
-                            if (destination == 0)
+                        auto received_train_schedules = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
+                        auto ui_train_ids             = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ui.value()->get_trains());
+                        std::for_each(trains.begin(), trains.end(), [&received_train_schedules, &ui_train_ids, stations] (ctc::Train train) {
+                            // Push new train entry row to TableView component
+                            auto train_entry = std::make_shared<slint::VectorModel<slint::StandardListViewItem>>();
+                            train_entry->push_back(slint::StandardListViewItem(std::to_string(train.train_id).c_str()));
+                            if (train.current_position == 0)
                             {
-                                train_entry->set_row_data(4, slint::StandardListViewItem("Yard"));
+                                train_entry->push_back(slint::StandardListViewItem("Yard"));
                             }
                             else
                             {
-                                for (ctc::Station station : stations)
+                                train_entry->push_back(slint::StandardListViewItem(std::to_string(train.current_position).c_str()));
+                            }
+                            train_entry->push_back(slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
+                            train_entry->push_back(slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
+                            for (ctc::Station station : stations)
+                            {
+                                if (station.block_id == train.destination_list[0].destination)
                                 {
-                                    if (station.block_id == destination)
-                                    {
-                                        train_entry->set_row_data(4, slint::StandardListViewItem(station.station_name.c_str()));
-                                    }
+                                    train_entry->push_back(slint::StandardListViewItem(station.station_name.c_str()));
                                 }
                             }
+                            received_train_schedules->push_back(train_entry);
+
+                            // Update Train drop down list
+                            ui_train_ids->push_back(slint::SharedString(std::to_string(train.train_id)));
                         });
+
 
                         if (automatic_dispatch_signal == true)
                         {
