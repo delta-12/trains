@@ -31,7 +31,7 @@ int main(void)
     auto                 train_model_ui        = ui::TrainModelUi::create();
     auto                 train_controller_ui   = ui::TrainControllerUi::create();
     slint::Timer timer;
-
+    int selected_train = 0; // 0: Train 1, 1: Train 2
     
 
     launcher_ui->on_launch_ctc_window([&]
@@ -209,6 +209,17 @@ int main(void)
     
     // TRAIN CONTROLLER CALLBACKS START
 
+    train_controller_ui->on_request_train_selection_changed([&] {
+        std::string train_name = std::string(train_controller_ui->get_selected_train_name());
+
+        int new_train_id = 0;
+        if (train_name == "Train 2")
+            new_train_id = 1;
+
+        selected_train = new_train_id;
+
+        std::cout << "Selected train changed to: " << train_name << " (ID: " << selected_train << ")\n";
+    });
 
     // automatic mode
     train_controller_ui->on_request_automatic_mode([&] {

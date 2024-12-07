@@ -1,4 +1,4 @@
-import { HorizontalBox, VerticalBox, TabWidget, Button, LineEdit, Slider, TextEdit} from "std-widgets.slint";
+import { HorizontalBox, VerticalBox, TabWidget, Button, LineEdit, Slider, TextEdit, ComboBox} from "std-widgets.slint";
 
 export component TrainControllerUi inherits Window {
 
@@ -50,6 +50,7 @@ export component TrainControllerUi inherits Window {
     callback request_toggle_emergency_brake();
     callback request_update_kp_ki();
     callback request_reset_kp_ki();
+    callback request_train_selection_changed();
 
     // unique to test bench
     callback request_update_current_velocity();
@@ -68,9 +69,11 @@ export component TrainControllerUi inherits Window {
     in-out property <string> temp_authority;
     in-out property <string> temp_kp;
     in-out property <string> temp_ki;
+    in-out property <[string]> trains: ["Train 1", "Train 2"];
+    in-out property <string> selected_train_name: "Train 1";
     
 
-    min-height: 845px;
+    min-height: 860px;
     min-width: 870px;
 
     TabWidget {
@@ -127,7 +130,17 @@ export component TrainControllerUi inherits Window {
                             height: 1px;
                             font-size: 20px;
                         }
-                    }   
+                    } 
+                    ComboBox {
+                        model: trains;
+                        current-value: selected_train_name;
+                        selected(input) => {
+                            selected_train_name = input;
+                            request_train_selection_changed();
+                        }                        
+                        max-width: 50px;
+                        max-height: 25px;
+                    }  
                 }
                 HorizontalBox {
                     Rectangle {
