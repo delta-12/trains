@@ -173,6 +173,8 @@ component ManualMode inherits Rectangle {
     in-out property <[string]> stations;
     in-out property <[string]> trains;
     in-out property <string> dispatch_message;
+    in-out property <bool> dispatch_success;
+
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
@@ -212,7 +214,10 @@ component ManualMode inherits Rectangle {
             } 
         }
         HorizontalLayout {
-            Text {text: dispatch_message;}
+            Text {
+                text: dispatch_message;
+                color: dispatch_success ? green : red;
+            }
         }
         VerticalLayout {
             alignment: end; 
@@ -281,6 +286,7 @@ component Dispatch inherits Rectangle {
     in-out property <[string]> trains;
     in-out property <string> manual_dispatch_message;
     in-out property <string> automatic_dispatch_message;
+    in-out property <bool> dispatch_success;
 
     callback choose-file();
     callback automatic-dispatch();
@@ -333,6 +339,7 @@ component Dispatch inherits Rectangle {
             arrival_time <=> arrival_time;
             manual-dispatch => {manual-dispatch()}
             dispatch_message: manual_dispatch_message;
+            dispatch_success: dispatch_success;
         }    
     }
 }
@@ -408,6 +415,7 @@ export component CtcUi inherits Window {
     in-out property <string> arrival_station;
     in-out property <string> manual_dispatch_message;
     in-out property <string> automatic_dispatch_message;
+    in-out property <bool> dispatch_success;
 
     //TestBench
     in-out property <string> block_occupancy;
@@ -489,6 +497,7 @@ export component CtcUi inherits Window {
                         manual_dispatch_message: manual_dispatch_message;
                         automatic_dispatch_message: automatic_dispatch_message;
                         manual-dispatch => {root.manual-dispatch()}
+                        dispatch_success: dispatch_success;
                     }
                 }   
             }

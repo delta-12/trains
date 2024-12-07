@@ -104,6 +104,8 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
     // Create Model to Populate Stations
     auto stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
     ctc_ui->set_stations(stations_model);
+
+    ctc_ui->set_throughput(std::to_string(0).c_str());
 }
 
 // This will be called in the backend each time through the loop
@@ -178,9 +180,27 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 // Callbacks run on the frontend thread
 static inline void manual_dispatch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
-    destination_channel.Send(std::string(ctc_ui->get_arrival_station()));
-    train_id_channel.Send(std::string(ctc_ui->get_train_id()));
-    arrival_time_channel.Send(std::string(ctc_ui->get_arrival_time()));
+    if (std::string(ctc_ui->get_arrival_station()).empty())
+    {
+        ctc_ui->set_dispatch_success(false);
+        ctc_ui->set_manual_dispatch_message("Station Input Missing");
+    }
+    else if (std::string(ctc_ui->get_train_id()).empty())
+    {
+        ctc_ui->set_dispatch_success(false);
+        ctc_ui->set_manual_dispatch_message("Train Input Missing");
+    }
+    else if (std::string(ctc_ui->get_arrival_time()).empty())
+    {
+        ctc_ui->set_dispatch_success(false);
+        ctc_ui->set_manual_dispatch_message("Arrival Time Input Missing");
+    }
+    else
+    {
+        destination_channel.Send(std::string(ctc_ui->get_arrival_station()));
+        train_id_channel.Send(std::string(ctc_ui->get_train_id()));
+        arrival_time_channel.Send(std::string(ctc_ui->get_arrival_time()));
+    }
 }
 
 // Handlers run on the backend thread
@@ -242,6 +262,10 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
                             // Update Train test bench drop down list
                             auto ui_train_tb_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ui.value()->get_trains_tb());
                             ui_train_tb_ids->push_back(slint::SharedString(train_id));
+
+                            // Update dispatch status
+                            ui.value()->set_dispatch_success(true);
+                            ui.value()->set_manual_dispatch_message("Dispatch Successful!");
                         }
                     }
                 });
