@@ -71,6 +71,7 @@ void Ctc::SetTrackLayout(std::filesystem::path path)
     std::vector<types::Block> blocks = bb.GetBlocks();
     SetBlocks(blocks);
     SetStations(blocks_);
+    SetSchedule(parser.GetRecords());
     SetDefaultRoute();
 }
 
