@@ -237,8 +237,10 @@ component ManualMode inherits Rectangle {
 
 component AutomaticMode inherits Rectangle {
     in-out property<string> fileName: "";
+    in-out property <string> dispatch_message;
+
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -263,14 +265,16 @@ component AutomaticMode inherits Rectangle {
                 clicked => {choose-file()}
             }
         }
-        
+        HorizontalLayout {
+            Text {text: dispatch_message;}
+        }
         VerticalLayout {
             alignment: end; 
             Button { 
                 max-height: 30px;
                 preferred-width: 250px;
                 text: "DISPATCH";
-                clicked => {parse-file()}
+                clicked => {automatic-dispatch()}
             } 
         }       
     }
@@ -284,10 +288,11 @@ component Dispatch inherits Rectangle {
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
     in-out property <[string]> trains;
-    in-out property <string> dispatch_message;
+    in-out property <string> manual_dispatch_message;
+    in-out property <string> automatic_dispatch_message;
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     background: #252525;
@@ -325,8 +330,9 @@ component Dispatch inherits Rectangle {
 
         if(automatic_mode == true) : AutomaticMode {
             choose-file => {root.choose-file()}
-            parse-file => {root.parse-file()}
+            automatic-dispatch => {root.automatic-dispatch()}
             fileName: fileName;
+            dispatch_message: automatic_dispatch_message;
         }
         if(automatic_mode == false) : ManualMode {
             train_id <=> train_id;
@@ -335,7 +341,7 @@ component Dispatch inherits Rectangle {
             stations: stations;
             arrival_time <=> arrival_time;
             manual-dispatch => {manual-dispatch()}
-            dispatch_message: dispatch_message;
+            dispatch_message: manual_dispatch_message;
         }    
     }
 }
@@ -408,7 +414,8 @@ export component CtcUi inherits Window {
     in-out property <string> train_id;
     in-out property <[string]> trains;
     in-out property <string> arrival_station;
-    in-out property <string> dispatch_message;
+    in-out property <string> manual_dispatch_message;
+    in-out property <string> automatic_dispatch_message;
 
     //TestBench
     in-out property <string> block_occupancy;
@@ -438,7 +445,7 @@ export component CtcUi inherits Window {
     callback send-failure-signal();
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     // Testbench 
@@ -478,13 +485,14 @@ export component CtcUi inherits Window {
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
-                        parse-file => {root.parse-file()}
+                        automatic-dispatch => {root.automatic-dispatch()}
                         stations <=> stations;
                         train_id <=> train_id;
                         trains <=> trains;
                         arrival_station <=> arrival_station;
                         arrival_time <=> arrival_time;
-                        dispatch_message: dispatch_message;
+                        manual_dispatch_message: manual_dispatch_message;
+                        automatic_dispatch_message: automatic_dispatch_message;
                         manual-dispatch => {root.manual-dispatch()}
                     }
                 }   

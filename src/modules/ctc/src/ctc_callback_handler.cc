@@ -40,6 +40,9 @@ static Channel<int> simulation_speed_channel;
 static Channel<std::vector<types::BlockId>> switch_block_channel;
 static Channel<bool>                        switch_position_channel;
 
+// Automatic Dispatch Channel
+static Channel<bool> automatic_dispatch_channel;
+
 // Helper
 static std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter);
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states);
@@ -58,6 +61,7 @@ static inline void fix_block_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 static inline void choose_file_callback();
 static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void set_switch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static inline void automatic_dispatch_callback();
 
 // Backend Handlers
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
@@ -70,6 +74,7 @@ static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
 static void simulation_speed_handler(ctc::Ctc &ctc_office);
 static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void departure_time_handler(ctc::Ctc &ctc_office);
+static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
@@ -103,6 +108,7 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     simulation_speed_handler(ctc_office);
     set_switch_handler(ctc_office, ctc_ui);
     departure_time_handler(ctc_office);
+    automatic_dispatch_handler(ctc_office, ctc_ui);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -142,6 +148,10 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 
     ctc_ui->on_set_switch_position([&ctc_ui] {
             set_switch_callback(ctc_ui);
+        });
+
+    ctc_ui->on_automatic_dispatch([&ctc_ui] {
+            automatic_dispatch_callback();
         });
     // TODO repeat for each event listener
 }
@@ -523,6 +533,62 @@ static void departure_time_handler(ctc::Ctc &ctc_office)
     }
 }
 
+/*----------------------------------- Automatic Dispatch -----------------------------------*/
+static inline void automatic_dispatch_callback()
+{
+    automatic_dispatch_channel.Send(true);
+    std::cout << "Automatic Dispatch!" << std::endl;
+}
+
+static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    if (automatic_dispatch_channel.DataAvailable())
+    {
+        bool automatic_dispatch_signal = automatic_dispatch_channel.Receive();
+        std::cout << "Automatic Dispatch Handler Received!" << std::endl;
+        ctc_office.AutomaticDispatch();
+
+        std::vector<ctc::Train>   trains   = ctc_office.GetTrains();
+        std::vector<ctc::Station> stations = ctc_office.GetStations();
+
+        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+        slint::invoke_from_event_loop([weak_ui_handle, trains, stations, automatic_dispatch_signal] () {
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        auto train_schedules_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_train_schedules());
+                        std::for_each(trains.begin(), trains.end(), [&train_schedules_ui, stations] (ctc::Train train) {
+                            auto train_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(train_schedules_ui->row_data(train.train_id - 1).value());
+                            train_entry->set_row_data(1, slint::StandardListViewItem(train.current_position == 0 ? "Yard" : std::to_string(train.current_position).c_str()));
+                            train_entry->set_row_data(2, slint::StandardListViewItem(std::to_string(train.authority.size()).c_str()));
+                            train_entry->set_row_data(3, slint::StandardListViewItem(std::to_string(static_cast<uint16_t>(train.suggested_speed)).c_str()));
+                            types::BlockId destination = train.destination_list[CTC_TRAIN_CURRENT_DESTINATION].destination;
+                            if (destination == 0)
+                            {
+                                train_entry->set_row_data(4, slint::StandardListViewItem("Yard"));
+                            }
+                            else
+                            {
+                                for (ctc::Station station : stations)
+                                {
+                                    if (station.block_id == destination)
+                                    {
+                                        train_entry->set_row_data(4, slint::StandardListViewItem(station.station_name.c_str()));
+                                    }
+                                }
+                            }
+                        });
+
+                        if (automatic_dispatch_signal == true)
+                        {
+                            ui.value()->set_automatic_dispatch_message("Automatic Dispatch Successfully");
+                        }
+                    }
+                }
+            });
+    }
+}
 
 /*----------------------------------- Helper Methods -----------------------------------*/
 
