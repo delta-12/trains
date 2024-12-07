@@ -199,11 +199,11 @@ export component WaysideControllerUi inherits Window {
         in-out property <string> str_plc_progin;
         in-out property <string> plc_prog;
 
-        in-out property <string> str_block_main;
         in-out property <string> str_block_mainin;
+        in-out property <string> str_block_mainout;
         in-out property <bool> block_main;
 
-        in-out property <string> str_sw_state;
+        in-out property <string> str_sw_stateout;
         in-out property <string> str_sw_statein;
         in-out property <bool> sw_state;
 
@@ -356,7 +356,7 @@ export component WaysideControllerUi inherits Window {
 
 
 
-////////////////////TESTBENCH INPUTS////////////////////////////////////////
+////////////////////TESTBENCH////////////////////////////////////////
 
 
     Rectangle {
@@ -366,6 +366,9 @@ export component WaysideControllerUi inherits Window {
         HorizontalLayout {
             padding: 10px;
             spacing: 10px;
+
+            ////////////////////TESTBENCH INPUTS////////////////////////////////////////
+
             Rectangle {
                 background: #252525;
                 border-radius: 10px;
@@ -387,8 +390,7 @@ export component WaysideControllerUi inherits Window {
                                 text: sugg-spd;
                                 width: 120px;
                                 height: 30px;
-                                edited(val)=>{
-                                    sugg-spd=val}
+                                edited(val)=>{sugg-spd=val}
                             } 
                             
                         Button{
@@ -471,10 +473,7 @@ export component WaysideControllerUi inherits Window {
                 }
             } 
 
-
-
             ////////////////////////TESTBENCH OUTPUTS////////////////////////////////////
-
 
                 HorizontalLayout {
                     Rectangle {
@@ -497,7 +496,9 @@ export component WaysideControllerUi inherits Window {
                                             read-only: true;
                                             min-height: 30px;
                                             max-height: 30px;
-                                            text: sugg-spd + " mph";
+                                            //text: comm_spd + " mph";
+                                            text: time;
+
                                         } 
                                 }
 
@@ -511,10 +512,11 @@ export component WaysideControllerUi inherits Window {
                                         min-height: 30px;
                                         max-height: 30px;
                                         text: comm_auth + " mi";
+                                        //text: time;
                                     } 
                                 }
 
-                                //Block Maintenance Mode
+                                //Block Maintenance Mode outputs
                                 HorizontalLayout {
                                     //alignment: start;
                                     Text { vertical-alignment: center;
@@ -522,7 +524,7 @@ export component WaysideControllerUi inherits Window {
                                     LineEdit {
                                         min-height: 30px;
                                         max-height: 30px;
-                                        text: str_block_main;
+                                        text: str_block_mainout;
                                         read-only: true;
                                     } 
                                 }
@@ -536,7 +538,7 @@ export component WaysideControllerUi inherits Window {
                                         //read-only: true;
                                         min-height: 30px;
                                         max-height: 30px;
-                                        text: str_sw_state;
+                                        text: str_sw_stateout;
                                         read-only: true;
                                     }
                                 }

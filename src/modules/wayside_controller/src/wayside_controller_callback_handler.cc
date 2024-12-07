@@ -1,24 +1,25 @@
 #include "wayside_controller_callback_handler.h"
 
+#include <string>
+
+#include "channel.h"
+#include "launcher.h"
+
+
 namespace wayside_controller{
 
-    //TB authortu
-    void disp_sugg_auth(slint::ComponentHandle<ui::WaysideControllerUi> &wayside_controller_ui, wayside_controller::WaysideController &wc, Channel<std::string> &channel){
+    
+    //event listener
 
+    static Channel<std::string> channel_destination;
 
-        if(channel.DataAvailable()){
+    //block information channels
+    static Channel<std::string> switch_state_channel;
+    static Channel<std::string> channel_blockid;
+    static Channel<
 
-            //channel recieve with ready data
-           std::string auth = channel.Receive();
-
-           //types::TrackCircuitData temp_data (types::TrackId::TRACKID_GREEN, 1, 0, std::stoi(auth));
-
-           //wc.GetCommandedSpeedAndAuthority(temp_data);
-
-           wayside_controller_ui->set_comm_auth(auth.c_str());
-        }
-
-    }
+    
+    
 
 
 

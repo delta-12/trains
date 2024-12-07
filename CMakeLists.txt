@@ -120,7 +120,15 @@ endif()
 ################################################################################
 enable_testing()
 include(GoogleTest)
-add_library(trains_lib STATIC ${TRAINS_SRCS}) # Add static library to avoid re-compiling sources for tests
+add_library(trains_lib STATIC     
+${COMMON_SRCS}
+${CONTROLLER_NETWORK_SRCS}
+${CTC_SRCS}
+${WAYSIDE_CONTROLLER_DIR}/src/wayside_controller.cc
+${TRACK_MODEL_SRCS}
+${TRAIN_MODEL_SRCS}
+${TRAIN_CONTROLLER_SRCS}
+${SIMULATOR_SRCS}) # Add static library to avoid re-compiling sources for tests
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(trains_lib PRIVATE -g -O0 --coverage)
     target_link_options(trains_lib PRIVATE --coverage)

@@ -7,10 +7,6 @@
 namespace wayside_controller
 {
 
-//void constructor
-WaysideController::WaysideController(void){}
-
-
 WaysideBlock::WaysideBlock(void) : block(0), primary_connection(0), switch_connection(0), track_circuit_input(0), switch_input(0), has_switch(false),
     maintenance_mode(false), occupancy_signal(IoSignal::IOSIGNAL_LOW)
 {
@@ -230,8 +226,14 @@ Error WaysideController::GetBlockStates(std::vector<types::BlockState> &block_st
         {
             block.second.occupancy_signal = io_signal;
 
-            // TODO NNF-227 report track failures
+            // TODO NNF-227 report track failures // changed to ticket NNF-262
             block_states.emplace_back(block.second.block, io_signal == IoSignal::IOSIGNAL_HIGH, false);
+
+            //set failure in BlockState based on updated field in Block struct
+            if (&block.second.track_circuit_input ){
+                
+            }
+
         }
     }
 
@@ -395,11 +397,5 @@ bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcIns
 
     return success;
 }
-
-
-//------Access Functions------//
-
-
-
 
 } // namespace wayside_controller
