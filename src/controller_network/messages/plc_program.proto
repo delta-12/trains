@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package controller_messages;
+
+enum InstructionCode
+{
+    INSTRUCTION_CODE_NOOP = 0;
+    INSTRUCTION_CODE_READ_IMMEDIATE = 1;
+    INSTRUCTION_CODE_READ_SIGNAL = 2;
+    INSTRUCTION_CODE_WRITE_SIGNAL = 3;
+    INSTRUCTION_CODE_EQUALS = 4;
+    INSTRUCTION_CODE_OR = 5;
+    INSTRUCTION_CODE_BRANCH_NOT_IF = 6;
+    INSTRUCTION_CODE_BRANCH_UNDCONDITIONAL = 7;
+}
+
+message Instruction
+{
+    InstructionCode instruction_code = 1;
+    uint32 argument_0 = 2;
+    uint32 argument_1 = 3;
+    uint32 argument_2 = 4;
+}
+
+message PlcProgram
+{
+    repeated Instruction instructions = 1;
+}

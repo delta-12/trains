@@ -3,7 +3,9 @@
 #include <deque>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 
+#include "plc_generator.h"
 #include "plc_lexer.h"
 #include "plc_parser.h"
 #include "types.h"
@@ -11,7 +13,7 @@
 namespace plc_compiler
 {
 
-types::Error Compile(const std::filesystem::path &file_path)
+types::Error Compile(const std::filesystem::path &file_path, std::ostream &stream)
 {
     types::Error error = types::Error::ERROR_NONE;
 
@@ -21,11 +23,12 @@ types::Error Compile(const std::filesystem::path &file_path)
     }
     else
     {
-        std::deque<lexer::Token>  tokens;
-        std::deque<lexer::Error>  lexer_errors;
-        std::deque<parser::Error> parser_errors;
-
-        std::ifstream program_file(file_path);
+        std::ifstream                  program_file(file_path);
+        parser::SharedStatementAstNode root_node = nullptr;
+        std::deque<lexer::Token>       tokens;
+        std::deque<lexer::Error>       lexer_errors;
+        std::deque<parser::Error>      parser_errors;
+        std::deque<generator::Error>   generator_errors;
 
         if (!program_file.is_open())
         {
@@ -41,7 +44,7 @@ types::Error Compile(const std::filesystem::path &file_path)
             error = types::Error::ERROR_INVALID_FORMAT;
             program_file.close();
         }
-        else if (!parser::Parse(tokens, parser_errors))
+        else if (!parser::Parse(tokens, parser_errors, root_node))
         {
             for (const parser::Error &parser_error : parser_errors)
             {
@@ -51,9 +54,15 @@ types::Error Compile(const std::filesystem::path &file_path)
             error = types::Error::ERROR_INVALID_FORMAT;
             program_file.close();
         }
-        else
+        else if (!generator::GenerateCode(root_node, stream, generator_errors))
         {
-            // TODO NNF-216 continue parsing
+            for (const generator::Error &generator_error : generator_errors)
+            {
+                std::cout << generator_error << std::endl;
+            }
+
+            error = types::Error::ERROR_INVALID_FORMAT;
+            program_file.close();
         }
     }
 

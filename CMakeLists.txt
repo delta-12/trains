@@ -16,7 +16,7 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:LOGGER>
 )
 
-set(SRC_COMPILE_OPTIONS -Wall -Wextra)
+set(SRC_COMPILE_OPTIONS -Wall -Wextra -Werror)
 set(TEST_COMPILE_OPTIONS ${SRC_COMPILE_OPTIONS} -g -O0 --coverage)
 option(ABSL_PROPAGATE_CXX_STD "Propagate C++ standard to abseil-cpp" ON)
 

@@ -136,8 +136,6 @@ bool Error::operator==(const Error &error_right) const
 
 std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node)
 {
-    stream << "Statement: ";
-
     std::visit([&stream](auto &&arg)
         {
             using T = std::decay_t<decltype(arg)>;
@@ -159,7 +157,7 @@ std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node)
                 stream << "UNKNOWN";
             }
 
-            stream << "\n";
+            stream << " ";
             StreamOutNullableArg<T>(stream, arg);
         }, node.node);
 
@@ -174,15 +172,13 @@ std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const IdAstNode& node)
 {
-    stream << "ID: " << node.id;
+    stream << node.id;
 
     return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const SignalAstNode& node)
 {
-    stream << "Signal: ";
-
     switch (node.type)
     {
     case SignalAstNode::SignalType::SIGNALTYPE_INPUT:
@@ -203,8 +199,6 @@ std::ostream& operator<<(std::ostream& stream, const SignalAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node)
 {
-    stream << "Logic level: ";
-
     switch (node.logic_level)
     {
     case LogicLevelAstNode::LogicLevel::LOGICLEVEL_LOW:
@@ -223,9 +217,8 @@ std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node)
 {
-    stream << "Alias:\n";
     StreamOutNullableArg<SharedIdAstNode>(stream, node.id_node);
-    stream << "\n";
+    stream << " = ";
     StreamOutNullableArg<SharedSignalAstNode>(stream, node.signal_node);
 
     return stream;
@@ -233,7 +226,7 @@ std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const SetAstNode& node)
 {
-    stream << "Set: ";
+    stream << "Set ";
 
     std::visit([&stream](auto &&arg)
         {
@@ -252,11 +245,11 @@ std::ostream& operator<<(std::ostream& stream, const SetAstNode& node)
                 stream << "UNKNOWN";
             }
 
-            stream << "\n";
+            stream << " ";
             StreamOutNullableArg<T>(stream, arg);
         }, node.signal);
 
-    stream << "\n";
+    stream << " ";
     StreamOutNullableArg<SharedLogicLevelAstNode>(stream, node.logic_level_node);
 
     return stream;
@@ -264,7 +257,7 @@ std::ostream& operator<<(std::ostream& stream, const SetAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const ExpressionAstNode& node)
 {
-    stream << "Expression: ";
+    stream << "(";
 
     std::visit([&stream](auto &&arg)
         {
@@ -287,12 +280,11 @@ std::ostream& operator<<(std::ostream& stream, const ExpressionAstNode& node)
                 stream << "UNKNOWN";
             }
 
-            stream << "\nLeft operand: ";
+            stream << " ";
             StreamOutNullableArg<T>(stream, arg);
         }, node.left_operand);
 
-    stream << "\nOperator: ";
-
+    stream << " ";
     switch (node.boolean_operator)
     {
     case ExpressionAstNode::Operator::OPERATOR_COMPARISON:
@@ -309,40 +301,27 @@ std::ostream& operator<<(std::ostream& stream, const ExpressionAstNode& node)
         break;
     }
 
-    stream << "\nRight operand: ";
-
+    stream << " ";
     std::visit([&stream](auto &&arg)
         {
             using T = std::decay_t<decltype(arg)>;
             StreamOutNullableArg<T>(stream, arg);
         }, node.right_operand);
 
+    stream << ")";
+
     return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const ElseAstNode& node)
 {
-    stream << "Else: ";
+    stream << "ELSE ";
 
     std::visit([&stream](auto &&arg)
         {
             using T = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<T, SharedIfAstNode>)
-            {
-                stream << "IF";
-            }
-            else if constexpr (std::is_same_v<T, SharedBodyAstNode>)
-            {
-                stream << "BODY";
-            }
-            else
-            {
-                stream << "UNKNOWN";
-            }
-
-            stream << "\n";
-            StreamOutNullableArg(stream, arg);
+            StreamOutNullableArg<T>(stream, arg);
         }, node.predicate_node);
 
     return stream;
@@ -350,23 +329,24 @@ std::ostream& operator<<(std::ostream& stream, const ElseAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const BodyAstNode& node)
 {
-    stream << "Body:\n";
+    stream << "{";
     StreamOutNullableArg<SharedStatementAstNode>(stream, node.statement_node);
+    stream << "}";
 
     return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const IfAstNode& node)
 {
-    stream << "If:\n";
-    StreamOutNullableArg(stream, node.expression_node);
-    stream << "\n";
-    StreamOutNullableArg(stream, node.body_node);
+    stream << "IF ";
+    StreamOutNullableArg<SharedExpressionAstNode>(stream, node.expression_node);
+    stream << " ";
+    StreamOutNullableArg<SharedBodyAstNode>(stream, node.body_node);
 
     if (node.has_else_node)
     {
-        stream << "\n";
-        StreamOutNullableArg(stream, node.else_node);
+        stream << " ";
+        StreamOutNullableArg<SharedElseAstNode>(stream, node.else_node);
     }
 
     return stream;
@@ -411,10 +391,11 @@ std::ostream& operator<<(std::ostream& stream, const Error& error)
     return stream;
 }
 
-SharedStatementAstNode Parse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors)
+bool Parse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, SharedStatementAstNode &statement_node)
 {
-    SharedStatementAstNode root = nullptr;
-    SharedStatementAstNode next = nullptr;
+    bool                   parsed = true;
+    SharedStatementAstNode root   = nullptr;
+    SharedStatementAstNode next   = nullptr;
 
     errors.clear();
 
@@ -424,7 +405,7 @@ SharedStatementAstNode Parse(std::deque<lexer::Token> &tokens, std::deque<Error>
 
         if (!ParseStatement(new_node, tokens, errors))
         {
-            // Parse function sets error, do nothing
+            parsed = false;
         }
         else if (nullptr == root)
         {
@@ -438,7 +419,9 @@ SharedStatementAstNode Parse(std::deque<lexer::Token> &tokens, std::deque<Error>
         }
     }
 
-    return root;
+    statement_node = root;
+
+    return parsed;
 }
 
 

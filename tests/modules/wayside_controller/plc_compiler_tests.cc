@@ -13,6 +13,7 @@
 #include <gmock/gmock-matchers.h>
 
 #include "plc_compiler.h"
+#include "plc_generator.h"
 #include "plc_lexer.h"
 #include "plc_parser.h"
 
@@ -286,7 +287,8 @@ TEST(PlcCompilerTests, ParserValidInput)
     ASSERT_EQ(0, lexer_errors.size());
 
     // Parser
-    plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
+    plc_compiler::parser::SharedStatementAstNode node = nullptr;
+    ASSERT_TRUE(plc_compiler::parser::Parse(tokens, parser_errors, node));
     ASSERT_NE(nullptr, node);
     ASSERT_EQ(0, parser_errors.size());
 
@@ -296,12 +298,53 @@ TEST(PlcCompilerTests, ParserValidInput)
     testing::internal::GetCapturedStdout();
 }
 
+TEST(PlcCompilerTests, GeneratorValidInput)
+{
+    std::deque<plc_compiler::lexer::Token>     tokens;
+    std::deque<plc_compiler::lexer::Error>     lexer_errors;
+    std::deque<plc_compiler::parser::Error>    parser_errors;
+    std::deque<plc_compiler::generator::Error> generator_errors;
+    std::stringstream                          input;
+    input << "BLOCK block_0 = IN_0;\n";
+    input << "BLOCK block_1=IN_1;\n";
+    input << "SWITCH switch_0= OUT_0;\n";
+    input << "CROSSING Crossing_0 =OUT_1;\n";
+    input << "\n\r\t \n";
+    input << "IF ((block_0 == HIGH\n) ||\t ((IN_2 == HIGH)&&(IN_3 ==LOW))|| ( block_1 == HIGH))\n";
+    input << "{\n";
+    input << "\tSET OUT_0 HIGH;\n";
+    input << "}\n";
+    input << "ELSE{SET Crossing_0 LOW;\r\n}\n";
+    input << "\n\n";
+    input << "IF ((block_0 == HIGH)&&(block_1 == LOW)){\n";
+    input << "    SET switch_0 LOW;\n";
+    input << "SET Crossing_0 HIGH;\n";
+    input << "}ELSE IF ((block_0==LOW) && (block_1 == HIGH))\n";
+    input << "{SET switch_0 HIGH;}\n";
+
+    // Lexer
+    ASSERT_TRUE(plc_compiler::lexer::Lexer(input, tokens, lexer_errors));
+    ASSERT_EQ(0, lexer_errors.size());
+
+    // Parser
+    plc_compiler::parser::SharedStatementAstNode node = nullptr;
+    ASSERT_TRUE(plc_compiler::parser::Parse(tokens, parser_errors, node));
+    ASSERT_NE(nullptr, node);
+    ASSERT_EQ(0, parser_errors.size());
+
+    // Generator
+    std::stringstream stream;
+    ASSERT_TRUE(plc_compiler::generator::GenerateCode(node, stream, generator_errors));
+    // TODO
+}
+
 TEST(PlcCompilerTests, Compile)
 {
-
+    std::stringstream     stream;
     std::filesystem::path path = std::filesystem::current_path() / ".." / "tests" / "modules" / "wayside_controller" / "plc_program.plc";
 
-    ASSERT_EQ(types::Error::ERROR_NONE, plc_compiler::Compile(path));
+    ASSERT_EQ(types::Error::ERROR_NONE, plc_compiler::Compile(path, stream));
+    // TODO
 }
 
 TEST(PlcCompilerTests, InvalidLexerInput)
@@ -360,7 +403,8 @@ TEST(PlcCompilerTests, InvalidParserInput)
     ASSERT_EQ(0, lexer_errors.size());
 
     // Parser
-    plc_compiler::parser::SharedStatementAstNode node = plc_compiler::parser::Parse(tokens, parser_errors);
+    plc_compiler::parser::SharedStatementAstNode node = nullptr;
+    ASSERT_FALSE(plc_compiler::parser::Parse(tokens, parser_errors, node));
     ASSERT_NE(0, parser_errors.size());
 
     // TODO NNF-273 verify parser nodes

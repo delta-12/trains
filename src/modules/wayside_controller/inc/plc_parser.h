@@ -26,6 +26,7 @@ using ExpressionAstNode = struct ExpressionAstNode;
 using ElseAstNode       = struct ElseAstNode;
 using BodyAstNode       = struct BodyAstNode;
 using IfAstNode         = struct IfAstNode;
+using Error             = struct Error;
 
 using SharedStatementAstNode  = std::shared_ptr<StatementAstNode>;
 using SharedIdAstNode         = std::shared_ptr<IdAstNode>;
@@ -183,7 +184,7 @@ struct Error
         lexer::Token token;
 };
 
-SharedStatementAstNode Parse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors);
+bool Parse(std::deque<lexer::Token> &tokens, std::deque<Error> &errors, SharedStatementAstNode &statement_node);
 
 } // namespace plc_compiler::parser
 
