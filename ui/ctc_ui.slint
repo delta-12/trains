@@ -12,8 +12,8 @@ component TransitSystem inherits Rectangle {
     in-out property <string> time;
     in-out property <bool> switch_enabled;
     in-out property <bool> has_input;
-    in-out property <bool> green_line: true;
     in-out property <string> simulation_speed;
+    in-out property <string> throughput;
 
     callback set_switch_position();
     callback set_maintenance_mode();
@@ -52,7 +52,7 @@ component TransitSystem inherits Rectangle {
                     height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
-                    Text {text: "Train/hr/line";}
+                    Text {text: throughput;}
                 }
             }
             HorizontalLayout {
@@ -127,15 +127,6 @@ component TransitSystem inherits Rectangle {
                     }
                 }
                 Text {text:" Switch"; y: 7px;}
-            }
-            HorizontalLayout {
-                spacing: 5px;
-                padding-left: 200px;
-                Button {
-                    width: 100px;
-                    text: green_line ? " Green Line" : "Red Line";  
-                    clicked => {green_line = !green_line}
-                }
             }
         }
     }
@@ -407,6 +398,7 @@ export component CtcUi inherits Window {
     in-out property <string> time;
     in-out property <string> block_id;
     in-out property <string> simulation_speed;
+    in-out property <string> throughput: "Train/hr/line";
 
     //Dispatch 
     in-out property <bool> file_chosen;
@@ -429,6 +421,8 @@ export component CtcUi inherits Window {
     in-out property <string> confirm_occupancy_message;
     in-out property <string> confirm_output_message;
     in-out property <string> confirm_maintenance_message;
+    in-out property <bool> maintenance_mode_tb;
+    in-out property <bool> switch_state_tb;
 
     // Transit callbacks
     callback reflect_operation_mode();
@@ -449,7 +443,7 @@ export component CtcUi inherits Window {
     callback manual-dispatch();
 
     // Testbench 
-    callback show-train-output();
+    callback train-tb-output();
     callback wc_send_block_states();
     
 
@@ -471,6 +465,7 @@ export component CtcUi inherits Window {
                     block_id <=> block_id;
                     block_maintenance_mode <=> block_maintenance_mode;
                     switch <=> switch_state;
+                    throughput: throughput;
                     set_switch_position => {root.set_switch_position()}
                     set_maintenance_mode => {root.set_maintenance_mode()}
                     fix_block => {root.fix_block()}
@@ -550,7 +545,7 @@ export component CtcUi inherits Window {
                                     current-value: train_tb;
                                     selected(input) => { 
                                         train_tb = input;
-                                        root.show-train-output();
+                                        root.train-tb-output();
                                     }
                                 } 
                             }
@@ -567,30 +562,22 @@ export component CtcUi inherits Window {
                             padding-bottom: 20px;
                             Text {
                                 font-size: 20px;
-                                text: "Section: \{block_maintenance_mode ? maintenance_section : ""}";
+                                text: "Block: \{maintenance_block}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Block: \{block_maintenance_mode ? maintenance_block : ""}";
-                            }
-                            Text {
-                                font-size: 20px;
-                                text: "Mainteance Signal: \{block_maintenance_mode ? "True" : "False" }" ;
+                                text: "Mainteance Signal: \{maintenance_mode_tb ? "True" : "False" }" ;
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
                                 font-size: 20px;
-                                text: "Section: \{switch_state ? maintenance_section : ""}";
+                                text: "Block: \{maintenance_block}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Block: \{switch_state ? maintenance_block : ""}";
-                            }
-                            Text {
-                                font-size: 20px;
-                                text: "Switch Signal: \{switch_state ? "True" : "False"}";
+                                text: "Switch Signal: \{switch_state_tb ? "True" : "False"}";
                             }
                         }
                     }

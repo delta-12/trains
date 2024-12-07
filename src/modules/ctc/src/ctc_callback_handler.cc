@@ -43,6 +43,9 @@ static Channel<bool>                        switch_position_channel;
 // Automatic Dispatch Channel
 static Channel<bool> automatic_dispatch_channel;
 
+// Testbench
+static Channel<std::string> train_id_tb_channel;
+
 // Helper
 static std::vector<types::BlockId> TokenizeOccupancyInput(const std::string& input, char delimiter);
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states);
@@ -62,6 +65,7 @@ static inline void choose_file_callback();
 static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void set_switch_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static inline void automatic_dispatch_callback();
+static inline void train_tb_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 // Backend Handlers
 static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
@@ -71,10 +75,12 @@ static void fix_block_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::C
 
 static void choose_file_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void throughput_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void simulation_speed_handler(ctc::Ctc &ctc_office);
 static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 static void departure_time_handler(ctc::Ctc &ctc_office);
 static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
+static void train_tb_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui);
 
 void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
@@ -91,6 +97,10 @@ void setup_ui(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
     train_ids->push_back(slint::SharedString("New Train"));
     ctc_ui->set_trains(train_ids);
 
+    // Create Model to Populate Trains Dropdown
+    auto train_tb_ids = std::make_shared<slint::VectorModel<slint::SharedString>>();
+    ctc_ui->set_trains_tb(train_tb_ids);
+
     // Create Model to Populate Stations
     auto stations_model = std::make_shared<slint::VectorModel<slint::SharedString>>();
     ctc_ui->set_stations(stations_model);
@@ -105,10 +115,12 @@ void backend_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ct
     fix_block_handler(ctc_office, ctc_ui);
     choose_file_handler(ctc_office, ctc_ui);
     tick_source_handler(ctc_office, ctc_ui);
+    throughput_handler(ctc_office, ctc_ui);
     simulation_speed_handler(ctc_office);
     set_switch_handler(ctc_office, ctc_ui);
     departure_time_handler(ctc_office);
     automatic_dispatch_handler(ctc_office, ctc_ui);
+    train_tb_handler(ctc_office, ctc_ui);
     // TODO repeat for each callback that needs to be handled in the backend
 }
 
@@ -153,6 +165,12 @@ static void register_callbacks(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
     ctc_ui->on_automatic_dispatch([&ctc_ui] {
             automatic_dispatch_callback();
         });
+
+    // Test Bench
+    ctc_ui->on_train_tb_output([&ctc_ui] {
+            train_tb_callback(ctc_ui);
+        });
+
     // TODO repeat for each event listener
 }
 
@@ -220,6 +238,10 @@ static void manual_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle
                             // Update Train drop down list
                             auto ui_train_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ui.value()->get_trains());
                             ui_train_ids->push_back(slint::SharedString(train_id));
+
+                            // Update Train test bench drop down list
+                            auto ui_train_tb_ids = std::dynamic_pointer_cast<slint::VectorModel<slint::SharedString>>(ui.value()->get_trains_tb());
+                            ui_train_tb_ids->push_back(slint::SharedString(train_id));
                         }
                     }
                 });
@@ -305,7 +327,7 @@ static inline void set_maintenance_mode_callback(slint::ComponentHandle<ui::CtcU
     std::vector<types::BlockId> blocks = TokenizeOccupancyInput(std::string(ctc_ui->get_block_id()), ',');
     block_maintenance_channel.Send(blocks);
     std::for_each(blocks.begin(), blocks.end(), [] (types::BlockId block_id) {
-            std::cout << "Input Block: " << block_id << std::endl;
+            std::cout << "Input Maintenance Blocks: " << block_id << std::endl;
         });
 }
 
@@ -443,6 +465,29 @@ static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
     }
 }
 
+/*----------------------------------- Throughput -----------------------------------*/
+static void throughput_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    static auto last_call_time = std::chrono::steady_clock::now();
+    auto        now            = std::chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::hours>(now - last_call_time).count() >= 1)
+    {
+        last_call_time = now;
+
+        size_t                                throughput = ctc_office.GetNumTrains();
+        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+        slint::invoke_from_event_loop([weak_ui_handle, throughput] () {
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_throughput(std::to_string(throughput).c_str());
+                    }
+                }
+            });
+    }
+}
+
 /*----------------------------------- Simulation Speed -----------------------------------*/
 
 static inline void simulation_speed_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
@@ -508,6 +553,7 @@ static void set_switch_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::
                                 auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
                                 auto block_entry    = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(updated_block - 1).value());
                                 block_entry->set_row_data(3, slint::StandardListViewItem(switch_position ? "Secondary" : "Primary"));
+                                ui.value()->set_switch_state_tb(switch_position);
                             }
                         }
                     });
@@ -607,6 +653,36 @@ static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHan
     }
 }
 
+/*----------------------------------- Test Bench -----------------------------------*/
+
+static inline void train_tb_callback(slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    train_id_tb_channel.Send(std::string(ctc_ui->get_train_tb()));
+}
+
+static void train_tb_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
+{
+    if (train_id_tb_channel.DataAvailable())
+    {
+        types::TrainId train_tb_id     = static_cast<uint16_t>(std::stoi(train_id_tb_channel.Receive()));
+        int            authority       = static_cast<int>(ctc_office.GetTrainAuthority(train_tb_id));
+        int            suggested_speed = static_cast<int>(ctc_office.GetTrainSuggestedSpeed(train_tb_id));
+        std::cout << "Authority: " << authority << "; Suggested Speed: " << suggested_speed << std::endl;
+
+        slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);
+        slint::invoke_from_event_loop([weak_ui_handle, authority, suggested_speed] () {
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_authority(authority);
+                        ui.value()->set_suggested_speed(suggested_speed);
+                    }
+                }
+            });
+    }
+}
+
 /*----------------------------------- Helper Methods -----------------------------------*/
 
 static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui, std::vector<types::BlockState> &block_states)
@@ -677,6 +753,10 @@ static void UpdateBlockMaintenanceUI(slint::ComponentHandle<ui::CtcUi> &ctc_ui, 
                         block_entry->set_row_data(2, slint::StandardListViewItem(block.maintenance ? "Maintenance" : "Open"));
                         block_entry->set_row_data(5, slint::StandardListViewItem(block.failed ? "Failure" : "_"));
                     });
+
+                    ui.value()->set_maintenance_block(std::to_string(blocks[0].block).c_str());
+                    ui.value()->set_maintenance_mode_tb(blocks[0].maintenance);
+                    ui.value()->set_switch_state_tb(blocks[0].switched);
                 }
             }
         });
