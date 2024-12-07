@@ -56,8 +56,8 @@ SoftwareTrainModel::SoftwareTrainModel(std::shared_ptr<TickSource> clk) : clock_
     service_brake_         = 0.0;
     power_                 = 0;
     last_tick_updated_     = (*clock_).GetTick();
+    track_polarity_        = types::Polarity::POLARITY_NEGATIVE;//must have starting polarity
     //beacon_data_;//beacon data needs instantiation
-    //track_pol;//must have starting polarity
 }
 void SoftwareTrainModel::Update()
 {
