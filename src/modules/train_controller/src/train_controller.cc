@@ -389,7 +389,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     {
         integral_sum_             = 0;
         commanded_power_          = 0;
-        service_brake_percentage_ =  0;
+        service_brake_percentage_ =  2.275; // found by 2.73 / 1.2 = multiple to get e brake braking force
         return;
     }
 
