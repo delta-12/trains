@@ -140,25 +140,8 @@ std::ostream& operator<<(std::ostream& stream, const StatementAstNode& node)
         {
             using T = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<T, SharedAliasAstNode>)
-            {
-                stream << "ALIAS";
-            }
-            else if constexpr (std::is_same_v<T, SharedSetAstNode>)
-            {
-                stream << "SET";
-            }
-            else if constexpr (std::is_same_v<T, SharedIfAstNode>)
-            {
-                stream << "IF";
-            }
-            else
-            {
-                stream << "UNKNOWN";
-            }
-
-            stream << " ";
             StreamOutNullableArg<T>(stream, arg);
+
         }, node.node);
 
     if (nullptr != node.next_statement)
@@ -217,6 +200,7 @@ std::ostream& operator<<(std::ostream& stream, const LogicLevelAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node)
 {
+    stream << "ALIAS ";
     StreamOutNullableArg<SharedIdAstNode>(stream, node.id_node);
     stream << " = ";
     StreamOutNullableArg<SharedSignalAstNode>(stream, node.signal_node);
@@ -226,7 +210,7 @@ std::ostream& operator<<(std::ostream& stream, const AliasAstNode& node)
 
 std::ostream& operator<<(std::ostream& stream, const SetAstNode& node)
 {
-    stream << "Set ";
+    stream << "SET ";
 
     std::visit([&stream](auto &&arg)
         {
@@ -771,6 +755,11 @@ static bool ParseExpression(SharedExpressionAstNode &node, std::deque<lexer::Tok
                 !ParseOperator(boolean_operator, expression_tokens, errors) ||
                 !ParseLogicLevel(logic_level_node, expression_tokens, errors))
             {
+                parsed = false;
+            }
+            else if (ExpressionAstNode::Operator::OPERATOR_COMPARISON != boolean_operator)
+            {
+                errors.emplace_back(ErrorType::ERRORTYPE_ILLEGAL_SYMBOL, token);
                 parsed = false;
             }
             else if (nullptr != id_node)

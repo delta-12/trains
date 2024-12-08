@@ -21,9 +21,9 @@ struct Error
 {
     public:
         Error(parser::SharedIdAstNode node);
-        Error(parser::ExpressionAstNode node);
+        Error(parser::SharedExpressionAstNode node);
         friend std::ostream& operator<<(std::ostream& stream, const Error& error);
-        std::variant<parser::SharedIdAstNode, parser::ExpressionAstNode> node;
+        std::variant<parser::SharedIdAstNode, parser::SharedExpressionAstNode> node;
 };
 
 bool GenerateCode(parser::SharedStatementAstNode root, std::ostream &stream, std::deque<Error> &errors);
