@@ -140,6 +140,10 @@ class Ctc
         std::vector<types::BlockId> GetUpdatedBlocks(void) const;
         std::vector<ctc::Train> GetParsedSchedule(void) const;
         std::string GetTimeString(void) const;
+        types::Tick GetTick(void) const;
+        std::chrono::milliseconds GetTickDuration(void) const;
+        types::Tick GetElapseTick(const types::Tick start, const types::Tick end) const;
+
         void ClearUpdatedBlocks(void);
 
         // Train Specific

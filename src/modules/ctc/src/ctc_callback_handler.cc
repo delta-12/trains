@@ -492,11 +492,13 @@ static void tick_source_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui:
 /*----------------------------------- Throughput -----------------------------------*/
 static void throughput_handler(ctc::Ctc &ctc_office, slint::ComponentHandle<ui::CtcUi> &ctc_ui)
 {
-    static auto last_call_time = std::chrono::steady_clock::now();
-    auto        now            = std::chrono::steady_clock::now();
-    if (std::chrono::duration_cast<std::chrono::hours>(now - last_call_time).count() >= 1)
+    static types::Tick last_tick      = ctc_office.GetTick();
+    auto               ticks_per_hour = std::chrono::milliseconds(std::chrono::hours(1)) / ctc_office.GetTickDuration();
+    types::Tick        current_tick   = ctc_office.GetTick();
+
+    if (ctc_office.GetElapseTick(last_tick, current_tick) >= ticks_per_hour)
     {
-        last_call_time = now;
+        last_tick = current_tick;
 
         size_t                                throughput = ctc_office.GetNumTrains();
         slint::ComponentWeakHandle<ui::CtcUi> weak_ui_handle(ctc_ui);

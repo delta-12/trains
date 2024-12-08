@@ -580,6 +580,21 @@ std::vector<types::BlockId> Ctc::GetUpdatedBlocks(void) const
     return updated_blocks_;
 }
 
+types::Tick Ctc::GetTick(void) const
+{
+    return clock_->GetTick();
+}
+
+std::chrono::milliseconds Ctc::GetTickDuration(void) const
+{
+    return clock_->GetTickDuration();
+}
+
+types::Tick Ctc::GetElapseTick(const types::Tick start, const types::Tick end) const
+{
+    return clock_->GetElapsedTicks(start, end);
+}
+
 std::size_t Ctc::GetTrainAuthority(const types::TrainId train_id)
 {
     std::size_t                       authority;
