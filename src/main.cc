@@ -69,8 +69,7 @@ int main(void)
     });
 
     // Setting Up CTC
-    ctc::Ctc ctc_office(types::TrackId::TRACKID_GREEN);
-    ctc::setup_ui(ctc_ui, ctc_office);
+    ctc::setup_ui(ctc_ui);
 
     std::thread worker_thread([&]
         {
@@ -83,7 +82,9 @@ int main(void)
                               BlockBuilder bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
 
                               // Create clock
-                              std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+                              std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>("08:00:00", std::chrono::milliseconds(1));
+                              tick_source->Start();
+                              ctc::Ctc ctc_office(tick_source);
 
                               // Create train
                               std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);

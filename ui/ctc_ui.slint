@@ -6,9 +6,19 @@ component TransitSystem inherits Rectangle {
     preferred-height: 300px;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <string> block_id;
-    in-out property <bool> mode;
+    in-out property <bool> block_maintenance_mode;
+    in-out property <bool> maintenance_switch_mode;
     in-out property <bool> switch;
     in-out property <string> time;
+    in-out property <bool> switch_enabled;
+    in-out property <bool> has_input;
+    in-out property <string> simulation_speed;
+    in-out property <string> throughput;
+
+    callback set_switch_position();
+    callback set_maintenance_mode();
+    callback fix_block();
+    callback set_simulation_speed();
 
     VerticalLayout {
         padding-top: 10px;
@@ -42,7 +52,7 @@ component TransitSystem inherits Rectangle {
                     height: 35px;
                     border-width: 2px;
                     border-color: #4d4d4d;
-                    Text {text: "Train/hr/line";}
+                    Text {text: throughput;}
                 }
             }
             HorizontalLayout {
@@ -50,7 +60,11 @@ component TransitSystem inherits Rectangle {
                 padding-right: 15px;
                 ComboBox {
                     y: -3px;
-                    model: [@tr("Simulation Speed"), @tr("x1"), @tr("x10"), @tr("x50")];
+                    model: [@tr("Simulation Speed"), "x1", "x10", "x50"];
+                    selected(input) => {
+                        simulation_speed = input;
+                        set_simulation_speed();
+                    }
                 }
             }
         }
@@ -71,22 +85,46 @@ component TransitSystem inherits Rectangle {
         ManageBlock := HorizontalLayout {
             alignment: start;
             padding: 15px;
-            spacing: 10px;
+            spacing: 20px;
             LineEdit {
                 width: 120px;
                 height: 30px;
                 placeholder-text: @tr("Block");
-                edited(input) => { block_id = input }
+                edited(input) => { 
+                    block_id = input; 
+                    if (block_id == "") {
+                        has_input = false;
+                    } else {
+                        has_input = true;
+                    }
+                }
             }
             HorizontalLayout {
+                spacing: 5px;
                 Switch {
-                    toggled => {mode = !mode}
+                    enabled: has_input;
+                    checked: block_maintenance_mode;
+                    toggled => {
+                        maintenance_switch_mode = !maintenance_switch_mode;
+                        if (maintenance_switch_mode == true) {
+                            switch_enabled = true;
+                            set_maintenance_mode();
+                        } else {
+                            switch_enabled = false;
+                            fix_block();
+                        }
+                    }
                 }
                 Text {text:"  Maintenance Mode"; y: 7px;}
             }
             HorizontalLayout {
+                spacing: 5px;
                 Switch {
-                    toggled => {switch = !switch}
+                    enabled: switch_enabled;
+                    toggled => {
+                        switch = !switch;
+                        set_switch_position();
+                    }
                 }
                 Text {text:" Switch"; y: 7px;}
             }
@@ -131,10 +169,12 @@ component TrainSchedule inherits Rectangle {
 component ManualMode inherits Rectangle {
     in-out property <string> train_id;
     in-out property <string> arrival_station;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
     in-out property <[string]> trains;
+    in-out property <string> dispatch_message;
+    in-out property <bool> dispatch_success;
+
     callback manual-dispatch();
     VerticalLayout {
         padding: 10px;
@@ -165,16 +205,6 @@ component ManualMode inherits Rectangle {
         }
         HorizontalLayout {
             alignment: start;
-            Text { font-size: 15px;text: "Destination:  ";}
-            Rectangle {width: 10px;}
-            LineEdit {
-                height: 30px;
-                y: -3px;
-                edited(input) => {destination = input}
-            } 
-        }
-        HorizontalLayout {
-            alignment: start;
             Text { font-size: 15px;text: "Arrival Time: ";}
             Rectangle {width: 10px;}
             LineEdit {
@@ -182,6 +212,12 @@ component ManualMode inherits Rectangle {
                 placeholder-text: @tr("10:00:00");
                 edited(input) => {arrival_time = input}
             } 
+        }
+        HorizontalLayout {
+            Text {
+                text: dispatch_message;
+                color: dispatch_success ? green : red;
+            }
         }
         VerticalLayout {
             alignment: end; 
@@ -197,8 +233,10 @@ component ManualMode inherits Rectangle {
 
 component AutomaticMode inherits Rectangle {
     in-out property<string> fileName: "";
+    in-out property <string> dispatch_message;
+
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     VerticalLayout {
         padding: 10px;
         spacing: 10px;
@@ -223,14 +261,16 @@ component AutomaticMode inherits Rectangle {
                 clicked => {choose-file()}
             }
         }
-        
+        HorizontalLayout {
+            Text {text: dispatch_message;}
+        }
         VerticalLayout {
             alignment: end; 
             Button { 
                 max-height: 30px;
                 preferred-width: 250px;
                 text: "DISPATCH";
-                clicked => {parse-file()}
+                clicked => {automatic-dispatch()}
             } 
         }       
     }
@@ -241,13 +281,15 @@ component Dispatch inherits Rectangle {
     in-out property<string> fileName: "";
     in-out property <string> train_id;
     in-out property <string> arrival_station;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <[string]> stations;
     in-out property <[string]> trains;
+    in-out property <string> manual_dispatch_message;
+    in-out property <string> automatic_dispatch_message;
+    in-out property <bool> dispatch_success;
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     background: #252525;
@@ -277,6 +319,7 @@ component Dispatch inherits Rectangle {
                     padding: 10px;
                     height: 35px;
                     clicked => {automatic_mode = !automatic_mode;}
+                    enabled: automatic_mode;
                     text: automatic_mode ? "Automatic Mode" : "Manual Mode";
                 }
             }
@@ -284,24 +327,26 @@ component Dispatch inherits Rectangle {
 
         if(automatic_mode == true) : AutomaticMode {
             choose-file => {root.choose-file()}
-            parse-file => {root.parse-file()}
+            automatic-dispatch => {root.automatic-dispatch()}
             fileName: fileName;
+            dispatch_message: automatic_dispatch_message;
         }
         if(automatic_mode == false) : ManualMode {
             train_id <=> train_id;
             trains <=> trains;
             arrival_station <=> arrival_station;
             stations: stations;
-            destination <=> destination;
             arrival_time <=> arrival_time;
             manual-dispatch => {manual-dispatch()}
+            dispatch_message: manual_dispatch_message;
+            dispatch_success: dispatch_success;
         }    
     }
 }
 
 component TBInputs inherits Rectangle {
     in-out property <string> block_occupancy;
-
+    in-out property <bool> occupied;
     in-out property <string> confirm_occupancy_message;
     // Callbacks
     callback send_occupancy_signal();
@@ -317,6 +362,11 @@ component TBInputs inherits Rectangle {
                 height: 50px;
                 placeholder-text: @tr("Block Number");
                 edited(input) => {block_occupancy = input}
+            }
+            Switch {
+                checked: occupied;
+                text: "Occupied";
+                toggled => {occupied = !occupied}
             }
             Button {
                 height: 40px;
@@ -336,13 +386,6 @@ component TBInputs inherits Rectangle {
             Text {
                 text: confirm_occupancy_message;
             }
-            Button {
-                height: 40px;
-                text:  "Send Dummy Block States";
-                clicked => {
-                    root.wc_send_block_states();
-                }
-            }
         }
     }
 }
@@ -351,28 +394,34 @@ export component CtcUi inherits Window {
     in-out property <string> selected_fileName;
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <[[StandardListViewItem]]> train_schedules;
-    in-out property <string> destination;
     in-out property <string> arrival_time;
     in-out property <string> maintenance_section;
     in-out property <string> maintenance_block;
 
     //Transit System
-    in-out property <bool> maintenance_mode;
+    in-out property <bool> block_maintenance_mode;
     in-out property <bool> switch_state;
     in-out property <string> failure_signal;
     in-out property <string> time;
+    in-out property <string> block_id;
+    in-out property <string> simulation_speed;
+    in-out property <string> throughput: "Train/hr/line";
 
     //Dispatch 
+    in-out property <bool> file_chosen;
     in-out property <[string]> stations;
     in-out property <string> train_id;
     in-out property <[string]> trains;
     in-out property <string> arrival_station;
+    in-out property <string> manual_dispatch_message;
+    in-out property <string> automatic_dispatch_message;
+    in-out property <bool> dispatch_success;
 
     //TestBench
     in-out property <string> block_occupancy;
-    in-out property <bool> occupancy;
     in-out property <string> train_tb;
     in-out property <[string]> trains_tb;
+    in-out property <bool> occupied;
 
     in-out property <int> authority;
     in-out property <int> suggested_speed;
@@ -380,8 +429,15 @@ export component CtcUi inherits Window {
     in-out property <string> confirm_occupancy_message;
     in-out property <string> confirm_output_message;
     in-out property <string> confirm_maintenance_message;
-    in-out property <string> confirm_switch_message;
-    in-out property <string> confirm_automatic_dispatch;
+    in-out property <bool> maintenance_mode_tb;
+    in-out property <bool> switch_state_tb;
+
+    // Transit callbacks
+    callback reflect_operation_mode();
+    callback set_maintenance_mode();
+    callback fix_block();
+    callback set_simulation_speed();
+    callback set_switch_position();
 
     callback send_occupancy();
     callback print-output-to-wayside();
@@ -391,12 +447,13 @@ export component CtcUi inherits Window {
     callback send-failure-signal();
 
     callback choose-file();
-    callback parse-file();
+    callback automatic-dispatch();
     callback manual-dispatch();
 
     // Testbench 
-    callback show-train-output();
+    callback train-tb-output();
     callback wc_send_block_states();
+    
 
     title: "CTC Office";
     preferred-width: 600px;
@@ -410,8 +467,17 @@ export component CtcUi inherits Window {
                 spacing: 15px;
                 alignment: stretch;
                 TransitSystem {
+                    simulation_speed <=> simulation_speed;
                     block_data: block_data;
                     time: time;
+                    block_id <=> block_id;
+                    block_maintenance_mode <=> block_maintenance_mode;
+                    switch <=> switch_state;
+                    throughput: throughput;
+                    set_switch_position => {root.set_switch_position()}
+                    set_maintenance_mode => {root.set_maintenance_mode()}
+                    fix_block => {root.fix_block()}
+                    set_simulation_speed => {root.set_simulation_speed()}
                 } // Transit System Top Widget
                 HorizontalLayout { // Bottom Widget Containing Train Schedule and Dispatch
                     spacing: 15px;
@@ -422,14 +488,16 @@ export component CtcUi inherits Window {
                     Dispatch { // Bottom Right Dispatch
                         fileName: selected_fileName;
                         choose-file => {root.choose-file();}
-                        parse-file => {root.parse-file()}
+                        automatic-dispatch => {root.automatic-dispatch()}
                         stations <=> stations;
                         train_id <=> train_id;
                         trains <=> trains;
                         arrival_station <=> arrival_station;
-                        destination <=> destination;
                         arrival_time <=> arrival_time;
+                        manual_dispatch_message: manual_dispatch_message;
+                        automatic_dispatch_message: automatic_dispatch_message;
                         manual-dispatch => {root.manual-dispatch()}
+                        dispatch_success: dispatch_success;
                     }
                 }   
             }
@@ -452,6 +520,7 @@ export component CtcUi inherits Window {
                             text: "Inputs";
                         }
                         TBInputs {
+                            occupied <=> occupied;
                             block_occupancy <=> block_occupancy;
                             confirm_occupancy_message: confirm_occupancy_message;
                             send_occupancy_signal => {root.send_occupancy()}
@@ -485,7 +554,7 @@ export component CtcUi inherits Window {
                                     current-value: train_tb;
                                     selected(input) => { 
                                         train_tb = input;
-                                        root.show-train-output();
+                                        root.train-tb-output();
                                     }
                                 } 
                             }
@@ -502,30 +571,22 @@ export component CtcUi inherits Window {
                             padding-bottom: 20px;
                             Text {
                                 font-size: 20px;
-                                text: "Section: \{maintenance_mode ? maintenance_section : ""}";
+                                text: "Block: \{maintenance_block}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Block: \{maintenance_mode ? maintenance_block : ""}";
-                            }
-                            Text {
-                                font-size: 20px;
-                                text: "Mainteance Signal: \{maintenance_mode ? "True" : "False" }" ;
+                                text: "Mainteance Signal: \{maintenance_mode_tb ? "True" : "False" }" ;
                             }
                         }
                         VerticalBox {
                             padding-bottom: 20px;
                             Text {
                                 font-size: 20px;
-                                text: "Section: \{switch_state ? maintenance_section : ""}";
+                                text: "Block: \{maintenance_block}";
                             }
                             Text {
                                 font-size: 20px;
-                                text: "Block: \{switch_state ? maintenance_block : ""}";
-                            }
-                            Text {
-                                font-size: 20px;
-                                text: "Switch Signal: \{switch_state ? "True" : "False"}";
+                                text: "Switch Signal: \{switch_state_tb ? "True" : "False"}";
                             }
                         }
                     }
