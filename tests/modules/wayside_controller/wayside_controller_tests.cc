@@ -46,22 +46,22 @@ static const std::array<bool, wayside_controller::kTotalInputs> kInputs = {true,
                                                                            false, false, false, true, true, false, false, true, true, false, false, false, false, true, true, false, true, true, false, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, false, false};
 
 static const std::vector<wayside_controller::WaysideBlock> kBlueLineWaysideBlocks = {
-    wayside_controller::WaysideBlock(1, 2, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(2, 3, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 1, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(3, 4, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 2, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(4, 5, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 3, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(5, 6, 6, 11, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 4, 78, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(6, 7, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 5, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(7, 8, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 6, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(8, 9, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 7, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(9, 10, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 8, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(10, types::kEndBlock, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 9, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(11, 12, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 10, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(12, 13, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 11, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(13, 14, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 12, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(14, 15, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 13, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(15, 16, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 14, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
-    wayside_controller::WaysideBlock(16, types::kEndBlock, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW)};
+    wayside_controller::WaysideBlock(1, 2, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(2, 3, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 1, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(3, 4, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 2, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(4, 5, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 3, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(5, 6, 6, 11, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 4, 78, 0, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(6, 7, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 5, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(7, 8, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 6, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(8, 9, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 7, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(9, 10, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 8, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(10, types::kEndBlock, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 9, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(11, 12, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 10, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(12, 13, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 11, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(13, 14, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 12, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(14, 15, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 13, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(15, 16, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 14, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW),
+    wayside_controller::WaysideBlock(16, types::kEndBlock, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW)};
 
 wayside_controller::Error GetInput(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
 {
@@ -108,47 +108,47 @@ TEST(WaysideControllerTests, Configure)
     ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.Configure(std::vector<wayside_controller::WaysideBlock>()));
 
     // Duplicate block ID
-    blocks.push_back(wayside_controller::WaysideBlock(1, 2, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(1, 2, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate block ID
-    blocks.push_back(wayside_controller::WaysideBlock(1, 3, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(1, 3, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_BLOCK, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid track circuit input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 78, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 78, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid track circuit input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, -1, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, -1, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate track circuit input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, 0, false, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 77, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 77, 0, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, wayside_controller::kTotalInputs, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, wayside_controller::kTotalInputs, 1, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Invalid switch input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, -1, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, -1, 2, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 
     // Duplicate switch input
-    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 78, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
+    blocks.push_back(wayside_controller::WaysideBlock(17, 0, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 78, 3, true, false, wayside_controller::IoSignal::IOSIGNAL_LOW));
     ASSERT_EQ(wayside_controller::Error::ERROR_DUPLICATE_INPUT, software_wayside_controller.Configure(blocks));
     blocks.pop_back();
 }

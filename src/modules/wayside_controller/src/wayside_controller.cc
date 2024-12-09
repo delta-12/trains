@@ -11,10 +11,11 @@ WaysideBlock::WaysideBlock(void) : block(0), next_block(0), primary_connection(0
 }
 
 WaysideBlock::WaysideBlock(const types::BlockId block, const types::BlockId next_block, const types::BlockId primary_connection, const types::BlockId secondary_connection,
-                           const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const bool has_switch,
-                           const bool maintenance_mode, const IoSignal occupancy_signal)
+                           const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const OutputId switch_output,
+                           const bool has_switch, const bool maintenance_mode, const IoSignal occupancy_signal)
     : block(block), next_block(next_block), primary_connection(primary_connection), secondary_connection(secondary_connection), direction(direction),
-    track_circuit_input(track_circuit_input), switch_input(switch_input), has_switch(has_switch), maintenance_mode(maintenance_mode), occupancy_signal(occupancy_signal)
+    track_circuit_input(track_circuit_input), switch_input(switch_input), switch_output(switch_output), has_switch(has_switch), maintenance_mode(maintenance_mode),
+    occupancy_signal(occupancy_signal)
 {
 }
 
@@ -229,6 +230,37 @@ Error WaysideController::GetBlockStates(std::vector<types::BlockState> &block_st
             // TODO NNF-227 report track failures
             block_states.emplace_back(block.second.block, io_signal == IoSignal::IOSIGNAL_HIGH, false);
         }
+    }
+
+    return error;
+}
+
+Error WaysideController::UpdateSwitchPosition(const OutputId switch_output, const IoSignal signal)
+{
+    Error error = Error::ERROR_INVALID_OUTPUT;
+
+    std::unordered_map<types::BlockId, WaysideBlock>::const_iterator block = std::ranges::find_if(block_configuration_, [&switch_output](std::pair<const types::BlockId, WaysideBlock> &block){
+            return (block.second.has_switch && (switch_output == block.second.switch_output));
+        });
+
+    if (block_configuration_.end() != block)
+    {
+        if (IoSignal::IOSIGNAL_LOW == signal)
+        {
+            block_layout_.AddEdge(block->second.block, block->second.primary_connection, 1);
+            block_layout_.AddEdge(block->second.primary_connection, block->second.block, 1); // TODO Direction of primary connection block unknown
+            block_layout_.RemoveEdge(block->second.block, block->second.secondary_connection);
+            block_layout_.RemoveEdge(block->second.secondary_connection, block->second.block); // TODO Direction of primary connection block unknown
+        }
+        else
+        {
+            block_layout_.RemoveEdge(block->second.block, block->second.primary_connection);
+            block_layout_.RemoveEdge(block->second.primary_connection, block->second.block); // TODO Direction of primary connection block unknown
+            block_layout_.AddEdge(block->second.block, block->second.secondary_connection, 1);
+            block_layout_.AddEdge(block->second.secondary_connection, block->second.block, 1); // TODO Direction of primary connection block unknown
+        }
+
+        error = Error::ERROR_NONE;
     }
 
     return error;

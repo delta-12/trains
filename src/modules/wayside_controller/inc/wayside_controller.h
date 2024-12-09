@@ -69,8 +69,8 @@ struct WaysideBlock
     public:
         WaysideBlock(void);
         WaysideBlock(const types::BlockId block, const types::BlockId next_block, const types::BlockId primary_connection, const types::BlockId secondary_connection,
-                     const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const bool has_switch, const bool maintenance_mode,
-                     const IoSignal occupancy_signal);
+                     const types::BlockDirection direction, const InputId track_circuit_input, const InputId switch_input, const OutputId switch_output, const bool has_switch,
+                     const bool maintenance_mode, const IoSignal occupancy_signal);
         types::BlockId block;
         types::BlockId next_block;
         types::BlockId primary_connection;
@@ -78,6 +78,7 @@ struct WaysideBlock
         types::BlockDirection direction;
         InputId track_circuit_input;
         InputId switch_input;
+        OutputId switch_output;
         bool has_switch;
         bool maintenance_mode;
         IoSignal occupancy_signal;
@@ -105,6 +106,7 @@ class WaysideController
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
         Error GetBlockStates(std::vector<types::BlockState> &block_states);
+        Error UpdateSwitchPosition(const OutputId switch_output, const IoSignal signal);
 
     private:
         static bool IsTrackCircuitInputValid(const InputId input);
