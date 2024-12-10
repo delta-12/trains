@@ -671,6 +671,7 @@ static void automatic_dispatch_handler(ctc::Ctc &ctc_office, slint::ComponentHan
 
                         if (automatic_dispatch_signal == true)
                         {
+                            ui.value()->set_dispatch_success(true);
                             ui.value()->set_automatic_dispatch_message("Automatic Dispatch Successfully");
                         }
                     }
