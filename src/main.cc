@@ -9,31 +9,21 @@
 
 #include "common/inc/types.h"
 #include "launcher.h"
-#include "block_builder.h"
-#include "csv_parser.h"
-#include "simulator.h"
 #include "tick_source.h"
-#include "track_model.h"
-#include "train_model.h"
 #include "train_controller.h"
-
-
 
 int main(void)
 {
-
-    simulator::Simulator world;
     std::map<int,std::shared_ptr<train_controller::SoftwareTrainController>> train_controllers;
-    auto                 launcher_ui           = ui::Launcher::create();
-    auto                 ctc_ui                = ui::CtcUi::create();
-    auto                 wayside_controller_ui = ui::WaysideControllerUi::create();
-    auto                 track_model_ui        = ui::TrackModelUi::create();
-    auto                 train_model_ui        = ui::TrainModelUi::create();
-    auto                 train_controller_ui   = ui::TrainControllerUi::create();
-    slint::Timer timer;
-    int selected_train = 0; // 0: Train 1, 1: Train 2
-    
 
+    auto launcher_ui           = ui::Launcher::create();
+    auto ctc_ui                = ui::CtcUi::create();
+    auto wayside_controller_ui = ui::WaysideControllerUi::create();
+    auto track_model_ui        = ui::TrackModelUi::create();
+    auto train_model_ui        = ui::TrainModelUi::create();
+    auto train_controller_ui   = ui::TrainControllerUi::create();
+
+    // Keep launchers - for future integration
     launcher_ui->on_launch_ctc_window([&]
     {
         ctc_ui->show();
@@ -55,262 +45,69 @@ int main(void)
         train_controller_ui->show();
     });
 
-    types::Meters dist = 0;
+    // Create a tick source and a single train controller
+    std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
+    tick_source->Start();
+    tick_source->SetMultiplier(3);
 
-    std::thread worker_thread([&world, &train_controllers, &dist, &train_controller_ui]
-    {
-        std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
-        tick_source.get()->Start();
-        tick_source.get()->SetMultiplier(3);
-        slint::Timer timer;
+    std::shared_ptr<train_controller::SoftwareTrainController> train_contr = 
+        std::make_shared<train_controller::SoftwareTrainController>(tick_source);
 
+    train_controllers[0] = train_contr;
 
-        std::filesystem::path           base_path = std::filesystem::current_path();
-        std::filesystem::path           path      = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
-        std::filesystem::path           path2     = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_track_layout.csv";
-        CsvParser                       parser(path);
-        CsvParser                       parser2(path2);
-        BlockBuilder                    bb(parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
-        BlockBuilder                    bb2(parser2.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
-        
-        
-        std::shared_ptr<train_model::TrainModel> train = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
-        std::shared_ptr<train_controller::SoftwareTrainController> train_contr = std::make_shared<train_controller::SoftwareTrainController>(tick_source);
-        std::shared_ptr<track_model::SoftwareTrackModel> track = std::make_shared<track_model::SoftwareTrackModel>();
+    // We are removing the worker_thread that integrated track and train models.
+    // No simulator, no track, no train_model references.
+    // The user will manually update values via the UI.
 
-        std::shared_ptr<train_model::TrainModel> train2 = std::make_shared<train_model::SoftwareTrainModel>(tick_source);
-        std::shared_ptr<train_controller::SoftwareTrainController> train_contr2 = std::make_shared<train_controller::SoftwareTrainController>(tick_source);
-
-
-        train.get()->SetTrainId(0);
-        train_controllers[0] = train_contr;
-        track->SetTrackLayout(types::TrackId::TRACKID_GREEN, bb.GetBlocks(), bb2.GetBlocks());
-        world.AddTrackModel(track);
-        world.AddTrainModel(track->GetTrackId(), train);
-//        bool debugger = false;
-
-        train2->SetTrainId(1);
-        world.AddTrainModel(track->GetTrackId(), train2);
-        train_controllers[1] = train_contr2;
-
-        types::Blocks ATH = 10;
-        bool first_train_done = false;
-        
-        while(!first_train_done)
-        {
-            dist = train_controllers[0].get()->GetDistanceTravelled();
-            
-            if(dist == 0)
-            {
-                track.get()->SetAuthority(0,ATH);
-                track.get()->SetCommandedSpeed(0,10);
-            }
-
-            types::Watts commanded_power = train_controllers[0].get()->GetCommandedPower();
-            types::Meters distance_traveled_since_last_update = train_controllers[0].get()->GetDistanceTravelledSinceLastUpdate();
-            double brake = train_controllers[0].get()->GetServiceBrake();
-
-
-            track.get()->GetTrainModel(0).get()->SetCommandedPower(commanded_power);
-            track.get()->GetTrainModel(0).get()->SetDistanceTraveled(distance_traveled_since_last_update);
-            track.get()->GetTrainModel(0).get()->SetBrake(brake);
-            
-            if (dist > 100 && dist <= 200)
-            {
-                track.get()->SetAuthority(64,ATH-1);
-                track.get()->SetCommandedSpeed(64,10);
-            }
-            else if(dist > 200 && dist <= 400)
-            {
-                track.get()->SetAuthority(65,ATH-2);
-                track.get()->SetCommandedSpeed(65,10);
-            }
-            else if(dist > 400 && dist <= 600)
-            {
-                track.get()->SetAuthority(66,ATH-3);
-                track.get()->SetCommandedSpeed(66,10);
-            }
-            else if(dist > 600 && dist <= 700)
-            {
-                track.get()->SetAuthority(67,ATH-4);
-                track.get()->SetCommandedSpeed(67,10);
-            }
-            else if(dist > 700 && dist <= 800)
-            {
-                track.get()->SetAuthority(68,ATH-5);
-                track.get()->SetCommandedSpeed(68,10);
-            }
-            else if(dist > 800 && dist <= 900)
-            {
-                track.get()->SetAuthority(69,ATH-6);
-                track.get()->SetCommandedSpeed(69,10);
-            }
-            else if(dist > 900 && dist <= 1000)
-            {
-                track.get()->SetAuthority(70,ATH-7);
-                track.get()->SetCommandedSpeed(70,10);
-            }
-            else if(dist > 1000 && dist <= 1100)
-            {
-                track.get()->SetAuthority(71,ATH-8);
-                track.get()->SetCommandedSpeed(71,10);
-            }
-            else if(dist > 1100 && dist <= 1200)
-            {
-                track.get()->SetAuthority(72,ATH-9);
-                track.get()->SetCommandedSpeed(72,10);
-            }
-            else if(dist > 1200 && dist <= 1300)
-            {
-                track.get()->SetAuthority(73,ATH-10);
-                track.get()->SetCommandedSpeed(73,10);
-            }
-
-
-            world.Update();
-
-
-            types::Polarity polarity = track.get()->GetTrainModel(0).get()->GetTrackPolarity();
-            types::Blocks authority = track.get()->GetTrainModel(0).get()->GetAuthority();
-            types::Meters commanded_speed = track.get()->GetTrainModel(0).get()->GetCommandedSpeed();
-            types::MetersPerSecond current_speed = track.get()->GetTrainModel(0).get()->GetActualSpeed();
-
-            train_controllers[0].get()->SetCurrentSpeed(current_speed);
-            train_controllers[0].get()->SetPolartity(polarity);
-            train_controllers[0].get()->SetAuthority(authority);
-            train_controllers[0].get()->SetCommandedSpeed(commanded_speed);
-
-            train_controllers[0].get()->Update();
-
-
-
-
-            if(authority == 0 && current_speed == 0)
-            {
-                train_controllers[0].get()->Update();
-                first_train_done = true;
-                //break;
-            }
-        }
-
-        // After first train finishes
-        types::Blocks ATH2 = 2;
-        double cmd_speed2 = 5.0;       // half of 10
-
-        bool second_train_done = false;
-
-        while(!second_train_done)
-        {
-            // Distance traveled by the second train
-            types::Meters dist_2 = train_controllers[1].get()->GetDistanceTravelled();
-
-            // If starting train 2 from a standstill, set up initial authority and speed
-            if (dist_2 > 100)
-            {
-                track->SetAuthority(1, ATH2);
-                track->SetCommandedSpeed(1, cmd_speed2);
-            }
-
-            // Update second train model with commanded power and distance
-            types::Watts commanded_power_2 = train_controllers[1]->GetCommandedPower();
-            types::Meters distance_traveled_since_last_update_2 = train_controllers[1]->GetDistanceTravelledSinceLastUpdate();
-            double brake2 = train_controllers[1]->GetServiceBrake();
-
-            track->GetTrainModel(1)->SetCommandedPower(commanded_power_2);
-            track->GetTrainModel(1)->SetDistanceTraveled(distance_traveled_since_last_update_2);
-            track->GetTrainModel(1)->SetBrake(brake2);
-
-            if (dist_2 > 100 && dist_2 <= 200)
-            {
-                track.get()->SetAuthority(64,ATH2-1);
-                track.get()->SetCommandedSpeed(64,5);
-            }
-            else if(dist_2 > 200 && dist_2 <= 400)
-            {
-                track.get()->SetAuthority(65,ATH2-2);
-                track.get()->SetCommandedSpeed(65,5);
-            }
-
-            world.Update();
-
-            types::Polarity polarity2 = track->GetTrainModel(1)->GetTrackPolarity();
-            types::Blocks authority2 = track->GetTrainModel(1)->GetAuthority();
-            types::Meters c_speed2_current = track->GetTrainModel(1)->GetCommandedSpeed();
-            types::MetersPerSecond current_speed2 = track->GetTrainModel(1)->GetActualSpeed();
-
-            train_controllers[1]->SetCurrentSpeed(current_speed2);
-            train_controllers[1]->SetPolartity(polarity2);
-            train_controllers[1]->SetAuthority(authority2);
-            train_controllers[1]->SetCommandedSpeed(c_speed2_current);
-            train_controllers[1]->Update();
-
-            if(authority2 == 0 && current_speed2 == 0)
-            {
-                train_controllers[1]->Update();
-                second_train_done = true;
-            }
-        }
+    // Setup timer to periodically update UI elements from the train controller
+    slint::Timer timer;
+    timer.start(slint::TimerMode::Repeated, std::chrono::milliseconds(500), [=, &train_controllers, &train_controller_ui]() {
+        // Update UI from the single train controller
+        train_controller_ui->set_current_velocity(train_controllers[0]->GetCurrentSpeed());
+        train_controller_ui->set_commanded_speed(train_controllers[0]->GetCommandedSpeed());
+        train_controller_ui->set_authority(train_controllers[0]->GetAuthority());
+        train_controller_ui->set_actual_internal_temperature(train_controllers[0]->GetActualInternalTemperature());
+        train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
+        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0]->GetDistanceTravelledSinceLastUpdate());
+        train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+        train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
+        train_controller_ui->set_int_lights(train_controllers[0]->GetInteriorLights());
+        train_controller_ui->set_ext_lights(train_controllers[0]->GetHeadLights());
+        train_controller_ui->set_left_doors(train_controllers[0]->GetLeftDoors());
+        train_controller_ui->set_right_doors(train_controllers[0]->GetRightDoors());
+        train_controller_ui->set_station_name(slint::SharedString(train_controllers[0]->GetCurrentStationName()));
+        train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+        train_controller_ui->set_kp(train_controllers[0]->GetKP());
+        train_controller_ui->set_ki(train_controllers[0]->GetKI());
     });
 
+    // TRAIN CONTROLLER CALLBACKS
 
-    timer.start(slint::TimerMode::Repeated, std::chrono::milliseconds(500), [&train_controller_ui, &train_controllers, &selected_train]() {
-        train_controller_ui->set_current_velocity(train_controllers[selected_train].get()->GetCurrentSpeed());
-        train_controller_ui->set_commanded_speed(train_controllers[selected_train].get()->GetCommandedSpeed());
-        train_controller_ui->set_authority(train_controllers[selected_train].get()->GetAuthority());
-        train_controller_ui->set_actual_internal_temperature(train_controllers[selected_train].get()->GetActualInternalTemperature());
-        train_controller_ui->set_distance_traveled(train_controllers[selected_train].get()->GetDistanceTravelled());
-        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[selected_train].get()->GetDistanceTravelledSinceLastUpdate());
-        train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-        train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
-        train_controller_ui->set_int_lights(train_controllers[selected_train].get()->GetInteriorLights());
-        train_controller_ui->set_ext_lights(train_controllers[selected_train].get()->GetHeadLights());
-        train_controller_ui->set_left_doors(train_controllers[selected_train].get()->GetLeftDoors());
-        train_controller_ui->set_right_doors(train_controllers[selected_train].get()->GetRightDoors());
-        train_controller_ui->set_station_name(slint::SharedString(train_controllers[selected_train].get()->GetCurrentStationName()));
-        train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-        train_controller_ui->set_kp(train_controllers[selected_train]->GetKP());
-        train_controller_ui->set_ki(train_controllers[selected_train]->GetKI());
-    });
-
-
-    
-    // TRAIN CONTROLLER CALLBACKS START
-
+    // Since we only have one train, this selection change does nothing significant now.
     train_controller_ui->on_request_train_selection_changed([&] {
-        std::string train_name = std::string(train_controller_ui->get_selected_train_name());
-
-        int new_train_id = 0;
-        if (train_name == "Train 2")
-            new_train_id = 1;
-
-        selected_train = new_train_id;
+        // Just always use train_controllers[0]
     });
 
-    // automatic mode
     train_controller_ui->on_request_automatic_mode([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1) {
+        // If it's already manual, we cannot switch back to automatic
+        if (train_controllers[0]->GetOperationMode() == true) {
             train_controller_ui->set_operation_status_message("In Manual, cannot switch to Automatic");
-
-            // timer to clear the message after 3 seconds
-            auto timer = std::make_shared<slint::Timer>();
-            timer->single_shot(std::chrono::seconds(3), [train_controller_ui, timer]() {
+            auto tmp_timer = std::make_shared<slint::Timer>();
+            tmp_timer->single_shot(std::chrono::seconds(3), [train_controller_ui, tmp_timer]() {
                 train_controller_ui->set_operation_status_message("");
             });
         }
     });
 
-    // manual mode
     train_controller_ui->on_request_manual_mode([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 0) {
-            train_controllers[selected_train].get()->SetOperationMode(1);
+        if (train_controllers[0]->GetOperationMode() == false) {
+            train_controllers[0]->SetOperationMode(true);
             train_controller_ui->set_operation_mode_status("Manual");
         }
     });
 
-    // Update - Start
-
+    // Update handler
     train_controller_ui->on_request_update([&] {
-       
        bool inputError = false;
 
         // current speed
@@ -322,7 +119,7 @@ int main(void)
                 {
                     temp_current_velocity = 0;
                 }
-                train_controllers[selected_train].get()->SetCurrentSpeed(temp_current_velocity);
+                train_controllers[0]->SetCurrentSpeed(temp_current_velocity);
             } catch (const std::exception&) {
                 inputError = true;
             }
@@ -333,7 +130,7 @@ int main(void)
         if (!temp_commanded_speed_str.empty()) {
             try {
                 float temp_commanded_speed = std::stof(temp_commanded_speed_str);
-                train_controllers[selected_train].get()->SetCommandedSpeed(temp_commanded_speed);
+                train_controllers[0]->SetCommandedSpeed(temp_commanded_speed);
             } catch (const std::exception&) {
                 inputError = true;
             }
@@ -344,7 +141,7 @@ int main(void)
         if (!temp_authority_str.empty()) {
             try {
                 float temp_authority = std::stof(temp_authority_str);
-                train_controllers[selected_train].get()->SetAuthority(temp_authority);
+                train_controllers[0]->SetAuthority(temp_authority);
             } catch (const std::exception&) {
                 inputError = true;
             }
@@ -360,227 +157,209 @@ int main(void)
                 } else if (temp_actual_internal_temperature > 75) {
                     temp_actual_internal_temperature = 75;
                 }
-                train_controllers[selected_train].get()->SetActualInternalTemperature(temp_actual_internal_temperature);
+                train_controllers[0]->SetActualInternalTemperature(temp_actual_internal_temperature);
             } catch (const std::exception&) {
+                inputError = true;
+            }
+        }
+
+        // polarity
+        auto temp_polarity_str = std::string(train_controller_ui->get_temp_polarity());
+        if (!temp_polarity_str.empty()) {
+            if (temp_polarity_str == "+") {
+                train_controllers[0]->SetPolartity(types::Polarity::POLARITY_POSITIVE);
+            } else if (temp_polarity_str == "-") {
+                train_controllers[0]->SetPolartity(types::Polarity::POLARITY_NEGATIVE);
+            } else {
                 inputError = true;
             }
         }
 
         if (inputError)
         {
-            inputError = false;
+            // We could show an error message, but for now just ignore
         }
 
-        // call update
-         train_controllers[selected_train].get()->Update();
+        train_controllers[0]->Update();
 
-        // assign all UI elements
-        train_controller_ui->set_current_velocity(train_controllers[selected_train].get()->GetCurrentSpeed());
-        train_controller_ui->set_commanded_speed(train_controllers[selected_train].get()->GetCommandedSpeed());
-        train_controller_ui->set_authority(train_controllers[selected_train].get()->GetAuthority());
-        train_controller_ui->set_actual_internal_temperature(train_controllers[selected_train].get()->GetActualInternalTemperature());
-        train_controller_ui->set_distance_traveled(train_controllers[selected_train].get()->GetDistanceTravelled());
-        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[selected_train].get()->GetDistanceTravelledSinceLastUpdate());
-        train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-        train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
-        train_controller_ui->set_int_lights(train_controllers[selected_train].get()->GetInteriorLights());
-        train_controller_ui->set_ext_lights(train_controllers[selected_train].get()->GetHeadLights());
-        train_controller_ui->set_left_doors(train_controllers[selected_train].get()->GetLeftDoors());
-        train_controller_ui->set_right_doors(train_controllers[selected_train].get()->GetRightDoors());
-        train_controller_ui->set_station_name(slint::SharedString(train_controllers[selected_train].get()->GetCurrentStationName()));
-        train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-        train_controller_ui->set_kp(train_controllers[selected_train]->GetKP());
-        train_controller_ui->set_ki(train_controllers[selected_train]->GetKI());
+        // Refresh UI after update
+        train_controller_ui->set_current_velocity(train_controllers[0]->GetCurrentSpeed());
+        train_controller_ui->set_commanded_speed(train_controllers[0]->GetCommandedSpeed());
+        train_controller_ui->set_authority(train_controllers[0]->GetAuthority());
+        train_controller_ui->set_actual_internal_temperature(train_controllers[0]->GetActualInternalTemperature());
+        train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
+        train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0]->GetDistanceTravelledSinceLastUpdate());
+        train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+        train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
+        train_controller_ui->set_int_lights(train_controllers[0]->GetInteriorLights());
+        train_controller_ui->set_ext_lights(train_controllers[0]->GetHeadLights());
+        train_controller_ui->set_left_doors(train_controllers[0]->GetLeftDoors());
+        train_controller_ui->set_right_doors(train_controllers[0]->GetRightDoors());
+        train_controller_ui->set_station_name(slint::SharedString(train_controllers[0]->GetCurrentStationName()));
+        train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+        train_controller_ui->set_kp(train_controllers[0]->GetKP());
+        train_controller_ui->set_ki(train_controllers[0]->GetKI());
     });
 
-    // Update - End
-
-    // Failures - Start
-
-    // engine failure
+    // Failures
     train_controller_ui->on_request_engine_fail([&] {
-        if (train_controllers[selected_train].get()->GetEngineFailure() == 0) {
-            train_controllers[selected_train].get()->SetEngineFailure(1);
-            train_controllers[selected_train].get()->SetEmergencyBrake(1);
-            train_controllers[selected_train].get()->SetCommandedPower(0);
-            train_controllers[selected_train].get()->SetServiceBrake(0);
-            train_controller_ui->set_engine_status(train_controllers[selected_train].get()->GetEngineFailure());
-            train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-            train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
+        if (train_controllers[0]->GetEngineFailure() == 0) {
+            train_controllers[0]->SetEngineFailure(1);
+            train_controllers[0]->SetEmergencyBrake(1);
+            train_controllers[0]->SetCommandedPower(0);
+            train_controllers[0]->SetServiceBrake(0);
+            train_controller_ui->set_engine_status(train_controllers[0]->GetEngineFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
         } else {
-            train_controllers[selected_train].get()->SetEngineFailure(0);
-            train_controller_ui->set_engine_status(train_controllers[selected_train].get()->GetEngineFailure());
-            train_controllers[selected_train].get()->Update();
-            train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
+            train_controllers[0]->SetEngineFailure(0);
+            train_controller_ui->set_engine_status(train_controllers[0]->GetEngineFailure());
+            train_controllers[0]->Update();
+            train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
         }
     });
 
-    // brake failure
     train_controller_ui->on_request_brake_fail([&] {
-        if (train_controllers[selected_train].get()->GetBrakeFailure() == 0) {
-            train_controllers[selected_train].get()->SetBrakeFailure(1);
-            train_controllers[selected_train].get()->SetEmergencyBrake(1);
-            train_controllers[selected_train].get()->SetCommandedPower(0);
-            train_controllers[selected_train].get()->SetServiceBrake(0);
-            train_controller_ui->set_brake_status(train_controllers[selected_train].get()->GetBrakeFailure());
-            train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-            train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
+        if (train_controllers[0]->GetBrakeFailure() == 0) {
+            train_controllers[0]->SetBrakeFailure(1);
+            train_controllers[0]->SetEmergencyBrake(1);
+            train_controllers[0]->SetCommandedPower(0);
+            train_controllers[0]->SetServiceBrake(0);
+            train_controller_ui->set_brake_status(train_controllers[0]->GetBrakeFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
         } else {
-            train_controllers[selected_train].get()->SetBrakeFailure(0);
-            train_controller_ui->set_brake_status(train_controllers[selected_train].get()->GetBrakeFailure());
+            train_controllers[0]->SetBrakeFailure(0);
+            train_controller_ui->set_brake_status(train_controllers[0]->GetBrakeFailure());
         }
     });
 
-    // signal pickup failure
     train_controller_ui->on_request_signal_fail([&] {
-        if (train_controllers[selected_train].get()->GetSignalPickupFailure() == 0) {
-            train_controllers[selected_train].get()->SetSignalPickupFailure(1);
-            train_controllers[selected_train].get()->SetEmergencyBrake(1);
-            train_controllers[selected_train].get()->SetCommandedPower(0);
-            train_controllers[selected_train].get()->SetServiceBrake(0);
-            train_controller_ui->set_signal_status(train_controllers[selected_train].get()->GetSignalPickupFailure());
-            train_controller_ui->set_emergency_brake(train_controllers[selected_train].get()->GetEmergencyBrake());
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-            train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
+        if (train_controllers[0]->GetSignalPickupFailure() == 0) {
+            train_controllers[0]->SetSignalPickupFailure(1);
+            train_controllers[0]->SetEmergencyBrake(1);
+            train_controllers[0]->SetCommandedPower(0);
+            train_controllers[0]->SetServiceBrake(0);
+            train_controller_ui->set_signal_status(train_controllers[0]->GetSignalPickupFailure());
+            train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
         } else {
-            train_controllers[selected_train].get()->SetSignalPickupFailure(0);
-            train_controller_ui->set_signal_status(train_controllers[selected_train].get()->GetSignalPickupFailure());
+            train_controllers[0]->SetSignalPickupFailure(0);
+            train_controller_ui->set_signal_status(train_controllers[0]->GetSignalPickupFailure());
         }
     });
 
-    // Failures - End
-
-    // Manual - UI input parameters - Start
-
-    // service brake input
+    // Manual mode inputs
     train_controller_ui->on_request_update_service_brake([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1)
+        if (train_controllers[0]->GetOperationMode() == 1)
         {
             float temp = std::stof(std::string(train_controller_ui->get_temp_service_brake()));
-            train_controllers[selected_train].get()->SetServiceBrake(temp);
-            //train_controllers[selected_train].get()->SetCommandedPower(0);
-            train_controllers[selected_train].get()->Update();
-            train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-            train_controller_ui->set_distance_traveled(train_controllers[selected_train].get()->GetDistanceTravelled());
+            train_controllers[0]->SetServiceBrake(temp);
+            train_controllers[0]->Update();
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
         }
     });
 
-    // commanded internal temperature
     train_controller_ui->on_request_update_commanded_internal_temperature([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1) {
+        if (train_controllers[0]->GetOperationMode() == 1) {
             float temp = std::stof(std::string(train_controller_ui->get_temp_commanded_internal_temperature()));
             if (temp < 65) {
                 temp = 65;
             } else if (temp > 75) {
                 temp = 75;
             }
-            train_controllers[selected_train].get()->SetCommandedInternalTemperature(temp);
-            train_controller_ui->set_commanded_internal_temperature(train_controllers[selected_train].get()->GetCommandedInternalTemperature());
+            train_controllers[0]->SetCommandedInternalTemperature(temp);
+            train_controller_ui->set_commanded_internal_temperature(train_controllers[0]->GetCommandedInternalTemperature());
         }
     });
 
-    // driver speed
     train_controller_ui->on_request_update_driver_speed([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1) 
+        if (train_controllers[0]->GetOperationMode() == 1) 
         {
             float temp = std::stof(std::string(train_controller_ui->get_temp_driver_speed()));
-            train_controllers[selected_train].get()->SetDriverSpeed(temp);
-            train_controllers[selected_train].get()->Update();
-            train_controller_ui->set_driver_speed(train_controllers[selected_train].get()->GetDriverSpeed());
-            train_controller_ui->set_commanded_power(train_controllers[selected_train].get()->GetCommandedPower());
-            train_controller_ui->set_service_brake(train_controllers[selected_train].get()->GetServiceBrake() * 100);
-            train_controller_ui->set_distance_traveled(train_controllers[selected_train].get()->GetDistanceTravelled());
-            train_controller_ui->set_distance_traveled_since_last_update(train_controllers[selected_train].get()->GetDistanceTravelledSinceLastUpdate());
+            train_controllers[0]->SetDriverSpeed(temp);
+            train_controllers[0]->Update();
+            train_controller_ui->set_driver_speed(train_controllers[0]->GetDriverSpeed());
+            train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
+            train_controller_ui->set_service_brake(train_controllers[0]->GetServiceBrake() * 100);
+            train_controller_ui->set_distance_traveled(train_controllers[0]->GetDistanceTravelled());
+            train_controller_ui->set_distance_traveled_since_last_update(train_controllers[0]->GetDistanceTravelledSinceLastUpdate());
         }
     });
 
-    // Interior Lights
     train_controller_ui->on_request_toggle_int_lights([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1 && !train_controllers[selected_train].get()->IsAtStation()) {
-            bool current_state = train_controllers[selected_train].get()->GetInteriorLights();
-            train_controllers[selected_train].get()->SetInteriorLights(!current_state);
-            train_controller_ui->set_int_lights(train_controllers[selected_train].get()->GetInteriorLights());
+        if (train_controllers[0]->GetOperationMode() == 1 && !train_controllers[0]->IsAtStation()) {
+            bool current_state = train_controllers[0]->GetInteriorLights();
+            train_controllers[0]->SetInteriorLights(!current_state);
+            train_controller_ui->set_int_lights(train_controllers[0]->GetInteriorLights());
         }
     });
 
-    // Exterior Lights
     train_controller_ui->on_request_toggle_ext_lights([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1 && !train_controllers[selected_train].get()->IsUnderground()) {
-            bool current_state = train_controllers[selected_train].get()->GetHeadLights();
-            train_controllers[selected_train].get()->SetHeadLights(!current_state);
-            train_controller_ui->set_ext_lights(train_controllers[selected_train].get()->GetHeadLights());
-        } else if (train_controllers[selected_train].get()->IsUnderground()) {
-            // Do not allow turning off exterior lights when underground
-            train_controllers[selected_train].get()->SetHeadLights(true);
+        if (train_controllers[0]->GetOperationMode() == 1 && !train_controllers[0]->IsUnderground()) {
+            bool current_state = train_controllers[0]->GetHeadLights();
+            train_controllers[0]->SetHeadLights(!current_state);
+            train_controller_ui->set_ext_lights(train_controllers[0]->GetHeadLights());
+        } else if (train_controllers[0]->IsUnderground()) {
+            train_controllers[0]->SetHeadLights(true);
             train_controller_ui->set_ext_lights(true);
         }
     });
 
-    // Left Doors
     train_controller_ui->on_request_toggle_left_doors([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1 && train_controllers[selected_train].get()->CanOpenDoors()) {
-            // Doors will open automatically at stations
-            // Allow manual closing
-            bool current_state = train_controllers[selected_train].get()->GetLeftDoors();
+        if (train_controllers[0]->GetOperationMode() == 1 && train_controllers[0]->CanOpenDoors()) {
+            bool current_state = train_controllers[0]->GetLeftDoors();
             if (current_state) {
-                train_controllers[selected_train].get()->SetLeftDoors(false);
+                train_controllers[0]->SetLeftDoors(false);
                 train_controller_ui->set_left_doors(false);
             }
         }
     });
 
-    // Right Doors
     train_controller_ui->on_request_toggle_right_doors([&] {
-        if (train_controllers[selected_train].get()->GetOperationMode() == 1 && train_controllers[selected_train].get()->CanOpenDoors()) {
-            // Doors will open automatically at stations
-            // Allow manual closing
-            bool current_state = train_controllers[selected_train].get()->GetRightDoors();
+        if (train_controllers[0]->GetOperationMode() == 1 && train_controllers[0]->CanOpenDoors()) {
+            bool current_state = train_controllers[0]->GetRightDoors();
             if (current_state) {
-                train_controllers[selected_train].get()->SetRightDoors(false);
+                train_controllers[0]->SetRightDoors(false);
                 train_controller_ui->set_right_doors(false);
             }
         }
     });
 
-    // Emergency brake
     train_controller_ui->on_request_toggle_emergency_brake([&] {
-        bool current_state = train_controllers[selected_train]->GetEmergencyBrake();
-        train_controllers[selected_train]->SetEmergencyBrake(!current_state);
+        bool current_state = train_controllers[0]->GetEmergencyBrake();
+        train_controllers[0]->SetEmergencyBrake(!current_state);
         train_controller_ui->set_emergency_brake(!current_state);
     });
 
-    // Update Kp and Ki values
     train_controller_ui->on_request_update_kp_ki([&] {
-        if (train_controllers[selected_train]->GetDistanceTravelled() == 0)
+        if (train_controllers[0]->GetDistanceTravelled() == 0)
         {
-            // Get the temporary kp and ki values from the UI
             auto temp_kp_str = std::string(train_controller_ui->get_temp_kp());
             auto temp_ki_str = std::string(train_controller_ui->get_temp_ki());
 
             bool inputError = false;
 
-            // Parse and set Kp
             if (!temp_kp_str.empty()) {
                 try {
                     uint16_t temp_kp = static_cast<uint16_t>(std::stoul(temp_kp_str));
-                    train_controllers[selected_train]->SetKP(temp_kp);
-                    // Update UI
+                    train_controllers[0]->SetKP(temp_kp);
                     train_controller_ui->set_kp(temp_kp);
                 } catch (const std::exception&) {
                     inputError = true;
                 }
             }
 
-            // Parse and set Ki
             if (!temp_ki_str.empty()) {
                 try {
                     uint16_t temp_ki = static_cast<uint16_t>(std::stoul(temp_ki_str));
-                    train_controllers[selected_train]->SetKI(temp_ki);
-                    // Update UI
+                    train_controllers[0]->SetKI(temp_ki);
                     train_controller_ui->set_ki(temp_ki);
                 } catch (const std::exception&) {
                     inputError = true;
@@ -588,45 +367,28 @@ int main(void)
             }
 
             if (inputError) {
-                // Handle input error (e.g., display a message to the user)
                 std::cout << "Invalid Kp or Ki value entered." << std::endl;
             }
         } else {
-            // Cannot update kp and ki after the train has been dispatched
             std::cout << "Cannot update Kp and Ki after the train has been dispatched." << std::endl;
         }
     });
 
-    // Reset Kp and Ki to default values
     train_controller_ui->on_request_reset_kp_ki([&] {
-        if (train_controllers[selected_train]->GetDistanceTravelled() == 0)
+        if (train_controllers[0]->GetDistanceTravelled() == 0)
         {
-            // Reset to default values
-            train_controllers[selected_train]->SetKP(5000);
-            train_controllers[selected_train]->SetKI(100);
-
-            // Update UI
+            train_controllers[0]->SetKP(5000);
+            train_controllers[0]->SetKI(100);
             train_controller_ui->set_kp(5000);
             train_controller_ui->set_ki(100);
-
-            // Clear temporary inputs
             train_controller_ui->set_temp_kp("");
             train_controller_ui->set_temp_ki("");
         } else {
-            // Cannot reset kp and ki after the train has been dispatched
             std::cout << "Cannot reset Kp and Ki after the train has been dispatched." << std::endl;
         }
     });
 
-
-    // TRAIN CONTROLLER CALLBACKS END
-
-
-    //std::cout << x;
     launcher_ui->run();
-    worker_thread.join();
-    //ui_thread.join();
-
 
     timer.stop();
     return 0;

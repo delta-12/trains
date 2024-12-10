@@ -71,6 +71,7 @@ export component TrainControllerUi inherits Window {
     in-out property <string> temp_ki;
     in-out property <[string]> trains: ["Train 1", "Train 2"];
     in-out property <string> selected_train_name: "Train 1";
+    in-out property <string> temp_polarity;
     
 
     min-height: 860px;
@@ -822,7 +823,7 @@ export component TrainControllerUi inherits Window {
                                     font-size: 20px;
                                     placeholder-text: "Enter Value (-/+)";
                                     horizontal-alignment: center;
-                                    edited(val) => {temp_actual_internal_temperature = val}
+                                    edited(val) => {temp_polarity = val}
                                 }
                                 /*Button {
                                     text: "Accept\nValue";
