@@ -48,16 +48,13 @@ int main(void)
     // Create a tick source and a single train controller
     std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
     tick_source->Start();
-    tick_source->SetMultiplier(3);
+    tick_source->SetMultiplier(1);
 
     std::shared_ptr<train_controller::SoftwareTrainController> train_contr = 
         std::make_shared<train_controller::SoftwareTrainController>(tick_source);
 
     train_controllers[0] = train_contr;
 
-    // We are removing the worker_thread that integrated track and train models.
-    // No simulator, no track, no train_model references.
-    // The user will manually update values via the UI.
 
     // Setup timer to periodically update UI elements from the train controller
     slint::Timer timer;
@@ -208,6 +205,7 @@ int main(void)
             train_controllers[0]->SetEmergencyBrake(1);
             train_controllers[0]->SetCommandedPower(0);
             train_controllers[0]->SetServiceBrake(0);
+            train_controllers[0]->Update();
             train_controller_ui->set_engine_status(train_controllers[0]->GetEngineFailure());
             train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
             train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
@@ -227,6 +225,7 @@ int main(void)
             train_controllers[0]->SetEmergencyBrake(1);
             train_controllers[0]->SetCommandedPower(0);
             train_controllers[0]->SetServiceBrake(0);
+            train_controllers[0]->Update();
             train_controller_ui->set_brake_status(train_controllers[0]->GetBrakeFailure());
             train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
             train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
@@ -243,6 +242,7 @@ int main(void)
             train_controllers[0]->SetEmergencyBrake(1);
             train_controllers[0]->SetCommandedPower(0);
             train_controllers[0]->SetServiceBrake(0);
+            train_controllers[0]->Update();
             train_controller_ui->set_signal_status(train_controllers[0]->GetSignalPickupFailure());
             train_controller_ui->set_emergency_brake(train_controllers[0]->GetEmergencyBrake());
             train_controller_ui->set_commanded_power(train_controllers[0]->GetCommandedPower());
@@ -336,6 +336,8 @@ int main(void)
         bool current_state = train_controllers[0]->GetEmergencyBrake();
         train_controllers[0]->SetEmergencyBrake(!current_state);
         train_controller_ui->set_emergency_brake(!current_state);
+        train_controllers[0]->Update();
+        train_controller_ui->set_service_brake(train_controllers[0]->GetEmergencyBrake());
     });
 
     train_controller_ui->on_request_update_kp_ki([&] {

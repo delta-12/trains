@@ -393,6 +393,11 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         return;
     }
 
+    /*if (setpoint_speed < current_speed_ && service_brake_percentage_ > 0)
+    {
+        commanded_power_ = 0;
+        return;
+    }*/
     // Checking if we've reached a distance to start slowing down for authority
     else if (((distance_travelled_ - distance_prior_to_current_authority_) > distance_to_start_slowing_down))
     {
