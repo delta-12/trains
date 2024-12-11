@@ -90,7 +90,8 @@ int main(void)
                               RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
                               wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
                                                                                                                     types::TrackId::TRACKID_GREEN,
-                                                                                                                    wayside_controller::kGreenLineBlocksWayside0,
+                                                                                                                    wayside_controller::kGreenLineBlocksWayside1,
+                                                                                                                    wayside_controller::kGreenLineBlockOutputsWayside1,
                                                                                                                     controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_0, buffer_1));
                               controller_handler.AddPort(controller_network::BuildSoftwareBasicControllerPort<1024>(buffer_1, buffer_0));
                               wayside_controller_handler.Connect();

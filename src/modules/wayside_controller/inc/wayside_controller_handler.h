@@ -26,6 +26,8 @@
 namespace wayside_controller
 {
 
+static inline bool IoSignalToBool(const IoSignal signal);
+
 template <size_t buffer_size>
 class SoftwareWaysideControllerHandler
 {
@@ -33,6 +35,7 @@ class SoftwareWaysideControllerHandler
         SoftwareWaysideControllerHandler(const types::WaysideId wayside_id,
                                          const types::TrackId track,
                                          const std::vector<WaysideBlock> &blocks,
+                                         const std::vector<BlockOutputs> &block_outputs,
                                          std::unique_ptr<controller_network::ControllerPort> controller_port);
         types::Error Update(void);
         types::Error Connect(void);
@@ -47,6 +50,7 @@ class SoftwareWaysideControllerHandler
         types::Error HandleBlockOccupancies(const size_t message_size);
         types::Error HandlePlcProgram(const size_t message_size);
         types::Error SendBlockStates(const std::vector<types::BlockState> &block_states);
+        types::Error SendBlockOutputs(void);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_ = [this](const InputId input, IoSignal &signal){
                                                                                      return GetInput(input, signal);
@@ -58,6 +62,7 @@ class SoftwareWaysideControllerHandler
         std::array<IoSignal, kTotalInputs> inputs_   = {IoSignal::IOSIGNAL_LOW};
         std::array<IoSignal, kTotalOutputs> outputs_ = {IoSignal::IOSIGNAL_LOW};
         std::unordered_map<types::BlockId, InputId> inputs_lookup_;
+        std::vector<BlockOutputs> block_outputs_;
         WaysideController wayside_controller_;
         types::WaysideId id_;
         types::TrackId track_;
@@ -69,8 +74,10 @@ template <size_t buffer_size>
 SoftwareWaysideControllerHandler<buffer_size>::SoftwareWaysideControllerHandler(const types::WaysideId wayside_id,
                                                                                 const types::TrackId track,
                                                                                 const std::vector<WaysideBlock> &blocks,
+                                                                                const std::vector<BlockOutputs> &block_outputs,
                                                                                 std::unique_ptr<controller_network::ControllerPort> controller_port)
-    : wayside_controller_(get_input_, blocks), id_(wayside_id), track_(track), controller_port_(std::move(controller_port)), plc_(get_input_, set_output_)
+    : block_outputs_(block_outputs), wayside_controller_(get_input_, blocks), id_(wayside_id), track_(track), controller_port_(std::move(controller_port)),
+    plc_(get_input_, set_output_)
 {
     for (const wayside_controller::WaysideBlock &block : blocks)
     {
@@ -98,6 +105,7 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::Update(void)
     }
 
     plc_.Run();
+    SendBlockOutputs();  // TODO error handling
 
     return error;
 }
@@ -349,6 +357,64 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::SendBlockStates(cons
     }
 
     return error;
+}
+
+template <size_t buffer_size>
+types::Error SoftwareWaysideControllerHandler<buffer_size>::SendBlockOutputs(void)
+{
+    types::Error error = types::Error::ERROR_NONE;
+
+    for (const BlockOutputs &outputs : block_outputs_)
+    {
+        controller_messages::BlockOutputs block_outputs;
+        block_outputs.set_track(static_cast<controller_messages::TrackId>(track_));
+        block_outputs.set_block(outputs.block);
+
+        if (outputs.has_switch)
+        {
+            block_outputs.set_switched(IoSignalToBool(outputs_[outputs.switch_output]));
+        }
+        if (outputs.has_crossing)
+        {
+            block_outputs.set_crossing(IoSignalToBool(outputs_[outputs.crossing_output]));
+        }
+        if (outputs.has_traffic_light)
+        {
+            if (IoSignalToBool(outputs_[outputs.red_traffic_light_output]))
+            {
+                block_outputs.set_traffic_light_color(controller_messages::TRAFFIC_LIGHT_COLOR_RED);
+            }
+            else if (IoSignalToBool(outputs_[outputs.green_traffic_light_output]))
+            {
+                block_outputs.set_traffic_light_color(controller_messages::TRAFFIC_LIGHT_COLOR_GREEN);
+            }
+        }
+
+        size_t message_size = block_outputs.ByteSizeLong();
+
+        if (!block_outputs.SerializeToArray(message_buffer_.data(), message_buffer_.size()))
+        {
+            error = types::Error::ERROR_INVALID_FORMAT;
+        }
+        else if (message_size != controller_port_->SendMessage(controller_network::MESSAGETYPE_BLOCK_OUTPUTS, message_buffer_.data(), message_size))
+        {
+            error = types::Error::ERROR_INVALID_SIZE;
+        }
+    }
+
+    return error;
+}
+
+static inline bool IoSignalToBool(const IoSignal signal)
+{
+    bool output = false;
+
+    if (IoSignal::IOSIGNAL_HIGH == signal)
+    {
+        output = true;
+    }
+
+    return output;
 }
 
 } // namespace wayside_controller

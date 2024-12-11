@@ -17,11 +17,11 @@
 namespace wayside_controller
 {
 
-using SignalId        = uint16_t;
-using InputId         = SignalId;
-using OutputId        = SignalId;
-using WaysideBlock    = struct WaysideBlock;
-using BlockConnection = struct BlockConnection;
+using SignalId     = uint16_t;
+using InputId      = SignalId;
+using OutputId     = SignalId;
+using WaysideBlock = struct WaysideBlock;
+using BlockOutputs = struct BlockOutputs;
 
 static const size_t kPhysicalInputs         = 78;
 static const size_t kVirtualInputs          = 7;
@@ -67,6 +67,19 @@ struct WaysideBlock
         bool has_switch;
         bool maintenance_mode;
         IoSignal occupancy_signal;
+};
+
+struct BlockOutputs
+{
+    public:
+        types::BlockId block;
+        bool has_switch;
+        OutputId switch_output;
+        bool has_crossing;
+        OutputId crossing_output;
+        bool has_traffic_light;
+        OutputId red_traffic_light_output;
+        OutputId green_traffic_light_output;
 };
 
 class WaysideController

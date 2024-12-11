@@ -348,7 +348,7 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
     MessageType  message_type = MESSAGETYPE_NONE;
     size_t       message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
 
-    if ((message_size > 0) && (MESSAGETYPE_NONE != message_type))
+    while ((message_size > 0) && (MESSAGETYPE_NONE != message_type))
     {
         // Order of messages is not guaranteed, each ReceiveMessageFromPort method must handle all message types
         switch (message_type)
@@ -367,6 +367,8 @@ types::Error ControllerHandler<buffer_size>::ReceiveMessageFromPort(ctc::Ctc &ct
         default:
             break;
         }
+
+        message_size = port->ReceiveMessage(message_type, message_buffer_.data(), message_buffer_.size());
     }
 
     return error;

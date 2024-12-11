@@ -15,9 +15,9 @@ static const char *const kLogTag = "HARDWARE WAYSIDE";
 
 static std::shared_ptr<EspTcpPort> tcp_port = std::make_shared<EspTcpPort>();
 static wayside_controller::HardwareWaysideControllerHandler<1024> wayside_controller_handler(1,
-                                                                                    types::TrackId::TRACKID_GREEN,
-                                                                                    wayside_controller::kGreenLineBlocksWayside0,
-                                                                                    controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port)));
+                                                                                             types::TrackId::TRACKID_GREEN,
+                                                                                             wayside_controller::kGreenLineBlocksWayside1,
+                                                                                             controller_network::BuildBasicControllerPort<1024>(std::static_pointer_cast<types::Port>(tcp_port)));
 
 extern "C" void app_main(void)
 {
@@ -45,7 +45,7 @@ extern "C" void app_main(void)
     while (!tcp_port->Connected())
     {
         tcp_port->Connect("10.0.0.172", 8080);
-        
+
         if (!tcp_port->Connected())
         {
             vTaskDelay(delay / portTICK_PERIOD_MS);

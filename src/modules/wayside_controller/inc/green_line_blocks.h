@@ -6,7 +6,7 @@
 namespace wayside_controller
 {
 
-const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
+const std::vector<WaysideBlock> kGreenLineBlocksWayside1 = {
     WaysideBlock(53, 54, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 0, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(54, 55, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 1, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(55, 56, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 2, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
@@ -17,20 +17,20 @@ const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
     WaysideBlock(60, 61, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 7, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(61, 62, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 8, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(62, 63, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 9, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(63, 64, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 10, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(64, 65, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 11, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(65, 66, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 12, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(66, 67, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 13, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(67, 68, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 14, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(68, 69, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(69, 70, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(70, 71, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 17, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(71, 72, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 18, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(72, 73, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 19, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(73, 74, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 20, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(74, 75, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 21, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(75, 76, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 22, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(76, 77, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 23, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(63, 64, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 10, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(64, 65, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 11, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(65, 66, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 12, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(66, 67, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 13, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(67, 68, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 14, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(68, 69, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 15, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(69, 70, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 16, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(70, 71, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 17, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(71, 72, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 18, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(72, 73, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 19, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(73, 74, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 20, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(74, 75, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 21, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(75, 76, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 22, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(76, 77, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 23, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(77, 78, 76, 101, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 24, 78, 0, true, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(78, 79, 0, 0, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 25, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(79, 80, 0, 0, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 26, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
@@ -53,8 +53,8 @@ const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
     WaysideBlock(96, 97, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 43, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(97, 98, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 44, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(98, 99, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 45, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(99, 100, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 46, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(100, 85, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 47, 0, 0,  false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(99, 100, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 46, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(100, 85, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 47, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(101, 102, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 48, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(102, 103, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 49, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(103, 104, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 50, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
@@ -82,6 +82,11 @@ const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
     WaysideBlock(125, 126, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 72, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(126, 127, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 73, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(127, 128, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 74, 0, 0, false, false, IoSignal::IOSIGNAL_LOW)};
+
+const std::vector<BlockOutputs> kGreenLineBlockOutputsWayside1 = {
+    {77, true, 0, false, 0, false, 0, 0},
+    {85, true, 1, false, 0, false, 0, 0}
+};
 
 } // namespace wayside_controller
 
