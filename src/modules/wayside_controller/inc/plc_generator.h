@@ -7,7 +7,6 @@
 #define TRAINS_SRC_MODULES_WAYSIDE_CONTROLLER_INC_PLC_GENERATOR_H
 
 #include <deque>
-#include <ostream>
 #include <variant>
 
 #include "plc_parser.h"
@@ -26,7 +25,7 @@ struct Error
         std::variant<parser::SharedIdAstNode, parser::SharedExpressionAstNode> node;
 };
 
-bool GenerateCode(parser::SharedStatementAstNode root, std::ostream &stream, std::deque<Error> &errors);
+bool GenerateCode(parser::SharedStatementAstNode root, void *const buffer, const size_t size, size_t &bytes_written, std::deque<Error> &errors);
 
 } // namespace plc_compiler::generator
 

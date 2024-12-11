@@ -7,6 +7,7 @@
 #define TRAINS_SRC_CONTROLLER_NETWORK_INC_CONTROLLER_HANDLER_H
 
 #include <array>
+#include <filesystem>
 #include <memory>
 #include <unordered_map>
 
@@ -18,6 +19,7 @@
 #include "controller_port.h"
 #include "ctc.h"
 #include "lookup_table.h"
+#include "plc_compiler.h"
 #include "simulator.h"
 #include "track_circuit_data.pb.h"
 #include "types.h"
@@ -41,6 +43,7 @@ class ControllerHandler
         void AddPort(std::unique_ptr<ControllerPort> port);
         bool IsControllerConnected(const ControllerType type, const types::ControllerId controller) const;
         void SetWaysideLayout(const std::vector<types::Block> &blocks);
+        types::Error ProgramPlc(const types::WaysideId wayside, const std::filesystem::path &program);
         types::Error Update(ctc::Ctc &ctc_office);
         types::Error Update(ctc::Ctc &ctc_office, simulator::Simulator &world_simulator);
 
@@ -95,6 +98,28 @@ void ControllerHandler<buffer_size>::SetWaysideLayout(const std::vector<types::B
     {
         wayside_lookup_table_[static_cast<size_t>(block.track)].Insert(block.wayside, block.block);
     }
+}
+
+template <size_t buffer_size>
+types::Error ControllerHandler<buffer_size>::ProgramPlc(const types::WaysideId wayside, const std::filesystem::path &program)
+{
+    size_t       bytes_read = 0;
+    types::Error error      = plc_compiler::Compile(program, message_buffer_.data(), message_buffer_.size(), bytes_read);
+
+    if (types::Error::ERROR_NONE != error)
+    {
+        // Failed to compile, do nothing
+    }
+    if (!IsControllerConnected(ControllerType::CONTROLLERTYPE_WAYSIDE, wayside))
+    {
+        error = types::Error::ERROR_INVALID_CONTROLLER;
+    }
+    else if (connected_controllers_[static_cast<size_t>(ControllerType::CONTROLLERTYPE_WAYSIDE)][wayside]->SendMessage(MESSAGETYPE_PLC_PROGRAM, message_buffer_.data(), bytes_read) != bytes_read)
+    {
+        error = types::Error::ERROR_INVALID_SIZE;
+    }
+
+    return error;
 }
 
 template <size_t buffer_size>

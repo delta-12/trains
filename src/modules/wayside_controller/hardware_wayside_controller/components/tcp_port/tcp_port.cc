@@ -172,6 +172,10 @@ void EspTcpPort::SendTask(void *arg)
             {
                 ESP_LOGE(kLogTag, "Error occurred during sending: errno %d", errno);
             }
+            else
+            {
+                ESP_LOGI("TEST", "Send success");
+            }
         }
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -211,11 +215,13 @@ void EspTcpPort::ReceiveTask(void *arg)
                     buffered = true;
 
                     port->UnlockReceiver();
+
+                    ESP_LOGI("TEST", "%d bytes received", bytes);
                 }
             }
-
-            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
     vTaskDelete(NULL);

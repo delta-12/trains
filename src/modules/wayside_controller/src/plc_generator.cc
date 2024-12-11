@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& stream, const Error& error)
     return stream;
 }
 
-bool GenerateCode(parser::SharedStatementAstNode root, std::ostream &stream, std::deque<Error> &errors)
+bool GenerateCode(parser::SharedStatementAstNode root, void *const buffer, const size_t size, size_t &bytes_written,  std::deque<Error> &errors)
 {
     bool                            generated = false;
     parser::SharedStatementAstNode  node      = root;
@@ -94,7 +94,8 @@ bool GenerateCode(parser::SharedStatementAstNode root, std::ostream &stream, std
 
     if (generated)
     {
-        generated = plc_program.SerializeToOstream(&stream);
+        bytes_written = plc_program.ByteSizeLong();
+        generated     = plc_program.SerializeToArray(buffer, size);
     }
 
     return generated;
@@ -215,7 +216,10 @@ static bool AddIfInstructions(parser::SharedIfAstNode node, controller_messages:
             instructions_added = AddElseInstructions(node->else_node, plc_program, ids, errors);
 
             branch_unconditional_instruction->set_instruction_code(controller_messages::InstructionCode::INSTRUCTION_CODE_BRANCH_UNDCONDITIONAL);
-            branch_not_if_instruction->set_argument_0(static_cast<uint32_t>(plc_program.instructions_size()) - instruction_count);
+            branch_unconditional_instruction->set_argument_0(static_cast<uint32_t>(plc_program.instructions_size()) - instruction_count);
+
+            // Account for addition of branch unconditional instruction
+            branch_not_if_instruction->set_argument_1(branch_not_if_instruction->argument_1() + 1);
         }
     }
 

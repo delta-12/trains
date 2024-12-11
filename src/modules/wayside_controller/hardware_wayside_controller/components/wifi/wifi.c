@@ -144,6 +144,7 @@ void Wifi_Start(void)
 static void Wifi_eventHandler(void *arg, esp_event_base_t eventBase, int32_t eventId, void *eventData)
 {
     static uint16_t retryNum = 0;
+    static uint32_t delay = 1000;
 
     if (eventBase == WIFI_EVENT)
     {
@@ -153,10 +154,13 @@ static void Wifi_eventHandler(void *arg, esp_event_base_t eventBase, int32_t eve
         }
         if (eventId == WIFI_EVENT_STA_DISCONNECTED)
         {
+            /* TODO infinite attempts with backoff */
             if (retryNum < CONFIG_ESP_MAXIMUM_RETRY)
             {
                 esp_wifi_connect();
                 retryNum++;
+                vTaskDelay(delay / portTICK_PERIOD_MS);
+                delay *= 2;
                 ESP_LOGI(TAG, "Retrying to connect to the AP");
             }
             else

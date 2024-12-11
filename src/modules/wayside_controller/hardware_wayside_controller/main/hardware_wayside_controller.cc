@@ -41,11 +41,16 @@ extern "C" void app_main(void)
     Wifi_Init();
     Wifi_Start();
 
-    size_t i = 0;
-    while (!tcp_port->Connected() && (i < 5))
+    uint32_t delay = 1000;
+    while (!tcp_port->Connected())
     {
-        tcp_port->Connect("192.168.86.209", 8080);
-        i++;
+        tcp_port->Connect("10.0.0.172", 8080);
+        
+        if (!tcp_port->Connected())
+        {
+            vTaskDelay(delay / portTICK_PERIOD_MS);
+            delay *= 2;
+        }
     }
 
     if (tcp_port->Connected())

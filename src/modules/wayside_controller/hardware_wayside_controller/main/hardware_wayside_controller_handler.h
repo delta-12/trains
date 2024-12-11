@@ -91,6 +91,7 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::Update(void)
     }
     else
     {
+        ESP_LOGI("TEST", "Sending block states");
         error = SendBlockStates(block_states);
     }
 
@@ -304,6 +305,8 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
     controller_messages_BlockOccupancies block_occupancies_message = controller_messages_BlockOccupancies_init_zero;
     block_occupancies_message.occupancies.arg = this;
     block_occupancies_message.occupancies.funcs.decode = DecodeBlockOccupancies;
+
+    ESP_LOGI("TEST", "Handle block occupancies");
 
     if (!pb_decode(&istream, controller_messages_BlockOccupancies_fields, &block_occupancies_message))
     {

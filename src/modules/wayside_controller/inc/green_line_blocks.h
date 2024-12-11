@@ -39,7 +39,7 @@ const std::vector<WaysideBlock> kGreenLineBlocksWayside0 = {
     WaysideBlock(82, 83, 0, 0, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 29, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(83, 84, 0, 0, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 30, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(84, 85, 0, 0, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 31, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
-    WaysideBlock(85, 86, 86, 100, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 32, 78, 1, true, false, IoSignal::IOSIGNAL_LOW),
+    WaysideBlock(85, 86, 86, 100, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 32, 79, 1, true, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(86, 87, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 33, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(87, 88, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 34, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),
     WaysideBlock(88, 89, 0, 0, types::BlockDirection::BLOCKDIRECTION_UNIDIRECTIONAL, 35, 0, 0, false, false, IoSignal::IOSIGNAL_LOW),

@@ -1,0 +1,158 @@
+import { HorizontalBox, VerticalBox, Button, CheckBox, LineEdit } from "std-widgets.slint";
+
+export component HardwareWaysideControllerTestbenchUi inherits Window {
+    title: "Hardware Wayside Controller Testbench";
+
+    in-out property <string> block: "0";
+    in-out property <string> speed: "0";
+    in-out property <string> authority: "0";
+
+    in-out property <float> block_f: 0.0;
+    in-out property <float> speed_f: 0.0;
+    in-out property <float> authority_f: 0.0;
+
+    in-out property <float> commanded_speed: 0.0;
+    in-out property <int> commanded_authority: 0;
+
+    in-out property <bool> occupied: false;
+
+    in-out property <string> plc_program: "";
+    in-out property <bool> plc_program_status;
+
+    in-out property <bool> switch_77;
+    in-out property <bool> switch_85;
+
+    callback send_track_circuit_data();
+    callback send_occupancy();
+    callback select_block();
+    callback program_plc();
+
+    HorizontalBox {
+        padding: 50px;
+
+        VerticalBox {
+            Text {
+                font-size: 15px;
+                horizontal-alignment: TextHorizontalAlignment.center;
+                text: "Select Block";
+            }
+
+            HorizontalBox {
+                LineEdit {
+                    text <=> block;
+                    edited => {
+                        block_f = block.to-float();
+                        select_block();
+                    }
+                }
+            }
+
+            HorizontalBox {
+                CheckBox {
+                    text: "Occupied";
+                    checked <=> occupied;
+                    toggled => {
+                        send_occupancy();
+                    }
+                }
+            }
+
+            Text {
+                font-size: 15px;
+                horizontal-alignment: TextHorizontalAlignment.center;
+                text: "Suggested Speed and Authority";
+            }
+
+            HorizontalBox {
+                Text {
+                    max-width: 1rem;
+                    text: "Suggested speed (m/s):";
+                }
+
+                TextInput {
+                    text <=> speed;
+                }
+            }
+
+            HorizontalBox {
+                Text {
+                    max-width: 1rem;
+                    text: "Authority (blocks):";
+                }
+
+                TextInput {
+                    text <=> authority;
+                }
+            }
+
+            Button {
+                text: "Set Suggested Speed and Authority";
+                clicked => {
+                    speed_f = speed.to-float();
+                    authority_f = authority.to_float();
+                    send_track_circuit_data();
+                }
+            }
+        }
+
+        VerticalBox {
+            VerticalBox {
+                spacing: 0px;
+                Text {
+                    max-height: 0rem;
+                    text: "Selected block: \{block}";
+                }
+
+                Text {
+                    max-height: 0rem;
+                    text: "Commanded speed: \{commanded_speed} m/s";
+                }
+
+                Text {
+                    max-height: 0rem;
+                    text: "Commanded authority: \{commanded_authority} blocks";
+                }
+            }
+
+            VerticalBox {
+                max-height: 0rem;
+                Text {
+                    font-size: 15px;
+                    horizontal-alignment: TextHorizontalAlignment.center;
+                    text: "PLC Program";
+                }
+
+                LineEdit {
+                    text <=> plc_program;
+                }
+
+                Button {
+                    text: "Program";
+                    clicked => {
+                        program_plc();
+                    }
+                }
+
+                Text {
+                    text: plc_program_status ? "Success" : "Fail";
+                }
+            }
+
+            VerticalBox {
+                max-height: 0rem;
+                Text {
+                    font-size: 15px;
+                    horizontal-alignment: TextHorizontalAlignment.center;
+                    text: "Switches, Lights, Crossings";
+                }
+
+                Text {
+                    text: "Block 77 Switch: \{switch_77 ? "Closed" : "Open"}";
+                }
+                Text {
+                    text: "Block 85 Switch: \{switch_85 ? "Closed" : "Open"}";
+                }
+            }
+        }
+    }
+}

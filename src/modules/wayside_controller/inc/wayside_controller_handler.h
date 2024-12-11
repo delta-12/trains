@@ -15,7 +15,10 @@
 #include "block_states.pb.h"
 #include "connection.pb.h"
 #include "controller_port.h"
+#include "logger.h"
 #include "lookup_table.h"
+#include "plc.h"
+#include "plc_program.pb.h"
 #include "track_circuit_data.pb.h"
 #include "types.h"
 #include "wayside_controller.h"
@@ -37,22 +40,29 @@ class SoftwareWaysideControllerHandler
     private:
         Error GetInput(const InputId input, IoSignal &signal) const;
         Error SetInput(const InputId input, const IoSignal signal);
+        Error SetOutput(const OutputId output, const IoSignal signal);
         Error SetBlockOccupancy(const types::BlockId block, const bool occupied);
         types::Error ReceiveMessages(void);
         types::Error HandleTrackCircuitData(const size_t message_size);
         types::Error HandleBlockOccupancies(const size_t message_size);
+        types::Error HandlePlcProgram(const size_t message_size);
         types::Error SendBlockStates(const std::vector<types::BlockState> &block_states);
 
         std::function<Error(const InputId input, IoSignal &signal)> get_input_ = [this](const InputId input, IoSignal &signal){
                                                                                      return GetInput(input, signal);
                                                                                  };
+        std::function<Error(const OutputId output, const IoSignal signal)> set_output_ = [this](const OutputId output, const IoSignal signal){
+                                                                                             return SetOutput(output, signal);
+                                                                                         };
         std::array<uint8_t, buffer_size> message_buffer_;
-        std::array<IoSignal, kTotalInputs> inputs_ = {IoSignal::IOSIGNAL_LOW};
+        std::array<IoSignal, kTotalInputs> inputs_   = {IoSignal::IOSIGNAL_LOW};
+        std::array<IoSignal, kTotalOutputs> outputs_ = {IoSignal::IOSIGNAL_LOW};
         std::unordered_map<types::BlockId, InputId> inputs_lookup_;
         WaysideController wayside_controller_;
         types::WaysideId id_;
         types::TrackId track_;
         std::unique_ptr<controller_network::ControllerPort> controller_port_;
+        Plc plc_;
 };
 
 template <size_t buffer_size>
@@ -60,7 +70,7 @@ SoftwareWaysideControllerHandler<buffer_size>::SoftwareWaysideControllerHandler(
                                                                                 const types::TrackId track,
                                                                                 const std::vector<WaysideBlock> &blocks,
                                                                                 std::unique_ptr<controller_network::ControllerPort> controller_port)
-    : wayside_controller_(get_input_, blocks), id_(wayside_id), track_(track), controller_port_(std::move(controller_port))
+    : wayside_controller_(get_input_, blocks), id_(wayside_id), track_(track), controller_port_(std::move(controller_port)), plc_(get_input_, set_output_)
 {
     for (const wayside_controller::WaysideBlock &block : blocks)
     {
@@ -86,6 +96,8 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::Update(void)
     {
         error = SendBlockStates(block_states);
     }
+
+    plc_.Run();
 
     return error;
 }
@@ -143,6 +155,23 @@ Error SoftwareWaysideControllerHandler<buffer_size>::SetInput(const InputId inpu
 }
 
 template <size_t buffer_size>
+Error SoftwareWaysideControllerHandler<buffer_size>::SetOutput(const OutputId output, const IoSignal signal)
+{
+    Error error = Error::ERROR_INVALID_OUTPUT;
+
+    if (output < outputs_.size())
+    {
+        outputs_[output] = signal;
+
+        wayside_controller_.UpdateSwitchPosition(output, signal);
+
+        error = Error::ERROR_NONE;
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
 Error SoftwareWaysideControllerHandler<buffer_size>::SetBlockOccupancy(const types::BlockId block, const bool occupied)
 {
     Error    error  = Error::ERROR_INVALID_BLOCK;
@@ -181,6 +210,9 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::ReceiveMessages(void
             break;
         case controller_network::MESSAGETYPE_BLOCK_OCCUPANCIES:
             error = HandleBlockOccupancies(message_size);
+            break;
+        case controller_network::MESSAGETYPE_PLC_PROGRAM:
+            error = HandlePlcProgram(message_size);
             break;
         default:
             break;
@@ -249,6 +281,37 @@ types::Error SoftwareWaysideControllerHandler<buffer_size>::HandleBlockOccupanci
                 break;
             }
         }
+    }
+
+    return error;
+}
+
+template <size_t buffer_size>
+types::Error SoftwareWaysideControllerHandler<buffer_size>::HandlePlcProgram(const size_t message_size)
+{
+    types::Error                    error = types::Error::ERROR_NONE;
+    controller_messages::PlcProgram plc_program_message;
+
+    if (!plc_program_message.ParseFromArray(message_buffer_.data(), message_size))
+    {
+        error = types::Error::ERROR_INVALID_FORMAT;
+    }
+    else
+    {
+        std::vector<PlcInstruction> plc_instructions;
+        plc_instructions.reserve(plc_program_message.instructions_size());
+
+        for (int i = 0; i < plc_program_message.instructions_size(); i++)
+        {
+            const controller_messages::Instruction &instruction = plc_program_message.instructions(i);
+
+            plc_instructions.emplace_back(static_cast<PlcInstructionCode>(instruction.instruction_code()),
+                                          static_cast<PlcInstructionArgument>(instruction.argument_0()),
+                                          static_cast<PlcInstructionArgument>(instruction.argument_1()),
+                                          static_cast<PlcInstructionArgument>(instruction.argument_2()));
+        }
+
+        plc_.SetInstructions(plc_instructions);
     }
 
     return error;

@@ -1,0 +1,35 @@
+BLOCK block_76 = IN_23;
+BLOCK block_77 = IN_24;
+BLOCK block_78 = IN_25;
+BLOCK block_79 = IN_26;
+BLOCK block_80 = IN_27;
+BLOCK block_81 = IN_28;
+BLOCK block_82 = IN_29;
+BLOCK block_83 = IN_30;
+BLOCK block_84 = IN_31;
+BLOCK block_85 = IN_32;
+BLOCK block_100 = IN_47;
+SWITCH switch_77 = OUT_0;
+SWITCH switch_85 = OUT_1;
+
+IF ((block_77 == LOW) &&
+    (block_78 == LOW) &&
+    (block_79 == LOW) &&
+    (block_80 == LOW) &&
+    (block_81 == LOW) &&
+    (block_82 == LOW) &&
+    (block_83 == LOW) &&
+    (block_84 == LOW) &&
+    (block_85 == LOW))
+{
+    IF ((block_76 == LOW) && (block_100 == HIGH))
+    {
+        SET switch_77 HIGH;
+        SET switch_85 HIGH;
+    }
+    ELSE
+    {
+        SET switch_77 LOW;
+        SET switch_85 LOW;
+    }
+}

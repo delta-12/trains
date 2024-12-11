@@ -13,7 +13,7 @@
 namespace plc_compiler
 {
 
-types::Error Compile(const std::filesystem::path &file_path, std::ostream &stream)
+types::Error Compile(const std::filesystem::path &file_path, void *const buffer, const size_t size, size_t &bytes_written)
 {
     types::Error error = types::Error::ERROR_NONE;
 
@@ -54,7 +54,7 @@ types::Error Compile(const std::filesystem::path &file_path, std::ostream &strea
             error = types::Error::ERROR_INVALID_FORMAT;
             program_file.close();
         }
-        else if (!generator::GenerateCode(root_node, stream, generator_errors))
+        else if (!generator::GenerateCode(root_node, buffer, size, bytes_written, generator_errors))
         {
             for (const generator::Error &generator_error : generator_errors)
             {

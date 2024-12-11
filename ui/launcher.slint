@@ -5,8 +5,9 @@ import { WaysideControllerUi } from "wayside_controller_ui.slint";
 import { TrackModelUi } from "track_model_ui.slint";
 import { TrainModelUi } from "train_model_ui.slint";
 import { TrainControllerUi } from "train_controller_ui.slint";
+import { HardwareWaysideControllerTestbenchUi } from "hardware_wayside_controller_testbench_ui.slint";
 
-export {CtcUi, WaysideControllerUi, TrackModelUi, TrainModelUi, TrainControllerUi }
+export {CtcUi, WaysideControllerUi, TrackModelUi, TrainModelUi, TrainControllerUi, HardwareWaysideControllerTestbenchUi }
 
 export component Launcher inherits Window {
 
@@ -15,6 +16,7 @@ export component Launcher inherits Window {
     callback launch-track-model-window();
     callback launch-train-model-window();
     callback launch-train-controller-window();
+    callback launch-hardware-wayside-controller-testbench-window();
 
     title: "Orient Express Launcher";
     width: 400px;
@@ -37,6 +39,13 @@ export component Launcher inherits Window {
             text: "Wayside Controller";
             clicked => {
                 root.launch-wayside-controller-window();
+            }
+        }
+
+        Button {
+            text: "Hardware Wayside Controller Testbench";
+            clicked => {
+                root.launch-hardware-wayside-controller-testbench-window();
             }
         }
 
