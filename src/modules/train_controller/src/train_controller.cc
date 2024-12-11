@@ -57,6 +57,7 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
     usable_authority_  = authority_;
     authority_counter_ = authority_;
     new_authority_     = false;
+    manual_brake_command_ = 0.0;
 
     Update();
 }
@@ -195,6 +196,7 @@ void SoftwareTrainController::SetCurrentSpeed(const types::MetersPerSecond speed
 
 void SoftwareTrainController::SetServiceBrake(const double percentage)
 {
+    /*
     if (percentage < 0)
     {
         service_brake_percentage_ = 0;
@@ -207,6 +209,17 @@ void SoftwareTrainController::SetServiceBrake(const double percentage)
     {
         service_brake_percentage_ = percentage;
     }
+    */
+    double clamped_percentage = percentage;
+    if (clamped_percentage < 0) 
+    {
+        clamped_percentage = 0;
+    }
+    else if (clamped_percentage > 1)
+    {
+        clamped_percentage = 1;
+    }
+    manual_brake_command_ = clamped_percentage;
 }
 
 void SoftwareTrainController::SetEmergencyBrake(const bool state)
@@ -380,6 +393,7 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         distance_to_start_slowing_down = 0;
     }
 
+    double auto_brake_percentage = 0.0;
 
     // std::cout << "\n" << distance_to_start_slowing_down << " A\n";
     // std::cout << "\n" << distance_travelled_ - distance_prior_to_current_authority_ << " B\n";
@@ -408,12 +422,14 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
 
             if (required_acceleration / MAXIMUM_DECELERATION > 1 || required_acceleration < 0)
             {
-                service_brake_percentage_ = 1;
+                //service_brake_percentage_ = 1;
                 commanded_power_          = 0;
+                auto_brake_percentage = 1;
             }
             else
             {
-                service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
+                //service_brake_percentage_ = required_acceleration / MAXIMUM_DECELERATION;
+                auto_brake_percentage = required_acceleration / MAXIMUM_DECELERATION;
                 commanded_power_          = 0;
             }
 
@@ -428,17 +444,13 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         commanded_power_ = 0;
 
         types::MetersPerSecond speed_difference = current_speed_ - setpoint_speed;
-
+        double old_brake = service_brake_percentage_;
         //Function to to assign service brake
         CalculateServiceBrake(speed_difference);
+        auto_brake_percentage = service_brake_percentage_;
+        service_brake_percentage_ = old_brake;
     }
 
-    //Checking if Service brake is on
-    // else if (service_brake_percentage_ > 0)
-    // {
-    //     integral_sum_    = 0;
-    //     commanded_power_ = 0;
-    // }
 
     //Normal power calculation
     else
@@ -450,13 +462,40 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
         {
             commanded_power_ = max_power_;
         }
+        auto_brake_percentage = 0.0;
     }
 
-    if(service_brake_percentage_ > 0)
+    if (operation_mode_ == true) {
+        // MANUAL MODE
+        // If driver has set a manual brake command, override automatic brake
+        if (manual_brake_command_ > 0) {
+            service_brake_percentage_ = manual_brake_command_;
+            // With manual brake, commanded_power_ should be zero
+            commanded_power_ = 0;
+            integral_sum_ = 0; // Reset integral since braking
+        } else {
+            // No manual brake set, use the automatic brake if any
+            service_brake_percentage_ = auto_brake_percentage;
+            if (service_brake_percentage_ > 0) {
+                commanded_power_ = 0;
+                integral_sum_ = 0; 
+            }
+        }
+    } else {
+        // AUTOMATIC MODE
+        // Just use automatic brake percentage
+        service_brake_percentage_ = auto_brake_percentage;
+        if (service_brake_percentage_ > 0) {
+            commanded_power_ = 0;
+            integral_sum_ = 0;
+        }
+    }
+
+    /*if(service_brake_percentage_ > 0)
     {
         integral_sum_    = 0;
         commanded_power_ = 0;
-    }
+    }*/
 }
 
 void SoftwareTrainController::CalculateServiceBrake(types::MetersPerSecond speed_difference)
