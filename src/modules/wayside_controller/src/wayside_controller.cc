@@ -422,13 +422,15 @@ int WaysideController::GetCommandedAuthority(types::TrackCircuitData &track_circ
 
     int authority;
 
-    if(error == Error::ERROR_NONE){
-        authority = track_circuit_data.authority;
+    if(error != Error::ERROR_NONE){
+        
+        //clamp authority to 0 if there is an error
+
+        authority = 0;
     }
 
     else{
-        //clamp authority to 0 if there is an error
-        authority = 0;
+        authority = track_circuit_data.authority;
     }
 
     return authority;
@@ -455,6 +457,31 @@ double WaysideController::GetCommandedSpeed(types::TrackCircuitData &track_circu
 
 }
 
+bool WaysideController::GetBlockOccupancy(std::vector<types::BlockState> &block_states){
+
+    Error error = GetBlockStates(block_states);
+
+    if(error == Error::ERROR_NONE){
+
+        for (auto &block_state : block_states) {
+        // Process each block_state
+            block_state.occupied = true;
+
+        }
+
+    }
+    else{
+        
+        for (auto &block_state : block_states) {
+        // Process each block_state
+            block_state.occupied = false;
+
+        }
+    }
+
+    //temp output
+    return true;
+}
 
 
 

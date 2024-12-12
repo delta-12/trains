@@ -219,6 +219,7 @@ export component WaysideControllerUi inherits Window {
         callback disp_sugg_auth();
         callback disp_maintenance_md();
         callback disp_sw_state();
+        callback disp_block_main();
         callback disp_block_occ();
         callback disp_select_plc();
         callback disp_parse_file();
@@ -426,7 +427,7 @@ export component WaysideControllerUi inherits Window {
                             Button{
                                 text: "Enter Maintenance\nMode";
                                 clicked => {
-                                    root.disp-sw-state();
+                                    root.disp-block-main();
                                 }}
                         }
                         //Switch State
@@ -460,7 +461,7 @@ export component WaysideControllerUi inherits Window {
                             Button{
                                 text: "Block Occupied";
                                 clicked => {
-                                    root.disp-sw-state();
+                                    root.disp-block-occ();
                                 }}
                         }
 
@@ -520,7 +521,6 @@ export component WaysideControllerUi inherits Window {
                                         min-height: 30px;
                                         max-height: 30px;
                                         text: str_block_mainout;
-                                        read-only: true;
                                     } 
                                 }
 
@@ -534,7 +534,6 @@ export component WaysideControllerUi inherits Window {
                                         min-height: 30px;
                                         max-height: 30px;
                                         text: str_sw_stateout;
-                                        read-only: true;
                                     }
                                 }
 

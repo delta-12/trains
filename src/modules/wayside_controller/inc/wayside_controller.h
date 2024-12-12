@@ -121,7 +121,11 @@ class WaysideController
 
         int GetCommandedAuthority(types::TrackCircuitData &track_circuit_data);
         double GetCommandedSpeed(types::TrackCircuitData &track_circuit_data);
+        bool GetBlockOccupancy(std::vector<types::BlockState> &block_states);
 
+        
+        
+        std::function<Error(const InputId input, IoSignal &signal)> get_input_;
 
     
 
@@ -129,7 +133,7 @@ class WaysideController
         static bool IsTrackCircuitInputValid(const InputId input);
         static bool IsSwitchInputValid(const InputId input);
 
-        std::function<Error(const InputId input, IoSignal &signal)> get_input_;
+        //std::function<Error(const InputId input, IoSignal &signal)> get_input_;
         std::unordered_map<types::BlockId, WaysideBlock> block_configuration_;
         Graph<types::BlockId, uint8_t> block_layout_;
 };

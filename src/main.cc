@@ -7,6 +7,7 @@
 #include "wayside_controller.h"
 #include "launcher.h"
 #include "simulator.h"
+#include "types.h"
 
 //#include "wayside_controller_callback_handler.h"
 
@@ -27,16 +28,41 @@ int main(void)
     auto                 train_controller_ui   = ui::TrainControllerUi::create();
 
     
+    std::function<wayside_controller::Error(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)> get_input_;
+
+
+
+    // wayside block initialization //
+
+    wayside_controller::WaysideBlock wb25(25, 26, 26, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 25, 25, false, false, wayside_controller::IoSignal::IOSIGNAL_HIGH);
+    wayside_controller::WaysideBlock wb26(26, 27, 27, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 26, 26, false, false, wayside_controller::IoSignal::IOSIGNAL_HIGH);
+    wayside_controller::WaysideBlock wb27(27, 28, 28, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 27, 27, false, false, wayside_controller::IoSignal::IOSIGNAL_HIGH);
+
+    //block 28 on green line has the switch
+    wayside_controller::WaysideBlock wb28(28, 29, 150, types::BlockDirection::BLOCKDIRECTION_BIDIRECTIONAL, 28, 28, true, false, wayside_controller::IoSignal::IOSIGNAL_HIGH);
+
+
+    std::vector<wayside_controller::WaysideBlock> blocks_stub;
+
+    blocks_stub.push_back(wb25);
+    blocks_stub.push_back(wb26);
+    blocks_stub.push_back(wb27);
+    blocks_stub.push_back(wb28);
+    
+    // wayside block initialization //
+
+
+    // wayside controller initialization //
+
+    wayside_controller::WaysideController wc(get_input_, blocks_stub);
+
+    // wayside controller initialization //
+
+    
     
     slint::ComponentWeakHandle<ui::WaysideControllerUi> weak_ui_handle(wayside_controller_ui);
 
-    //linker error????
-    //wayside_controller::WaysideController wc;
 
-
-    std::string input_plc_path="";
-
-    std::filesystem::path base_path = std::filesystem::current_path();
 
 
     //callbacks config
@@ -53,30 +79,173 @@ int main(void)
 
     });
 
+
+    //disp authority from ctc
     wayside_controller_ui->on_disp_sugg_auth([&] (){
 
         std::string auth_ui = std::string(wayside_controller_ui->get_sugg_auth());
 
         //temp int stuff
-        int auth_int = std::stoi(auth_ui);
+        // int auth_int = std::stoi(auth_ui);
 
-        auth_int = auth_int + 2;
+        // auth_int = auth_int + 2;
 
-        std::string auth_str = std::to_string(auth_int);
+        // std::string auth_str = std::to_string(auth_int);
 
-        wayside_controller_ui->set_comm_auth(auth_str.c_str());
+        // wayside_controller_ui->set_comm_auth(auth_str.c_str());
 
 
 // proper impl for backend
-        //types::TrackCircuitData temp_data (types::TrackId::TRACKID_GREEN, 1, 0, std::stoi(auth_ui));
+        types::TrackCircuitData temp_data (types::TrackId::TRACKID_GREEN, 1, 5, std::stoi(auth_ui));
 
-        //std::string result = (std::to_string(wc.GetCommandedAuthority(temp_data)));
+        std::string result = (std::to_string(wc.GetCommandedAuthority(temp_data)));
 
         //call CB handler funct here
-        //wayside_controller_ui->set_comm_auth(result.c_str());
+        wayside_controller_ui->set_comm_auth(result.c_str());
 
 
     });
+
+    //disp speed from ctc
+    wayside_controller_ui->on_disp_sugg_spd([&] (){
+
+        std::string spd_ui = std::string(wayside_controller_ui->get_sugg_spd());
+
+// proper impl for backend
+        types::TrackCircuitData temp_data (types::TrackId::TRACKID_GREEN, 1, 5, std::stoi(spd_ui));
+
+        std::string result = (std::to_string(wc.GetCommandedSpeed(temp_data)));
+
+        //call CB handler funct here
+        wayside_controller_ui->set_comm_spd(result.c_str());
+
+
+    });
+
+
+    wayside_controller_ui->on_disp_sw_state([&] (){
+
+        std::string sw_state = std::string(wayside_controller_ui->get_str_sw_statein());
+
+    // proper impl for backend 
+        bool switch_data; 
+        std::string result = "No Data Available";
+
+
+        if(sw_state == "Open" || sw_state == "open"){
+
+            switch_data = true;
+        }
+        else if(sw_state == "Closed" || sw_state == "closed"){
+
+            switch_data = false;
+        }
+
+        wayside_controller::Error output = wc.SetSwitch(28, switch_data);
+
+
+        if(output != wayside_controller::Error::ERROR_NONE){
+
+            std::string result = "Invalid Switch State";
+
+        }
+        else{
+
+            if(switch_data == true){
+                result = "Closed";
+            }
+            if(switch_data == false){
+                result = "Open";
+            }
+        }
+
+        //call CB handler funct here
+        wayside_controller_ui->set_str_sw_stateout(result.c_str());
+
+
+    });
+
+
+    wayside_controller_ui->on_disp_block_main([&] (){
+
+
+    // proper impl for backend 
+        bool switch_data; 
+        std::string result = "No Data Available";
+
+        std::string sw_state = std::string(wayside_controller_ui->get_str_block_mainin());
+
+
+
+        if(sw_state == "Open" || sw_state == "open"){
+
+            switch_data = true;
+            std::string result = "Closed";
+
+        }
+        else if(sw_state == "Closed" || sw_state == "closed"){
+
+            switch_data = false;
+            std::string result = "Open";
+
+        }
+
+        wayside_controller::Error output = wc.SetSwitch(28, switch_data);
+
+
+        if(output != wayside_controller::Error::ERROR_NONE){
+
+            std::string result = "Invalid Switch State";
+            
+
+        }
+        else{
+
+            if(switch_data == true){
+                result = "Closed";
+            }
+            if(switch_data == false){
+                result = "Open";
+            }
+        }
+        
+        //call CB handler funct here
+        wayside_controller_ui->set_str_block_mainout(result.c_str());
+
+        });
+
+
+    wayside_controller_ui->on_disp_block_occ([&] (){
+
+        std::string result;
+
+        std::string sw_state = std::string(wayside_controller_ui->get_str_block_occin());
+
+        if(sw_state == "Occupied" || sw_state == "occupied"){
+
+            result = "Occupied";
+
+        }
+        else if(sw_state == "Empty" || sw_state == "empty"){
+
+            result = "Unoccupied";
+
+        }
+
+        wayside_controller_ui->set_str_block_occ(result.c_str());
+
+
+
+    });
+
+
+
+
+
+
+
+
+
 
 
 
