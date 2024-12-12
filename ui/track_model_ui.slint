@@ -870,7 +870,7 @@ export component TrackModelUi inherits Window {
                                     edited(val)=>{brail_block=val}
                                 }
                                 Switch {
-                                    checked: brail_bool;
+                                    checked: brail_bool_tb;
                                     toggled => {brail_bool_tb = !brail_bool_tb;}
                                 }
                                 Button {
@@ -897,7 +897,7 @@ export component TrackModelUi inherits Window {
                                     edited(val)=>{tcfail_block=val}
                                 }
                                 Switch {
-                                    checked: tcfail_bool;
+                                    checked: tcfail_bool_tb;
                                     toggled => {tcfail_bool_tb = !tcfail_bool_tb;}
                                 }
                                 Button {

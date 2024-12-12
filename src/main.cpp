@@ -596,7 +596,7 @@ int main(void)
             if (auto ui = weak_ui_handle.lock()) {
             std::string string_block_num = std::string(track_model_ui->get_pfail_block());
             int int_block_num = std::stoi(string_block_num);
-                bool pfail_bool = track_model_ui->get_tcfail_bool_tb();
+                bool pfail_bool = track_model_ui->get_pfail_bool_tb();
                 track.SetPowerFailure(int_block_num, pfail_bool);
                 auto otb = track.GetOccupiedTrainBlocks();
                 std::vector<std::shared_ptr<train_model::TrainModel>> trains;

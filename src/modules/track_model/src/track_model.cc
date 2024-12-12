@@ -324,6 +324,8 @@ types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const
             failed_blocks_.push_back(block);
 
             blocks_[block].broken_rail = broken;
+
+            blocks_[block].occupied = 1;
         }
     }
     else if (isValid && broken == 0)
@@ -333,6 +335,8 @@ types::Error SoftwareTrackModel::SetBrokenRail(const types::BlockId block, const
             failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
 
             blocks_[block].broken_rail = broken;
+
+            blocks_[block].occupied = 0;
         }
     }
 
@@ -352,6 +356,8 @@ types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId blo
             failed_blocks_.push_back(block);
 
             blocks_[block].track_circuit_failure = track_circuit_failure;
+
+            blocks_[block].occupied = 1;
         }
     }
     else if (isValid && track_circuit_failure == 0)
@@ -361,6 +367,8 @@ types::Error SoftwareTrackModel::SetTrackCircuitFailure(const types::BlockId blo
             failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
 
             blocks_[block].track_circuit_failure = track_circuit_failure;
+
+            blocks_[block].occupied = 0;
         }
     }
 
@@ -380,6 +388,8 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
             failed_blocks_.push_back(block);
 
             blocks_[block].power_failure = power_failure;
+
+            blocks_[block].occupied = 1;
         }
     }
     else if (isValid && power_failure == 0)
@@ -389,6 +399,8 @@ types::Error SoftwareTrackModel::SetPowerFailure(const types::BlockId block, con
             failed_blocks_.erase(find(failed_blocks_.begin(), failed_blocks_.end(), block));
 
             blocks_[block].power_failure = power_failure;
+
+            blocks_[block].occupied = 0;
         }
     }
 
