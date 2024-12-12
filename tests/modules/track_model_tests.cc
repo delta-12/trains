@@ -596,4 +596,5 @@ TEST(TrackModelTests, PlaceHolderFunctionGetTrainModel)
     ASSERT_EQ(track.SetTrackCircuitFailure(5, 1), types::Error::ERROR_NONE);
     ASSERT_EQ(track.SetPowerFailure(5, 1), types::Error::ERROR_NONE);
     ASSERT_EQ(track.SetExternalTemperature(60), types::Error::ERROR_NONE);
+    //2
 }
