@@ -229,10 +229,10 @@ Error WaysideController::GetBlockStates(std::vector<types::BlockState> &block_st
             // TODO NNF-227 report track failures // changed to ticket NNF-262
             block_states.emplace_back(block.second.block, io_signal == IoSignal::IOSIGNAL_HIGH, false);
 
-            //set failure in BlockState based on updated field in Block struct
-            if (&block.second.track_circuit_input ){
+            // //set failure in BlockState based on updated field in Block struct
+            // if (&block.second.track_circuit_input ){
                 
-            }
+            // }
 
         }
     }
@@ -398,4 +398,74 @@ bool Plc::WriteSignal(const PlcInstructionArgument register_number, const PlcIns
     return success;
 }
 
-} // namespace wayside_controller
+
+//getters for ui//
+
+
+
+//get block configuration
+std::unordered_map<types::BlockId, WaysideBlock> WaysideController::GetBlockConfiguration(void){
+
+    return block_configuration_;
+}
+
+Graph<types::BlockId, uint8_t> WaysideController::GetBlockLayout(void){
+
+    return block_layout_;
+}
+
+
+
+int WaysideController::GetCommandedAuthority(types::TrackCircuitData &track_circuit_data){
+
+    Error error = GetCommandedSpeedAndAuthority(track_circuit_data);
+
+    int authority;
+
+    if(error == Error::ERROR_NONE){
+        authority = track_circuit_data.authority;
+    }
+
+    else{
+        //clamp authority to 0 if there is an error
+        authority = 0;
+    }
+
+    return authority;
+
+}
+
+double WaysideController::GetCommandedSpeed(types::TrackCircuitData &track_circuit_data){
+
+    Error error = GetCommandedSpeedAndAuthority(track_circuit_data);
+
+    double speed;
+
+    if(error == Error::ERROR_NONE){
+        speed = track_circuit_data.speed;
+    }
+
+    else{
+        //clamp suggested speed to 0 if there is an error
+        speed = 0.0;
+    }
+
+    return speed;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+// namespace wayside_controller

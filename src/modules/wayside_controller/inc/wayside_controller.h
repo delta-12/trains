@@ -62,6 +62,15 @@ enum class PlcInstructionCode
     PLCINSTRUCTIONCODE_BRANCH_UNDCONDITIONAL
 };
 
+/*
+enum class TrackFailures
+{
+    TRACK_CIRCUIT_FAILURE,
+    POWER_FAILURE,
+    BROKEN_RAIL
+}; */
+
+
 // TODO NNF-144 add block speed limit
 struct WaysideBlock
 {
@@ -105,6 +114,16 @@ class WaysideController
         Error SetMaintenanceMode(const types::BlockId block, const bool maintenance_mode);
         Error SetSwitch(const types::BlockId block, const bool switch_state);
         Error GetBlockStates(std::vector<types::BlockState> &block_states);
+
+        //getters
+        std::unordered_map<types::BlockId, WaysideBlock> GetBlockConfiguration(void);
+        Graph<types::BlockId, uint8_t> GetBlockLayout(void);
+
+        int GetCommandedAuthority(types::TrackCircuitData &track_circuit_data);
+        double GetCommandedSpeed(types::TrackCircuitData &track_circuit_data);
+
+
+    
 
     private:
         static bool IsTrackCircuitInputValid(const InputId input);

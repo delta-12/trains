@@ -37,9 +37,12 @@ component BlockLayoutMap inherits Rectangle {
     in-out property <[[StandardListViewItem]]> block_data;
     in-out property <string> section;
     in-out property <string> block;
-    in-out property <bool> mode: true;
+    in-out property <bool> mode: false;
     in-out property <bool> crossing: true;
     in-out property <bool> signal: true;
+
+    in-out property <bool> has_input;
+
 
     in-out property <bool> switch: false;
     in-out property <bool> occupancy: false;
@@ -176,9 +179,7 @@ export component ShowButton inherits Button {
 // main window
 export component WaysideControllerUi inherits Window {
 
-        //test bench//
-
-        
+       
         //generic time var
         in-out property <string> time;
 
@@ -191,12 +192,11 @@ export component WaysideControllerUi inherits Window {
         
 
         //variables output
-        in-out property <float> comm_spd;
+        in-out property <string> comm_spd;
         in-out property <string> comm_auth;
 
         
-        in-out property <string> str_plc_prog;
-        in-out property <string> str_plc_progin;
+        //testbench
         in-out property <string> plc_prog;
 
         in-out property <string> str_block_mainin;
@@ -225,8 +225,6 @@ export component WaysideControllerUi inherits Window {
 
         callback clicked();
 
-        //test bench//
-
         //selecting wayside controller and line
         in-out property <string> sworhw;
         in-out property <string> redorgreen;
@@ -234,9 +232,6 @@ export component WaysideControllerUi inherits Window {
         in-out property <bool> selectWayside;
         callback selectWCType();
         callback selectLineType();
-
-        //generic active
-        //in-out property <int> active_tab;
 
         //entering a filename for PLC
         in-out property <string> plcprog;
@@ -496,8 +491,8 @@ export component WaysideControllerUi inherits Window {
                                             read-only: true;
                                             min-height: 30px;
                                             max-height: 30px;
-                                            //text: comm_spd + " mph";
-                                            text: time;
+                                            text: comm_spd + " mph";
+                                            //text: time;
 
                                         } 
                                 }
@@ -565,7 +560,7 @@ export component WaysideControllerUi inherits Window {
                                         read-only: true;
                                         min-height: 30px;
                                         max-height: 30px;
-                                        text: str_plc_prog;
+                                        text: plc_prog;
                                     }
                                 }
 
