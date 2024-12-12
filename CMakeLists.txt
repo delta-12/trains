@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-requires -fdiagnostics-color=always") # suppress missing-requires warning to build protobufs
 
 if (WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj -static-libgcc -static-libstdc++ -static")
+else()
+    set(SRC_COMPILE_OPTIONS -Wall -Wextra -Werror)
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -16,7 +18,6 @@ add_compile_definitions(
     $<$<CONFIG:Debug>:LOGGER>
 )
 
-set(SRC_COMPILE_OPTIONS -Wall -Wextra -Werror)
 set(TEST_COMPILE_OPTIONS ${SRC_COMPILE_OPTIONS} -g -O0 --coverage)
 option(ABSL_PROPAGATE_CXX_STD "Propagate C++ standard to abseil-cpp" ON)
 
@@ -158,6 +159,7 @@ target_include_directories(controller_messages PRIVATE ${PROTOBUF_INC_DIRS})
 ################################################################################
 if (WIN32)
     add_executable(trains WIN32 ${SRC_DIR}/main.cc ${TRAINS_SRCS})
+    target_link_libraries(trains PRIVATE wsock32 ws2_32)
 else()
     add_executable(trains ${SRC_DIR}/main.cc ${TRAINS_SRCS})
 endif()

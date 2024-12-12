@@ -11,10 +11,10 @@
 #include <memory>
 #include <vector>
 
-#include "asio.hpp"
-
 #include "types.h"
 #include "ring_buffer.h"
+
+#include "asio.hpp"
 
 namespace controller_network
 {

@@ -98,6 +98,7 @@ void TcpPort::HandleWrite(const std::error_code &error, const size_t bytes_trans
     else
     {
         LOGGER_LOG_VERBOSE(std::cout, kTcpPortLogTag, "{} bytes written successfully", bytes_transferred);
+        (void)bytes_transferred;
     }
 }
 

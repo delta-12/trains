@@ -162,19 +162,11 @@ bool HardwareWaysideControllerHandler<buffer_size>::DecodeBlockOccupancies(pb_is
 template <size_t buffer_size>
 bool HardwareWaysideControllerHandler<buffer_size>::EncodeBlockStates(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
-    bool encoded = false;
+    bool encoded = true;
 
-    // TODO
-
-    ESP_LOGI("HW WC HANDLER", "EncodeBlockStates called");
-
-    // for (const types::BlockState &block_state : block_states)
-    // {
-    //     controller_messages::BlockState* block_state_message = block_states_message.add_states();
-    //     block_state_message->set_block(block_state.block);
-    //     block_state_message->set_occupied(block_state.occupied);
-    //     block_state_message->set_track_failure(block_state.track_failure);
-    // }
+    (void)stream;
+    (void)field;
+    (void)arg;
 
     return encoded;
 }

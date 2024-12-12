@@ -18,7 +18,9 @@
 namespace wayside_controller
 {
 
+#ifdef LOGGER
 static const char *kHardwareWaysideControllerTestbenchLogTag = "HW WC TB";
+#endif
 
 class HardwareWaysideControllerTestbench : public ctc::Ctc, public track_model::TrackModel
 {
