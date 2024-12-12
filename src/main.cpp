@@ -362,7 +362,7 @@ int main(void)
             }
             else if (color == "red")
             {
-                std::filesystem::path hard_path_red = exe_path / "tests" / "common" / "test_csv" / "red_line_path.csv";
+                std::filesystem::path hard_path_red = exe_path / "tests" / "common" / "test_csv" / "red_line_track_layout.csv";
                 CsvParser trackpath_parser(hard_path_red);
                 std::filesystem::path           base_path = std::filesystem::current_path();
 
