@@ -750,18 +750,18 @@ static void UpdateBlockOccupancyUI(ctc::Ctc &ctc_office, slint::ComponentHandle<
 
                     // Update Block Table
                     // TODO fix exception thrown
-                    // auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
-                    // std::for_each(block_states.begin(), block_states.end(), [&block_table_ui] (types::BlockState block_state) {
-                    //     auto block_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block_state.block - 1).value());
-                    //     if (block_state.track_failure == true)
-                    //     {
-                    //         block_entry->set_row_data(5, slint::StandardListViewItem("Failure"));
-                    //     }
-                    //     else
-                    //     {
-                    //         block_entry->set_row_data(4, slint::StandardListViewItem(block_state.occupied ? "Occupied" : "_"));
-                    //     }
-                    // });
+                    auto block_table_ui = std::dynamic_pointer_cast<slint::VectorModel<std::shared_ptr<slint::Model<slint::StandardListViewItem>>>>(ui.value()->get_block_data());
+                    std::for_each(block_states.begin(), block_states.end(), [&block_table_ui] (types::BlockState block_state) {
+                        auto block_entry = std::dynamic_pointer_cast<slint::VectorModel<slint::StandardListViewItem>>(block_table_ui->row_data(block_state.block - 1).value());
+                        if (block_state.track_failure == true)
+                        {
+                            block_entry->set_row_data(5, slint::StandardListViewItem("Failure"));
+                        }
+                        else
+                        {
+                            block_entry->set_row_data(4, slint::StandardListViewItem(block_state.occupied ? "Occupied" : "_"));
+                        }
+                    });
                 }
             }
         });

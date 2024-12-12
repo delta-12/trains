@@ -9,8 +9,15 @@ BLOCK block_83 = IN_30;
 BLOCK block_84 = IN_31;
 BLOCK block_85 = IN_32;
 BLOCK block_100 = IN_47;
+BLOCK block_107 = IN_54;
+BLOCK block_108 = IN_55;
 SWITCH switch_77 = OUT_0;
 SWITCH switch_85 = OUT_1;
+LIGHT red_light_76 = OUT_2;
+LIGHT green_light_76 = OUT_3;
+LIGHT red_light_100 = OUT_4;
+LIGHT green_light_100 = OUT_5;
+CROSSING crossing_108 = OUT_6;
 
 IF ((block_77 == LOW) &&
     (block_78 == LOW) &&
@@ -26,10 +33,31 @@ IF ((block_77 == LOW) &&
     {
         SET switch_77 HIGH;
         SET switch_85 HIGH;
+
+        SET red_light_76 HIGH;
+        SET green_light_76 LOW;
+
+        SET red_light_100 LOW;
+        SET green_light_100 HIGH;
     }
     ELSE
     {
         SET switch_77 LOW;
         SET switch_85 LOW;
+
+        SET red_light_76 LOW;
+        SET green_light_76 HIGH;
+
+        SET red_light_100 HIGH;
+        SET green_light_100 LOW;
     }
+}
+
+IF ((block_107 == HIGH) || (block_108 == HIGH))
+{
+    SET crossing_108 HIGH;
+}
+ELSE
+{
+    SET crossing_108 LOW;
 }

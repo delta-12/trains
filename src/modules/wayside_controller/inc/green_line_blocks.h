@@ -85,7 +85,10 @@ const std::vector<WaysideBlock> kGreenLineBlocksWayside1 = {
 
 const std::vector<BlockOutputs> kGreenLineBlockOutputsWayside1 = {
     {77, true, 0, false, 0, false, 0, 0},
-    {85, true, 1, false, 0, false, 0, 0}
+    {85, true, 1, false, 0, false, 0, 0},
+    {76, false, 0, false, 0, true, 2, 3},
+    {100, false, 0, false, 0, true, 4, 5},
+    {108, false, 0, true, 6, false, 0, 0}
 };
 
 } // namespace wayside_controller

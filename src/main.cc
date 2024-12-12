@@ -80,6 +80,11 @@ int main(void)
                               //   controller_network::TcpServer tcp_server(8080, [&](std::shared_ptr<types::Port> port){
                               //    controller_handler.AddPort(controller_network::BuildBasicControllerPort<1024>(port));
                               // });
+                              bool connected = false;
+                              controller_network::TcpServer tcp_server(8080, [&connected](std::shared_ptr<types::Port> port) {
+                                                                       (void)port;
+                                                                       connected = true;
+            });
 
                               CsvParser csv_parser(std::filesystem::current_path() / "green_line_schedule.csv");
                               BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
@@ -102,10 +107,12 @@ int main(void)
                               while (running.load())
                               {
 
-                                  //   tcp_server.RunFor(std::chrono::milliseconds(10));
+                                  tcp_server.RunFor(std::chrono::milliseconds(10));
                                   world.Update();
-                                  testbench->Update(controller_handler);
+                                  testbench->Update(controller_handler, connected);
                                   controller_handler.Update(ctc_office, world);
+
+                                  // TODO if connected, update wc
                                   wayside_controller_handler.Update();
 
                                   ctc::backend_handler(ctc_office, ctc_ui);

@@ -1,8 +1,8 @@
 /*****************************************************************************
- * @file wayside_controller_tests.cc
- *
- * @brief Unit testing for WaysideController.
- *****************************************************************************/
+* @file wayside_controller_tests.cc
+*
+* @brief Unit testing for WaysideController.
+*****************************************************************************/
 
 #include <filesystem>
 #include <ranges>
@@ -19,27 +19,27 @@
 
 class MockCtc : public ctc::Ctc
 {
-public:
-    MOCK_METHOD(types::Error, SetBlockStates, (const types::TrackId track, const std::vector<types::BlockState> &block_states), (override));
-    MOCK_METHOD(std::vector<types::TrackCircuitData>, GetSuggestedSpeedsAndAuthorities, (), (const, override));
+    public:
+        MOCK_METHOD(types::Error, SetBlockStates, (const types::TrackId track, const std::vector<types::BlockState> &block_states), (override));
+        MOCK_METHOD(std::vector<types::TrackCircuitData>, GetSuggestedSpeedsAndAuthorities, (), (const, override));
 };
 
 class MockTrackModel : public track_model::TrackModel
 {
-public:
-    MOCK_METHOD(types::TrackId, GetTrackId, (), (override));
-    MOCK_METHOD(types::Error, AddTrainModel, (std::shared_ptr<train_model::TrainModel> train), (override));
-    MOCK_METHOD(std::shared_ptr<train_model::TrainModel>, GetTrainModel, (const types::TrainId train), (const, override));
-    MOCK_METHOD(void, GetTrainModels, (std::vector<std::shared_ptr<train_model::TrainModel>> & trains), (override));
-    MOCK_METHOD(void, Update, (), (override));
-    MOCK_METHOD(types::Error, SetSwitchState, (const types::BlockId block, const bool switched), (override));
-    MOCK_METHOD(types::Error, SetCrossingState, (const types::BlockId block, const bool closed), (override));
-    MOCK_METHOD(types::Error, SetRedTrafficLight, (const types::BlockId block, const bool on), (override));
-    MOCK_METHOD(types::Error, SetYellowTrafficLight, (const types::BlockId block, const bool on), (override));
-    MOCK_METHOD(types::Error, SetGreenTrafficLight, (const types::BlockId block, const bool on), (override));
-    MOCK_METHOD(types::Error, SetCommandedSpeed, (const types::BlockId block, const types::MetersPerSecond speed), (override));
-    MOCK_METHOD(types::Error, SetAuthority, (const types::BlockId block, const types::Blocks authority), (override));
-    MOCK_METHOD(types::Error, GetBlockOccupancy, (const types::BlockId block, bool &occupied), (const, override));
+    public:
+        MOCK_METHOD(types::TrackId, GetTrackId, (), (override));
+        MOCK_METHOD(types::Error, AddTrainModel, (std::shared_ptr<train_model::TrainModel> train), (override));
+        MOCK_METHOD(std::shared_ptr<train_model::TrainModel>, GetTrainModel, (const types::TrainId train), (const, override));
+        MOCK_METHOD(void, GetTrainModels, (std::vector<std::shared_ptr<train_model::TrainModel>> & trains), (override));
+        MOCK_METHOD(void, Update, (), (override));
+        MOCK_METHOD(types::Error, SetSwitchState, (const types::BlockId block, const bool switched), (override));
+        MOCK_METHOD(types::Error, SetCrossingState, (const types::BlockId block, const bool closed), (override));
+        MOCK_METHOD(types::Error, SetRedTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetYellowTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetGreenTrafficLight, (const types::BlockId block, const bool on), (override));
+        MOCK_METHOD(types::Error, SetCommandedSpeed, (const types::BlockId block, const types::MetersPerSecond speed), (override));
+        MOCK_METHOD(types::Error, SetAuthority, (const types::BlockId block, const types::Blocks authority), (override));
+        MOCK_METHOD(types::Error, GetBlockOccupancy, (const types::BlockId block, bool &occupied), (const, override));
 };
 
 static const std::array<bool, wayside_controller::kTotalInputs> kInputs = {true, true, false, false, true, false, false, false, false, false, false, false, true, false, true, false, false, true, false, false, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, false, true, false, false, false, false,
@@ -99,7 +99,7 @@ wayside_controller::Error SetOutput(const wayside_controller::OutputId output, c
 TEST(WaysideControllerTests, Configure)
 {
     std::vector<wayside_controller::WaysideBlock> blocks = kBlueLineWaysideBlocks;
-    wayside_controller::WaysideController software_wayside_controller(GetInput);
+    wayside_controller::WaysideController         software_wayside_controller(GetInput);
 
     // Success
     ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.Configure(blocks));
@@ -157,28 +157,28 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
 {
     // TODO NNF-144 test commanded speed
 
-    std::array<wayside_controller::IoSignal, 16> inputs = {wayside_controller::IoSignal::IOSIGNAL_LOW};
+    std::array<wayside_controller::IoSignal, 16>                                                                            inputs     = {wayside_controller::IoSignal::IOSIGNAL_LOW};
     std::function<wayside_controller::Error(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)> get_inputs =
         [&inputs](const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
-    {
-        wayside_controller::Error error = wayside_controller::Error::ERROR_INVALID_INPUT;
-
-        if (input < inputs.size())
         {
-            signal = inputs[input];
+            wayside_controller::Error error = wayside_controller::Error::ERROR_INVALID_INPUT;
 
-            error = wayside_controller::Error::ERROR_NONE;
-        }
+            if (input < inputs.size())
+            {
+                signal = inputs[input];
 
-        return error;
-    };
+                error = wayside_controller::Error::ERROR_NONE;
+            }
 
-    types::TrackCircuitData track_circuit_data;
+            return error;
+        };
+
+    types::TrackCircuitData               track_circuit_data;
     wayside_controller::WaysideController software_wayside_controller(get_inputs, kBlueLineWaysideBlocks);
 
     // Valid authority
-    track_circuit_data.block = 1;
-    track_circuit_data.speed = 0;
+    track_circuit_data.block     = 1;
+    track_circuit_data.speed     = 0;
     track_circuit_data.authority = 0;
     ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
@@ -205,7 +205,7 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
 
     // Sets safe authority based on occupancies
     track_circuit_data.authority = 10;
-    inputs[4] = wayside_controller::IoSignal::IOSIGNAL_HIGH;
+    inputs[4]                    = wayside_controller::IoSignal::IOSIGNAL_HIGH;
     ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(3, track_circuit_data.authority);
     inputs[4] = wayside_controller::IoSignal::IOSIGNAL_LOW;
@@ -228,13 +228,13 @@ TEST(WaysideControllerTests, GetCommandedSpeedAndAuthority)
     // Force get input error
     std::function<wayside_controller::Error(const wayside_controller::InputId input, wayside_controller::IoSignal &signal)> get_inputs_none =
         [](const wayside_controller::InputId input, wayside_controller::IoSignal &signal)
-    {
-        (void)(input);
-        (void)(signal);
-        return wayside_controller::Error::ERROR_INVALID_INPUT;
-    };
+        {
+            (void)(input);
+            (void)(signal);
+            return wayside_controller::Error::ERROR_INVALID_INPUT;
+        };
     wayside_controller::WaysideController software_wayside_controlle_no_inputs(get_inputs_none, kBlueLineWaysideBlocks);
-    track_circuit_data.block = 1;
+    track_circuit_data.block     = 1;
     track_circuit_data.authority = 5;
     ASSERT_EQ(wayside_controller::Error::ERROR_INVALID_INPUT, software_wayside_controlle_no_inputs.GetCommandedSpeedAndAuthority(track_circuit_data));
     ASSERT_EQ(0, track_circuit_data.authority);
@@ -267,30 +267,40 @@ TEST(WaysideControllerTests, SetSwitch)
 TEST(WaysideControllerTests, GetBlockStates)
 {
     wayside_controller::WaysideController software_wayside_controller(GetInput, kBlueLineWaysideBlocks);
-    std::vector<types::BlockState> block_states;
+    std::vector<types::BlockState>        block_states;
 
     ASSERT_EQ(wayside_controller::Error::ERROR_NONE, software_wayside_controller.GetBlockStates(block_states));
     ASSERT_EQ(5, block_states.size());
 
     // Block 1 occupied
     ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
-                                                       { return ((block_state.block == 1) && block_state.occupied); }));
+    {
+        return ((block_state.block == 1) && block_state.occupied);
+    }));
 
     // Block 2 occupied
     ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
-                                                       { return ((block_state.block == 2) && block_state.occupied); }));
+    {
+        return ((block_state.block == 2) && block_state.occupied);
+    }));
 
     // Block 5 occupied
     ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
-                                                       { return ((block_state.block == 5) && block_state.occupied); }));
+    {
+        return ((block_state.block == 5) && block_state.occupied);
+    }));
 
     // Block 13 occupied
     ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
-                                                       { return ((block_state.block == 13) && block_state.occupied); }));
+    {
+        return ((block_state.block == 13) && block_state.occupied);
+    }));
 
     // Block 15 occupied
     ASSERT_NE(block_states.end(), std::ranges::find_if(block_states, [](const types::BlockState block_state)
-                                                       { return ((block_state.block == 15) && block_state.occupied); }));
+    {
+        return ((block_state.block == 15) && block_state.occupied);
+    }));
 }
 
 TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
@@ -300,11 +310,11 @@ TEST(WaysideControllerTests, TrackCircuitDataEndToEnd)
     using ::testing::Return;
     using ::testing::SetArgReferee;
 
-    MockCtc ctc_mock;
-    simulator::Simulator world;
-    CsvParser csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
-    BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
-    RingBuffer<uint8_t, 1024> buffer_0, buffer_1;
+    MockCtc                                                    ctc_mock;
+    simulator::Simulator                                       world;
+    CsvParser                                                  csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
+    BlockBuilder                                               block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
     wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
                                                                                           types::TrackId::TRACKID_GREEN,
                                                                                           wayside_controller::kGreenLineBlocksWayside1,
@@ -350,11 +360,11 @@ TEST(WaysideControllerTests, BlockStatesEndToEnd)
     using ::testing::Return;
     using ::testing::SetArgReferee;
 
-    MockCtc ctc_mock;
-    simulator::Simulator world;
-    CsvParser csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
-    BlockBuilder block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
-    RingBuffer<uint8_t, 1024> buffer_0, buffer_1;
+    MockCtc                                                    ctc_mock;
+    simulator::Simulator                                       world;
+    CsvParser                                                  csv_parser(std::filesystem::current_path() / ".." / "tests" / "common" / "test_csv" / "green_line_schedule.csv");
+    BlockBuilder                                               block_builder(csv_parser.GetRecords(), RecordType::RECORDTYPE_SCHEDULE);
+    RingBuffer<uint8_t, 1024>                                  buffer_0, buffer_1;
     wayside_controller::SoftwareWaysideControllerHandler<1024> wayside_controller_handler(1,
                                                                                           types::TrackId::TRACKID_GREEN,
                                                                                           wayside_controller::kGreenLineBlocksWayside1,

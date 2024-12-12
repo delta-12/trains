@@ -146,7 +146,7 @@ class HardwareWaysideControllerTestbench : public ctc::Ctc, public track_model::
             }
         }
         template<size_t buffer_size>
-        void Update(controller_network::ControllerHandler<buffer_size> &controller_handler)
+        void Update(controller_network::ControllerHandler<buffer_size> &controller_handler, const bool connected)
         {
             Update();
 
@@ -172,6 +172,20 @@ class HardwareWaysideControllerTestbench : public ctc::Ctc, public track_model::
                 });
 
                 LOGGER_LOG_DEBUG(std::cout, kHardwareWaysideControllerTestbenchLogTag, "PLC program {} received from UI", program_path.c_str());
+            }
+
+            if (connected)
+            {
+                slint::ComponentWeakHandle<ui::HardwareWaysideControllerTestbenchUi> weak_ui_handle(testbench_ui_);
+                slint::invoke_from_event_loop([weak_ui_handle]{
+                    if (auto ui = weak_ui_handle.lock())
+                    {
+                        if (ui.has_value())
+                        {
+                            ui.value()->set_connected(true);
+                        }
+                    }
+                });
             }
         }
 
@@ -229,18 +243,55 @@ types::Error HardwareWaysideControllerTestbench::SetSwitchState(const types::Blo
 
 types::Error HardwareWaysideControllerTestbench::SetCrossingState(const types::BlockId block, const bool closed)
 {
-    // TODO Update testbench ui
-    (void)block;
-    (void)closed;
+    slint::ComponentWeakHandle<ui::HardwareWaysideControllerTestbenchUi> weak_ui_handle(testbench_ui_);
+
+    if (108 == block)
+    {
+        slint::invoke_from_event_loop([weak_ui_handle, closed]{
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_crossing_108(closed);
+                    }
+                }
+            });
+    }
 
     return types::Error::ERROR_NONE;
 }
 
 types::Error HardwareWaysideControllerTestbench::SetRedTrafficLight(const types::BlockId block, const bool on)
 {
-    // TODO Update testbench ui
     (void)block;
     (void)on;
+
+    // slint::ComponentWeakHandle<ui::HardwareWaysideControllerTestbenchUi> weak_ui_handle(testbench_ui_);
+
+    // if (76 == block)
+    // {
+    //     slint::invoke_from_event_loop([weak_ui_handle, on]{
+    //             if (auto ui = weak_ui_handle.lock())
+    //             {
+    //                 if (ui.has_value())
+    //                 {
+    //                     ui.value()->set_green_light_76(!on);
+    //                 }
+    //             }
+    //         });
+    // }
+    // else if (100 == block)
+    // {
+    //     slint::invoke_from_event_loop([weak_ui_handle, on]{
+    //             if (auto ui = weak_ui_handle.lock())
+    //             {
+    //                 if (ui.has_value())
+    //                 {
+    //                     ui.value()->set_green_light_100(!on);
+    //                 }
+    //             }
+    //         });
+    // }
 
     return types::Error::ERROR_NONE;
 }
@@ -256,9 +307,32 @@ types::Error HardwareWaysideControllerTestbench::SetYellowTrafficLight(const typ
 
 types::Error HardwareWaysideControllerTestbench::SetGreenTrafficLight(const types::BlockId block, const bool on)
 {
-    // TODO Update testbench ui
-    (void)block;
-    (void)on;
+    slint::ComponentWeakHandle<ui::HardwareWaysideControllerTestbenchUi> weak_ui_handle(testbench_ui_);
+
+    if (76 == block)
+    {
+        slint::invoke_from_event_loop([weak_ui_handle, on]{
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_green_light_76(on);
+                    }
+                }
+            });
+    }
+    else if (100 == block)
+    {
+        slint::invoke_from_event_loop([weak_ui_handle, on]{
+                if (auto ui = weak_ui_handle.lock())
+                {
+                    if (ui.has_value())
+                    {
+                        ui.value()->set_green_light_100(on);
+                    }
+                }
+            });
+    }
 
     return types::Error::ERROR_NONE;
 }

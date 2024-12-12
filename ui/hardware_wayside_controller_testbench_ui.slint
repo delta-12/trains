@@ -1,7 +1,7 @@
 import { HorizontalBox, VerticalBox, Button, CheckBox, LineEdit } from "std-widgets.slint";
 
 export component HardwareWaysideControllerTestbenchUi inherits Window {
-    title: "Hardware Wayside Controller Testbench";
+    title: "Hardware Wayside Controller";
 
     in-out property <string> block: "0";
     in-out property <string> speed: "0";
@@ -17,10 +17,17 @@ export component HardwareWaysideControllerTestbenchUi inherits Window {
     in-out property <bool> occupied: false;
 
     in-out property <string> plc_program: "";
-    in-out property <bool> plc_program_status;
+    in-out property <bool> plc_program_status: false;
 
-    in-out property <bool> switch_77;
-    in-out property <bool> switch_85;
+    in-out property <bool> switch_77: false;
+    in-out property <bool> switch_85: false;
+
+    in-out property <bool> crossing_108: false;
+
+    in-out property <bool> green_light_76: false;
+    in-out property <bool> green_light_100: false;
+
+    in-out property <bool> connected: false;
 
     callback send_track_circuit_data();
     callback send_occupancy();
@@ -34,11 +41,30 @@ export component HardwareWaysideControllerTestbenchUi inherits Window {
             Text {
                 font-size: 15px;
                 horizontal-alignment: TextHorizontalAlignment.center;
+                max-height: 2rem;
+                min-height: 2rem;
+                text: "Green Line Wayside 1";
+                font-italic: true;
+            }
+
+            VerticalBox {
+                max-height: 0rem;
+                Text {
+                    text: "Connection Status: \{connected ? "Connected" : "Disconnected"}";
+                    color: connected ? green : red;
+                }
+            }
+
+            Text {
+                font-size: 15px;
+                horizontal-alignment: TextHorizontalAlignment.center;
                 text: "Select Block";
+                max-height: 1rem;
             }
 
             HorizontalBox {
                 LineEdit {
+                    max-height: 0rem;
                     text <=> block;
                     edited => {
                         block_f = block.to-float();
@@ -47,70 +73,10 @@ export component HardwareWaysideControllerTestbenchUi inherits Window {
                 }
             }
 
-            HorizontalBox {
-                CheckBox {
-                    text: "Occupied";
-                    checked <=> occupied;
-                    toggled => {
-                        send_occupancy();
-                    }
-                }
-            }
-
-            Text {
-                font-size: 15px;
-                horizontal-alignment: TextHorizontalAlignment.center;
-                text: "Suggested Speed and Authority";
-            }
-
-            HorizontalBox {
-                Text {
-                    max-width: 1rem;
-                    text: "Suggested speed (m/s):";
-                }
-
-                TextInput {
-                    text <=> speed;
-                }
-            }
-
-            HorizontalBox {
-                Text {
-                    max-width: 1rem;
-                    text: "Authority (blocks):";
-                }
-
-                TextInput {
-                    text <=> authority;
-                }
-            }
-
-            Button {
-                text: "Set Suggested Speed and Authority";
-                clicked => {
-                    speed_f = speed.to-float();
-                    authority_f = authority.to_float();
-                    send_track_circuit_data();
-                }
-            }
-        }
-
-        VerticalBox {
             VerticalBox {
-                spacing: 0px;
+                max-height: 0rem;
                 Text {
-                    max-height: 0rem;
-                    text: "Selected block: \{block}";
-                }
-
-                Text {
-                    max-height: 0rem;
-                    text: "Commanded speed: \{commanded_speed} m/s";
-                }
-
-                Text {
-                    max-height: 0rem;
-                    text: "Commanded authority: \{commanded_authority} blocks";
+                    text: occupied ? "Occupancy: Occupied" : "Occupancy: Unoccupied";
                 }
             }
 
@@ -134,7 +100,8 @@ export component HardwareWaysideControllerTestbenchUi inherits Window {
                 }
 
                 Text {
-                    text: plc_program_status ? "Success" : "Fail";
+                    text: "PLC Program Status: \{plc_program_status ? "Success" : "Fail"}";
+                    color: plc_program_status ? green : red;
                 }
             }
 
@@ -146,11 +113,136 @@ export component HardwareWaysideControllerTestbenchUi inherits Window {
                     text: "Switches, Lights, Crossings";
                 }
 
-                Text {
-                    text: "Block 77 Switch: \{switch_77 ? "Closed" : "Open"}";
+                HorizontalBox {
+                    Text {
+                        text: "Block 77 Switch: \{switch_77 ? "Closed" : "Open"}";
+                    }
                 }
+
+                HorizontalBox {
+                    Text {
+                        text: "Block 85 Switch: \{switch_85 ? "Closed" : "Open"}";
+                    }
+                }
+
+                HorizontalBox {
+                    Text {
+                        max-width: 0rem;
+                        text: "Block 76 Light: ";
+                    }
+
+                    Text {
+                        max-width: 0rem;
+                        text: green_light_76 ? "Green" : "Red";
+                        color: green_light_76 ? green : red;
+                    }
+                }
+
+                HorizontalBox {
+                    Text {
+                        max-width: 0rem;
+                        text: "Block 100 Light: ";
+                    }
+
+                    Text {
+                        max-width: 0rem;
+                        text: green_light_100 ? "Green" : "Red";
+                        color: green_light_100 ? green : red;
+                    }
+                }
+
+                HorizontalBox {
+                    Text {
+                        text: "Block 108 Crossing: \{crossing_108 ? "Closed" : "Open"}";
+                    }
+                }
+            }
+        }
+
+        VerticalBox {
+            Rectangle {
+                max-width: 2px;
+                min-height: 2px;
+                background: white;
+            }
+        }
+
+        VerticalBox {
+            Text {
+                font-size: 15px;
+                horizontal-alignment: TextHorizontalAlignment.center;
+                max-height: 0rem;
+                text: "Testbench";
+                font-italic: true;
+            }
+
+            VerticalBox {
+                spacing: 0px;
+
                 Text {
-                    text: "Block 85 Switch: \{switch_85 ? "Closed" : "Open"}";
+                    max-height: 0rem;
+                    text: "Selected block: \{block}";
+                }
+
+                Text {
+                    max-height: 0rem;
+                    text: "Commanded speed: \{commanded_speed} m/s";
+                }
+
+                Text {
+                    max-height: 0rem;
+                    text: "Commanded authority: \{commanded_authority} blocks";
+                }
+            }
+
+            VerticalBox {
+                max-height: 0rem;
+                Text {
+                    font-size: 15px;
+                    horizontal-alignment: TextHorizontalAlignment.center;
+                    text: "Suggested Speed and Authority";
+                }
+
+                HorizontalBox {
+                    Text {
+                        max-width: 1rem;
+                        text: "Suggested speed (m/s):";
+                    }
+
+                    TextInput {
+                        text <=> speed;
+                    }
+                }
+
+                HorizontalBox {
+                    Text {
+                        max-width: 1rem;
+                        text: "Authority (blocks):";
+                    }
+
+                    TextInput {
+                        text <=> authority;
+                    }
+                }
+
+                Button {
+                    text: "Set Suggested Speed and Authority";
+                    clicked => {
+                        speed_f = speed.to-float();
+                        authority_f = authority.to_float();
+                        send_track_circuit_data();
+                    }
+                }
+            }
+
+            VerticalBox {
+                max-height: 0rem;
+                CheckBox {
+                    text: "Occupied";
+                    checked <=> occupied;
+                    toggled => {
+                        send_occupancy();
+                    }
                 }
             }
         }

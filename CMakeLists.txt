@@ -8,10 +8,6 @@ if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
 endif()
 
-if (WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
-endif()
-
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
@@ -125,7 +121,7 @@ set(TRAINS_SRCS
 set(TEST_TRAINS_SRCS ${TRAINS_SRCS})
 list(REMOVE_ITEM TEST_TRAINS_SRCS ${CTC_HANDLER_SRCS})
 
-set(SLINT_STYLE native)
+set(SLINT_STYLE cosmic-dark)
 
 find_package(Slint REQUIRED)
 

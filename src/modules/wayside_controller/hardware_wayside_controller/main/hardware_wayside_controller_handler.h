@@ -91,8 +91,8 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::Update(void)
     }
     else
     {
-        ESP_LOGI("TEST", "Sending block states");
-        error = SendBlockStates(block_states);
+        // ESP_LOGI("TEST", "Sending block states");
+        // error = SendBlockStates(block_states);
     }
 
     return error;
@@ -244,10 +244,10 @@ types::Error HardwareWaysideControllerHandler<buffer_size>::ReceiveMessages(void
         switch (message_type)
         {
         case controller_network::MESSAGETYPE_TRACK_CIRCUIT_DATA:
-            error = HandleTrackCircuitData();
+            // error = HandleTrackCircuitData();
             break;
         case controller_network::MESSAGETYPE_BLOCK_OCCUPANCIES:
-            error = HandleBlockOccupancies();
+            // error = HandleBlockOccupancies();
             break;
         default:
             break;
