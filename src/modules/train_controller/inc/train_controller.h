@@ -585,6 +585,8 @@ class SoftwareTrainController : public TrainController
         types::Polarity polarity_;
         types::Polarity last_polarity_;
         types::Meters distance_since_last_update_;
+        double manual_brake_command_;
+        double auto_brake_percentage_;
 };
 
 } // namespace train_controller
