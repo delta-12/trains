@@ -299,7 +299,9 @@ int main(void)
     std::string input_file_path="";
     std::string input_file_path2="";
 
-    std::filesystem::path           base_path = std::filesystem::current_path();
+    std::string color = "";
+
+    std::filesystem::path exe_path = std::filesystem::current_path();
         
     track_model_ui->on_choose_file([&]() {
             // For other platforms
@@ -307,6 +309,15 @@ int main(void)
             std::cout << "Please enter the path to the CSV file: ";
 
             std::getline(std::cin, input_file_path);
+
+            if (input_file_path.find("green") != std::string::npos)
+            {
+                color = "green";
+            }
+            else if (input_file_path.find("red") != std::string::npos)
+            {
+                color = "red";
+            }
 
             // Check if the file exists
             if (std::filesystem::exists(input_file_path)) {
@@ -330,18 +341,41 @@ int main(void)
 
             //std::getline(std::cin, input_file_path2);
 
-            std::filesystem::path trackpath_path(input_file_path2);
-            std::filesystem::path hard_path_green("/Users/ibrah/Documents/trainscode/trains/tests/common/test_csv/green_line_path.csv");
-            CsvParser trackpath_parser(hard_path_green);
+            //std::filesystem::path trackpath_path(input_file_path2);
+            //std::filesystem::path hard_path_green("/Users/ibrah/Documents/trainscode/trains/tests/common/test_csv/green_line_path.csv");
 
-            //std::filesystem::path           trackpath_path = base_path / ".." / "tests" / "common" / "test_csv" / "green_line_path.csv";
-            //CsvParser                       trackpath_parser(trackpath_path);
-            BlockBuilder                    inorder_bb(inorder_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
-            BlockBuilder                    trackpath_bb(trackpath_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
-            
-            track_model_ui->set_track_id("green");
+            if (color == "green")
+            {
+                std::filesystem::path hard_path_green = exe_path / "tests" / "common" / "test_csv" / "green_line_path.csv";
+                CsvParser trackpath_parser(hard_path_green);
+                std::filesystem::path           base_path = std::filesystem::current_path();
 
-            track.SetTrackLayout(types::TrackId::TRACKID_GREEN, trackpath_bb.GetBlocks(), inorder_bb.GetBlocks());
+                //std::filesystem::path           trackpath_path = base_path / ".." / "green_line_path.csv";
+                //std::cout << trackpath_path;
+                //CsvParser                       trackpath_parser(trackpath_path);
+                BlockBuilder                    inorder_bb(inorder_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                BlockBuilder                    trackpath_bb(trackpath_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                
+                track_model_ui->set_track_id("green");
+
+                track.SetTrackLayout(types::TrackId::TRACKID_GREEN, trackpath_bb.GetBlocks(), inorder_bb.GetBlocks());
+            }
+            else if (color == "red")
+            {
+                std::filesystem::path hard_path_red = exe_path / "tests" / "common" / "test_csv" / "red_line_path.csv";
+                CsvParser trackpath_parser(hard_path_red);
+                std::filesystem::path           base_path = std::filesystem::current_path();
+
+                //std::filesystem::path           trackpath_path = base_path / ".." / "green_line_path.csv";
+                //std::cout << trackpath_path;
+                //CsvParser                       trackpath_parser(trackpath_path);
+                BlockBuilder                    inorder_bb(inorder_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                BlockBuilder                    trackpath_bb(trackpath_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
+                
+                track_model_ui->set_track_id("red");
+
+                track.SetTrackLayout(types::TrackId::TRACKID_RED, trackpath_bb.GetBlocks(), inorder_bb.GetBlocks());
+                }
                 
             int thenumblocks=inorder_parser.GetSize();
             track_model_ui->set_num_blocks(std::to_string(thenumblocks).c_str());

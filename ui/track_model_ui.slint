@@ -42,6 +42,7 @@ component TrackInput inherits Rectangle {
 export component TrackModelUi inherits Window {
     min-height: 950px;
     min-width: 1200px;
+    in-out property <string> base_path;
     in-out property <string> train_id;
     in-out property <string> selected_fileName;
     in-out property <string> train_block;
@@ -149,7 +150,7 @@ export component TrackModelUi inherits Window {
                             max-height: 5px;
                             HorizontalBox {
                                 Image {
-                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
+                                    source: @image-url("train-icon.png");
                                     height: 50px;
                                     width: 50px;
                                 }
@@ -162,7 +163,7 @@ export component TrackModelUi inherits Window {
                                     //preferred-width: 250px;                
                                 }
                                 Image {
-                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
+                                    source: @image-url("train-icon.png");
                                     height: 50px;
                                     width: 50px;
                                 }
@@ -179,7 +180,7 @@ export component TrackModelUi inherits Window {
 
                             HorizontalBox {
                                 if track_id=="green" : Image {
-                                    source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/green_line_picture.png");
+                                    source: @image-url("green_line_picture.png");
                                     height: 600px;
                                     width: 700px;
                                     //y: 150px; 
