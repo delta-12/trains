@@ -7,6 +7,16 @@
 #include <iomanip>
 #include <sstream>
 
+
+// #include <winnt.h>
+// #include <winbase.h>
+// #include <handleapi.h>
+// #include <minwindef.h>
+// #include <fileapi.h>
+
+
+#include <Windows.h>
+
 #include "types.h"
 #include "convert.h"
 #include "tick_source.h"
@@ -16,7 +26,7 @@ using namespace std;
 namespace train_controller
 {
 //Constructor
-SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
+SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk, bool hardware) : clock_(clk), hardware_(hardware)
 {
     // Initializing variables
     ki_                             = TRAIN_CONTROLLER_DEFAULT_KI;
@@ -61,6 +71,56 @@ SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk
 
     Update();
 }
+
+
+//Constructor
+SoftwareTrainController::SoftwareTrainController(std::shared_ptr<TickSource> clk) : clock_(clk)
+{
+    // Initializing variables
+    ki_                             = TRAIN_CONTROLLER_DEFAULT_KI;
+    kp_                             = TRAIN_CONTROLLER_DEFAULT_KP;
+    max_power_                      = TRAIN_CONTROLLER_MAXIMUM_ENGINE_POWER;
+    commanded_internal_temperature_ = DEFAULT_TRAIN_TEMPERATURE;
+    train_max_speed_                = TRAIN_SPEED_LIMIT;
+    set_route_position_             = -1;
+
+
+    distance_of_authority_in_meters_     = 0;
+    distance_since_last_update_          = 0;
+    integral_sum_                        = 0;
+    commanded_speed_                     = 0;
+    driver_speed_                        = 0;
+    current_speed_                       = 0;
+    service_brake_percentage_            = 0;
+    commanded_power_                     = 0;
+    authority_                           = 0;
+    emergency_brake_                     = 0;
+    headlights_                          = 0;
+    interior_lights_                     = 0;
+    left_door_                           = 0;
+    right_door_                          = 0;
+    brake_failure_                       = 0;
+    signal_pickup_failure_               = 0;
+    engine_failure_                      = 0;
+    actual_internal_temperature_         = 0;
+    distance_travelled_                  = 0;
+    distance_prior_to_current_authority_ = 0;
+    total_blocks_accessed_length_        = 0; //(green_block_data_map_[green_default_route_vector_[set_route_position_]])[0];
+    arrived_                             = 0;
+    operation_mode_                      = false;
+    last_tick_updated_                   = (*clock_).GetTick();
+    hardware_ = 0;
+
+    polarity_          = types::Polarity::POLARITY_NEGATIVE;
+    last_polarity_     = polarity_;
+    usable_authority_  = authority_;
+    authority_counter_ = authority_;
+    new_authority_     = false;
+    manual_brake_command_ = 0.0;
+
+    Update();
+}
+
 
 
 // Getters
@@ -456,7 +516,17 @@ void SoftwareTrainController::CalculateCommandedPower(const types::Second delta_
     else
     {
         service_brake_percentage_ =  0;
-        commanded_power_ = kp_term + ki_term;
+
+        if (hardware_)
+        {
+            commanded_power_ = Hardware(kp_term, ki_term);
+        }
+        else
+        {
+            commanded_power_ = kp_term + ki_term;
+        }
+        
+        
 
         if (commanded_power_ > max_power_)
         {
@@ -760,5 +830,111 @@ std::string SoftwareTrainController::GetCurrentStationName() const
     // Not at a station or train is moving
     return "";
 }
+
+
+
+
+
+types::Watts SoftwareTrainController::Hardware(double kp_term, double ki_term)
+{
+    HANDLE hCom = CreateFile("COM3", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    DCB dcb_serial_params = { 0 };
+    dcb_serial_params.DCBlength = sizeof(dcb_serial_params);
+    if (!GetCommState(hCom, &dcb_serial_params)) 
+    {
+        CloseHandle(hCom);
+        return 1;
+    }
+
+    dcb_serial_params.BaudRate = CBR_9600;
+    dcb_serial_params.ByteSize = 8;  // 8 data bits
+    dcb_serial_params.StopBits = ONESTOPBIT; // 1 stop bit
+    dcb_serial_params.Parity = NOPARITY;  // No parity
+
+    if (!SetCommState(hCom, &dcb_serial_params)) 
+    {
+        std::cout << "Error setting COM port parameters." << std::endl;
+        CloseHandle(hCom);
+        return 1;
+    }
+
+    DWORD bytes_Written;
+
+    std::string kp_string = std::to_string(kp_term);
+    std::string ki_string = std::to_string(ki_term);
+    std::string data_to_send = kp_string + "," + ki_string;
+
+    WriteFile(hCom, data_to_send.c_str(), data_to_send.length(), &bytes_Written, NULL);
+    WriteFile(hCom, "\n", 1, &bytes_Written, NULL); // End the line with a newline for delimiter
+
+    char buffer[256];
+
+    DWORD bytes_read;
+    std::string r;
+    if(ReadFile(hCom, buffer, sizeof(buffer) - 1, &bytes_read, NULL)) 
+    {
+        buffer[bytes_read] = '\0';
+
+        std::string response(buffer);
+        std::cout << "Response from Arduino: " << response << std::endl;
+
+        r = response;
+    }
+
+    CloseHandle(hCom);
+
+    types::Watts commanded_power = std::stof(r);
+    return commanded_power;
+}
+
+
+
+//  () {
+//     // Open the COM port (e.g., COM3)
+//     HANDLE hCom = CreateFile("COM3", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+//     if (hCom == INVALID_HANDLE_VALUE) {
+//         DWORD dwError = GetLastError();
+//         std::cout << "Error opening COM port. Error Code: " << dwError << std::endl;
+//         return 1;  // Exit if the port cannot be opened
+//     }
+
+//     // Set the COM port parameters, including baud rate
+//     DCB dcbSerialParams = { 0 };
+//     dcbSerialParams.DCBlength = sizeof(dcbSerialParams); // Set the size of the DCB structure
+
+//     if (!GetCommState(hCom, &dcbSerialParams)) {
+//         std::cout << "Error getting COM port state." << std::endl;
+//         CloseHandle(hCom);
+//         return 1;
+//     }
+
+//     // Set the baud rate to 9600
+//     dcbSerialParams.BaudRate = CBR_9600;
+//     dcbSerialParams.ByteSize = 8;  // 8 data bits
+//     dcbSerialParams.StopBits = ONESTOPBIT; // 1 stop bit
+//     dcbSerialParams.Parity = NOPARITY;  // No parity
+
+//     // Apply the settings to the COM port
+//     if (!SetCommState(hCom, &dcbSerialParams)) {
+//         std::cout << "Error setting COM port parameters." << std::endl;
+//         CloseHandle(hCom);
+//         return 1;
+//     }
+
+//     // Data to send to the COM port
+//     const char* dataToSend = "Hello, COM3!";
+//     DWORD bytesWritten;
+//     if (!WriteFile(hCom, dataToSend, strlen(dataToSend), &bytesWritten, NULL)) {
+//         std::cout << "Error writing to COM port" << std::endl;
+//     } else {
+//         std::cout << "Data sent: " << dataToSend << std::endl;
+//     }
+
+//     // Close the COM port when done
+//     CloseHandle(hCom);
+
+//     return 0;
+// }
 
 }

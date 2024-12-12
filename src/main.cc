@@ -45,13 +45,16 @@ int main(void)
         train_controller_ui->show();
     });
 
+
+    bool HARDWARE = 1;
+
     // Create a tick source and a single train controller
     std::shared_ptr<TickSource> tick_source = std::make_shared<TickSource>();
     tick_source->Start();
     tick_source->SetMultiplier(1);
 
     std::shared_ptr<train_controller::SoftwareTrainController> train_contr = 
-        std::make_shared<train_controller::SoftwareTrainController>(tick_source);
+        std::make_shared<train_controller::SoftwareTrainController>(tick_source,HARDWARE);
 
     train_controllers[0] = train_contr;
 

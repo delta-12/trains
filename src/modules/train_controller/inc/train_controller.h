@@ -89,8 +89,10 @@ class TrainController
 class SoftwareTrainController : public TrainController
 {
     public:
-        // Constructor
+        // Constructors
         SoftwareTrainController(std::shared_ptr<TickSource> clk);
+        SoftwareTrainController(std::shared_ptr<TickSource> clk, bool hardware);
+
 
         // Implementations for getters
         types::MetersPerSecond GetCurrentSpeed(void) const;
@@ -157,6 +159,7 @@ class SoftwareTrainController : public TrainController
         std::string GetStationSide() const;
         void UpdateLightsAndDoors();
         std::string GetCurrentStationName() const;
+        types::Watts Hardware(double kp_term, double ki_term);
 
         /*
          *
@@ -586,6 +589,8 @@ class SoftwareTrainController : public TrainController
         types::Polarity last_polarity_;
         types::Meters distance_since_last_update_;
         double manual_brake_command_;
+
+        bool hardware_;
 };
 
 } // namespace train_controller
