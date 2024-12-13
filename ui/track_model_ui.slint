@@ -183,33 +183,8 @@ export component TrackModelUi inherits Window {
                                     source: @image-url("green_line_picture.png");
                                     height: 600px;
                                     width: 700px;
-                                    //y: 150px; 
-                                    // if train_block<69 && train_block>59 : Image {
-                                    //     source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
-                                    //     y: 250px;
-                                    //     x: (train_block * 2) *1px;
-                                    //     height: 50px;
-                                    //     width: 50px;
-                                    // } 
                                 }
-                                //if track_id=="red"
                             }
-                            // Rectangle { 
-                            //     if train_block<69 && train_block>59 : Image {
-                            //         source: @image-url("/Users/ibrah/Documents/trainscode/trains/ui/train-icon.png");
-                            //         y: 200px;
-                            //         x: train_block*1px;
-                            //         height: 50px;
-                            //         width: 50px;
-                            //     }
-                            // }
-                            // Button {
-                            //     text: "Update";
-                            //     clicked => {
-                            //         root.request_update_train_block();
-                            //     }
-                            //     min-width: 100px;
-                            // }
                         }
                     }
                 }
@@ -222,9 +197,6 @@ export component TrackModelUi inherits Window {
                                 max-width: 200px;
                                 VerticalBox {
                                     Rectangle {
-                                        //border-color: white;
-                                        //border-radius: 20px;
-                                        //border-width: 5px;
                                         preferred-height: 250px;
                                         preferred-width: 50px;
                                         min-height:700px;
@@ -248,9 +220,6 @@ export component TrackModelUi inherits Window {
                                             }
                                             Text {
                                             text: num_blocks;
-                                            //max-height: 30px;
-                                            //max-width: 150px;
-                                            //horizontal-alignment: center;
                                             font-size: 20px;
                                             }
                                         }
@@ -373,15 +342,6 @@ export component TrackModelUi inherits Window {
                                             preferred-width: 250px;
                                         }
                                     }
-                                    // HorizontalBox {
-                                    //     Text{
-                                    //         max-width: 150px;
-                                    //         max-height: 30px;
-                                    //         text: "Cumulative Elevation: " + block-cumulative-elevation + " Feet";
-                                    //         font-size: 20px;
-                                    //         preferred-width: 250px;
-                                    //     }
-                                    // }
                                     HorizontalBox {
                                         Text{
                                             max-width: 150px;
@@ -499,25 +459,6 @@ export component TrackModelUi inherits Window {
             }
         }
 
-            /*popup:= PopupWindow {
-                Rectangle {
-                    height:100%; width: 100%; background: white;
-                } 
-                height: 300px;
-                width: 300px;
-                x: 600px;
-            }*/
-
-            // HorizontalBox {
-            //     alignment: end;
-            //         Button{
-            //             text: "TestBench";
-            //             clicked => {
-            //                 popup.show();
-            //             }
-            //     }
-            // }
-
             preferred-height: 800px;
             preferred-width: 800px;
         }
@@ -554,7 +495,6 @@ export component TrackModelUi inherits Window {
                                     clicked => {
                                         root.request_add_train();
                                     }
-                                   // min-width: 100px;
                                 }
                             }
                             HorizontalBox {
@@ -969,8 +909,6 @@ export component TrackModelUi inherits Window {
                                     horizontal-alignment: center;
                                     font-size: 20px;
                                     read-only: true;
-                                    //horizontal-alignment: center;
-                                    //vertical-alignment: center;
                                 }
                             }
                             //Passengers boarding

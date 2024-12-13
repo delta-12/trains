@@ -336,23 +336,12 @@ int main(void)
 
             std::cout << "Track size: " << inorder_parser.GetSize() << std::endl;
 
-            //std::string path2;
-            //std::cout << "Please enter the path to the CSV file: ";
-
-            //std::getline(std::cin, input_file_path2);
-
-            //std::filesystem::path trackpath_path(input_file_path2);
-            //std::filesystem::path hard_path_green("/Users/ibrah/Documents/trainscode/trains/tests/common/test_csv/green_line_path.csv");
-
             if (color == "green")
             {
                 std::filesystem::path hard_path_green = exe_path / "tests" / "common" / "test_csv" / "green_line_path.csv";
                 CsvParser trackpath_parser(hard_path_green);
                 std::filesystem::path           base_path = std::filesystem::current_path();
 
-                //std::filesystem::path           trackpath_path = base_path / ".." / "green_line_path.csv";
-                //std::cout << trackpath_path;
-                //CsvParser                       trackpath_parser(trackpath_path);
                 BlockBuilder                    inorder_bb(inorder_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
                 BlockBuilder                    trackpath_bb(trackpath_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
                 
@@ -366,9 +355,6 @@ int main(void)
                 CsvParser trackpath_parser(hard_path_red);
                 std::filesystem::path           base_path = std::filesystem::current_path();
 
-                //std::filesystem::path           trackpath_path = base_path / ".." / "green_line_path.csv";
-                //std::cout << trackpath_path;
-                //CsvParser                       trackpath_parser(trackpath_path);
                 BlockBuilder                    inorder_bb(inorder_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
                 BlockBuilder                    trackpath_bb(trackpath_parser.GetRecords(), RecordType::RECORDTYPE_TRACK_LAYOUT);
                 
@@ -377,7 +363,7 @@ int main(void)
                 track.SetTrackLayout(types::TrackId::TRACKID_RED, trackpath_bb.GetBlocks(), inorder_bb.GetBlocks());
                 }
                 
-            int thenumblocks=inorder_parser.GetSize();
+            int thenumblocks=inorder_parser.GetSize() - 1; //subtract 1 to account for header
             track_model_ui->set_num_blocks(std::to_string(thenumblocks).c_str());
 
             std::string line_color;
@@ -482,12 +468,6 @@ int main(void)
                     otb_string+=" ";
                 }
                 track_model_ui->set_blocks_occupied(otb_string.c_str());
-                // if (!trains.empty())
-                // {
-                //     track.GetTrainModels(trains);
-                //     types::Blocks train_authority = trains[0]->GetAuthority();
-                //     track_model_ui->set_train_authority(std::to_string(train_authority).c_str());
-                // }
             }
         });
 
@@ -620,7 +600,7 @@ int main(void)
                             otb_string+=" ";
                         }
                 }
-                //track_model_ui->set_blocks_occupied_train(otb_string.c_str());
+                
                 }
                 track_model_ui->set_blocks_occupied(otb_string.c_str());
             }
